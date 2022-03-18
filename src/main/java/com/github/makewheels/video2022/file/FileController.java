@@ -4,6 +4,7 @@ import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.video2022.UserServiceClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -17,10 +18,15 @@ public class FileController {
     @Resource
     private FileService fileService;
 
-    @GetMapping
-    public void getTempCrets(HttpServletRequest request) {
+    @GetMapping("getUploadCredential")
+    public void getUploadCredential(HttpServletRequest request, @RequestParam String fileId) {
         User user = userServiceClient.getUserByRequest(request);
+        fileService.getUploadCredential(user, fileId);
+    }
 
+    @GetMapping("uploadFinish")
+    public void uploadFinish(HttpServletRequest request) {
+        User user = userServiceClient.getUserByRequest(request);
     }
 
 }
