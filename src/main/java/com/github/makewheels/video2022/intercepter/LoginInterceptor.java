@@ -19,7 +19,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(
             HttpServletRequest request, HttpServletResponse response, Object handler) {
         String token = request.getHeader("token");
-        User user = userServiceClient.getUserByToken(token);
+        User user = userServiceClient.getUserByRequest(request);
         log.info("token = {}, user = {}", token, JSON.toJSONString(user));
         if (user == null) {
             response.setStatus(403);
