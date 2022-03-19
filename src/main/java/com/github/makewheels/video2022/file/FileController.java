@@ -27,8 +27,9 @@ public class FileController {
     }
 
     @GetMapping("uploadFinish")
-    public void uploadFinish(HttpServletRequest request) {
+    public Result<Void> uploadFinish(HttpServletRequest request, @RequestParam String fileId) {
         User user = userServiceClient.getUserByRequest(request);
+        return fileService.uploadFinish(user, fileId);
     }
 
 }

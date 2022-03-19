@@ -1,7 +1,9 @@
 package com.github.makewheels.video2022.file;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.User;
+import com.github.makewheels.usermicroservice2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
@@ -9,7 +11,10 @@ import com.qcloud.cos.auth.BasicCOSCredentials;
 import com.qcloud.cos.auth.COSCredentials;
 import com.qcloud.cos.http.HttpMethodName;
 import com.qcloud.cos.http.HttpProtocol;
+import com.qcloud.cos.model.COSObject;
+import com.qcloud.cos.model.ObjectMetadata;
 import com.qcloud.cos.region.Region;
+import javafx.scene.shape.MoveTo;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -32,6 +37,7 @@ public class FileService {
         file.setUserId(user.getId());
         file.setOriginalFilename(originalFilename);
         file.setExtension(FilenameUtils.getExtension(originalFilename).toLowerCase());
+        file.setStatus(FileStatus.CREATED);
         file.setCreateTime(new Date());
         mongoTemplate.save(file);
         return file;
@@ -60,6 +66,10 @@ public class FileService {
                 .toString();
     }
 
+    private COSObject getObject(String key) {
+        return getCOSClient().getObject(bucket, key);
+    }
+
     public Result<JSONObject> getUploadUrl(User user, String fileId) {
         File file = mongoTemplate.findById(fileId, File.class);
         if (file == null)
@@ -74,4 +84,18 @@ public class FileService {
         return Result.ok(jsonObject);
     }
 
+    public Result<Void> uploadFinish(User user, String fileId) {
+        File file = mongoTemplate.findById(fileId, File.class);
+        if (file == null)
+            return Result.error(ErrorCode.FAIL);
+        if (!StringUtils.equals(user.getId(), file.getUserId()))
+            return Result.error(ErrorCode.FAIL);
+        COSObject cosObject = getObject(file.getKey());
+        ObjectMetadata objectMetadata = cosObject.getObjectMetadata();
+        file.setSize(objectMetadata.getContentLength());
+        file.setMd5(objectMetadata.getETag().toLowerCase());
+        file.setStatus(FileStatus.READY);
+        mongoTemplate.save(file);
+        return Result.ok();
+    }
 }

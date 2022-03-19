@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.file.FileStatus;
 import com.github.makewheels.video2022.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -21,7 +22,7 @@ public class VideoService {
     @Resource
     private FileService fileService;
 
-    public String getWatchId() {
+    private String getWatchId() {
         return IdUtil.simpleUUID();
     }
 
@@ -47,7 +48,20 @@ public class VideoService {
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("fileId", fileId);
+        jsonObject.put("videoId", video.getId());
         return Result.ok(jsonObject);
+    }
+
+    public Result<Void> originalFileUploadFinish(User user, String videoId) {
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        File file = mongoTemplate.findById(video.getOriginalFileId(), File.class);
+        if (file.getStatus().equals(FileStatus.READY)) {
+            video.setStatus(VideoStatus.ORIGINAL_FILE_READY);
+            mongoTemplate.save(video);
+        }
+        //发起转码
+
+        return Result.ok();
     }
 
 }
