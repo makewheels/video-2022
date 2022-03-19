@@ -84,7 +84,7 @@ public class FileService {
     private String getPreSignedUrl(String key, long time, HttpMethodName httpMethodName) {
         return getBosClient().generatePresignedUrl(
                         bucket, key, (int) (time / 1000), httpMethodName)
-                .getPath();
+                .toString();
     }
 
     private BosObject getObject(String key) {
