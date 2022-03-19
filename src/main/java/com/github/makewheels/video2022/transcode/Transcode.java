@@ -19,7 +19,7 @@ public class Transcode {
     @Indexed
     private String videoId;
     @Indexed
-    private String taskId;
+    private String jobId;
     @Indexed
     private Date createTime;
     @Indexed

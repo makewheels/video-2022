@@ -1,18 +1,44 @@
 package com.github.makewheels.video2022.transcode;
 
-import com.tencentcloudapi.common.Credential;
-import com.tencentcloudapi.common.exception.TencentCloudSDKException;
-import com.tencentcloudapi.common.profile.ClientProfile;
-import com.tencentcloudapi.common.profile.HttpProfile;
-import com.tencentcloudapi.mps.v20190612.MpsClient;
-import com.tencentcloudapi.mps.v20190612.models.*;
+import com.baidubce.BceClientConfiguration;
+import com.baidubce.auth.DefaultBceCredentials;
+import com.baidubce.services.media.MediaClient;
+import com.baidubce.services.media.model.CreateTranscodingJobResponse;
+import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
+import com.baidubce.services.media.model.GetTranscodingJobResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TranscodeService {
-    private final Credential credential = new Credential(
-            "AKIDqVv61h7IEvMXVGm22mHXXHm10kFUTDhv",
-            "1mJbeRyHK7ewylIZbNt9AwTlNlunQq23");
+
+    @Value("${s3.bucket}")
+    private String bucket;
+    @Value("${mcp.accessKeyId}")
+    private String accessKeyId;
+    @Value("${mcp.secretKey}")
+    private String secretKey;
+    @Value("${mcp.pipelineName}")
+    private String pipelineName;
+
+    private MediaClient mediaClient;
+
+    private MediaClient getMediaClient() {
+        if (mediaClient != null) {
+            return mediaClient;
+        }
+        BceClientConfiguration config = new BceClientConfiguration();
+        config.setCredentials(new DefaultBceCredentials(accessKeyId, secretKey));
+        config.setEndpoint("https://media.bj.baidubce.com");
+        // 设置HTTP最大连接数为10
+        config.setMaxConnections(10);
+        // 设置TCP连接超时为5000毫秒
+        config.setConnectionTimeoutInMillis(5000);
+        // 设置Socket传输数据超时的时间为2000毫秒
+        config.setSocketTimeoutInMillis(2000);
+        mediaClient = new MediaClient(config);
+        return mediaClient;
+    }
 
     /**
      * 获取视频信息
@@ -20,111 +46,41 @@ public class TranscodeService {
      * @param key
      * @return
      */
-    public DescribeMediaMetaDataResponse describeMediaMetaData(String key) {
-        HttpProfile httpProfile = new HttpProfile();
-        httpProfile.setEndpoint("mps.tencentcloudapi.com");
-        ClientProfile clientProfile = new ClientProfile();
-        clientProfile.setHttpProfile(httpProfile);
-        MpsClient client = new MpsClient(credential, "ap-beijing", clientProfile);
-
-        DescribeMediaMetaDataRequest req = new DescribeMediaMetaDataRequest();
-        MediaInputInfo mediaInputInfo = new MediaInputInfo();
-        mediaInputInfo.setType("COS");
-        CosInputInfo cosInputInfo = new CosInputInfo();
-        cosInputInfo.setBucket("video-2022-1253319037");
-        cosInputInfo.setRegion("ap-beijing");
-        cosInputInfo.setObject(key);
-        mediaInputInfo.setCosInputInfo(cosInputInfo);
-
-        req.setInputInfo(mediaInputInfo);
-
-        DescribeMediaMetaDataResponse resp = null;
-        try {
-            resp = client.DescribeMediaMetaData(req);
-        } catch (TencentCloudSDKException e) {
-            e.printStackTrace();
-        }
-        return resp;
+    public GetMediaInfoOfFileResponse getMediaInfo(String key) {
+        return getMediaClient().getMediaInfoOfFile(bucket, key);
     }
 
     /**
-     * 发起转码
+     * 创建转码任务
      *
      * @param sourceKey
-     * @param outputDir
+     * @param targetKey
      * @param resolution
      * @return
      */
-    public ProcessMediaResponse processMedia(String sourceKey, String outputDir, String resolution) {
-        HttpProfile httpProfile = new HttpProfile();
-        httpProfile.setEndpoint("mps.tencentcloudapi.com");
-        ClientProfile clientProfile = new ClientProfile();
-        clientProfile.setHttpProfile(httpProfile);
-        MpsClient client = new MpsClient(credential, "ap-beijing", clientProfile);
-
-        ProcessMediaRequest req = new ProcessMediaRequest();
-        MediaInputInfo mediaInputInfo = new MediaInputInfo();
-        mediaInputInfo.setType("COS");
-        CosInputInfo cosInputInfo = new CosInputInfo();
-        cosInputInfo.setBucket("video-2022-1253319037");
-        cosInputInfo.setRegion("ap-beijing");
-        cosInputInfo.setObject(sourceKey);
-        mediaInputInfo.setCosInputInfo(cosInputInfo);
-
-        req.setInputInfo(mediaInputInfo);
-
-        req.setOutputDir(outputDir);
-        MediaProcessTaskInput mediaProcessTaskInput = new MediaProcessTaskInput();
-
-        TranscodeTaskInput[] transcodeTaskInputs = new TranscodeTaskInput[1];
-        TranscodeTaskInput transcodeTaskInput = new TranscodeTaskInput();
-
-        long templateId;
+    public CreateTranscodingJobResponse createTranscodingJob(
+            String sourceKey, String targetKey, String resolution) {
+        String presetName;
         if (resolution.equals(Resolution.R_1080P)) {
-            templateId = 1225347L;
+            presetName = "t_1080p";
         } else if (resolution.equals(Resolution.R_720P)) {
-            templateId = 1225348L;
+            presetName = "t_720p";
         } else {
-            templateId = 1225347L;
+            presetName = "t_1080p";
         }
-
-        transcodeTaskInput.setDefinition(templateId);
-        transcodeTaskInputs[0] = transcodeTaskInput;
-
-        mediaProcessTaskInput.setTranscodeTaskSet(transcodeTaskInputs);
-
-        req.setMediaProcessTask(mediaProcessTaskInput);
-
-        // 返回的resp是一个ProcessMediaResponse的实例，与请求对象对应
-        ProcessMediaResponse resp = null;
-        try {
-            resp = client.ProcessMedia(req);
-        } catch (TencentCloudSDKException e) {
-            e.printStackTrace();
-        }
-        return resp;
+        return getMediaClient().createTranscodingJob(
+                pipelineName, sourceKey, targetKey, presetName);
     }
 
     /**
-     * 查询任务详情
+     * 获取转码任务详情
      *
-     * @param taskId
+     * @param jobId
+     * @return
      */
-    public DescribeTaskDetailResponse describeTaskDetail(String taskId) {
-        HttpProfile httpProfile = new HttpProfile();
-        httpProfile.setEndpoint("mps.tencentcloudapi.com");
-        ClientProfile clientProfile = new ClientProfile();
-        clientProfile.setHttpProfile(httpProfile);
-        MpsClient client = new MpsClient(credential, "ap-beijing", clientProfile);
-        DescribeTaskDetailRequest req = new DescribeTaskDetailRequest();
-        req.setTaskId(taskId);
-        DescribeTaskDetailResponse resp = null;
-        try {
-            resp = client.DescribeTaskDetail(req);
-        } catch (TencentCloudSDKException e) {
-            e.printStackTrace();
-        }
-        return resp;
+    public GetTranscodingJobResponse getTranscodingJob(String jobId) {
+        return getMediaClient().getTranscodingJob(jobId);
     }
+
 
 }
