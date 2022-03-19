@@ -55,7 +55,7 @@ public class TranscodeService {
      * @param resolution
      * @return
      */
-    public ProcessMediaResponse processMedia(String sourceKey, String outputDir, Resolution resolution) {
+    public ProcessMediaResponse processMedia(String sourceKey, String outputDir, String resolution) {
         HttpProfile httpProfile = new HttpProfile();
         httpProfile.setEndpoint("mps.tencentcloudapi.com");
         ClientProfile clientProfile = new ClientProfile();
@@ -110,7 +110,7 @@ public class TranscodeService {
      *
      * @param taskId
      */
-    public DescribeTaskDetailResponse DescribeTaskDetail(String taskId) {
+    public DescribeTaskDetailResponse describeTaskDetail(String taskId) {
         HttpProfile httpProfile = new HttpProfile();
         httpProfile.setEndpoint("mps.tencentcloudapi.com");
         ClientProfile clientProfile = new ClientProfile();

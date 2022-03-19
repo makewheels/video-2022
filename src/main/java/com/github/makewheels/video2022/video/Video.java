@@ -18,6 +18,7 @@ public class Video {
     private String userId;
     @Indexed
     private String originalFileId;
+    private String originalFileKey;
 
     private String watchId;
     private String title;
