@@ -5,6 +5,7 @@ import com.baidubce.auth.DefaultBceCredentials;
 import com.baidubce.services.media.MediaClient;
 import com.baidubce.services.media.model.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,6 +22,7 @@ public class TranscodeService {
 
     private MediaClient mediaClient;
 
+    @Bean
     private MediaClient getMediaClient() {
         if (mediaClient != null) {
             return mediaClient;
@@ -80,25 +82,4 @@ public class TranscodeService {
         return getMediaClient().getTranscodingJob(jobId);
     }
 
-    /**
-     * 创建抽帧任务
-     *
-     * @param sourceKey
-     * @param targetKeyPrefix
-     * @return
-     */
-    public CreateThumbnailJobResponse createThumbnailJob(String sourceKey, String targetKeyPrefix) {
-        return getMediaClient().createThumbnailJob(
-                pipelineName, "jpg_idl", sourceKey, targetKeyPrefix);
-
-    }
-
-    /**
-     * 查询抽帧任务
-     *
-     * @param jobId
-     */
-    public GetThumbnailJobResponse getThumbnailJob(String jobId) {
-        return getMediaClient().getThumbnailJob(jobId);
-    }
 }

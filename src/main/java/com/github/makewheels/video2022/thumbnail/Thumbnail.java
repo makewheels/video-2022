@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.transcode;
+package com.github.makewheels.video2022.thumbnail;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
@@ -10,7 +10,7 @@ import java.util.Date;
 
 @Data
 @Document
-public class Transcode {
+public class Thumbnail {
     @Id
     private String id;
     @Indexed
@@ -26,15 +26,15 @@ public class Transcode {
     private Date finishTime;
     @Indexed
     private String status;
-    @Indexed
-    private String resolution;
-    private String sourceKey;
 
-    private String m3u8Key;
-    private String m3u8AccessUrl;
-    private String m3u8CdnUrl;
+    private String sourceKey;
+    private String targetKeyPrefix;
+
+    private String accessUrl;
+    private String cdnUrl;
+
+    private String extension;
+    private String key;
 
     private JSONObject result;
-
 }
-

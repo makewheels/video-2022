@@ -11,6 +11,7 @@ import com.baidubce.services.bos.model.ObjectMetadata;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.usermicroservice2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +24,7 @@ import java.util.Date;
 
 @Service
 @Slf4j
+@Data
 public class FileService {
     @Resource
     private MongoTemplate mongoTemplate;
@@ -33,6 +35,10 @@ public class FileService {
     private String accessKeyId;
     @Value("${s3.secretKey}")
     private String secretKey;
+    @Value("${s3.s3.accessBaseUrl}")
+    private String accessBaseUrl;
+    @Value("${s3.cdnBaseUrl}")
+    private String cdnBaseUrl;
 
     private BosClient bosClient;
 
