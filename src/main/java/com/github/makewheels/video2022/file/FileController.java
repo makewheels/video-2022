@@ -1,7 +1,9 @@
 package com.github.makewheels.video2022.file;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.video2022.UserServiceClient;
+import com.github.makewheels.video2022.response.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,10 +20,10 @@ public class FileController {
     @Resource
     private FileService fileService;
 
-    @GetMapping("getUploadCredential")
-    public void getUploadCredential(HttpServletRequest request, @RequestParam String fileId) {
+    @GetMapping("getUploadUrl")
+    public Result<JSONObject> getUploadUrl(HttpServletRequest request, @RequestParam String fileId) {
         User user = userServiceClient.getUserByRequest(request);
-        fileService.getUploadCredential(user, fileId);
+        return fileService.getUploadUrl(user, fileId);
     }
 
     @GetMapping("uploadFinish")
