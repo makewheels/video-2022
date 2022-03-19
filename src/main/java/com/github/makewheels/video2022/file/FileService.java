@@ -35,7 +35,7 @@ public class FileService {
     private String accessKeyId;
     @Value("${s3.secretKey}")
     private String secretKey;
-    @Value("${s3.s3.accessBaseUrl}")
+    @Value("${s3.accessBaseUrl}")
     private String accessBaseUrl;
     @Value("${s3.cdnBaseUrl}")
     private String cdnBaseUrl;
