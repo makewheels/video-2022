@@ -15,7 +15,6 @@ import com.github.makewheels.video2022.transcode.TranscodeService;
 import com.github.makewheels.video2022.transcode.TranscodeStatus;
 import com.tencentcloudapi.mps.v20190612.models.MediaMetaData;
 import com.tencentcloudapi.mps.v20190612.models.ProcessMediaResponse;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
