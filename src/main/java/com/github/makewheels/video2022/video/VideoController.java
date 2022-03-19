@@ -38,6 +38,15 @@ public class VideoController {
     }
 
     /**
+     * 更新video信息
+     */
+    @PostMapping("updateInfo")
+    public Result<Void> updateInfo(HttpServletRequest request, @RequestBody Video updateVideo) {
+        User user = userServiceClient.getUserByRequest(request);
+        return videoService.updateVideo(user, updateVideo);
+    }
+
+    /**
      * 根据videoId获取视频详情
      */
     @GetMapping("getById")

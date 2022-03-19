@@ -19,7 +19,7 @@ public class Video {
     @Indexed
     private String originalFileId;
     private String originalFileKey;
-
+    @Indexed
     private String watchId;
     private String title;
     private String description;
