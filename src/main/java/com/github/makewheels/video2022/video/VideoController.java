@@ -51,7 +51,8 @@ public class VideoController {
      * 重要接口，决定用户打开网页到开始播放耗时，所以这个接口追求速度
      */
     @GetMapping("getPlayInfo")
-    public Result<Video> getPlayInfo(HttpServletRequest request, @RequestParam String videoId) {
+    public Result<Void> getPlayInfo(HttpServletRequest request, @RequestParam String videoId) {
+        // TODO
         User user = userServiceClient.getUserByRequest(request);
         return videoService.getPlayInfo(user, videoId);
     }

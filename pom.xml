@@ -70,6 +70,11 @@
             <artifactId>tencentcloud-sdk-java</artifactId>
             <version>4.0.11</version>
         </dependency>
+        <dependency>
+            <groupId>com.baidubce</groupId>
+            <artifactId>bce-java-sdk</artifactId>
+            <version>0.10.200</version>
+        </dependency>
 
     </dependencies>
 
