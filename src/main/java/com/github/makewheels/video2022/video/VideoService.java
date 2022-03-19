@@ -95,7 +95,7 @@ public class VideoService {
         transcode.setResolution(resolution);
         transcode.setSourceKey(sourceKey);
         String m3u8Key = "video/" + userId + "/" + videoId + "/transcode/"
-                + resolution + "/" + videoId;
+                + resolution + "/" + videoId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
         mongoTemplate.save(transcode);
 
@@ -150,9 +150,11 @@ public class VideoService {
             mongoTemplate.save(video);
 
             //发起截帧任务
-            String targetKeyPrefix = "";
+            String targetKeyPrefix = "video/" + userId + "/" + videoId + "/cover/" + videoId;
             CreateThumbnailJobResponse thumbnailJob
                     = thumbnailService.createThumbnailJob(sourceKey, targetKeyPrefix);
+            log.info("发起截帧任务：video = " + videoId);
+            log.info(JSON.toJSONString(thumbnailJob));
             String thumbnailJobId = thumbnailJob.getJobId();
             Thumbnail thumbnail = new Thumbnail();
             String key = targetKeyPrefix + ".jpg";
