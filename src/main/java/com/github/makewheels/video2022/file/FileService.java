@@ -92,6 +92,7 @@ public class FileService {
             return Result.error(ErrorCode.FAIL);
         COSObject cosObject = getObject(file.getKey());
         ObjectMetadata objectMetadata = cosObject.getObjectMetadata();
+        file.setUploadTime(new Date());
         file.setSize(objectMetadata.getContentLength());
         file.setMd5(objectMetadata.getETag().toLowerCase());
         file.setStatus(FileStatus.READY);

@@ -12,28 +12,21 @@
     <artifactId>video-2022</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>video-2022</name>
-    <description>video-2022</description>
+
     <properties>
         <java.version>1.8</java.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
@@ -42,13 +35,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
-            <version>5.7.20</version>
+            <version>5.7.22</version>
         </dependency>
-
 
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -56,19 +53,24 @@
             <version>1.2.79</version>
         </dependency>
 
-
         <dependency>
             <groupId>com.github.makewheels</groupId>
             <artifactId>user-micro-service-2022</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
-
         <dependency>
             <groupId>com.qcloud</groupId>
             <artifactId>cos_api</artifactId>
             <version>5.6.69</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java</artifactId>
+            <version>4.0.11</version>
+        </dependency>
+
     </dependencies>
 
     <build>

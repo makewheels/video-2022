@@ -1,12 +1,17 @@
 package com.github.makewheels.video2022.video;
 
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.User;
+import com.github.makewheels.usermicroservice2022.response.ErrorCode;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.FileStatus;
 import com.github.makewheels.video2022.response.Result;
+import com.github.makewheels.video2022.transcode.TranscodeService;
+import com.tencentcloudapi.mps.v20190612.models.DescribeMediaMetaDataResponse;
+import com.tencentcloudapi.mps.v20190612.models.MediaMetaData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -21,6 +26,8 @@ public class VideoService {
     private MongoTemplate mongoTemplate;
     @Resource
     private FileService fileService;
+    @Resource
+    private TranscodeService transcodeService;
 
     private String getWatchId() {
         return IdUtil.simpleUUID();
@@ -43,7 +50,10 @@ public class VideoService {
 
         String videoId = video.getId();
         // 更新file上传路径
-        file.setKey("video/" + userId + "/" + videoId + "/original/" + videoId + "." + file.getExtension());
+        String key = "/video/" + userId + "/" + videoId + "/original/" + videoId + "." + file.getExtension();
+        file.setKey(key);
+        file.setAccessUrl("https://video-2022-1253319037.cos.ap-beijing.myqcloud.com" + key);
+        file.setCdnUrl("https://video-2022-1253319037.file.myqcloud.com" + key);
         mongoTemplate.save(file);
 
         JSONObject jsonObject = new JSONObject();
@@ -59,9 +69,33 @@ public class VideoService {
             video.setStatus(VideoStatus.ORIGINAL_FILE_READY);
             mongoTemplate.save(video);
         }
+
+        //获取视频信息
+        MediaMetaData metaData = transcodeService.describeMediaMetaData(file.getKey()).getMetaData();
+        String metaDataJson = JSON.toJSONString(metaData);
+        log.info("videoId = " + videoId + " 获取到metaData：");
+        log.info(metaDataJson);
+
+        video.setMetaData(JSONObject.parseObject(metaDataJson));
+        mongoTemplate.save(video);
+        Long width = metaData.getWidth();
+        Long height = metaData.getHeight();
+        long multiplication = width * height;
         //发起转码
+        //如果大于720p，发起两次转码
+        if (multiplication > 1280 * 720) {
+
+        }
 
         return Result.ok();
+    }
+
+    public Result<Video> getById(User user, String videoId) {
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        if (video == null)
+            return Result.error(ErrorCode.FAIL);
+        video.setMetaData(null);
+        return Result.ok(video);
     }
 
 }
