@@ -15,7 +15,9 @@ import com.github.makewheels.video2022.transcode.TranscodeService;
 import com.github.makewheels.video2022.transcode.TranscodeStatus;
 import com.tencentcloudapi.mps.v20190612.models.MediaMetaData;
 import com.tencentcloudapi.mps.v20190612.models.ProcessMediaResponse;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -141,11 +143,26 @@ public class VideoService {
         return Result.ok();
     }
 
+    public Result<Void> updateVideo(User user, Video updateVideo) {
+        String userId = user.getId();
+        String videoId = updateVideo.getId();
+        Video oldVideo = mongoTemplate.findById(videoId, Video.class);
+        if (oldVideo == null || !StringUtils.equals(userId, oldVideo.getUserId())) {
+            return Result.error(ErrorCode.FAIL);
+        }
+        oldVideo.setTitle(updateVideo.getTitle());
+        oldVideo.setDescription(updateVideo.getDescription());
+        mongoTemplate.save(oldVideo);
+        return Result.ok();
+    }
+
     public Result<Video> getById(User user, String videoId) {
         Video video = mongoTemplate.findById(videoId, Video.class);
         if (video == null)
             return Result.error(ErrorCode.FAIL);
         video.setMetaData(null);
+        video.setOriginalFileId(null);
+        video.setOriginalFileKey(null);
         return Result.ok(video);
     }
 
