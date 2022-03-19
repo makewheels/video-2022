@@ -9,9 +9,12 @@ import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.FileStatus;
 import com.github.makewheels.video2022.response.Result;
+import com.github.makewheels.video2022.transcode.Resolution;
+import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeService;
-import com.tencentcloudapi.mps.v20190612.models.DescribeMediaMetaDataResponse;
+import com.github.makewheels.video2022.transcode.TranscodeStatus;
 import com.tencentcloudapi.mps.v20190612.models.MediaMetaData;
+import com.tencentcloudapi.mps.v20190612.models.ProcessMediaResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -56,35 +59,83 @@ public class VideoService {
         file.setCdnUrl("https://video-2022-1253319037.file.myqcloud.com" + key);
         mongoTemplate.save(file);
 
+        //更新video originalFileKey
+        video.setOriginalFileKey(key);
+
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("fileId", fileId);
         jsonObject.put("videoId", video.getId());
         return Result.ok(jsonObject);
     }
 
+    /**
+     * 转码任务，盲分辨率，子线程异步执行
+     *
+     * @param user
+     * @param video
+     * @param resolution
+     */
+    private void transcode(User user, Video video, String resolution) {
+        new Thread(() -> {
+            String userId = user.getId();
+            String videoId = video.getId();
+            String sourceKey = video.getOriginalFileKey();
+
+            Transcode transcode = new Transcode();
+            transcode.setUserId(userId);
+            transcode.setVideoId(videoId);
+            transcode.setCreateTime(new Date());
+            transcode.setStatus(TranscodeStatus.CREATED);
+            transcode.setResolution(resolution);
+            transcode.setSourceKey(sourceKey);
+            String outputDir = "/video/" + userId + "/" + videoId + "/transcode/" + resolution + "/";
+            transcode.setOutputDir(outputDir);
+            mongoTemplate.save(transcode);
+
+            //发起转码
+            ProcessMediaResponse processMedia = transcodeService.processMedia(sourceKey,
+                    outputDir, resolution);
+            log.info("发起 " + resolution + " 转码：videoId = " + videoId);
+            log.info(JSON.toJSONString(processMedia));
+            transcode.setTaskId(processMedia.getTaskId());
+            mongoTemplate.save(transcode);
+
+            //再次查询状态
+            transcode.setStatus(transcodeService.describeTaskDetail(processMedia.getTaskId()).getStatus());
+            mongoTemplate.save(transcode);
+        }).start();
+    }
+
     public Result<Void> originalFileUploadFinish(User user, String videoId) {
+        //查数据库，找到video
         Video video = mongoTemplate.findById(videoId, Video.class);
         File file = mongoTemplate.findById(video.getOriginalFileId(), File.class);
         if (file.getStatus().equals(FileStatus.READY)) {
+            video.setOriginalFileKey(file.getKey());
             video.setStatus(VideoStatus.ORIGINAL_FILE_READY);
             mongoTemplate.save(video);
+        } else {
+            return Result.error(ErrorCode.FAIL);
         }
 
         //获取视频信息
         MediaMetaData metaData = transcodeService.describeMediaMetaData(file.getKey()).getMetaData();
         String metaDataJson = JSON.toJSONString(metaData);
-        log.info("videoId = " + videoId + " 获取到metaData：");
+        log.info("源文件上传完成，获取metaData：videoId = " + videoId);
         log.info(metaDataJson);
 
         video.setMetaData(JSONObject.parseObject(metaDataJson));
         mongoTemplate.save(video);
         Long width = metaData.getWidth();
         Long height = metaData.getHeight();
-        long multiplication = width * height;
-        //发起转码
-        //如果大于720p，发起两次转码
-        if (multiplication > 1280 * 720) {
 
+        //开始转码
+        //首先，一定会发起720p的转码
+        transcode(user, video, Resolution.R_720P);
+
+        //如果单边大于1280像素，再发起1080p转码
+        if (Math.max(width, height) > 1280) {
+            transcode(user, video, Resolution.R_1080P);
         }
 
         return Result.ok();
