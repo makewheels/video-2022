@@ -162,8 +162,6 @@ public class VideoService {
         if (oldVideo == null || !StringUtils.equals(userId, oldVideo.getUserId())) {
             return Result.error(ErrorCode.FAIL);
         }
-        oldVideo.setTitle(updateVideo.getTitle());
-        oldVideo.setDescription(updateVideo.getDescription());
         mongoTemplate.save(oldVideo);
         return Result.ok();
     }
