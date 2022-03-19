@@ -29,5 +29,5 @@ public class Video {
     @Indexed
     private Date createTime;
 
-    private JSONObject metaData;
+    private JSONObject mediaInfo;
 }

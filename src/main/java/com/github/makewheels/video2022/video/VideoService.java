@@ -3,6 +3,9 @@ package com.github.makewheels.video2022.video;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baidubce.services.media.model.CreateTranscodingJobResponse;
+import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
+import com.baidubce.services.media.model.VideoInfo;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.usermicroservice2022.response.ErrorCode;
 import com.github.makewheels.video2022.file.File;
@@ -13,8 +16,6 @@ import com.github.makewheels.video2022.transcode.Resolution;
 import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeService;
 import com.github.makewheels.video2022.transcode.TranscodeStatus;
-import com.tencentcloudapi.mps.v20190612.models.MediaMetaData;
-import com.tencentcloudapi.mps.v20190612.models.ProcessMediaResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -89,24 +90,33 @@ public class VideoService {
             transcode.setStatus(TranscodeStatus.CREATED);
             transcode.setResolution(resolution);
             transcode.setSourceKey(sourceKey);
-            String outputDir = "/video/" + userId + "/" + videoId + "/transcode/" + resolution + "/";
+            String outputDir = "/video/" + userId + "/" + videoId + "/transcode/"
+                    + resolution + "/" + videoId;
             transcode.setOutputDir(outputDir);
             mongoTemplate.save(transcode);
 
             //发起转码
-            ProcessMediaResponse processMedia = transcodeService.processMedia(sourceKey,
+            CreateTranscodingJobResponse transcodingJob = transcodeService.createTranscodingJob(sourceKey,
                     outputDir, resolution);
+            String jobId = transcodingJob.getJobId();
             log.info("发起 " + resolution + " 转码：videoId = " + videoId);
-            log.info(JSON.toJSONString(processMedia));
-            transcode.setTaskId(processMedia.getTaskId());
+            log.info(JSON.toJSONString(transcodingJob));
+            transcode.setJobId(jobId);
             mongoTemplate.save(transcode);
 
             //再次查询状态
-            transcode.setStatus(transcodeService.describeTaskDetail(processMedia.getTaskId()).getStatus());
+            transcode.setStatus(transcodeService.getTranscodingJob(jobId).getJobStatus());
             mongoTemplate.save(transcode);
         }).start();
     }
 
+    /**
+     * 原始文件上传完成
+     *
+     * @param user
+     * @param videoId
+     * @return
+     */
     public Result<Void> originalFileUploadFinish(User user, String videoId) {
         //查数据库，找到video
         Video video = mongoTemplate.findById(videoId, Video.class);
@@ -120,15 +130,15 @@ public class VideoService {
         }
 
         //获取视频信息
-        MediaMetaData metaData = transcodeService.describeMediaMetaData(file.getKey()).getMetaData();
-        String metaDataJson = JSON.toJSONString(metaData);
-        log.info("源文件上传完成，获取metaData：videoId = " + videoId);
-        log.info(metaDataJson);
+        GetMediaInfoOfFileResponse mediaInfo = transcodeService.getMediaInfo(file.getKey());
+        VideoInfo videoInfo = mediaInfo.getVideo();
+        log.info("源文件上传完成，获取mediaInfo：videoId = " + videoId);
+        log.info(JSON.toJSONString(mediaInfo));
 
-        video.setMetaData(JSONObject.parseObject(metaDataJson));
+        video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(mediaInfo)));
         mongoTemplate.save(video);
-        Long width = metaData.getWidth();
-        Long height = metaData.getHeight();
+        Integer width = videoInfo.getWidthInPixel();
+        Integer height = videoInfo.getHeightInPixel();
 
         //开始转码
         //首先，一定会发起720p的转码
@@ -164,6 +174,5 @@ public class VideoService {
         mongoTemplate.save(oldVideo);
         return Result.ok();
     }
-
 
 }
