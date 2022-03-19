@@ -137,28 +137,6 @@ public class VideoService {
         video.setStatus(VideoStatus.ORIGINAL_FILE_READY);
         mongoTemplate.save(video);
 
-        //发起截帧任务
-        String targetKeyPrefix = "";
-        CreateThumbnailJobResponse thumbnailJob
-                = thumbnailService.createThumbnailJob(sourceKey, targetKeyPrefix);
-        String thumbnailJobId = thumbnailJob.getJobId();
-        Thumbnail thumbnail = new Thumbnail();
-        String key = targetKeyPrefix + ".jpg";
-        thumbnail.setCreateTime(new Date());
-        thumbnail.setUserId(userId);
-        thumbnail.setVideoId(videoId);
-        thumbnail.setJobId(thumbnailJobId);
-        thumbnail.setStatus(TranscodeStatus.CREATED);
-        thumbnail.setSourceKey(sourceKey);
-        thumbnail.setTargetKeyPrefix(targetKeyPrefix);
-        thumbnail.setAccessUrl(fileService.getAccessBaseUrl() + key);
-        thumbnail.setCdnUrl(fileService.getCdnBaseUrl() + key);
-        thumbnail.setExtension("jpg");
-        thumbnail.setKey(key);
-        mongoTemplate.save(thumbnail);
-        //再次查询，更新状态
-        thumbnail.setStatus(thumbnailService.getThumbnailJob(thumbnailJobId).getJobStatus());
-        mongoTemplate.save(thumbnail);
 
         //创建子线程执行转码任务，先给前端返回结果
         new Thread(() -> {
@@ -170,11 +148,35 @@ public class VideoService {
 
             video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(mediaInfo)));
             mongoTemplate.save(video);
+
+            //发起截帧任务
+            String targetKeyPrefix = "";
+            CreateThumbnailJobResponse thumbnailJob
+                    = thumbnailService.createThumbnailJob(sourceKey, targetKeyPrefix);
+            String thumbnailJobId = thumbnailJob.getJobId();
+            Thumbnail thumbnail = new Thumbnail();
+            String key = targetKeyPrefix + ".jpg";
+            thumbnail.setCreateTime(new Date());
+            thumbnail.setUserId(userId);
+            thumbnail.setVideoId(videoId);
+            thumbnail.setJobId(thumbnailJobId);
+            thumbnail.setStatus(TranscodeStatus.CREATED);
+            thumbnail.setSourceKey(sourceKey);
+            thumbnail.setTargetKeyPrefix(targetKeyPrefix);
+            thumbnail.setAccessUrl(fileService.getAccessBaseUrl() + key);
+            thumbnail.setCdnUrl(fileService.getCdnBaseUrl() + key);
+            thumbnail.setExtension("jpg");
+            thumbnail.setKey(key);
+            mongoTemplate.save(thumbnail);
+            //再次查询，更新状态
+            thumbnail.setStatus(thumbnailService.getThumbnailJob(thumbnailJobId).getJobStatus());
+            mongoTemplate.save(thumbnail);
+
             Integer width = videoInfo.getWidthInPixel();
             Integer height = videoInfo.getHeightInPixel();
 
             //开始转码
-            //首先，一定会发起720p的转码
+            //首先一定会发起720p的转码
             transcode(user, video, Resolution.R_720P);
 
             //如果单边大于1280像素，再次发起1080p转码
