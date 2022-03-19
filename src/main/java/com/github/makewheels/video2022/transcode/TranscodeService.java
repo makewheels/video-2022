@@ -3,9 +3,7 @@ package com.github.makewheels.video2022.transcode;
 import com.baidubce.BceClientConfiguration;
 import com.baidubce.auth.DefaultBceCredentials;
 import com.baidubce.services.media.MediaClient;
-import com.baidubce.services.media.model.CreateTranscodingJobResponse;
-import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
-import com.baidubce.services.media.model.GetTranscodingJobResponse;
+import com.baidubce.services.media.model.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -82,5 +80,25 @@ public class TranscodeService {
         return getMediaClient().getTranscodingJob(jobId);
     }
 
+    /**
+     * 创建抽帧任务
+     *
+     * @param sourceKey
+     * @param targetKeyPrefix
+     * @return
+     */
+    public CreateThumbnailJobResponse createThumbnailJob(String sourceKey, String targetKeyPrefix) {
+        return getMediaClient().createThumbnailJob(
+                pipelineName, "jpg_idl", sourceKey, targetKeyPrefix);
 
+    }
+
+    /**
+     * 查询抽帧任务
+     *
+     * @param jobId
+     */
+    public GetThumbnailJobResponse getThumbnailJob(String jobId) {
+        return getMediaClient().getThumbnailJob(jobId);
+    }
 }
