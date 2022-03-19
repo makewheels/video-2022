@@ -156,14 +156,17 @@ public class VideoService {
         return Result.ok();
     }
 
-    public Result<Video> getById(User user, String videoId) {
-        Video video = mongoTemplate.findById(videoId, Video.class);
-        if (video == null)
+    public Result<Void> getPlayInfo(User user, String videoId) {
+        String userId = user.getId();
+        Video oldVideo = mongoTemplate.findById(videoId, Video.class);
+        if (oldVideo == null || !StringUtils.equals(userId, oldVideo.getUserId())) {
             return Result.error(ErrorCode.FAIL);
-        video.setMetaData(null);
-        video.setOriginalFileId(null);
-        video.setOriginalFileKey(null);
-        return Result.ok(video);
+        }
+        oldVideo.setTitle(updateVideo.getTitle());
+        oldVideo.setDescription(updateVideo.getDescription());
+        mongoTemplate.save(oldVideo);
+        return Result.ok();
     }
+
 
 }

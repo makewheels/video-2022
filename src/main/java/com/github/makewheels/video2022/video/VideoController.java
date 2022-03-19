@@ -47,11 +47,12 @@ public class VideoController {
     }
 
     /**
-     * 根据videoId获取视频详情
+     * 获取播放信息
+     * 重要接口，决定用户打开网页到开始播放耗时，所以这个接口追求速度
      */
-    @GetMapping("getById")
-    public Result<Video> getById(HttpServletRequest request, @RequestParam String videoId) {
+    @GetMapping("getPlayInfo")
+    public Result<Video> getPlayInfo(HttpServletRequest request, @RequestParam String videoId) {
         User user = userServiceClient.getUserByRequest(request);
-        return videoService.getById(user, videoId);
+        return videoService.getPlayInfo(user, videoId);
     }
 }

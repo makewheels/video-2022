@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
-
 @Data
 @Document
 public class Transcode {
@@ -37,7 +36,6 @@ public class Transcode {
     private String m3u8CdnUrl;
 
     private JSONObject result;
-
 
 }
 
