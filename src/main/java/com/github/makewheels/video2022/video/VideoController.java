@@ -36,4 +36,13 @@ public class VideoController {
         User user = userServiceClient.getUserByRequest(request);
         return videoService.originalFileUploadFinish(user, videoId);
     }
+
+    /**
+     * 根据videoId获取视频详情
+     */
+    @GetMapping("getById")
+    public Result<Video> getById(HttpServletRequest request, @RequestParam String videoId) {
+        User user = userServiceClient.getUserByRequest(request);
+        return videoService.getById(user, videoId);
+    }
 }

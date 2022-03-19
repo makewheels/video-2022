@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.video;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -27,4 +28,5 @@ public class Video {
     @Indexed
     private Date createTime;
 
+    private JSONObject metaData;
 }
