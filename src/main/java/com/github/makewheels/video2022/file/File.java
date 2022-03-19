@@ -24,6 +24,8 @@ public class File {
 
     private Long size;
     private String md5;
+    private String status;
+
     private Date createTime;
     private Date uploadTime;
 }

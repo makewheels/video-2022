@@ -27,4 +27,13 @@ public class VideoController {
         User user = userServiceClient.getUserByRequest(request);
         return videoService.create(user, requestBody);
     }
+
+    /**
+     * 原始文件上传完成
+     */
+    @GetMapping("originalFileUploadFinish")
+    public Result<Void> create(HttpServletRequest request, @RequestParam String videoId) {
+        User user = userServiceClient.getUserByRequest(request);
+        return videoService.originalFileUploadFinish(user, videoId);
+    }
 }

@@ -20,7 +20,7 @@ public class LoginInterceptor implements HandlerInterceptor {
             HttpServletRequest request, HttpServletResponse response, Object handler) {
         String token = request.getHeader("token");
         User user = userServiceClient.getUserByRequest(request);
-        log.info("token = {}, user = {}", token, JSON.toJSONString(user));
+        log.debug("token = {}, user = {}", token, JSON.toJSONString(user));
         if (user == null) {
             response.setStatus(403);
             return false;
