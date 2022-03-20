@@ -21,6 +21,7 @@ public class Video {
     private String originalFileKey;
     @Indexed
     private String watchId;
+    private String watchUrl;
     private String title;
     private String description;
 

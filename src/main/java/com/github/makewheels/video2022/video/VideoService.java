@@ -16,17 +16,17 @@ import com.github.makewheels.video2022.file.FileStatus;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailService;
-import com.github.makewheels.video2022.transcode.Resolution;
-import com.github.makewheels.video2022.transcode.Transcode;
-import com.github.makewheels.video2022.transcode.TranscodeService;
-import com.github.makewheels.video2022.transcode.TranscodeStatus;
+import com.github.makewheels.video2022.transcode.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.awt.event.ComponentListener;
 import java.util.Date;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -39,6 +39,11 @@ public class VideoService {
     private TranscodeService transcodeService;
     @Resource
     private ThumbnailService thumbnailService;
+    @Resource
+    private TranscodeRepository transcodeRepository;
+
+    @Value("${baseUrl}")
+    private String baseUrl;
 
     private String getWatchId() {
         String json = HttpUtil.get("https://service-d5xe9zbh-1253319037.bj.apigw.tencentcs.com/release/");
@@ -56,7 +61,9 @@ public class VideoService {
         Video video = new Video();
         video.setOriginalFileId(fileId);
         video.setUserId(userId);
-        video.setWatchId(getWatchId());
+        String watchId = getWatchId();
+        video.setWatchId(watchId);
+        video.setWatchUrl(baseUrl + "/watch?v=" + watchId);
         video.setStatus(VideoStatus.CREATED);
         video.setCreateTime(new Date());
         mongoTemplate.save(video);
@@ -137,7 +144,7 @@ public class VideoService {
 
         String sourceKey = file.getKey();
         video.setOriginalFileKey(sourceKey);
-        video.setStatus(VideoStatus.ORIGINAL_FILE_READY);
+        video.setStatus(VideoStatus.TRANSCODING);
         mongoTemplate.save(video);
 
         //创建子线程执行转码任务，先给前端返回结果
@@ -215,4 +222,50 @@ public class VideoService {
         return Result.ok();
     }
 
+    /**
+     * 当有一个转码job完成时回调
+     *
+     * @param transcode
+     */
+    public void transcodeFinish(Transcode transcode) {
+        String videoId = transcode.getVideoId();
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        if (video == null) return;
+        List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
+        int completeCount = 0;
+        //统计已完成数量
+        for (Transcode eachTranscode : transcodeList) {
+            String status = eachTranscode.getStatus();
+            if (status.equals(TranscodeStatus.SUCCESS) || status.equals(TranscodeStatus.FAILED)) {
+                completeCount++;
+            }
+        }
+        String videoStatus = null;
+        //如果是部分完成
+        if (completeCount > 0 && completeCount != transcodeList.size()) {
+            videoStatus = VideoStatus.TRANSCODING_PARTLY_COMPLETED;
+        } else if (completeCount == transcodeList.size()) {
+            //如果全部完成
+            videoStatus = VideoStatus.READY;
+        } else if (completeCount == 0) {
+            //如果一个都没完成，那就是所有任务都在转码
+            videoStatus = VideoStatus.TRANSCODING;
+        }
+        if (!StringUtils.equals(videoStatus, video.getStatus())) {
+            mongoTemplate.save(video);
+        }
+        //当视频已就绪时
+        if (StringUtils.equals(video.getStatus(), VideoStatus.READY)) {
+            onVideoReady(videoId);
+        }
+    }
+
+    /**
+     * 当视频已就绪时
+     *
+     * @param videoId
+     */
+    private void onVideoReady(String videoId) {
+        log.info("视频已就绪, videoId = " + videoId);
+    }
 }
