@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.video2022.user.UserServiceClient;
 import com.github.makewheels.video2022.response.Result;
-import com.github.makewheels.video2022.video.watch.WatchInfo;
+import com.github.makewheels.video2022.watch.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,5 +86,20 @@ public class VideoController {
             @RequestParam int skip, @RequestParam int limit) {
         User user = userServiceClient.getUserByRequest(request);
         return videoService.getVideoList(user, userId, skip, limit);
+    }
+
+    /**
+     * 增加观看记录
+     *
+     * @param request
+     * @param videoId
+     * @return
+     */
+    @GetMapping("addWatchLog")
+    public Result<Void> addWatchLog(
+            HttpServletRequest request, @RequestParam String videoId,
+            @CookieValue("clientId") String clientId) {
+        User user = userServiceClient.getUserByRequest(request);
+        return videoService.addWatchLog(request, user, clientId, videoId);
     }
 }

@@ -16,16 +16,20 @@ import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
 import com.github.makewheels.video2022.thumbnail.ThumbnailService;
 import com.github.makewheels.video2022.transcode.*;
-import com.github.makewheels.video2022.video.watch.PlayUrl;
-import com.github.makewheels.video2022.video.watch.WatchInfo;
+import com.github.makewheels.video2022.watch.PlayUrl;
+import com.github.makewheels.video2022.watch.WatchInfo;
+import com.github.makewheels.video2022.watch.WatchLog;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -69,6 +73,7 @@ public class VideoService {
         String fileId = file.getId();
         //创建 video
         Video video = new Video();
+        video.setWatchCount(0);
         video.setOriginalFileId(fileId);
         video.setUserId(userId);
         String watchId = getWatchId();
@@ -315,5 +320,25 @@ public class VideoService {
             videoInfoList.add(videoInfo);
         }
         return Result.ok(videoInfoList);
+    }
+
+    /**
+     * 增加观看记录
+     */
+    @GetMapping("addWatchLog")
+    public Result<Void> addWatchLog(
+            HttpServletRequest request, User user, String clientId, String videoId) {
+        //保存观看记录
+        WatchLog watchLog = new WatchLog();
+        if (user != null) {
+            watchLog.setUserId(user.getId());
+        }
+        watchLog.setIp(request.getRemoteAddr());
+        watchLog.setVideoId(videoId);
+        watchLog.setClientId(clientId);
+        mongoTemplate.save(watchLog);
+        //增加video观看次数
+        videoRepository.addWatchCount(videoId);
+        return Result.ok();
     }
 }
