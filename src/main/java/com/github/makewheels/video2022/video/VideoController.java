@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequestMapping("video")
@@ -57,9 +58,33 @@ public class VideoController {
         return videoService.getWatchInfo(user, watchId);
     }
 
+    /**
+     * 根据videoId获取单个视频信息
+     *
+     * @param request
+     * @param videoId
+     * @return
+     */
     @GetMapping("getVideoInfo")
-    public Result<Video> getVideoInfo(HttpServletRequest request, @RequestParam String videoId) {
+    public Result<VideoInfo> getVideoInfo(HttpServletRequest request, @RequestParam String videoId) {
         User user = userServiceClient.getUserByRequest(request);
         return videoService.getVideoInfo(user, videoId);
+    }
+
+    /**
+     * 分页获取指定userId视频列表
+     *
+     * @param request
+     * @param userId
+     * @param skip
+     * @param limit
+     * @return
+     */
+    @GetMapping("getVideoListByUserId")
+    public Result<List<VideoInfo>> getVideoList(
+            HttpServletRequest request, @RequestParam String userId,
+            @RequestParam int skip, @RequestParam int limit) {
+        User user = userServiceClient.getUserByRequest(request);
+        return videoService.getVideoList(user, userId, skip, limit);
     }
 }
