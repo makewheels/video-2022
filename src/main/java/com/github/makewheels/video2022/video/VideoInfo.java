@@ -14,6 +14,7 @@ public class VideoInfo {
     @Indexed
     private String userId;
 
+    private Integer watchCount;
     private Integer duration;
 
     @Indexed
