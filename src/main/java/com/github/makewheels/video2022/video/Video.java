@@ -20,6 +20,7 @@ public class Video {
     private String originalFileId;
     private String originalFileKey;
 
+    private Integer watchCount;
     private Integer duration;
     private String coverUrl;
 

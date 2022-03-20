@@ -13,8 +13,16 @@ public class WebConfiguration implements WebMvcConfigurer {
         return new LoginInterceptor();
     }
 
+    @Bean
+    public ClientIdInterceptor getClientIdInterceptor() {
+        return new ClientIdInterceptor();
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(getClientIdInterceptor())
+                .addPathPatterns("/**");
+
         String[] swaggerExcludePatterns = new String[]{
                 "/swagger-resources/**", "/webjars/**", "/swagger-ui.html/**", "/api",
                 "/api-docs", "/api-docs/**", "/v2/api-docs", "/v2/api-docs/**", "/doc.html**",
@@ -27,6 +35,8 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/video/getWatchInfo")
                 .excludePathPatterns("/video/getVideoInfo")
                 .excludePathPatterns("/video/getVideoListByUserId")
+                .excludePathPatterns("/watch")
+                .excludePathPatterns("/video/addWatchLog")
         ;
     }
 }

@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.video.watch;
+package com.github.makewheels.video2022.watch;
 
 import org.springframework.stereotype.Controller;
 
