@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.transcode;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,10 +22,10 @@ public class TranscodeController {
      *
      * @param jsonObject
      */
-    @RequestMapping("callback")
+    @PostMapping("callback")
     public Result<Void> callback(@RequestBody JSONObject jsonObject) {
-        log.info("收到视频处理回调：");
-        log.info(jsonObject.toJSONString());
+        log.debug("收到视频处理回调：");
+        log.debug(jsonObject.toJSONString());
         return transcodeService.callback(jsonObject);
     }
 }

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.video2022.user.UserServiceClient;
 import com.github.makewheels.video2022.response.Result;
+import com.github.makewheels.video2022.video.watch.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,12 +49,17 @@ public class VideoController {
 
     /**
      * 获取播放信息
-     * 重要接口，决定用户打开网页到开始播放耗时，所以这个接口追求速度
+     * 重要接口，决定用户打开网页到开始播放耗时，所以这个接口追求速度，使用redis缓存
      */
-    @GetMapping("getPlayInfo")
-    public Result<Void> getPlayInfo(HttpServletRequest request, @RequestParam String videoId) {
-        // TODO
+    @GetMapping("getWatchInfo")
+    public Result<WatchInfo> getWatchInfo(HttpServletRequest request, @RequestParam String watchId) {
         User user = userServiceClient.getUserByRequest(request);
-        return videoService.getPlayInfo(user, videoId);
+        return videoService.getWatchInfo(user, watchId);
+    }
+
+    @GetMapping("getVideoInfo")
+    public Result<Video> getVideoInfo(HttpServletRequest request, @RequestParam String videoId) {
+        User user = userServiceClient.getUserByRequest(request);
+        return videoService.getVideoInfo(user, videoId);
     }
 }

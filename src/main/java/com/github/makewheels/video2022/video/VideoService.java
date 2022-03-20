@@ -1,6 +1,5 @@
 package com.github.makewheels.video2022.video;
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -15,8 +14,11 @@ import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.FileStatus;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.thumbnail.Thumbnail;
+import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
 import com.github.makewheels.video2022.thumbnail.ThumbnailService;
 import com.github.makewheels.video2022.transcode.*;
+import com.github.makewheels.video2022.video.watch.PlayUrl;
+import com.github.makewheels.video2022.video.watch.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +26,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.awt.event.ComponentListener;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -39,8 +41,16 @@ public class VideoService {
     private TranscodeService transcodeService;
     @Resource
     private ThumbnailService thumbnailService;
+
+    @Resource
+    private VideoRepository videoRepository;
+    @Resource
+    private ThumbnailRepository thumbnailRepository;
     @Resource
     private TranscodeRepository transcodeRepository;
+
+    @Resource
+    private VideoRedisService videoRedisService;
 
     @Value("${baseUrl}")
     private String baseUrl;
@@ -82,6 +92,8 @@ public class VideoService {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("fileId", fileId);
         jsonObject.put("videoId", video.getId());
+        jsonObject.put("watchId", video.getWatchId());
+        jsonObject.put("watchUrl", video.getWatchUrl());
         return Result.ok(jsonObject);
     }
 
@@ -110,8 +122,8 @@ public class VideoService {
         mongoTemplate.save(transcode);
 
         //发起转码
-        CreateTranscodingJobResponse transcodingJob = transcodeService.createTranscodingJob(sourceKey,
-                m3u8Key, resolution);
+        CreateTranscodingJobResponse transcodingJob = transcodeService.createTranscodingJob(
+                sourceKey, m3u8Key, resolution);
         String jobId = transcodingJob.getJobId();
         log.info("发起 " + resolution + " 转码：videoId = " + videoId);
         log.info(JSON.toJSONString(transcodingJob));
@@ -212,60 +224,60 @@ public class VideoService {
         return Result.ok();
     }
 
-    public Result<Void> getPlayInfo(User user, String videoId) {
-        String userId = user.getId();
-        Video oldVideo = mongoTemplate.findById(videoId, Video.class);
-        if (oldVideo == null || !StringUtils.equals(userId, oldVideo.getUserId())) {
+    /**
+     * 获取播放信息
+     *
+     * @param user
+     * @param watchId
+     * @return
+     */
+    public Result<WatchInfo> getWatchInfo(User user, String watchId) {
+        WatchInfo watchInfo = videoRedisService.getWatchInfo(watchId);
+        //如果已经存在缓存，直接返回
+        if (watchInfo != null) {
+            return Result.ok(watchInfo);
+        }
+        //如果没有缓存，查数据库，缓存，返回
+        Video video = videoRepository.getByWatchId(watchId);
+        if (video == null) {
             return Result.error(ErrorCode.FAIL);
         }
-        mongoTemplate.save(oldVideo);
-        return Result.ok();
-    }
-
-    /**
-     * 当有一个转码job完成时回调
-     *
-     * @param transcode
-     */
-    public void transcodeFinish(Transcode transcode) {
-        String videoId = transcode.getVideoId();
-        Video video = mongoTemplate.findById(videoId, Video.class);
-        if (video == null) return;
+        String videoId = video.getId();
+        watchInfo = new WatchInfo();
+        watchInfo.setVideoId(videoId);
+        watchInfo.setWatchId(watchId);
+        //通过videoId查找封面
+        Thumbnail thumbnail = thumbnailRepository.getByVideoId(videoId);
+        watchInfo.setCoverUrl(thumbnail.getCdnUrl());
+        //通过videoId查找m3u8播放地址
         List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
-        int completeCount = 0;
-        //统计已完成数量
-        for (Transcode eachTranscode : transcodeList) {
-            String status = eachTranscode.getStatus();
-            if (status.equals(TranscodeStatus.SUCCESS) || status.equals(TranscodeStatus.FAILED)) {
-                completeCount++;
-            }
+        List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
+        for (Transcode transcode : transcodeList) {
+            PlayUrl playUrl = new PlayUrl();
+            playUrl.setResolution(transcode.getResolution());
+            playUrl.setUrl(transcode.getM3u8CdnUrl());
+            playUrlList.add(playUrl);
         }
-        String videoStatus = null;
-        //如果是部分完成
-        if (completeCount > 0 && completeCount != transcodeList.size()) {
-            videoStatus = VideoStatus.TRANSCODING_PARTLY_COMPLETED;
-        } else if (completeCount == transcodeList.size()) {
-            //如果全部完成
-            videoStatus = VideoStatus.READY;
-        } else if (completeCount == 0) {
-            //如果一个都没完成，那就是所有任务都在转码
-            videoStatus = VideoStatus.TRANSCODING;
-        }
-        if (!StringUtils.equals(videoStatus, video.getStatus())) {
-            mongoTemplate.save(video);
-        }
-        //当视频已就绪时
-        if (StringUtils.equals(video.getStatus(), VideoStatus.READY)) {
-            onVideoReady(videoId);
-        }
+        watchInfo.setPlayUrlList(playUrlList);
+        watchInfo.setVideoStatus(video.getStatus());
+
+        //缓存redis
+        videoRedisService.setWatchInfo(watchInfo);
+        return Result.ok(watchInfo);
     }
 
     /**
-     * 当视频已就绪时
+     * 获取视频详情
      *
+     * @param user
      * @param videoId
+     * @return
      */
-    private void onVideoReady(String videoId) {
-        log.info("视频已就绪, videoId = " + videoId);
+    public Result<Video> getVideoInfo(User user, String videoId) {
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        if (video == null) {
+            return Result.error(ErrorCode.FAIL);
+        }
+        return Result.ok(video);
     }
 }
