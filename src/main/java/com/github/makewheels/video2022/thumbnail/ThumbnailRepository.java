@@ -15,4 +15,8 @@ public class ThumbnailRepository {
     public Thumbnail getByJobId(String jobId) {
         return mongoTemplate.findOne(Query.query(Criteria.where("jobId").is(jobId)), Thumbnail.class);
     }
+
+    public Thumbnail getByVideoId(String videoId) {
+        return mongoTemplate.findOne(Query.query(Criteria.where("videoId").is(videoId)), Thumbnail.class);
+    }
 }

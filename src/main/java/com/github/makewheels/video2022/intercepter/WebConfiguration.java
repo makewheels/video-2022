@@ -22,8 +22,10 @@ public class WebConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(getLoginInterceptor())
                 .addPathPatterns("/**")
                 .excludePathPatterns(swaggerExcludePatterns)
-                .excludePathPatterns("/video/getPlayInfo")
                 .excludePathPatterns("/healthCheck")
+                .excludePathPatterns("/transcode/callback")
+                .excludePathPatterns("/video/getWatchInfo")
+                .excludePathPatterns("/video/getVideoInfo")
         ;
     }
 }

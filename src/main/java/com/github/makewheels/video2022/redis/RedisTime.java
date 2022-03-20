@@ -12,4 +12,6 @@ public class RedisTime {
     public static final long TEN_MINUTES = 10 * 60;
     public static final long THIRTY_MINUTES = 30 * 60;
     public static final long ONE_HOUR = 60 * 60;
+    public static final long SIX_HOURS = 6 * 60 * 60;
+
 }

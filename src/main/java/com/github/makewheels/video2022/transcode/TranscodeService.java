@@ -1,17 +1,20 @@
 package com.github.makewheels.video2022.transcode;
 
-import cn.hutool.log.Log;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baidubce.BceClientConfiguration;
 import com.baidubce.auth.DefaultBceCredentials;
 import com.baidubce.services.media.MediaClient;
-import com.baidubce.services.media.model.*;
+import com.baidubce.services.media.model.CreateTranscodingJobResponse;
+import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
+import com.baidubce.services.media.model.GetTranscodingJobResponse;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
 import com.github.makewheels.video2022.thumbnail.ThumbnailService;
+import com.github.makewheels.video2022.video.Video;
 import com.github.makewheels.video2022.video.VideoService;
+import com.github.makewheels.video2022.video.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +23,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -41,12 +45,11 @@ public class TranscodeService {
     @Resource
     private ThumbnailRepository thumbnailRepository;
 
-    @Resource
-    private VideoService videoService;
-
     private MediaClient mediaClient;
 
-    @Bean
+    @Resource
+    private ThumbnailService thumbnailService;
+
     private MediaClient getMediaClient() {
         if (mediaClient != null) {
             return mediaClient;
@@ -129,7 +132,7 @@ public class TranscodeService {
     public Result<Void> callback(JSONObject jsonObject) {
         JSONObject messageBody = JSONObject.parseObject(jsonObject.getString("messageBody"));
         String jobId = messageBody.getString("jobId");
-        log.info("jobId = " + jobId + "messageBody = ");
+        log.info("开始处理视频回调：jobId = " + jobId + ", messageBody = ");
         log.info(messageBody.toJSONString());
         //根据jobId查询数据库，首先查询transcode，如果没有再查询thumbnail
         Transcode transcode = transcodeRepository.getByJobId(jobId);
@@ -138,7 +141,7 @@ public class TranscodeService {
         } else {
             Thumbnail thumbnail = thumbnailRepository.getByJobId(jobId);
             if (thumbnail != null) {
-
+                thumbnailService.handleThumbnailCallback(thumbnail);
             }
         }
 
@@ -154,9 +157,7 @@ public class TranscodeService {
         String jobId = transcode.getJobId();
         GetTranscodingJobResponse response = getTranscodingJob(jobId);
         //更新status
-        if (!StringUtils.equals(transcode.getStatus(), response.getJobStatus())) {
-            transcode.setStatus(transcode.getStatus());
-        }
+        transcode.setStatus(response.getJobStatus());
         //如果已完成，不论成功失败，都保存数据库
         //只有完成状态保存result，pending 和 running不保存result，只保存状态
         if (StringUtils.equals(response.getJobStatus(), TranscodeStatus.FAILED) ||
@@ -166,6 +167,53 @@ public class TranscodeService {
         //保存数据库
         mongoTemplate.save(transcode);
         //通知视频转码完成
-        videoService.transcodeFinish(transcode);
+        transcodeFinish(transcode);
+    }
+
+    /**
+     * 当有一个转码job完成时回调
+     *
+     * @param transcode
+     */
+    public void transcodeFinish(Transcode transcode) {
+        String videoId = transcode.getVideoId();
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        if (video == null) return;
+        List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
+        int completeCount = 0;
+        //统计已完成数量
+        for (Transcode eachTranscode : transcodeList) {
+            String status = eachTranscode.getStatus();
+            if (status.equals(TranscodeStatus.SUCCESS) || status.equals(TranscodeStatus.FAILED)) {
+                completeCount++;
+            }
+        }
+        String videoStatus = null;
+        //如果是部分完成
+        if (completeCount > 0 && completeCount != transcodeList.size()) {
+            videoStatus = VideoStatus.TRANSCODING_PARTLY_COMPLETED;
+        } else if (completeCount == transcodeList.size()) {
+            //如果全部完成
+            videoStatus = VideoStatus.READY;
+        } else if (completeCount == 0) {
+            //如果一个都没完成，那就是所有任务都在转码
+            videoStatus = VideoStatus.TRANSCODING;
+        }
+        if (!StringUtils.equals(videoStatus, video.getStatus())) {
+            mongoTemplate.save(video);
+        }
+        //当视频已就绪时
+        if (StringUtils.equals(video.getStatus(), VideoStatus.READY)) {
+            onVideoReady(videoId);
+        }
+    }
+
+    /**
+     * 当视频已就绪时
+     *
+     * @param videoId
+     */
+    private void onVideoReady(String videoId) {
+        log.info("视频已就绪, videoId = " + videoId);
     }
 }
