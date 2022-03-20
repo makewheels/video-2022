@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.baidubce.services.media.model.CreateThumbnailJobResponse;
 import com.baidubce.services.media.model.CreateTranscodingJobResponse;
 import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
-import com.baidubce.services.media.model.VideoInfo;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.usermicroservice2022.response.ErrorCode;
 import com.github.makewheels.video2022.file.File;
@@ -21,6 +20,7 @@ import com.github.makewheels.video2022.video.watch.PlayUrl;
 import com.github.makewheels.video2022.video.watch.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -165,7 +165,6 @@ public class VideoService {
         new Thread(() -> {
             //获取视频信息
             GetMediaInfoOfFileResponse mediaInfo = transcodeService.getMediaInfo(sourceKey);
-            VideoInfo videoInfo = mediaInfo.getVideo();
             log.info("源文件上传完成，获取mediaInfo：videoId = " + videoId);
             log.info(JSON.toJSONString(mediaInfo));
 
@@ -198,8 +197,12 @@ public class VideoService {
             thumbnail.setStatus(thumbnailService.getThumbnailJob(thumbnailJobId).getJobStatus());
             mongoTemplate.save(thumbnail);
 
-            Integer width = videoInfo.getWidthInPixel();
-            Integer height = videoInfo.getHeightInPixel();
+            //更新video的冗余字段coverUrl
+            video.setCoverUrl(thumbnail.getCdnUrl());
+            mongoTemplate.save(video);
+
+            Integer width = mediaInfo.getVideo().getWidthInPixel();
+            Integer height = mediaInfo.getVideo().getHeightInPixel();
 
             //开始转码
             //首先一定会发起720p的转码
@@ -284,11 +287,33 @@ public class VideoService {
      * @param videoId
      * @return
      */
-    public Result<Video> getVideoInfo(User user, String videoId) {
+    public Result<VideoInfo> getVideoInfo(User user, String videoId) {
         Video video = mongoTemplate.findById(videoId, Video.class);
         if (video == null) {
             return Result.error(ErrorCode.FAIL);
         }
-        return Result.ok(video);
+        VideoInfo videoInfo = new VideoInfo();
+        BeanUtils.copyProperties(video, videoInfo);
+        return Result.ok(videoInfo);
+    }
+
+    /**
+     * 分页获取指定userId视频列表
+     *
+     * @param user
+     * @param userId
+     * @param skip
+     * @param limit
+     * @return
+     */
+    public Result<List<VideoInfo>> getVideoList(User user, String userId, int skip, int limit) {
+        List<Video> videoList = videoRepository.getVideoList(userId, skip, limit);
+        List<VideoInfo> videoInfoList = new ArrayList<>(videoList.size());
+        for (Video video : videoList) {
+            VideoInfo videoInfo = new VideoInfo();
+            BeanUtils.copyProperties(video, videoInfo);
+            videoInfoList.add(videoInfo);
+        }
+        return Result.ok(videoInfoList);
     }
 }

@@ -1,27 +1,20 @@
 package com.github.makewheels.video2022.video;
 
-import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
 @Data
-@Document
-public class Video {
+public class VideoInfo {
     @Id
     private String id;
 
     @Indexed
     private String userId;
-    @Indexed
-    private String originalFileId;
-    private String originalFileKey;
 
     private Integer duration;
-    private String coverUrl;
 
     @Indexed
     private String watchId;
@@ -34,5 +27,6 @@ public class Video {
     @Indexed
     private Date createTime;
 
-    private JSONObject mediaInfo;
+    private String coverUrl;
+
 }

@@ -10,7 +10,7 @@ APP_PORT=443                                                    # 应用端口
 HEALTH_CHECK_URL=https://videoplus.top:${APP_PORT}/healthCheck  # 应用健康检查URL
 APP_HOME=/home/admin/${APP_NAME}                                # 从package.tgz中解压出来的jar包放到这个目录下
 JAR_NAME=${APP_HOME}/target/${APP_NAME}-0.0.1-SNAPSHOT.jar      # jar包的名字
-JAVA_OUT=${APP_HOME}/logs/start.log                             #应用的启动日志
+JAVA_OUT=${APP_HOME}/logs/start.log                             # 应用的启动日志
 
 # 创建出相关目录
 mkdir -p ${APP_HOME}
@@ -45,6 +45,7 @@ health_check() {
   done
   echo "check ${HEALTH_CHECK_URL} success"
 }
+
 start_application() {
   echo "starting java process"
   nohup java -jar -Dspring.profiles.active=prod ${JAR_NAME} >>${JAVA_OUT} 2>&1 &
@@ -75,13 +76,16 @@ stop_application() {
   done
   echo ""
 }
+
 start() {
   start_application
   health_check
 }
+
 stop() {
   stop_application
 }
+
 case "$ACTION" in
 start)
   start

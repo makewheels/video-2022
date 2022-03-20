@@ -26,6 +26,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/transcode/callback")
                 .excludePathPatterns("/video/getWatchInfo")
                 .excludePathPatterns("/video/getVideoInfo")
+                .excludePathPatterns("/video/getVideoListByUserId")
         ;
     }
 }
