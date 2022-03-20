@@ -119,6 +119,8 @@ public class VideoService {
         String m3u8Key = "video/" + userId + "/" + videoId + "/transcode/"
                 + resolution + "/" + videoId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
+        transcode.setM3u8AccessUrl(fileService.getAccessBaseUrl() + m3u8Key);
+        transcode.setM3u8CdnUrl(fileService.getCdnBaseUrl() + m3u8Key);
         mongoTemplate.save(transcode);
 
         //发起转码
@@ -167,6 +169,7 @@ public class VideoService {
             log.info("源文件上传完成，获取mediaInfo：videoId = " + videoId);
             log.info(JSON.toJSONString(mediaInfo));
 
+            video.setDuration(mediaInfo.getDurationInMillisecond());
             video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(mediaInfo)));
             mongoTemplate.save(video);
 
@@ -211,10 +214,18 @@ public class VideoService {
         return Result.ok();
     }
 
+    /**
+     * 更新视频信息
+     *
+     * @param user
+     * @param updateVideo
+     * @return
+     */
     public Result<Void> updateVideo(User user, Video updateVideo) {
         String userId = user.getId();
         String videoId = updateVideo.getId();
         Video oldVideo = mongoTemplate.findById(videoId, Video.class);
+        //判断视频是否存在，判断视频是否属于当前用户
         if (oldVideo == null || !StringUtils.equals(userId, oldVideo.getUserId())) {
             return Result.error(ErrorCode.FAIL);
         }

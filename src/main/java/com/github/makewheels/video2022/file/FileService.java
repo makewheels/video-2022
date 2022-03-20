@@ -113,7 +113,7 @@ public class FileService {
             return Result.error(ErrorCode.FAIL);
         BosObject bosObject = getObject(file.getKey());
         log.info("文件上传完成，fileId = " + fileId);
-        log.info(JSONObject.toJSONString(bosClient));
+        log.info(JSONObject.toJSONString(bosObject));
         ObjectMetadata objectMetadata = bosObject.getObjectMetadata();
         file.setUploadTime(new Date());
         file.setSize(objectMetadata.getContentLength());

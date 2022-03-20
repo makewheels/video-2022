@@ -19,6 +19,9 @@ public class Video {
     @Indexed
     private String originalFileId;
     private String originalFileKey;
+
+    private Integer duration;
+
     @Indexed
     private String watchId;
     private String watchUrl;
