@@ -23,6 +23,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(swaggerExcludePatterns)
                 .excludePathPatterns("/video/getPlayInfo")
+                .excludePathPatterns("/healthCheck")
         ;
     }
 }
