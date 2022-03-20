@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.video;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baidubce.services.media.model.CreateThumbnailJobResponse;
@@ -40,7 +41,9 @@ public class VideoService {
     private ThumbnailService thumbnailService;
 
     private String getWatchId() {
-        return IdUtil.simpleUUID();
+        String json = HttpUtil.get("https://service-d5xe9zbh-1253319037.bj.apigw.tencentcs.com/release/");
+        JSONObject jsonObject = JSONObject.parseObject(json);
+        return jsonObject.getJSONObject("data").getString("prettyId");
     }
 
     public Result<JSONObject> create(User user, JSONObject requestBody) {
@@ -136,7 +139,6 @@ public class VideoService {
         video.setOriginalFileKey(sourceKey);
         video.setStatus(VideoStatus.ORIGINAL_FILE_READY);
         mongoTemplate.save(video);
-
 
         //创建子线程执行转码任务，先给前端返回结果
         new Thread(() -> {
