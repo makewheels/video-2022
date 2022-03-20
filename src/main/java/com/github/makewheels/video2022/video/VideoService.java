@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.video;
 
+import cn.hutool.http.Header;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -26,7 +27,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -336,6 +336,7 @@ public class VideoService {
         watchLog.setIp(request.getRemoteAddr());
         watchLog.setVideoId(videoId);
         watchLog.setClientId(clientId);
+        watchLog.setUserAgent(request.getHeader("User-Agent"));
         mongoTemplate.save(watchLog);
         //增加video观看次数
         videoRepository.addWatchCount(videoId);
