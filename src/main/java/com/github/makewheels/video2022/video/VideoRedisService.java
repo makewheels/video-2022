@@ -19,8 +19,8 @@ public class VideoRedisService {
         return JSON.parseObject(json, WatchInfo.class);
     }
 
-    public void setWatchInfo(WatchInfo watchInfo) {
-        redisService.set(RedisKey.watchInfo(watchInfo.getWatchId()),
+    public void setWatchInfo(String watchId, WatchInfo watchInfo) {
+        redisService.set(RedisKey.watchInfo(watchId),
                 JSON.toJSONString(watchInfo), RedisTime.SIX_HOURS);
     }
 }

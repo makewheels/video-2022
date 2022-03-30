@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport"
+          content="width=device-width, height=device-height, initial-scale=1,
+           maximum-scale=1, minimum-scale=1, user-scalable=no"/>
+    <title></title>
+    <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.9.19/skins/default/aliplayer-min.css"/>
+    <script type="text/javascript" charset="utf-8"
+            src="https://g.alicdn.com/de/prismplayer/2.9.19/aliplayer-min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+
+<body>
+
+<div id="app">
+    <div class="prism-player" id="player-con"></div>
+    <div><span style="font-size: 30px">{{title}}</span></div>
+</div>
+
+<script>
+    let videoId;
+    let watchId;
+
+    function getUrlVariable(key) {
+        const query = window.location.search.substring(1);
+        const vars = query.split("&");
+        for (let i = 0; i < vars.length; i++) {
+            const pair = vars[i].split("=");
+            if (pair[0] === key) {
+                return pair[1];
+            }
+        }
+        return false;
+    }
+
+    //加载视频
+    function loadVideo() {
+        let player;
+
+        watchId = getUrlVariable("v");
+        axios.get('/video/getWatchInfo?watchId=' + watchId)
+            .then(function (res) {
+                let data = res.data.data;
+                videoId = data.videoId;
+                //封面
+                let coverUrl = data.coverUrl;
+                //播放地址
+                let playUrlList = data.playUrlList;
+                let SD;
+                let HD;
+                for (let i = 0; i < playUrlList.length; i++) {
+                    let each = playUrlList[i];
+                    if (each.resolution === '720p') {
+                        SD = each.url;
+                    } else if (each.resolution === '1080p') {
+                        HD = each.url;
+                    }
+                }
+
+                player = new Aliplayer({
+                    "id": "player-con",
+                    "source": '{"HD":"' + HD + '","SD":"' + SD + '"}',
+                    "cover": coverUrl,
+                    "width": "100%",
+                    "height": "400px",
+                    "autoplay": true,
+                    "isLive": false,
+                    "rePlay": false,
+                    "playsinline": true,
+                    "preload": true,
+                    "controlBarVisibility": "hover",
+                    "useH5Prism": true
+                }, function (player) {
+                });
+            })
+    }
+
+    //从这里开始
+    function start() {
+        loadVideo();
+    }
+
+    start()
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            title: 'Hello Vue!'
+        }
+    })
+</script>
+</body>
