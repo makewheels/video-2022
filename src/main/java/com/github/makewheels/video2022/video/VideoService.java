@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.video;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.Header;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
@@ -60,9 +61,10 @@ public class VideoService {
     private String baseUrl;
 
     private String getWatchId() {
-        String json = HttpUtil.get("https://service-d5xe9zbh-1253319037.bj.apigw.tencentcs.com/release/");
-        JSONObject jsonObject = JSONObject.parseObject(json);
-        return jsonObject.getJSONObject("data").getString("prettyId");
+//        String json = HttpUtil.get("https://service-d5xe9zbh-1253319037.bj.apigw.tencentcs.com/release/");
+//        JSONObject jsonObject = JSONObject.parseObject(json);
+//        return jsonObject.getJSONObject("data").getString("prettyId");
+        return IdUtil.getSnowflakeNextIdStr();
     }
 
     public Result<JSONObject> create(User user, JSONObject requestBody) {
@@ -264,7 +266,6 @@ public class VideoService {
         String videoId = video.getId();
         watchInfo = new WatchInfo();
         watchInfo.setVideoId(videoId);
-        watchInfo.setWatchId(watchId);
         //通过videoId查找封面
         Thumbnail thumbnail = thumbnailRepository.getByVideoId(videoId);
         watchInfo.setCoverUrl(thumbnail.getCdnUrl());
@@ -281,7 +282,7 @@ public class VideoService {
         watchInfo.setVideoStatus(video.getStatus());
 
         //缓存redis
-        videoRedisService.setWatchInfo(watchInfo);
+        videoRedisService.setWatchInfo(watchId, watchInfo);
         return Result.ok(watchInfo);
     }
 

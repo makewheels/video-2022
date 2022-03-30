@@ -6,7 +6,6 @@ import java.util.List;
 
 @Data
 public class WatchInfo {
-    private String watchId;
     private String videoId;
     private String coverUrl;
     private List<PlayUrl> playUrlList;

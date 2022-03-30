@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport"
+          content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1,
+          minimum-scale=1, user-scalable=no"/>
+    <title th:text="${title}">video</title>
+    <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.8.7/skins/default/aliplayer-min.css"/>
+    <script type="text/javascript" charset="utf-8"
+            src="https://g.alicdn.com/de/prismplayer/2.8.7/aliplayer-min.js"></script>
+    <link href="https://vjs.zencdn.net/7.10.2/video-js.min.css" rel="stylesheet">
+    <script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
+</head>
+<body>
+<div class="prism-player" id="player-con"></div>
+<video
+        id="my-player"
+        class="video-js"
+        controls
+        preload="auto"
+        data-setup='{}'>
+    <source th:src="${playFileUrl}" type="video/webm"/>
+    <p class="vjs-no-js">
+        To view this video please enable JavaScript, and consider upgrading to a
+        web browser that
+        <a href="https://videojs.com/html5-video-support/" target="_blank">
+            supports HTML5 video
+        </a>
+    </p>
+</video>
+<h3 th:text="${title}"></h3>
+<script>
+    var options = {
+        width: document.body.clientWidth,
+        height: 600
+    };
+    var player = videojs('my-player', options, function onPlayerReady() {
+
+        // In this context, `this` is the player that was created by Video.js.
+        this.play();
+
+        // How about an event listener?
+        this.on('ended', function () {
+            videojs.log('Awww...over so soon?!');
+        });
+    });
+</script>
+</body>
