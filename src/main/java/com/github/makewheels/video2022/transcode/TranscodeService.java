@@ -1,5 +1,8 @@
 package com.github.makewheels.video2022.transcode;
 
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.URLUtil;
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baidubce.BceClientConfiguration;
@@ -13,16 +16,16 @@ import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
 import com.github.makewheels.video2022.thumbnail.ThumbnailService;
 import com.github.makewheels.video2022.video.Video;
-import com.github.makewheels.video2022.video.VideoService;
 import com.github.makewheels.video2022.video.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -37,6 +40,9 @@ public class TranscodeService {
     private String secretKey;
     @Value("${mcp.pipelineName}")
     private String pipelineName;
+
+    @Value("${cdn-prefetch-url}")
+    private String cdnPrefetchUrl;
 
     @Resource
     private MongoTemplate mongoTemplate;
@@ -203,10 +209,20 @@ public class TranscodeService {
             video.setStatus(videoStatus);
             mongoTemplate.save(video);
         }
-        //当视频已就绪时
+        //当视频已就绪时，也就是所有转码任务都完成了
         if (StringUtils.equals(video.getStatus(), VideoStatus.READY)) {
             onVideoReady(videoId);
         }
+    }
+
+    /**
+     * 返回最后一个斜杠前的url
+     *
+     * @param url
+     * @return
+     */
+    private String getBaseUrl(String url) {
+        return url.substring(0, url.lastIndexOf("/") + 1);
     }
 
     /**
@@ -214,7 +230,26 @@ public class TranscodeService {
      *
      * @param videoId
      */
-    private void onVideoReady(String videoId) {
+    public void onVideoReady(String videoId) {
         log.info("视频已就绪, videoId = " + videoId);
+        //通知预加载缓存
+        JSONObject request = new JSONObject();
+        String missionId = IdUtil.getSnowflakeNextIdStr();
+        request.put("missionId", missionId);
+        List<String> urlList = new ArrayList<>();
+        List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
+        for (Transcode transcode : transcodeList) {
+            String m3u8CdnUrl = transcode.getM3u8CdnUrl();
+            String baseUrl = getBaseUrl(m3u8CdnUrl);
+            String[] eachLine = HttpUtil.get(m3u8CdnUrl).split("\n");
+            for (String line : eachLine) {
+                if (line.startsWith("#")) continue;
+                urlList.add(baseUrl + line);
+            }
+        }
+        request.put("urlList", urlList);
+        log.info("通知预热cdn, missionId = " + missionId + ", size = " + urlList.size());
+        HttpUtil.post(cdnPrefetchUrl, request.toJSONString());
     }
+
 }
