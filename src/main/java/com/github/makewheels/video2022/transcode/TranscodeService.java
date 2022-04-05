@@ -11,6 +11,7 @@ import com.baidubce.services.media.MediaClient;
 import com.baidubce.services.media.model.CreateTranscodingJobResponse;
 import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
 import com.baidubce.services.media.model.GetTranscodingJobResponse;
+import com.baidubce.services.media.model.ThumbnailJobStatus;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
@@ -142,11 +143,22 @@ public class TranscodeService {
         log.info(messageBody.toJSONString());
         //根据jobId查询数据库，首先查询transcode，如果没有再查询thumbnail
         Transcode transcode = transcodeRepository.getByJobId(jobId);
+        //如果是转码任务
         if (transcode != null) {
+            //检查是不是已完成
+            if (StringUtils.equals(transcode.getStatus(), TranscodeStatus.SUCCESS)) {
+                log.info("转码已完成，跳过");
+                return Result.ok();
+            }
             handleTranscodeCallback(transcode);
         } else {
+            //如果是截帧任务
             Thumbnail thumbnail = thumbnailRepository.getByJobId(jobId);
             if (thumbnail != null) {
+                if (StringUtils.equals(thumbnail.getStatus(), TranscodeStatus.SUCCESS)) {
+                    log.info("转码已完成，跳过");
+                    return Result.ok();
+                }
                 thumbnailService.handleThumbnailCallback(thumbnail);
             }
         }
