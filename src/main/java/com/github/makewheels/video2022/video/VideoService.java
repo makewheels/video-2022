@@ -78,7 +78,7 @@ public class VideoService {
         JSONObject body = new JSONObject();
         body.put("fullUrl", fullUrl);
         body.put("sign", "DuouXm25hwFWVbUmyw3a");
-        return HttpUtil.post(shortUrlService, body);
+        return HttpUtil.post(shortUrlService, body.toJSONString());
     }
 
     public Result<JSONObject> create(User user, JSONObject requestBody) {
