@@ -27,6 +27,7 @@ public class Video {
     @Indexed
     private String watchId;
     private String watchUrl;
+    private String shortUrl;
     private String title;
     private String description;
 
