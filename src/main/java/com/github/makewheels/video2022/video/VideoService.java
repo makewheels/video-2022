@@ -117,6 +117,7 @@ public class VideoService {
         jsonObject.put("videoId", video.getId());
         jsonObject.put("watchId", video.getWatchId());
         jsonObject.put("watchUrl", video.getWatchUrl());
+        jsonObject.put("shortUrl", video.getShortUrl());
         return Result.ok(jsonObject);
     }
 
