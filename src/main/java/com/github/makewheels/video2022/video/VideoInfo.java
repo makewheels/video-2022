@@ -28,6 +28,8 @@ public class VideoInfo {
     @Indexed
     private Date createTime;
 
+    private String createTimeString;
+
     private String coverUrl;
 
 }

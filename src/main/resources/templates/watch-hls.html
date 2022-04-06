@@ -6,7 +6,7 @@
     <meta name="viewport"
           content="width=device-width, height=device-height, initial-scale=1,
            maximum-scale=1, minimum-scale=1, user-scalable=no"/>
-    <title></title>
+    <title id="title"></title>
     <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.9.19/skins/default/aliplayer-min.css"/>
     <script type="text/javascript" charset="utf-8"
             src="https://g.alicdn.com/de/prismplayer/2.9.19/aliplayer-min.js"></script>
@@ -18,12 +18,16 @@
 
 <div id="app">
     <div class="prism-player" id="player-con"></div>
-    <div><span style="font-size: 30px"></span></div>
+    <div><span id="errorInfo" style="font-size: 30px"></span></div>
+    <div id="div_title" style="font-size: 30px"></div>
+    <div id="watchCount" style="font-size: 20px"></div>
+    <div id="createTime" style="font-size: 20px"></div>
+    <div id="description" style="font-size: 20px"></div>
 </div>
 
 <style>
     .prism-cover {
-        background-size: 100% 450px!important;
+        background-size: 100% 450px !important;
     }
 </style>
 
@@ -31,6 +35,7 @@
     let videoId;
     let watchId;
 
+    //获取url路径中的参数
     function getUrlVariable(key) {
         const query = window.location.search.substring(1);
         const vars = query.split("&");
@@ -44,10 +49,11 @@
     }
 
     //加载视频
-    function loadVideo() {
+    function loadWatchInfo() {
         let player;
 
         watchId = getUrlVariable("v");
+        //获取播放地址
         axios.get('/video/getWatchInfo?watchId=' + watchId)
             .then(function (res) {
                 let data = res.data.data;
@@ -67,30 +73,109 @@
                     }
                 }
 
-                player = new Aliplayer({
-                    "id": "player-con",
-                    "source": '{"HD":"' + HD + '","SD":"' + SD + '"}',
-                    "cover": coverUrl,
-                    "width": "100%",
-                    "height": "350px",
-                    "autoplay": true,
-                    "isLive": false,
-                    "rePlay": false,
-                    "playsinline": true,
-                    "preload": true,
-                    "controlBarVisibility": "hover",
-                    "useH5Prism": true
-                }, function (player) {
-                });
+                //判断视频状态，如果已就绪，就创建播放器。如果还没就绪，就提示
+                if (data.videoStatus === "READY") {
+                    player = new Aliplayer({
+                        "id": "player-con",
+                        "source": '{"HD":"' + HD + '","SD":"' + SD + '"}',
+                        // "cover": coverUrl,
+                        "width": "100%",
+                        "height": "350px",
+                        "autoplay": true,
+                        "isLive": false,
+                        "rePlay": false,
+                        "playsinline": true,
+                        "preload": true,
+                        "controlBarVisibility": "hover",
+                        "useH5Prism": true
+                    }, function (player) {
+                    });
+                } else {
+                    document.getElementById("errorInfo").innerHTML
+                        = "视频正在转码，请稍后再来<br>"
+                        + "当前状态：" + data.videoStatus;
+                }
+
+                afterVideoLoaded(videoId);
             })
     }
 
-    //从这里开始
-    function start() {
-        loadVideo();
+    //在视频已加载后
+    function afterVideoLoaded(videoId) {
+        loadVideoInfo(videoId);
+        addWatchLog(videoId);
     }
 
-    start();
+    //加载视频信息
+    function loadVideoInfo(videoId) {
+        //加载title等信息
+        axios.get('/video/getVideoInfo?videoId=' + videoId)
+            .then(function (res) {
+                let data = res.data.data;
+                document.getElementById("title").innerText = data.title;
+                document.getElementById("div_title").innerText = data.title;
+                document.getElementById("watchCount").innerText = "观看次数：" + data.watchCount;
+                document.getElementById("createTime").innerText = "创建时间：" + data.createTimeString;
+                document.getElementById("description").innerText = data.description;
+            });
+    }
+
+    //增加观看次数
+    function addWatchLog(videoId) {
+        //先搞定clientId和sessionId，请求用户服务器
+        handleClientId();
+        handleSessionId();
+    }
+
+    //clientId
+    function handleClientId() {
+        if (localStorage.getItem("clientId") == null) {
+            axios.get('http://' + document.domain + ':5021/user-micro-service-2022/client/requestClientId')
+                .then(function (res) {
+                    let data = res.data.data;
+                    localStorage.clientId = data.clientId;
+                    runAddWatchLog();
+                });
+        } else {
+            runAddWatchLog();
+        }
+    }
+
+    //sessionId
+    function handleSessionId() {
+        if (sessionStorage.getItem("sessionId") == null) {
+            axios.get('http://' + document.domain + ':5021/user-micro-service-2022/session/requestSessionId')
+                .then(function (res) {
+                    let data = res.data.data;
+                    sessionStorage.sessionId = data.sessionId;
+                    runAddWatchLog();
+                });
+        } else {
+            runAddWatchLog();
+        }
+    }
+
+    let hasAddWatchLog = false;
+
+    function runAddWatchLog() {
+        //如果没有clientId或者sessionId，跳过
+        if (localStorage.getItem("clientId") == null
+            || sessionStorage.getItem("sessionId") == null
+            || hasAddWatchLog) {
+            return;
+        }
+        //增加观看次数
+        hasAddWatchLog = true;
+        axios.get('/video/addWatchLog?videoId=' + videoId
+            + '&clientId=' + localStorage.clientId
+            + '&sessionId=' + sessionStorage.sessionId)
+            .then(function (res) {
+                console.log("all ready");
+            });
+    }
+
+    //从这里开始
+    loadWatchInfo();
 
 </script>
 </body>
