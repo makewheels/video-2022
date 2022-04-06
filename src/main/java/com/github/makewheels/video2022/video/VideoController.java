@@ -99,8 +99,7 @@ public class VideoController {
     @GetMapping("addWatchLog")
     public Result<Void> addWatchLog(
             HttpServletRequest request, @RequestParam String videoId,
-            @RequestHeader("clientId") String clientId,
-            @RequestHeader("sessionId") String sessionId) {
+            @RequestParam String clientId, @RequestParam String sessionId) {
         User user = userServiceClient.getUserByRequest(request);
         return videoService.addWatchLog(request, user, clientId, sessionId, videoId);
     }
