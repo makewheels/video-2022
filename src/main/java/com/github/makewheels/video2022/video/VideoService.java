@@ -75,7 +75,10 @@ public class VideoService {
     }
 
     private String getShortUrl(String fullUrl) {
-        return HttpUtil.get("shortUrlService");
+        JSONObject body = new JSONObject();
+        body.put("fullUrl", fullUrl);
+        body.put("sign", "DuouXm25hwFWVbUmyw3a");
+        return HttpUtil.post(shortUrlService, body);
     }
 
     public Result<JSONObject> create(User user, JSONObject requestBody) {
