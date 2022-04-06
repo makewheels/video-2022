@@ -11,10 +11,10 @@ import java.util.Date;
 public class WatchLog {
     @Id
     private String id;
-    private String userId;
     private String ip;
     private String videoId;
     private String clientId;
+    private String sessionId;
     private String userAgent;
     private Date createTime;
 }

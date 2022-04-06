@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.video2022.user.UserServiceClient;
 import com.github.makewheels.video2022.response.Result;
-import com.github.makewheels.video2022.watch.WatchInfo;
+import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -93,13 +93,15 @@ public class VideoController {
      *
      * @param request
      * @param videoId
+     * @param clientId 前端先向用户微服务获取clientId，再调此接口
      * @return
      */
     @GetMapping("addWatchLog")
     public Result<Void> addWatchLog(
             HttpServletRequest request, @RequestParam String videoId,
-            @CookieValue("clientId") String clientId) {
+            @RequestHeader("clientId") String clientId,
+            @RequestHeader("sessionId") String sessionId) {
         User user = userServiceClient.getUserByRequest(request);
-        return videoService.addWatchLog(request, user, clientId, videoId);
+        return videoService.addWatchLog(request, user, clientId, sessionId, videoId);
     }
 }
