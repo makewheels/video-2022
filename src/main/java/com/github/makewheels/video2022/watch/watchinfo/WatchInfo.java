@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.watch;
+package com.github.makewheels.video2022.watch.watchinfo;
 
 import lombok.Data;
 

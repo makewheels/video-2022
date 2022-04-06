@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.9.19/skins/default/aliplayer-min.css"/>
     <script type="text/javascript" charset="utf-8"
             src="https://g.alicdn.com/de/prismplayer/2.9.19/aliplayer-min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 </head>
@@ -19,7 +18,7 @@
 
 <div id="app">
     <div class="prism-player" id="player-con"></div>
-    <div><span style="font-size: 30px">{{title}}</span></div>
+    <div><span style="font-size: 30px"></span></div>
 </div>
 
 <style>
@@ -91,13 +90,7 @@
         loadVideo();
     }
 
-    start()
+    start();
 
-    var app = new Vue({
-        el: '#app',
-        data: {
-            title: 'Hello Vue!'
-        }
-    })
 </script>
 </body>

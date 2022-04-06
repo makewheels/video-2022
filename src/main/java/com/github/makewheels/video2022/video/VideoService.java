@@ -1,8 +1,6 @@
 package com.github.makewheels.video2022.video;
 
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.http.Header;
-import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baidubce.services.media.model.CreateThumbnailJobResponse;
@@ -18,8 +16,9 @@ import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
 import com.github.makewheels.video2022.thumbnail.ThumbnailService;
 import com.github.makewheels.video2022.transcode.*;
-import com.github.makewheels.video2022.watch.PlayUrl;
-import com.github.makewheels.video2022.watch.WatchInfo;
+import com.github.makewheels.video2022.watch.WatchRepository;
+import com.github.makewheels.video2022.watch.watchinfo.PlayUrl;
+import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import com.github.makewheels.video2022.watch.WatchLog;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -53,6 +52,8 @@ public class VideoService {
     private ThumbnailRepository thumbnailRepository;
     @Resource
     private TranscodeRepository transcodeRepository;
+    @Resource
+    private WatchRepository watchRepository;
 
     @Resource
     private VideoRedisService videoRedisService;
@@ -326,18 +327,23 @@ public class VideoService {
     /**
      * 增加观看记录
      */
-    @GetMapping("addWatchLog")
     public Result<Void> addWatchLog(
-            HttpServletRequest request, User user, String clientId, String videoId) {
+            HttpServletRequest request, User user,
+            String clientId, String sessionId, String videoId) {
+        //观看记录根据videoId和sessionId判断是否已存在观看记录，如果已存在则跳过
+        if (watchRepository.isWatchLogExist(videoId, sessionId)) {
+            return Result.ok();
+        }
+
         //保存观看记录
         WatchLog watchLog = new WatchLog();
-        if (user != null) {
-            watchLog.setUserId(user.getId());
-        }
         watchLog.setIp(request.getRemoteAddr());
+        watchLog.setUserAgent(request.getHeader("User-Agent"));
+
         watchLog.setVideoId(videoId);
         watchLog.setClientId(clientId);
-        watchLog.setUserAgent(request.getHeader("User-Agent"));
+        watchLog.setSessionId(sessionId);
+
         mongoTemplate.save(watchLog);
         //增加video观看次数
         videoRepository.addWatchCount(videoId);
