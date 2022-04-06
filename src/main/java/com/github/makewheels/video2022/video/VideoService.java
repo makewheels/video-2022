@@ -2,6 +2,7 @@ package com.github.makewheels.video2022.video;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baidubce.services.media.model.CreateThumbnailJobResponse;
@@ -63,12 +64,18 @@ public class VideoService {
 
     @Value("${baseUrl}")
     private String baseUrl;
+    @Value("${short-url-service}")
+    private String shortUrlService;
 
     private String getWatchId() {
 //        String json = HttpUtil.get("https://service-d5xe9zbh-1253319037.bj.apigw.tencentcs.com/release/");
 //        JSONObject jsonObject = JSONObject.parseObject(json);
 //        return jsonObject.getJSONObject("data").getString("prettyId");
         return IdUtil.getSnowflakeNextIdStr();
+    }
+
+    private String getShortUrl(String fullUrl) {
+        return HttpUtil.get("shortUrlService");
     }
 
     public Result<JSONObject> create(User user, JSONObject requestBody) {
@@ -84,7 +91,9 @@ public class VideoService {
         video.setUserId(userId);
         String watchId = getWatchId();
         video.setWatchId(watchId);
-        video.setWatchUrl(baseUrl + "/watch?v=" + watchId);
+        String watchUrl = baseUrl + "/watch?v=" + watchId;
+        video.setWatchUrl(watchUrl);
+        video.setShortUrl(getShortUrl(watchUrl));
         video.setStatus(VideoStatus.CREATED);
         video.setCreateTime(new Date());
         mongoTemplate.save(video);
