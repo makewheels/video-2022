@@ -131,7 +131,7 @@
     //clientId
     function handleClientId() {
         if (localStorage.getItem("clientId") == null) {
-            axios.get('http://' + document.domain + ':5021/user-micro-service-2022/client/requestClientId')
+            axios.get('//' + document.domain + ':5021/user-micro-service-2022/client/requestClientId')
                 .then(function (res) {
                     let data = res.data.data;
                     localStorage.clientId = data.clientId;
@@ -145,7 +145,7 @@
     //sessionId
     function handleSessionId() {
         if (sessionStorage.getItem("sessionId") == null) {
-            axios.get('http://' + document.domain + ':5021/user-micro-service-2022/session/requestSessionId')
+            axios.get('//' + document.domain + ':5021/user-micro-service-2022/session/requestSessionId')
                 .then(function (res) {
                     let data = res.data.data;
                     sessionStorage.sessionId = data.sessionId;
