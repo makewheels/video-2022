@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>保存token和clientId</title>
+</head>
+<body>
+正在跳转...
+<script>
+    //获取url路径中的参数
+    function getUrlVariable(key) {
+        const query = window.location.search.substring(1);
+        const vars = query.split("&");
+        for (let i = 0; i < vars.length; i++) {
+            const pair = vars[i].split("=");
+            if (pair[0] === key) {
+                return pair[1];
+            }
+        }
+        return false;
+    }
+
+    //保存token，跳转
+    let token = getUrlVariable("token");
+    localStorage.token = token;
+    window.location.href = getUrlVariable("target") + "?token=" + token;
+</script>
+</body>
+</html>

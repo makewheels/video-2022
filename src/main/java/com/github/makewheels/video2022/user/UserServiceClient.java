@@ -15,7 +15,7 @@ public class UserServiceClient {
         return "http://localhost:5029/user-micro-service-2022/user/";
     }
 
-    private User getUserByToken(String token) {
+    public User getUserByToken(String token) {
         if (StringUtils.isEmpty(token)) return null;
         String json = HttpUtil.get(getBaseUrl() + "getUserByToken?token=" + token);
         JSONObject data = JSONObject.parseObject(json).getJSONObject("data");
