@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.intercepter;
 
+import cn.hutool.core.util.URLUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.video2022.user.UserServiceClient;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 
 @Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
@@ -22,15 +24,21 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(
             HttpServletRequest request, HttpServletResponse response, Object handler)
             throws IOException, URISyntaxException {
+        //token校验：既可以从header，也可以从url参数中获取
         String token = request.getHeader("token");
+        String[] tokens = request.getParameterMap().get("token");
         User user = userServiceClient.getUserByRequest(request);
+        if (tokens != null) {
+            user = userServiceClient.getUserByToken(tokens[0]);
+        }
         log.debug("token = {}, user = {}", token, JSON.toJSONString(user));
+        //如果token校验不通过，让他放回登录页
         if (user == null) {
             response.setStatus(403);
-
-            URI uri = new URI(request.getRequestURL().toString());
-            String target = uri.getScheme() + "://" + uri.getHost() + ":5021/user-micro-service-2022/login.html";
-            response.sendRedirect(target);
+            String target = request.getRequestURL().toString();
+            URI uri = new URI(target);
+            response.sendRedirect(uri.getScheme() + "://" + uri.getHost()
+                    + ":5021/user-micro-service-2022/login.html?target=" + target);
             return false;
         } else {
             response.setStatus(200);
