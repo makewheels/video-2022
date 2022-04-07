@@ -115,7 +115,7 @@
                 let data = res.data.data;
                 document.getElementById("title").innerText = data.title;
                 document.getElementById("div_title").innerText = data.title;
-                document.getElementById("watchCount").innerText = "观看次数：" + (data.watchCount + 1);
+                document.getElementById("watchCount").innerText = "观看次数：" + data.watchCount;
                 document.getElementById("createTime").innerText = "创建时间：" + data.createTimeString;
                 document.getElementById("description").innerText = data.description;
             });
