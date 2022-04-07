@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 @Service
 public class UserServiceClient {
     private String getBaseUrl() {
-        return "http://localhost:5021/user-micro-service-2022/user/";
+        return "http://localhost:5029/user-micro-service-2022/user/";
     }
 
     private User getUserByToken(String token) {
