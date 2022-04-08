@@ -374,7 +374,7 @@ public class VideoService {
      * @return
      */
     public Result<Void> onCdnPrefetchFinish(JSONObject body) {
-        log.info("收到软路由预热完成通知：");
+        log.info("收到软路由预热完成回调：");
         log.info(body.toJSONString());
         return null;
     }

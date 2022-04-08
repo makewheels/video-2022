@@ -141,7 +141,7 @@ public class TranscodeService {
     public Result<Void> callback(JSONObject jsonObject) {
         JSONObject messageBody = JSONObject.parseObject(jsonObject.getString("messageBody"));
         String jobId = messageBody.getString("jobId");
-        log.info("开始处理视频回调：jobId = " + jobId + ", messageBody = ");
+        log.info("处理视频转码回调：jobId = " + jobId + ", messageBody = ");
         log.info(messageBody.toJSONString());
         //根据jobId查询数据库，首先查询transcode，如果没有再查询thumbnail
         Transcode transcode = transcodeRepository.getByJobId(jobId);
@@ -264,7 +264,9 @@ public class TranscodeService {
         request.put("urlList", urlList);
         request.put("callbackUrl", baseUrl + "/video/onCdnPrefetchFinish");
         log.info("通知预热cdn, missionId = " + missionId + ", size = " + urlList.size());
-        HttpUtil.post(cdnPrefetchUrl, request.toJSONString());
+        String response = HttpUtil.post(cdnPrefetchUrl, request.toJSONString());
+        log.info("请求预热，软路由回复：");
+        log.info(response);
     }
 
 }
