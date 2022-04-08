@@ -44,6 +44,8 @@ public class TranscodeService {
 
     @Value("${cdn-prefetch-url}")
     private String cdnPrefetchUrl;
+    @Value("${baseUrl}")
+    private String baseUrl;
 
     @Resource
     private MongoTemplate mongoTemplate;
@@ -260,6 +262,7 @@ public class TranscodeService {
             }
         }
         request.put("urlList", urlList);
+        request.put("callbackUrl", baseUrl + "/video/onCdnPrefetchFinish");
         log.info("通知预热cdn, missionId = " + missionId + ", size = " + urlList.size());
         HttpUtil.post(cdnPrefetchUrl, request.toJSONString());
     }
