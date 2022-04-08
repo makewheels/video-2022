@@ -366,4 +366,16 @@ public class VideoService {
         videoRepository.addWatchCount(videoId);
         return Result.ok();
     }
+
+    /**
+     * 在cdn预热完成时
+     *
+     * @param body
+     * @return
+     */
+    public Result<Void> onCdnPrefetchFinish(JSONObject body) {
+        log.info("收到软路由预热完成通知：");
+        log.info(body.toJSONString());
+        return null;
+    }
 }
