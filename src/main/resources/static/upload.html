@@ -1,10 +1,192 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <title>上传视频</title>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!--阿里云oss-->
+    <script src="https://gosspublic.alicdn.com/aliyun-oss-sdk-6.17.0.min.js"></script>
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1110.0.min.js"></script>
 </head>
+
 <body>
-this is upload page
+<script>
+    //看有没有token，如果没有跳转登录页
+    if (localStorage.getItem("token") == null) {
+        window.location.href = "//" + document.domain + ":5021/user-micro-service-2022/login.html" +
+            "?target=" + window.location.href
+    }
+</script>
+
+<input type="file" id="input_file"/>
+<br>
+
+<span>Title:</span>
+<input id="input_title" type="text"/>
+<br>
+
+<span>Description:</span>
+<input id="input_description" type="text"/>
+<br>
+
+<button id="btn_update" type="button">修改</button>
+<br>
+
+<span id="shortUrl"></span>
+<br>
+
+<span id="watchUrl"></span>
+<br>
+
+<b>
+    <span id="text_progress" style="color: blue;margin-left: 20px;font-size: 30px"></span>
+</b>
+
+<script>
+    let input_file = document.getElementById("input_file");
+
+    let input_title = document.getElementById("input_title");
+    let input_description = document.getElementById("input_description");
+    let btn_update = document.getElementById("btn_update");
+
+    let shortUrl = document.getElementById("shortUrl");
+    let watchUrl = document.getElementById("watchUrl");
+
+    let text_progress = document.getElementById("text_progress");
+
+    // 监听选中文件
+    input_file.onchange = () => {
+        const selectedFile = input_file.files[0];
+        let originalFilename = selectedFile.name;
+        let size = selectedFile.size;
+        let type = selectedFile.type;
+        input_title.value = originalFilename.substring(0, originalFilename.indexOf("."));
+        createVideo(originalFilename, size, type);
+    }
+
+    let fileId;
+    let videoId;
+    let watchId;
+
+    //创建视频
+    function createVideo(originalFilename, size, type) {
+        axios.post("/video/create", {
+            originalFilename: originalFilename,
+            size: size,
+            type: type
+        }, {
+            headers: {"token": localStorage.token}
+        }).then(function (res) {
+            let data = res.data.data;
+            fileId = data.fileId;
+            videoId = data.videoId;
+            watchId = data.watchId;
+
+            shortUrl.innerText = data.shortUrl;
+            watchUrl.innerText = data.watchUrl;
+            beginUpload();
+        });
+    }
+
+    //修改视频信息按钮
+    btn_update.addEventListener("click", function () {
+        if (videoId === undefined) {
+            return;
+        }
+        axios.post("/video/updateInfo", {
+            id: videoId,
+            title: input_title.value,
+            description: input_description.value
+        }, {
+            headers: {"token": localStorage.token}
+        }).then(function (res) {
+        });
+    });
+
+    //开始上传
+    function beginUpload() {
+
+    }
+
+    //获取上传对象存储的凭证
+    function getCredential(data) {
+        var uploadPath = data.uploadPath;
+        var uploadToken = data.uploadToken;
+        var originalFilename = document.getElementById('file').files[0].name;
+        axios.post("/file-service/file/getTemporaryCredential",
+            {
+                uploadToken: uploadToken,
+                originalFilename: originalFilename
+            }
+        ).then(function (response) {
+            var body = response.data;
+            if (body.code === 0) {
+                var realData = body.data;
+                var accessKeyId = realData.accessKeyId;
+                var accessKeySecret = realData.accessKeySecret;
+                var bucket = realData.bucket;
+                var fileSnowflakeId = realData.fileSnowflakeId;
+                var region = realData.region;
+                var securityToken = realData.securityToken;
+                putObject(region, accessKeyId, accessKeySecret, securityToken, bucket, uploadPath, fileSnowflakeId);
+            } else {
+                alert(body.message);
+            }
+        });
+    }
+
+    //上传阿里云对象存储
+    async function putObject(region, accessKeyId, accessKeySecret, stsToken, bucket, path, fileSnowflakeId) {
+        const file = document.getElementById('file').files[0];
+        const client = new OSS({
+            region: region,
+            accessKeyId: accessKeyId,
+            accessKeySecret: accessKeySecret,
+            stsToken: stsToken,
+            bucket: bucket,
+            secure: true
+        });
+
+        //分片上传
+        const result = await client.multipartUpload(path, file, {
+            partSize: 512 * 1024,
+            progress: function (p, checkpoint) {
+                let percent = p * 100;
+                text_progress.innerText = percent.toFixed(2) + " %";
+            }
+        });
+        // {"name":"upload/video/1443616374344781824/1444172191220764672.jpg",
+        // "url":"http://video-share-bucket.oss-cn-beijing.aliyuncs.com/upload/video/
+        // 1443616374344781824/1444172191220764672.jpg",
+        // "res":{"status":200,"statusCode":200,"headers":{"content-length":"0"},
+        // "size":0,"aborted":false,"rt":149,"keepAliveSocket":false,"data":
+        // {"type":"Buffer","data":[]},"requestUrls":
+        // ["http://video-share-bucket.oss-cn-beijing.aliyuncs.com/upload/video
+        // /1443616374344781824/1444172191220764672.jpg"],"timing":null,"remoteAddress":"","remotePort":""}}
+
+        if (result.res.status === 200) {
+            onUploadFinish(fileSnowflakeId);
+        }
+    }
+
+    //在上传完成时
+    function onUploadFinish() {
+        //通知文件上传完成
+        axios.get("/file/uploadFinish?fileId=" + fileId, {
+            headers: {"token": localStorage.token}
+        }).then(function (res) {
+            //通知视频 源文件上传完成
+            axios.get("/video/originalFileUploadFinish?videoId=" + videoId, {
+                headers: {"token": localStorage.token}
+            }).then(function (res) {
+                text_progress.value = "上传已完成";
+            });
+        });
+    }
+</script>
+
 </body>
 </html>
