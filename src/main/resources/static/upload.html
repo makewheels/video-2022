@@ -143,6 +143,9 @@
                     //uploadId是跟key对应的，如果想断点续传，只js计算md5不够，必须后端拿到上一次的key
                     //这有点麻烦，先不做了
                     //其实就是后端存一个你上次上传的未完成的草稿，下次再开始上传的时候，先检查草稿
+                    //最主要的是要下发object key
+                    //uploadId也可以存在后端，所以其实前端不需要localStorage了
+
                     // setUploadId(key, response.body.uploadId);
                     return response;
                 });
