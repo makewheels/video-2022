@@ -20,10 +20,10 @@ public class FileController {
     @Resource
     private FileService fileService;
 
-    @GetMapping("getUploadUrl")
-    public Result<JSONObject> getUploadUrl(HttpServletRequest request, @RequestParam String fileId) {
+    @GetMapping("getUploadCredentials")
+    public Result<JSONObject> getUploadCredentials(HttpServletRequest request, @RequestParam String fileId) {
         User user = userServiceClient.getUserByRequest(request);
-        return fileService.getUploadUrl(user, fileId);
+        return fileService.getUploadCredentials(user, fileId);
     }
 
     @GetMapping("uploadFinish")

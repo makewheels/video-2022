@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.file;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baidubce.BceClientConfiguration;
 import com.baidubce.Protocol;
 import com.baidubce.auth.DefaultBceCredentials;
 import com.baidubce.http.HttpMethodName;
@@ -8,6 +9,9 @@ import com.baidubce.services.bos.BosClient;
 import com.baidubce.services.bos.BosClientConfiguration;
 import com.baidubce.services.bos.model.BosObject;
 import com.baidubce.services.bos.model.ObjectMetadata;
+import com.baidubce.services.sts.StsClient;
+import com.baidubce.services.sts.model.GetSessionTokenRequest;
+import com.baidubce.services.sts.model.GetSessionTokenResponse;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.usermicroservice2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
@@ -31,6 +35,8 @@ public class FileService {
 
     @Value("${s3.bucket}")
     private String bucket;
+    @Value("${s3.endpoint}")
+    private String endpoint;
     @Value("${s3.accessKeyId}")
     private String accessKeyId;
     @Value("${s3.secretKey}")
@@ -91,17 +97,27 @@ public class FileService {
         return getBosClient().getObject(bucket, key);
     }
 
-    public Result<JSONObject> getUploadUrl(User user, String fileId) {
+    public Result<JSONObject> getUploadCredentials(User user, String fileId) {
         File file = mongoTemplate.findById(fileId, File.class);
-        if (file == null)
-            return null;
-        if (!StringUtils.equals(user.getId(), file.getUserId()))
-            return null;
+        if (file == null) return null;
+        if (!StringUtils.equals(user.getId(), file.getUserId())) return null;
 
-        String url = getPreSignedUrl(file.getKey(), 30 * 60 * 1000, HttpMethodName.PUT);
+        StsClient stsClient = new StsClient(new BceClientConfiguration().withEndpoint("https://sts.bj.baidubce.com")
+                .withCredentials(new DefaultBceCredentials(accessKeyId, secretKey)));
+        GetSessionTokenResponse response = stsClient.getSessionToken(
+                new GetSessionTokenRequest().withDurationSeconds(3 * 60 * 60));
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("uploadUrl", url);
+        jsonObject.put("bucket", bucket);
+        jsonObject.put("key", file.getKey());
+        if (endpoint.startsWith("http")) {
+            jsonObject.put("endpoint", endpoint);
+        } else {
+            jsonObject.put("endpoint", "https://" + endpoint);
+        }
+        jsonObject.put("accessKeyId", response.getAccessKeyId());
+        jsonObject.put("secretKey", response.getSecretAccessKey());
+        jsonObject.put("sessionToken", response.getSessionToken());
         return Result.ok(jsonObject);
     }
 
