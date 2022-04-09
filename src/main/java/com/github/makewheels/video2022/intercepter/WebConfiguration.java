@@ -31,6 +31,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/video/addWatchLog")
                 .excludePathPatterns("/save-token.html")
                 .excludePathPatterns("/video/onCdnPrefetchFinish")
+                .excludePathPatterns("/upload.html")
         ;
     }
 }
