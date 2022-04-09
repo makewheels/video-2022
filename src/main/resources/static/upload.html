@@ -103,9 +103,9 @@
         });
     });
 
-
+    //断点续传localStorage的key
     var generateLocalKey = function (blob, chunkSize, bucket, object) {
-        return [blob.name, blob.size, chunkSize, bucket, object].join('&');
+        return "baidu-bos-uploadId-" + [blob.size, chunkSize, bucket, object].join('&');
     };
     var getUploadId = function (key) {
         return localStorage.getItem(key);
@@ -138,6 +138,11 @@
                     // response.body.uploadId为新生成的`uploadId`
                     response.body.parts = [];
                     // 为了下次能使用断点续传，我们需要把新生成的`uploadId`保存下来
+                    //2022年4月9日13:33:28
+                    //难点在于，我每次都相当于新建object key
+                    //uploadId是跟key对应的，如果想断点续传，只js计算md5不够，必须后端拿到上一次的key
+                    //这有点麻烦，先不做了
+                    //其实就是后端存一个你上次上传的未完成的草稿，下次再开始上传的时候，先检查草稿
                     // setUploadId(key, response.body.uploadId);
                     return response;
                 });
