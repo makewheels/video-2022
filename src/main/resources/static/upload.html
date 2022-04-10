@@ -59,9 +59,8 @@
         const selectedFile = input_file.files[0];
         let originalFilename = selectedFile.name;
         let size = selectedFile.size;
-        let type = selectedFile.type;
         input_title.value = originalFilename.substring(0, originalFilename.indexOf("."));
-        createVideo(originalFilename, size, type);
+        createVideo(originalFilename, size, "USER_UPLOAD");
     }
 
     let fileId;

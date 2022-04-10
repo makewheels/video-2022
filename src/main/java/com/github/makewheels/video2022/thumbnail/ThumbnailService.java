@@ -21,11 +21,11 @@ import javax.annotation.Resource;
 public class ThumbnailService {
     private MediaClient mediaClient;
 
-    @Value("${mcp.accessKeyId}")
+    @Value("${baidu.mcp.accessKeyId}")
     private String accessKeyId;
-    @Value("${mcp.secretKey}")
+    @Value("${baidu.mcp.secretKey}")
     private String secretKey;
-    @Value("${mcp.pipelineName}")
+    @Value("${baidu.mcp.pipelineName}")
     private String pipelineName;
 
     @Resource

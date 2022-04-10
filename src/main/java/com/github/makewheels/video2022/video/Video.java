@@ -32,6 +32,15 @@ public class Video {
     private String description;
 
     @Indexed
+    private String type;
+    @Indexed
+    private String provider;
+
+    @Indexed
+    private String youtubeId;
+    private String youtubeUrl;
+
+    @Indexed
     private String status;
     @Indexed
     private Date createTime;

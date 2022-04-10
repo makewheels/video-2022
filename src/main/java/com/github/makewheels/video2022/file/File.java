@@ -25,6 +25,12 @@ public class File {
 
     private Long size;
     private String md5;
+
+    @Indexed
+    private String provider;
+    @Indexed
+    private String videoType;
+
     @Indexed
     private String status;
     @Indexed
