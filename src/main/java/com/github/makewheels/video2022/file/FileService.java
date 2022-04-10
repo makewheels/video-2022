@@ -15,6 +15,8 @@ import com.baidubce.services.sts.model.GetSessionTokenResponse;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.usermicroservice2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
+import com.github.makewheels.video2022.video.VideoType;
+import com.github.makewheels.video2022.video.YoutubeService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -33,26 +35,45 @@ public class FileService {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    @Value("${s3.bucket}")
-    private String bucket;
-    @Value("${s3.endpoint}")
-    private String endpoint;
-    @Value("${s3.accessKeyId}")
-    private String accessKeyId;
-    @Value("${s3.secretKey}")
-    private String secretKey;
-    @Value("${s3.accessBaseUrl}")
-    private String accessBaseUrl;
-    @Value("${s3.cdnBaseUrl}")
-    private String cdnBaseUrl;
+    @Value("${baidu.bos.bucket}")
+    private String baiduBosBucket;
+    @Value("${baidu.bos.endpoint}")
+    private String baiduBosEndpoint;
+    @Value("${baidu.bos.accessKeyId}")
+    private String baiduBosAccessKeyId;
+    @Value("${baidu.bos.secretKey}")
+    private String baiduBosSecretKey;
+    @Value("${baidu.bos.accessBaseUrl}")
+    private String baiduBosAccessBaseUrl;
+    @Value("${baidu.bos.cdnBaseUrl}")
+    private String baiduBosCdnBaseUrl;
 
     private BosClient bosClient;
 
-    public File create(User user, String originalFilename) {
+    @Resource
+    private YoutubeService youtubeService;
+
+    public File create(User user, String provider, JSONObject requestBody) {
         File file = new File();
         file.setUserId(user.getId());
-        file.setOriginalFilename(originalFilename);
-        file.setExtension(FilenameUtils.getExtension(originalFilename).toLowerCase());
+
+        file.setProvider(provider);
+        String videoType = requestBody.getString("type");
+        file.setVideoType(videoType);
+
+        //原始文件名和后缀
+        if (videoType.equals(VideoType.USER_UPLOAD)) {
+            String originalFilename = requestBody.getString("originalFilename");
+            file.setOriginalFilename(originalFilename);
+            file.setExtension(FilenameUtils.getExtension(originalFilename).toLowerCase());
+        } else if (videoType.equals(VideoType.YOUTUBE)) {
+            //YouTube搬运视频没有源文件名，只有拓展名，是yt-dlp给的，之后上传的key也会用这个拓展名
+            String youtubeUrl = requestBody.getString("youtubeUrl");
+            String youtubeVideoId = youtubeService.getYoutubeVideoId(youtubeUrl);
+            String extension = youtubeService.getFileExtension(youtubeVideoId);
+            file.setExtension(extension);
+        }
+
         file.setStatus(FileStatus.CREATED);
         file.setCreateTime(new Date());
         mongoTemplate.save(file);
@@ -64,7 +85,7 @@ public class FileService {
             return bosClient;
         }
         BosClientConfiguration config = new BosClientConfiguration();
-        config.setCredentials(new DefaultBceCredentials(accessKeyId, secretKey));
+        config.setCredentials(new DefaultBceCredentials(baiduBosAccessKeyId, baiduBosSecretKey));
         config.setEndpoint("bj.bcebos.com");
         config.setProtocol(Protocol.HTTPS);
         // 设置HTTP最大连接数为10
@@ -89,12 +110,12 @@ public class FileService {
      */
     private String getPreSignedUrl(String key, long time, HttpMethodName httpMethodName) {
         return getBosClient().generatePresignedUrl(
-                        bucket, key, (int) (time / 1000), httpMethodName)
+                        baiduBosBucket, key, (int) (time / 1000), httpMethodName)
                 .toString();
     }
 
     private BosObject getObject(String key) {
-        return getBosClient().getObject(bucket, key);
+        return getBosClient().getObject(baiduBosBucket, key);
     }
 
     public Result<JSONObject> getUploadCredentials(User user, String fileId) {
@@ -103,17 +124,17 @@ public class FileService {
         if (!StringUtils.equals(user.getId(), file.getUserId())) return null;
 
         StsClient stsClient = new StsClient(new BceClientConfiguration().withEndpoint("https://sts.bj.baidubce.com")
-                .withCredentials(new DefaultBceCredentials(accessKeyId, secretKey)));
+                .withCredentials(new DefaultBceCredentials(baiduBosAccessKeyId, baiduBosSecretKey)));
         GetSessionTokenResponse response = stsClient.getSessionToken(
                 new GetSessionTokenRequest().withDurationSeconds(3 * 60 * 60));
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("bucket", bucket);
+        jsonObject.put("bucket", baiduBosBucket);
         jsonObject.put("key", file.getKey());
-        if (endpoint.startsWith("http")) {
-            jsonObject.put("endpoint", endpoint);
+        if (baiduBosEndpoint.startsWith("http")) {
+            jsonObject.put("endpoint", baiduBosEndpoint);
         } else {
-            jsonObject.put("endpoint", "https://" + endpoint);
+            jsonObject.put("endpoint", "https://" + baiduBosEndpoint);
         }
         jsonObject.put("accessKeyId", response.getAccessKeyId());
         jsonObject.put("secretKey", response.getSecretAccessKey());

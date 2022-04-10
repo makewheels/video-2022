@@ -28,12 +28,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -61,6 +58,8 @@ public class VideoService {
 
     @Resource
     private VideoRedisService videoRedisService;
+    @Resource
+    private YoutubeService youtubeService;
 
     @Value("${baseUrl}")
     private String baseUrl;
@@ -83,12 +82,27 @@ public class VideoService {
 
     public Result<JSONObject> create(User user, JSONObject requestBody) {
         String userId = user.getId();
+        Video video = new Video();
+
+        //决定云服务提供商是阿里云还是百度云
+        String provider = null;
+        String type = requestBody.getString("type");
+        video.setType(type);
+        if (type.equals(VideoType.USER_UPLOAD)) {
+            provider = Provider.BAIDU;
+        } else if (type.equals(VideoType.YOUTUBE)) {
+            provider = Provider.ALIYUN;
+            String youtubeUrl = requestBody.getString("youtubeUrl");
+            video.setYoutubeUrl(youtubeUrl);
+            video.setYoutubeId(youtubeService.getYoutubeVideoId(youtubeUrl));
+        }
+        video.setProvider(provider);
+
         //创建 file
-        File file = fileService.create(user, requestBody.getString("originalFilename"));
+        File file = fileService.create(user, provider, requestBody);
 
         String fileId = file.getId();
         //创建 video
-        Video video = new Video();
         video.setWatchCount(0);
         video.setOriginalFileId(fileId);
         video.setUserId(userId);
@@ -105,12 +119,9 @@ public class VideoService {
         // 更新file上传路径
         String key = "video/" + userId + "/" + videoId + "/original/" + videoId + "." + file.getExtension();
         file.setKey(key);
-        file.setAccessUrl(fileService.getAccessBaseUrl() + key);
-        file.setCdnUrl(fileService.getCdnBaseUrl() + key);
+        file.setAccessUrl(fileService.getBaiduBosAccessBaseUrl() + key);
+        file.setCdnUrl(fileService.getBaiduBosCdnBaseUrl() + key);
         mongoTemplate.save(file);
-
-        //更新video originalFileKey
-        video.setOriginalFileKey(key);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("fileId", fileId);
@@ -143,8 +154,8 @@ public class VideoService {
         String m3u8Key = "video/" + userId + "/" + videoId + "/transcode/"
                 + resolution + "/" + videoId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
-        transcode.setM3u8AccessUrl(fileService.getAccessBaseUrl() + m3u8Key);
-        transcode.setM3u8CdnUrl(fileService.getCdnBaseUrl() + m3u8Key);
+        transcode.setM3u8AccessUrl(fileService.getBaiduBosAccessBaseUrl() + m3u8Key);
+        transcode.setM3u8CdnUrl(fileService.getBaiduBosCdnBaseUrl() + m3u8Key);
         mongoTemplate.save(transcode);
 
         //发起转码
@@ -212,8 +223,8 @@ public class VideoService {
             thumbnail.setStatus(TranscodeStatus.CREATED);
             thumbnail.setSourceKey(sourceKey);
             thumbnail.setTargetKeyPrefix(targetKeyPrefix);
-            thumbnail.setAccessUrl(fileService.getAccessBaseUrl() + key);
-            thumbnail.setCdnUrl(fileService.getCdnBaseUrl() + key);
+            thumbnail.setAccessUrl(fileService.getBaiduBosAccessBaseUrl() + key);
+            thumbnail.setCdnUrl(fileService.getBaiduBosCdnBaseUrl() + key);
             thumbnail.setExtension("jpg");
             thumbnail.setKey(key);
             mongoTemplate.save(thumbnail);
@@ -285,7 +296,9 @@ public class VideoService {
         watchInfo.setVideoId(videoId);
         //通过videoId查找封面
         Thumbnail thumbnail = thumbnailRepository.getByVideoId(videoId);
-        watchInfo.setCoverUrl(thumbnail.getCdnUrl());
+        if (thumbnail != null) {
+            watchInfo.setCoverUrl(thumbnail.getCdnUrl());
+        }
         //通过videoId查找m3u8播放地址
         List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
         List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
@@ -381,6 +394,6 @@ public class VideoService {
     public Result<Void> onCdnPrefetchFinish(JSONObject body) {
         log.info("收到软路由预热完成回调：");
         log.info(body.toJSONString());
-        return null;
+        return Result.ok();
     }
 }

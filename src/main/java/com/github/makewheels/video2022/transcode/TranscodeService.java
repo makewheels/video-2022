@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022.transcode;
 
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.URLUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -11,7 +10,6 @@ import com.baidubce.services.media.MediaClient;
 import com.baidubce.services.media.model.CreateTranscodingJobResponse;
 import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
 import com.baidubce.services.media.model.GetTranscodingJobResponse;
-import com.baidubce.services.media.model.ThumbnailJobStatus;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
@@ -26,20 +24,19 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
 @Slf4j
 public class TranscodeService {
 
-    @Value("${s3.bucket}")
+    @Value("${baidu.bos.bucket}")
     private String bucket;
-    @Value("${mcp.accessKeyId}")
+    @Value("${baidu.mcp.accessKeyId}")
     private String accessKeyId;
-    @Value("${mcp.secretKey}")
+    @Value("${baidu.mcp.secretKey}")
     private String secretKey;
-    @Value("${mcp.pipelineName}")
+    @Value("${baidu.mcp.pipelineName}")
     private String pipelineName;
 
     @Value("${cdn-prefetch-url}")
