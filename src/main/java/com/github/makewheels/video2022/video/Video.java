@@ -37,7 +37,7 @@ public class Video {
     private String provider;
 
     @Indexed
-    private String youtubeId;
+    private String youtubeVideoId;
     private String youtubeUrl;
 
     @Indexed
@@ -46,4 +46,6 @@ public class Video {
     private Date createTime;
 
     private JSONObject mediaInfo;
+
+    private JSONObject youtubeVideoInfo;
 }

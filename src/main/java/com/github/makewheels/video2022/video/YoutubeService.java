@@ -2,23 +2,30 @@ package com.github.makewheels.video2022.video;
 
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class YoutubeService {
     @Value("${youtube-service-url}")
     private String youtubeServiceUrl;
 
+    /**
+     * 获取文件拓展名
+     *
+     * @param youtubeVideoId
+     * @return
+     */
     public String getFileExtension(String youtubeVideoId) {
-        String json = HttpUtil.get(youtubeServiceUrl + "/getFileExtension?youtubeVideoId=" + youtubeVideoId);
+        String json = HttpUtil.get(youtubeServiceUrl + "/youtube/getFileExtension" +
+                "?youtubeVideoId=" + youtubeVideoId);
         return JSONObject.parseObject(json).getString("extension");
     }
 
@@ -52,5 +59,37 @@ public class YoutubeService {
             return uri.getPath().substring(1);
         }
         return null;
+    }
+
+    /**
+     * 提交搬运任务
+     *
+     * @param video
+     * @return
+     */
+    public JSONObject submitMission(Video video) {
+        JSONObject body = new JSONObject();
+        body.put("missionId", video.getId());
+        body.put("youtubeVideoId", video.getYoutubeVideoId());
+        body.put("uploadKey", video.getOriginalFileKey());
+        log.info("提交搬运任务，body = " + body.toJSONString());
+        String json = HttpUtil.post(youtubeServiceUrl + "/youtube/submitMission",
+                body.toJSONString());
+        log.info("海外服务器返回：" + json);
+        return JSONObject.parseObject(json);
+    }
+
+    /**
+     * 获取视频信息
+     *
+     * @param video
+     * @return
+     */
+    public JSONObject getVideoInfo(Video video) {
+        log.info("获取视频信息：");
+        String json = HttpUtil.get(youtubeServiceUrl + "/youtube/getVideoInfo?youtubeVideoId="
+                + video.getYoutubeVideoId());
+        log.info("海外服务器返回：" + json);
+        return JSONObject.parseObject(json);
     }
 }

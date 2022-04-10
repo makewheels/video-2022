@@ -94,7 +94,7 @@ public class VideoService {
             provider = Provider.ALIYUN;
             String youtubeUrl = requestBody.getString("youtubeUrl");
             video.setYoutubeUrl(youtubeUrl);
-            video.setYoutubeId(youtubeService.getYoutubeVideoId(youtubeUrl));
+            video.setYoutubeVideoId(youtubeService.getYoutubeVideoId(youtubeUrl));
         }
         video.setProvider(provider);
 
@@ -116,12 +116,33 @@ public class VideoService {
         mongoTemplate.save(video);
 
         String videoId = video.getId();
+        file.setVideoId(videoId);
         // 更新file上传路径
-        String key = "video/" + userId + "/" + videoId + "/original/" + videoId + "." + file.getExtension();
+        String key = "videos/" + userId + "/" + videoId + "/original/" + videoId + "." + file.getExtension();
         file.setKey(key);
-        file.setAccessUrl(fileService.getBaiduBosAccessBaseUrl() + key);
-        file.setCdnUrl(fileService.getBaiduBosCdnBaseUrl() + key);
         mongoTemplate.save(file);
+        log.info("新建文件：" + JSON.toJSONString(file));
+
+        //更新video的source key
+        video.setOriginalFileKey(key);
+        mongoTemplate.save(video);
+        log.info("新建视频：" + JSON.toJSONString(video));
+
+        //如果是搬运YouTube视频
+        if (type.equals(VideoType.YOUTUBE)) {
+            new Thread(() -> {
+                //提交任务给海外服务器
+                youtubeService.submitMission(video);
+                //获取视频信息
+                JSONObject jsonObject = youtubeService.getVideoInfo(video);
+                //更新数据库保存的title和description
+                video.setYoutubeVideoInfo(jsonObject);
+                JSONObject snippet = jsonObject.getJSONObject("snippet");
+                video.setTitle(snippet.getString("title"));
+                video.setDescription(snippet.getString("description"));
+                mongoTemplate.save(video);
+            }).start();
+        }
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("fileId", fileId);
@@ -151,11 +172,11 @@ public class VideoService {
         transcode.setStatus(TranscodeStatus.CREATED);
         transcode.setResolution(resolution);
         transcode.setSourceKey(sourceKey);
-        String m3u8Key = "video/" + userId + "/" + videoId + "/transcode/"
+        String m3u8Key = "videos/" + userId + "/" + videoId + "/transcode/"
                 + resolution + "/" + videoId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
-        transcode.setM3u8AccessUrl(fileService.getBaiduBosAccessBaseUrl() + m3u8Key);
-        transcode.setM3u8CdnUrl(fileService.getBaiduBosCdnBaseUrl() + m3u8Key);
+        transcode.setM3u8AccessUrl(fileService.getAliyunOssAccessBaseUrl() + m3u8Key);
+        transcode.setM3u8CdnUrl(fileService.getAliyunOssCdnBaseUrl() + m3u8Key);
         mongoTemplate.save(transcode);
 
         //发起转码
@@ -191,8 +212,7 @@ public class VideoService {
         if (!file.getStatus().equals(FileStatus.READY))
             return Result.error(ErrorCode.FAIL);
 
-        String sourceKey = file.getKey();
-        video.setOriginalFileKey(sourceKey);
+        String sourceKey = video.getOriginalFileKey();
         video.setStatus(VideoStatus.TRANSCODING);
         mongoTemplate.save(video);
 
@@ -208,7 +228,7 @@ public class VideoService {
             mongoTemplate.save(video);
 
             //发起截帧任务
-            String targetKeyPrefix = "video/" + userId + "/" + videoId + "/cover/" + videoId;
+            String targetKeyPrefix = "videos/" + userId + "/" + videoId + "/cover/" + videoId;
             CreateThumbnailJobResponse thumbnailJob
                     = thumbnailService.createThumbnailJob(sourceKey, targetKeyPrefix);
             log.info("发起截帧任务：video = " + videoId);
@@ -223,8 +243,8 @@ public class VideoService {
             thumbnail.setStatus(TranscodeStatus.CREATED);
             thumbnail.setSourceKey(sourceKey);
             thumbnail.setTargetKeyPrefix(targetKeyPrefix);
-            thumbnail.setAccessUrl(fileService.getBaiduBosAccessBaseUrl() + key);
-            thumbnail.setCdnUrl(fileService.getBaiduBosCdnBaseUrl() + key);
+            thumbnail.setAccessUrl(fileService.getAliyunOssAccessBaseUrl() + key);
+            thumbnail.setCdnUrl(fileService.getAliyunOssCdnBaseUrl() + key);
             thumbnail.setExtension("jpg");
             thumbnail.setKey(key);
             mongoTemplate.save(thumbnail);
