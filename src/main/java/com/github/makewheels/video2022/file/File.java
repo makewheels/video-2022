@@ -20,11 +20,14 @@ public class File {
 
     private String originalFilename;
 
-    private String accessUrl;
-    private String cdnUrl;
-
     private Long size;
     private String md5;
+
+    @Indexed
+    private String type;
+
+    @Indexed
+    private String videoId;
 
     @Indexed
     private String provider;

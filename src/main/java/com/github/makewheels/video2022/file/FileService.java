@@ -15,6 +15,7 @@ import com.baidubce.services.sts.model.GetSessionTokenResponse;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.usermicroservice2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
+import com.github.makewheels.video2022.video.Provider;
 import com.github.makewheels.video2022.video.VideoType;
 import com.github.makewheels.video2022.video.YoutubeService;
 import lombok.Data;
@@ -50,11 +51,34 @@ public class FileService {
 
     private BosClient bosClient;
 
+
+    @Value("${aliyun.oss.bucket}")
+    private String aliyunOssBucket;
+    @Value("${aliyun.oss.endpoint}")
+    private String aliyunOssEndpoint;
+    @Value("${aliyun.oss.accessKeyId}")
+    private String aliyunOssAccessKeyId;
+    @Value("${aliyun.oss.secretKey}")
+    private String aliyunOssSecretKey;
+    @Value("${aliyun.oss.accessBaseUrl}")
+    private String aliyunOssAccessBaseUrl;
+    @Value("${aliyun.oss.cdnBaseUrl}")
+    private String aliyunOssCdnBaseUrl;
+
     @Resource
     private YoutubeService youtubeService;
 
+    /**
+     * 新建视频时创建文件
+     *
+     * @param user
+     * @param provider
+     * @param requestBody
+     * @return
+     */
     public File create(User user, String provider, JSONObject requestBody) {
         File file = new File();
+        file.setType(FileType.ORIGINAL_VIDEO);
         file.setUserId(user.getId());
 
         file.setProvider(provider);
@@ -85,7 +109,7 @@ public class FileService {
             return bosClient;
         }
         BosClientConfiguration config = new BosClientConfiguration();
-        config.setCredentials(new DefaultBceCredentials(baiduBosAccessKeyId, baiduBosSecretKey));
+        config.setCredentials(new DefaultBceCredentials(aliyunOssAccessKeyId, aliyunOssSecretKey));
         config.setEndpoint("bj.bcebos.com");
         config.setProtocol(Protocol.HTTPS);
         // 设置HTTP最大连接数为10
@@ -100,22 +124,8 @@ public class FileService {
         return bosClient;
     }
 
-    /**
-     * 生成预签名url
-     *
-     * @param key
-     * @param time           有效时长，单位毫秒
-     * @param httpMethodName
-     * @return
-     */
-    private String getPreSignedUrl(String key, long time, HttpMethodName httpMethodName) {
-        return getBosClient().generatePresignedUrl(
-                        baiduBosBucket, key, (int) (time / 1000), httpMethodName)
-                .toString();
-    }
-
     private BosObject getObject(String key) {
-        return getBosClient().getObject(baiduBosBucket, key);
+        return getBosClient().getObject(aliyunOssBucket, key);
     }
 
     public Result<JSONObject> getUploadCredentials(User user, String fileId) {
@@ -123,18 +133,19 @@ public class FileService {
         if (file == null) return null;
         if (!StringUtils.equals(user.getId(), file.getUserId())) return null;
 
-        StsClient stsClient = new StsClient(new BceClientConfiguration().withEndpoint("https://sts.bj.baidubce.com")
-                .withCredentials(new DefaultBceCredentials(baiduBosAccessKeyId, baiduBosSecretKey)));
+        StsClient stsClient = new StsClient(
+                new BceClientConfiguration().withEndpoint("https://sts.bj.baidubce.com")
+                        .withCredentials(new DefaultBceCredentials(aliyunOssAccessKeyId, aliyunOssSecretKey)));
         GetSessionTokenResponse response = stsClient.getSessionToken(
                 new GetSessionTokenRequest().withDurationSeconds(3 * 60 * 60));
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("bucket", baiduBosBucket);
+        jsonObject.put("bucket", aliyunOssBucket);
         jsonObject.put("key", file.getKey());
-        if (baiduBosEndpoint.startsWith("http")) {
-            jsonObject.put("endpoint", baiduBosEndpoint);
+        if (aliyunOssEndpoint.startsWith("http")) {
+            jsonObject.put("endpoint", aliyunOssEndpoint);
         } else {
-            jsonObject.put("endpoint", "https://" + baiduBosEndpoint);
+            jsonObject.put("endpoint", "https://" + aliyunOssEndpoint);
         }
         jsonObject.put("accessKeyId", response.getAccessKeyId());
         jsonObject.put("secretKey", response.getSecretAccessKey());
@@ -142,12 +153,49 @@ public class FileService {
         return Result.ok(jsonObject);
     }
 
+    /**
+     * 根据provider获取url
+     *
+     * @param file
+     * @return
+     */
+    public String getAccessUrl(File file) {
+        String provider = file.getProvider();
+        if (provider.equals(Provider.ALIYUN)) {
+            return aliyunOssAccessBaseUrl + file.getKey();
+        } else if (provider.equals(Provider.BAIDU)) {
+            return baiduBosAccessBaseUrl + file.getKey();
+        }
+        return null;
+    }
+
+    /**
+     * 根据provider获取url
+     *
+     * @param file
+     * @return
+     */
+    public String getCdnUrl(File file) {
+        String provider = file.getProvider();
+        if (provider.equals(Provider.ALIYUN)) {
+            return aliyunOssCdnBaseUrl + file.getKey();
+        } else if (provider.equals(Provider.BAIDU)) {
+            return baiduBosCdnBaseUrl + file.getKey();
+        }
+        return null;
+    }
+
+    /**
+     * 通知文件上传完成，和对象存储服务器确认，改变数据库File状态
+     *
+     * @param user
+     * @param fileId
+     * @return
+     */
     public Result<Void> uploadFinish(User user, String fileId) {
         File file = mongoTemplate.findById(fileId, File.class);
-        if (file == null)
-            return Result.error(ErrorCode.FAIL);
-        if (!StringUtils.equals(user.getId(), file.getUserId()))
-            return Result.error(ErrorCode.FAIL);
+        if (file == null) return Result.error(ErrorCode.FAIL);
+        if (!StringUtils.equals(user.getId(), file.getUserId())) return Result.error(ErrorCode.FAIL);
         BosObject bosObject = getObject(file.getKey());
         log.info("文件上传完成，fileId = " + fileId);
         log.info(JSONObject.toJSONString(bosObject));
