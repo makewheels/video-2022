@@ -107,7 +107,7 @@
         <!--阿里云视频转码-->
         <dependency>
             <groupId>com.aliyun</groupId>
-            <artifactId>aliyun-java-sdk-mts</artifactId>
+            <artifactId>mts20140618</artifactId>
             <version>3.3.45</version>
         </dependency>
 
