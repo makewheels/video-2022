@@ -7,7 +7,7 @@ import com.baidubce.auth.DefaultBceCredentials;
 import com.baidubce.services.media.MediaClient;
 import com.baidubce.services.media.model.CreateThumbnailJobResponse;
 import com.baidubce.services.media.model.GetThumbnailJobResponse;
-import com.github.makewheels.video2022.transcode.TranscodeStatus;
+import com.github.makewheels.video2022.transcode.BaiduTranscodeStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -83,8 +83,8 @@ public class ThumbnailService {
         thumbnail.setStatus(response.getJobStatus());
         //如果已完成，不论成功失败，都保存数据库
         //只有完成状态保存result，pending 和 running不保存result，只保存状态
-        if (StringUtils.equals(response.getJobStatus(), TranscodeStatus.FAILED) ||
-                StringUtils.equals(response.getJobStatus(), TranscodeStatus.SUCCESS)) {
+        if (StringUtils.equals(response.getJobStatus(), BaiduTranscodeStatus.FAILED) ||
+                StringUtils.equals(response.getJobStatus(), BaiduTranscodeStatus.SUCCESS)) {
             thumbnail.setResult(JSONObject.parseObject(JSON.toJSONString(response)));
         }
         //保存数据库

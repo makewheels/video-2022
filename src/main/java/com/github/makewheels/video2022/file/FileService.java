@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.file;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baidubce.BceClientConfiguration;
 import com.baidubce.Protocol;
@@ -146,6 +147,7 @@ public class FileService {
         }
         if (credentials == null) return Result.error(ErrorCode.FAIL);
         credentials.put("provider", provider);
+        log.info("生成上传凭证，fileId = " + fileId + " " + JSON.toJSONString(credentials));
         return Result.ok(credentials);
     }
 

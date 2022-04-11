@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.etc;
+package com.github.makewheels.video2022.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import javax.annotation.Resource;
 
 @Configuration
-public class MongoConfig {
+public class MongoConfiguration {
     @Resource
     private MongoDatabaseFactory mongoDbFactory;
     @Resource
