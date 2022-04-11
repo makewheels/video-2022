@@ -178,8 +178,8 @@ public class VideoService {
         String m3u8Key = "videos/" + userId + "/" + videoId + "/transcode/"
                 + resolution + "/" + videoId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
-        transcode.setM3u8AccessUrl(fileService.getAliyunOssAccessBaseUrl() + m3u8Key);
-        transcode.setM3u8CdnUrl(fileService.getAliyunOssCdnBaseUrl() + m3u8Key);
+        transcode.setM3u8AccessUrl("fileService.getAliyunOssAccessBaseUrl()" + m3u8Key);
+        transcode.setM3u8CdnUrl("fileService.getAliyunOssCdnBaseUrl()" + m3u8Key);
         mongoTemplate.save(transcode);
 
         //发起转码
@@ -246,8 +246,8 @@ public class VideoService {
             thumbnail.setStatus(BaiduTranscodeStatus.CREATED);
             thumbnail.setSourceKey(sourceKey);
             thumbnail.setTargetKeyPrefix(targetKeyPrefix);
-            thumbnail.setAccessUrl(fileService.getAliyunOssAccessBaseUrl() + key);
-            thumbnail.setCdnUrl(fileService.getAliyunOssCdnBaseUrl() + key);
+            thumbnail.setAccessUrl("fileService.getAliyunOssAccessBaseUrl()" + key);
+            thumbnail.setCdnUrl("fileService.getAliyunOssCdnBaseUrl() "+ key);
             thumbnail.setExtension("jpg");
             thumbnail.setKey(key);
             mongoTemplate.save(thumbnail);

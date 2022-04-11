@@ -2,25 +2,14 @@ package com.github.makewheels.video2022.file;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.baidubce.BceClientConfiguration;
-import com.baidubce.Protocol;
-import com.baidubce.auth.DefaultBceCredentials;
-import com.baidubce.http.HttpMethodName;
-import com.baidubce.services.bos.BosClient;
-import com.baidubce.services.bos.BosClientConfiguration;
+import com.aliyun.oss.model.OSSObject;
 import com.baidubce.services.bos.model.BosObject;
-import com.baidubce.services.bos.model.ObjectMetadata;
-import com.baidubce.services.sts.StsClient;
-import com.baidubce.services.sts.model.GetSessionTokenRequest;
-import com.baidubce.services.sts.model.GetSessionTokenResponse;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.usermicroservice2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.video.Provider;
 import com.github.makewheels.video2022.video.VideoType;
 import com.github.makewheels.video2022.video.YoutubeService;
-import jdk.nashorn.internal.objects.NativeUint8Array;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,7 +22,6 @@ import java.util.Date;
 
 @Service
 @Slf4j
-@Data
 public class FileService {
     @Resource
     private MongoTemplate mongoTemplate;
@@ -134,8 +122,7 @@ public class FileService {
         //如果文件不存在，或者token找不到用户
         if (file == null || user == null) return Result.error(ErrorCode.FAIL);
         //如果上传文件不属于该用户
-        if (!StringUtils.equals(user.getId(), file.getUserId()))
-            return Result.error(ErrorCode.FAIL);
+        if (!StringUtils.equals(user.getId(), file.getUserId())) return Result.error(ErrorCode.FAIL);
         String key = file.getKey();
         //根据provider，获取上传凭证
         String provider = file.getProvider();
@@ -159,18 +146,26 @@ public class FileService {
      * @return
      */
     public Result<Void> uploadFinish(User user, String fileId) {
+        log.info("开始处理文件上传完成，fileId = " + fileId);
+
         File file = mongoTemplate.findById(fileId, File.class);
         if (file == null) return Result.error(ErrorCode.FAIL);
-
         if (!StringUtils.equals(user.getId(), file.getUserId())) return Result.error(ErrorCode.FAIL);
 
-        BosObject bosObject = baiduBosService.getObject(file.getKey());
-        log.info("文件上传完成，fileId = " + fileId);
-        log.info(JSONObject.toJSONString(bosObject));
-        ObjectMetadata objectMetadata = bosObject.getObjectMetadata();
+        String key = file.getKey();
+        log.info("key = " + key);
+        //判断provider
+        if (file.getProvider().equals(Provider.ALIYUN)) {
+            OSSObject object = aliyunOssService.getObject(key);
+            file.setSize(object.getObjectMetadata().getContentLength());
+            file.setEtag(object.getObjectMetadata().getETag());
+        } else if (file.getProvider().equals(Provider.BAIDU)) {
+            BosObject object = baiduBosService.getObject(key);
+            file.setSize(object.getObjectMetadata().getContentLength());
+            file.setEtag(object.getObjectMetadata().getETag());
+        }
+
         file.setUploadTime(new Date());
-        file.setSize(objectMetadata.getContentLength());
-        file.setMd5(objectMetadata.getETag().toLowerCase());
         file.setStatus(FileStatus.READY);
         mongoTemplate.save(file);
         return Result.ok();
