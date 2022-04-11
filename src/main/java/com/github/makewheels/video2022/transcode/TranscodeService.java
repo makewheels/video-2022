@@ -55,8 +55,8 @@ public class TranscodeService {
 
     @Resource
     private AliyunMpsService aliyunMpsService;
+    @Resource
     private BaiduMcpService baiduMcpService;
-
 
     /**
      * 处理回调

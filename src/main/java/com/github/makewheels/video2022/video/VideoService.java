@@ -5,6 +5,10 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.aliyun.mts20140618.models.SubmitJobsResponse;
+import com.aliyun.mts20140618.models.SubmitJobsResponseBody;
+import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponse;
+import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
 import com.baidubce.services.media.model.CreateThumbnailJobResponse;
 import com.baidubce.services.media.model.CreateTranscodingJobResponse;
 import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
@@ -18,10 +22,10 @@ import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
 import com.github.makewheels.video2022.thumbnail.ThumbnailService;
 import com.github.makewheels.video2022.transcode.*;
+import com.github.makewheels.video2022.watch.WatchLog;
 import com.github.makewheels.video2022.watch.WatchRepository;
 import com.github.makewheels.video2022.watch.watchinfo.PlayUrl;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
-import com.github.makewheels.video2022.watch.WatchLog;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -61,10 +65,24 @@ public class VideoService {
     @Resource
     private YoutubeService youtubeService;
 
+    @Resource
+    private AliyunMpsService aliyunMpsService;
+    @Resource
+    private BaiduMcpService baiduMcpService;
+
     @Value("${internal-base-url}")
     private String internalBaseUrl;
     @Value("${short-url-service}")
     private String shortUrlService;
+
+    @Value("${baidu.bos.accessBaseUrl}")
+    private String baiduBosAccessBaseUrl;
+    @Value("${baidu.bos.cdnBaseUrl}")
+    private String baiduBosCdnBaseUrl;
+    @Value("${aliyun.oss.accessBaseUrl}")
+    private String aliyunOssAccessBaseUrl;
+    @Value("${aliyun.oss.cdnBaseUrl}")
+    private String aliyunOssCdnBaseUrl;
 
     private String getWatchId() {
 //        String json = HttpUtil.get("https://service-d5xe9zbh-1253319037.bj.apigw.tencentcs.com/release/");
@@ -135,7 +153,7 @@ public class VideoService {
         if (type.equals(VideoType.YOUTUBE)) {
             new Thread(() -> {
                 //提交任务给海外服务器
-                youtubeService.submitMission(user, video,file);
+                youtubeService.submitMission(user, video, file);
                 //获取视频信息
                 JSONObject jsonObject = youtubeService.getVideoInfo(video);
                 //更新数据库保存的title和description
@@ -157,43 +175,152 @@ public class VideoService {
     }
 
     /**
-     * 转码任务，盲分辨率，子线程异步执行
+     * 转码单分辨率
      *
      * @param user
      * @param video
      * @param resolution
      */
-    private void transcode(User user, Video video, String resolution) {
+    private void transcodeSingleResolution(User user, Video video, String resolution) {
         String userId = user.getId();
         String videoId = video.getId();
+        String provider = video.getProvider();
         String sourceKey = video.getOriginalFileKey();
 
+        //新建transcode对象，保存到数据库
         Transcode transcode = new Transcode();
         transcode.setUserId(userId);
         transcode.setVideoId(videoId);
+        transcode.setProvider(provider);
         transcode.setCreateTime(new Date());
+        //已创建状态，反正后面马上就要再次请求更新状态，所以这里就先保存CREATED
         transcode.setStatus(BaiduTranscodeStatus.CREATED);
         transcode.setResolution(resolution);
         transcode.setSourceKey(sourceKey);
         String m3u8Key = "videos/" + userId + "/" + videoId + "/transcode/"
                 + resolution + "/" + videoId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
-        transcode.setM3u8AccessUrl("fileService.getAliyunOssAccessBaseUrl()" + m3u8Key);
-        transcode.setM3u8CdnUrl("fileService.getAliyunOssCdnBaseUrl()" + m3u8Key);
+        if (provider.equals(Provider.ALIYUN)) {
+            transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
+            transcode.setM3u8CdnUrl(aliyunOssCdnBaseUrl + m3u8Key);
+        } else if (provider.equals(Provider.BAIDU)) {
+            transcode.setM3u8AccessUrl(baiduBosAccessBaseUrl + m3u8Key);
+            transcode.setM3u8CdnUrl(baiduBosCdnBaseUrl + m3u8Key);
+        }
         mongoTemplate.save(transcode);
 
-        //发起转码
-        CreateTranscodingJobResponse transcodingJob = transcodeService.createTranscodingJob(
-                sourceKey, m3u8Key, resolution);
-        String jobId = transcodingJob.getJobId();
+        //发起转码，保存jobId，更新jobStatus
         log.info("发起 " + resolution + " 转码：videoId = " + videoId);
-        log.info(JSON.toJSONString(transcodingJob));
+        String jobId = null;
+        String jobStatus = null;
+        if (provider.equals(Provider.ALIYUN)) {
+            log.info("使用阿里云发起转码：");
+            SubmitJobsResponseBody.SubmitJobsResponseBodyJobResultListJobResultJob job
+                    = aliyunMpsService.createTranscodingJobByResolution(sourceKey, m3u8Key, resolution)
+                    .getBody().getJobResultList().getJobResult().get(0).getJob();
+            log.info(JSON.toJSONString(job));
+            jobId = job.getJobId();
+            jobStatus = job.getState();
+        } else if (provider.equals(Provider.BAIDU)) {
+            log.info("使用百度云发起转码：");
+            CreateTranscodingJobResponse job = baiduMcpService.createTranscodingJob(
+                    sourceKey, m3u8Key, resolution);
+            log.info(JSON.toJSONString(job));
+            jobId = job.getJobId();
+            jobStatus = baiduMcpService.getTranscodingJob(jobId).getJobStatus();
+        }
+        log.info("jobId = " + jobId);
         transcode.setJobId(jobId);
+        transcode.setStatus(jobStatus);
         mongoTemplate.save(transcode);
+    }
 
-        //再次更新数据库状态
-        transcode.setStatus(transcodeService.getTranscodingJob(jobId).getJobStatus());
-        mongoTemplate.save(transcode);
+    /**
+     * 发起截帧任务
+     */
+    private void createThumbnail(User user, Video video) {
+        String userId = user.getId();
+        String videoId = video.getId();
+        String sourceKey = video.getOriginalFileKey();
+        String provider = video.getProvider();
+
+        Thumbnail thumbnail = new Thumbnail();
+        thumbnail.setCreateTime(new Date());
+        thumbnail.setUserId(userId);
+        thumbnail.setVideoId(videoId);
+        thumbnail.setStatus(BaiduTranscodeStatus.CREATED);
+        thumbnail.setSourceKey(sourceKey);
+        thumbnail.setExtension("jpg");
+
+        String targetKeyPrefix = "videos/" + userId + "/" + videoId + "/cover/" + videoId;
+        CreateThumbnailJobResponse thumbnailJob
+                = thumbnailService.createThumbnailJob(sourceKey, targetKeyPrefix);
+        log.info("通过百度云发起截帧任务：video = " + videoId);
+        log.info(JSON.toJSONString(thumbnailJob));
+
+        thumbnail.setTargetKeyPrefix(targetKeyPrefix);
+        String key = targetKeyPrefix + ".jpg";
+        thumbnail.setKey(key);
+        thumbnail.setAccessUrl(baiduBosAccessBaseUrl + key);
+        thumbnail.setCdnUrl(baiduBosCdnBaseUrl + key);
+
+        String thumbnailJobId = thumbnailJob.getJobId();
+        thumbnail.setJobId(thumbnailJobId);
+
+        mongoTemplate.save(thumbnail);
+        //再次查询，更新状态
+        thumbnail.setStatus(thumbnailService.getThumbnailJob(thumbnailJobId).getJobStatus());
+        mongoTemplate.save(thumbnail);
+        //更新video的冗余字段coverUrl
+        video.setCoverUrl(thumbnail.getCdnUrl());
+        mongoTemplate.save(video);
+    }
+
+    /**
+     * 开始发起对单个视频的转码
+     */
+    private void transcodeSingleVideo(User user, Video video) {
+        String videoId = video.getId();
+
+        String sourceKey = video.getOriginalFileKey();
+        String provider = video.getProvider();
+
+        //获取视频信息
+        if (provider.equals(Provider.ALIYUN)) {
+            log.info("通过阿里云获取视频信息，videoId = " + videoId);
+            SubmitMediaInfoJobResponseBody body = aliyunMpsService.getMediaInfo(sourceKey).getBody();
+            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJob job = body.getMediaInfoJob();
+            log.info(JSON.toJSONString(job));
+            //给video保存媒体信息到数据库
+            video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(job)));
+            String jobId = job.getJobId();
+            log.info("获取视频信息 jobId = " + jobId);
+            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties properties
+                    = job.getProperties();
+            video.setDuration((int) (Double.parseDouble(properties.getDuration()) * 1000));
+            video.setHeight(Integer.parseInt(properties.getHeight()));
+            video.setWidth(Integer.parseInt(properties.getWidth()));
+        } else if (provider.equals(Provider.BAIDU)) {
+            log.info("通过百度云获取视频信息，videoId = " + videoId);
+            log.info("源文件上传完成，获取mediaInfo：videoId = " + videoId);
+            GetMediaInfoOfFileResponse mediaInfo = baiduMcpService.getMediaInfo(sourceKey);
+            log.info(JSON.toJSONString(mediaInfo));
+            //截帧
+            createThumbnail(user, video);
+            video.setDuration(mediaInfo.getDurationInMillisecond());
+            video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(mediaInfo)));
+            mongoTemplate.save(video);
+            video.setWidth(mediaInfo.getVideo().getWidthInPixel());
+            video.setHeight(mediaInfo.getVideo().getHeightInPixel());
+        }
+
+        //开始转码，首先一定会发起720p的转码
+        transcodeSingleResolution(user, video, Resolution.R_720P);
+
+        //如果大于1280*720，再次发起1080p转码
+        if ((video.getWidth() * video.getHeight()) > (1280 * 720)) {
+            transcodeSingleResolution(user, video, Resolution.R_1080P);
+        }
     }
 
     /**
@@ -204,75 +331,22 @@ public class VideoService {
      * @return
      */
     public Result<Void> originalFileUploadFinish(User user, String videoId) {
-        String userId = user.getId();
         //查数据库，找到video
         Video video = mongoTemplate.findById(videoId, Video.class);
-        if (video == null) return Result.error(ErrorCode.FAIL);
 
+        //校验文件
+        if (video == null) return Result.error(ErrorCode.FAIL);
         File file = mongoTemplate.findById(video.getOriginalFileId(), File.class);
         if (file == null) return Result.error(ErrorCode.FAIL);
-
         if (!file.getStatus().equals(FileStatus.READY))
             return Result.error(ErrorCode.FAIL);
 
-        String sourceKey = video.getOriginalFileKey();
+        //更新视频为正在转码状态
         video.setStatus(VideoStatus.TRANSCODING);
         mongoTemplate.save(video);
 
-        String provider = video.getProvider();
-
         //创建子线程执行转码任务，先给前端返回结果
-        new Thread(() -> {
-            //获取视频信息
-            GetMediaInfoOfFileResponse mediaInfo = transcodeService.getMediaInfo(sourceKey);
-            log.info("源文件上传完成，获取mediaInfo：videoId = " + videoId);
-            log.info(JSON.toJSONString(mediaInfo));
-
-            video.setDuration(mediaInfo.getDurationInMillisecond());
-            video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(mediaInfo)));
-            mongoTemplate.save(video);
-
-            //发起截帧任务
-            String targetKeyPrefix = "videos/" + userId + "/" + videoId + "/cover/" + videoId;
-            CreateThumbnailJobResponse thumbnailJob
-                    = thumbnailService.createThumbnailJob(sourceKey, targetKeyPrefix);
-            log.info("发起截帧任务：video = " + videoId);
-            log.info(JSON.toJSONString(thumbnailJob));
-            String thumbnailJobId = thumbnailJob.getJobId();
-            Thumbnail thumbnail = new Thumbnail();
-            String key = targetKeyPrefix + ".jpg";
-            thumbnail.setCreateTime(new Date());
-            thumbnail.setUserId(userId);
-            thumbnail.setVideoId(videoId);
-            thumbnail.setJobId(thumbnailJobId);
-            thumbnail.setStatus(BaiduTranscodeStatus.CREATED);
-            thumbnail.setSourceKey(sourceKey);
-            thumbnail.setTargetKeyPrefix(targetKeyPrefix);
-            thumbnail.setAccessUrl("fileService.getAliyunOssAccessBaseUrl()" + key);
-            thumbnail.setCdnUrl("fileService.getAliyunOssCdnBaseUrl() "+ key);
-            thumbnail.setExtension("jpg");
-            thumbnail.setKey(key);
-            mongoTemplate.save(thumbnail);
-            //再次查询，更新状态
-            thumbnail.setStatus(thumbnailService.getThumbnailJob(thumbnailJobId).getJobStatus());
-            mongoTemplate.save(thumbnail);
-
-            //更新video的冗余字段coverUrl
-            video.setCoverUrl(thumbnail.getCdnUrl());
-            mongoTemplate.save(video);
-
-            Integer width = mediaInfo.getVideo().getWidthInPixel();
-            Integer height = mediaInfo.getVideo().getHeightInPixel();
-
-            //开始转码
-            //首先一定会发起720p的转码
-            transcode(user, video, Resolution.R_720P);
-
-            //如果单边大于1280像素，再次发起1080p转码
-            if (Math.max(width, height) > 1280) {
-                transcode(user, video, Resolution.R_1080P);
-            }
-        }).start();
+        new Thread(() -> transcodeSingleVideo(user, video)).start();
 
         return Result.ok();
     }

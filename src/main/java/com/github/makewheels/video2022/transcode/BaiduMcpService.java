@@ -64,6 +64,23 @@ public class BaiduMcpService {
     }
 
     /**
+     * 创建转码任务
+     */
+    public CreateTranscodingJobResponse createTranscodingJobByResolution(
+            String sourceKey, String targetKey, String resolution) {
+        String presetName;
+        if (resolution.equals(Resolution.R_1080P)) {
+            presetName = "t_1080p";
+        } else if (resolution.equals(Resolution.R_720P)) {
+            presetName = "t_720p";
+        } else {
+            presetName = "t_1080p";
+        }
+        return getMediaClient().createTranscodingJob(
+                pipelineName, sourceKey, targetKey, presetName);
+    }
+
+    /**
      * 获取转码任务详情
      *
      * @param jobId

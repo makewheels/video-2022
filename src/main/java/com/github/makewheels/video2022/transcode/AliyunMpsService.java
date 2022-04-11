@@ -3,10 +3,12 @@ package com.github.makewheels.video2022.transcode;
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.URLUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.Client;
 import com.aliyun.mts20140618.models.*;
 import com.aliyun.teaopenapi.models.Config;
+import com.baidubce.services.media.model.CreateTranscodingJobResponse;
 import jdk.nashorn.internal.scripts.JO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -29,10 +31,8 @@ public class AliyunMpsService {
     private Client getClient() {
         if (client != null) return client;
         Config config = new Config()
-                .setAccessKeyId(Base64.decodeStr("TFRBSTV0UmdoeGdTNkJEMlYzN3BiWXUy"))
-                .setAccessKeySecret(Base64.decodeStr("Tkk0ejVrS0J4UFlMMXFQNmFmRHJONjlmQUFDZE5p"));
-//                .setAccessKeyId(Base64.decodeStr(accessKeyId))
-//                .setAccessKeySecret(Base64.decodeStr(accessKeySecret));
+                .setAccessKeyId(Base64.decodeStr(accessKeyId))
+                .setAccessKeySecret(Base64.decodeStr(accessKeySecret));
         config.endpoint = "mts.cn-beijing.aliyuncs.com";
         config.protocol = "https";
         try {
@@ -60,6 +60,7 @@ public class AliyunMpsService {
     public SubmitMediaInfoJobResponse getMediaInfo(String key) {
         SubmitMediaInfoJobRequest request = new SubmitMediaInfoJobRequest();
         request.setInput(getInput(key));
+        request.setAsync(false);
         SubmitMediaInfoJobResponse response = null;
         try {
             response = getClient().submitMediaInfoJob(request);
@@ -67,12 +68,6 @@ public class AliyunMpsService {
             e.printStackTrace();
         }
         return response;
-//        String body = JSON.toJSONString(response.getBody());
-//        JSONObject jsonObject = JSON.parseObject(body);
-//        JSONObject properties = jsonObject.getJSONObject("mediaInfoJob").getJSONObject("properties");
-//        int width = Integer.parseInt(properties.getString("width"));
-//        int height = Integer.parseInt(properties.getString("height"));
-//        int duration = (int) (Double.parseDouble(properties.getString("duration")) * 1000);
     }
 
     /**
@@ -84,14 +79,24 @@ public class AliyunMpsService {
      * @return
      */
     public SubmitJobsResponse submitTranscodeJob(String from, String to, String templateId) {
-        JSONObject outputs = new JSONObject();
-        outputs.put("OutputObject", URLUtil.encode(to));
-        outputs.put("TemplateId", templateId);
-
+        //阿里云转码的output特殊，
+        //如果你给它 /6253dede8706fe314a47a54d
+        //它会输出 /6253dede8706fe314a47a54d.m3u8 和 6253dede8706fe314a47a54d-00001.ts
+        //所以这里把output的.m3u8去掉，这样也可以和百度兼容，输出都给.m3u8即可
+        if (to.endsWith(".m3u8")) {
+            to = to.replace(".m3u8", "");
+        }
+        JSONObject output = new JSONObject();
+        output.put("OutputObject", URLUtil.encode(to));
+        output.put("TemplateId", templateId);
+        output.put("OutputLocation", "oss-cn-beijing");
+        JSONArray outputs = new JSONArray();
+        outputs.add(output);
         SubmitJobsRequest request = new SubmitJobsRequest()
                 .setInput(getInput(from))
                 .setOutputs(outputs.toJSONString())
                 .setOutputBucket(bucket)
+                .setOutputLocation("oss-cn-beijing")
                 .setPipelineId("6c126c07a9b34a85b7093e7bfa9c3ad9");
         log.info("阿里云转码任务: from = " + from);
         log.info("阿里云转码任务: to = " + to);
@@ -104,6 +109,19 @@ public class AliyunMpsService {
         }
         log.info("阿里云转码任务提交任务相应: SubmitJobsResponse = " + JSON.toJSONString(response));
         return response;
+    }
+
+    /**
+     * 创建转码任务
+     */
+    public SubmitJobsResponse createTranscodingJobByResolution(
+            String sourceKey, String targetKey, String resolution) {
+        if (resolution.equals(Resolution.R_1080P)) {
+            return submitTranscodeJob(sourceKey, targetKey, "438e72fb70d04b89bf2b37b2769cf1ec");
+        } else if (resolution.equals(Resolution.R_720P)) {
+            return submitTranscodeJob(sourceKey, targetKey, "f96c8ccf81c44f079d285e13c1a1a104");
+        }
+        return null;
     }
 
     /**

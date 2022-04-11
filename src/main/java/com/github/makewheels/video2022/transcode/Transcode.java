@@ -20,6 +20,9 @@ public class Transcode {
     private String videoId;
     @Indexed
     private String jobId;
+
+    private String provider;
+
     @Indexed
     private Date createTime;
     @Indexed
