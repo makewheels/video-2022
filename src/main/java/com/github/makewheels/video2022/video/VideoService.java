@@ -219,6 +219,8 @@ public class VideoService {
         video.setStatus(VideoStatus.TRANSCODING);
         mongoTemplate.save(video);
 
+        String provider = video.getProvider();
+
         //创建子线程执行转码任务，先给前端返回结果
         new Thread(() -> {
             //获取视频信息
