@@ -18,6 +18,10 @@ public class Thumbnail {
 
     @Indexed
     private String videoId;
+
+    @Indexed
+    private String provider;
+
     @Indexed
     private String jobId;
     @Indexed

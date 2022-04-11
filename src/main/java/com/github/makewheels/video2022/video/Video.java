@@ -31,6 +31,9 @@ public class Video {
     private String title;
     private String description;
 
+    private Integer width;
+    private Integer height;
+
     @Indexed
     private String type;
     @Indexed
