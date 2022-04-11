@@ -19,13 +19,11 @@ public class TranscodeController {
 
     /**
      * 当转码状态发生变化时，处理回调
-     *
-     * @param jsonObject
      */
-    @PostMapping("callback")
-    public Result<Void> callback(@RequestBody JSONObject jsonObject) {
+    @PostMapping("baiduCallback")
+    public Result<Void> baiduCallback(@RequestBody JSONObject jsonObject) {
         log.debug("收到视频处理回调：");
         log.debug(jsonObject.toJSONString());
-        return transcodeService.callback(jsonObject);
+        return transcodeService.baiduCallback(jsonObject);
     }
 }
