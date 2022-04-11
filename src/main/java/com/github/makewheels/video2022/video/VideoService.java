@@ -61,8 +61,8 @@ public class VideoService {
     @Resource
     private YoutubeService youtubeService;
 
-    @Value("${base-url}")
-    private String baseUrl;
+    @Value("${internal-base-url}")
+    private String internalBaseUrl;
     @Value("${short-url-service}")
     private String shortUrlService;
 
@@ -84,7 +84,9 @@ public class VideoService {
         String userId = user.getId();
         Video video = new Video();
 
-        //决定云服务提供商是阿里云还是百度云
+        //决定提供商是阿里云还是百度云
+        //现在为了兼容上传网页，用户上传继续用百度云
+        //搬运因为是海外服务器api上传，就用阿里云对象存储，转码也是阿里云
         String provider = null;
         String type = requestBody.getString("type");
         video.setType(type);
@@ -108,7 +110,7 @@ public class VideoService {
         video.setUserId(userId);
         String watchId = getWatchId();
         video.setWatchId(watchId);
-        String watchUrl = baseUrl + "/watch?v=" + watchId;
+        String watchUrl = internalBaseUrl + "/watch?v=" + watchId;
         video.setWatchUrl(watchUrl);
         video.setShortUrl(getShortUrl(watchUrl));
         video.setStatus(VideoStatus.CREATED);
@@ -128,11 +130,12 @@ public class VideoService {
         mongoTemplate.save(video);
         log.info("新建视频：" + JSON.toJSONString(video));
 
-        //如果是搬运YouTube视频
+        //如果是搬运YouTube视频，多一个步骤，通知海外服务器
+        //如果是用户上传，就没有这个步骤
         if (type.equals(VideoType.YOUTUBE)) {
             new Thread(() -> {
                 //提交任务给海外服务器
-                youtubeService.submitMission(video);
+                youtubeService.submitMission(user, video,file);
                 //获取视频信息
                 JSONObject jsonObject = youtubeService.getVideoInfo(video);
                 //更新数据库保存的title和description
@@ -169,7 +172,7 @@ public class VideoService {
         transcode.setUserId(userId);
         transcode.setVideoId(videoId);
         transcode.setCreateTime(new Date());
-        transcode.setStatus(TranscodeStatus.CREATED);
+        transcode.setStatus(BaiduTranscodeStatus.CREATED);
         transcode.setResolution(resolution);
         transcode.setSourceKey(sourceKey);
         String m3u8Key = "videos/" + userId + "/" + videoId + "/transcode/"
@@ -240,7 +243,7 @@ public class VideoService {
             thumbnail.setUserId(userId);
             thumbnail.setVideoId(videoId);
             thumbnail.setJobId(thumbnailJobId);
-            thumbnail.setStatus(TranscodeStatus.CREATED);
+            thumbnail.setStatus(BaiduTranscodeStatus.CREATED);
             thumbnail.setSourceKey(sourceKey);
             thumbnail.setTargetKeyPrefix(targetKeyPrefix);
             thumbnail.setAccessUrl(fileService.getAliyunOssAccessBaseUrl() + key);

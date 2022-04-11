@@ -41,8 +41,8 @@ public class TranscodeService {
 
     @Value("${cdn-prefetch-url}")
     private String cdnPrefetchUrl;
-    @Value("${base-url}")
-    private String baseUrl;
+    @Value("${internal-base-url}")
+    private String internalBaseUrl;
 
     @Resource
     private MongoTemplate mongoTemplate;
@@ -145,7 +145,7 @@ public class TranscodeService {
         //如果是转码任务
         if (transcode != null) {
             //检查是不是已完成
-            if (StringUtils.equals(transcode.getStatus(), TranscodeStatus.SUCCESS)) {
+            if (StringUtils.equals(transcode.getStatus(), BaiduTranscodeStatus.SUCCESS)) {
                 log.info("转码已完成，跳过");
                 return Result.ok();
             }
@@ -154,7 +154,7 @@ public class TranscodeService {
             //如果是截帧任务
             Thumbnail thumbnail = thumbnailRepository.getByJobId(jobId);
             if (thumbnail != null) {
-                if (StringUtils.equals(thumbnail.getStatus(), TranscodeStatus.SUCCESS)) {
+                if (StringUtils.equals(thumbnail.getStatus(), BaiduTranscodeStatus.SUCCESS)) {
                     log.info("转码已完成，跳过");
                     return Result.ok();
                 }
@@ -177,8 +177,8 @@ public class TranscodeService {
         transcode.setStatus(response.getJobStatus());
         //如果已完成，不论成功失败，都保存数据库
         //只有完成状态保存result，pending 和 running不保存result，只保存状态
-        if (StringUtils.equals(response.getJobStatus(), TranscodeStatus.FAILED)
-                || StringUtils.equals(response.getJobStatus(), TranscodeStatus.SUCCESS)) {
+        if (StringUtils.equals(response.getJobStatus(), BaiduTranscodeStatus.FAILED)
+                || StringUtils.equals(response.getJobStatus(), BaiduTranscodeStatus.SUCCESS)) {
             transcode.setResult(JSONObject.parseObject(JSON.toJSONString(response)));
         }
         //保存数据库
@@ -201,7 +201,7 @@ public class TranscodeService {
         //统计已完成数量
         for (Transcode eachTranscode : transcodeList) {
             String status = eachTranscode.getStatus();
-            if (status.equals(TranscodeStatus.SUCCESS) || status.equals(TranscodeStatus.FAILED)) {
+            if (status.equals(BaiduTranscodeStatus.SUCCESS) || status.equals(BaiduTranscodeStatus.FAILED)) {
                 completeCount++;
             }
         }
@@ -259,7 +259,7 @@ public class TranscodeService {
             }
         }
         request.put("urlList", urlList);
-        request.put("callbackUrl", baseUrl + "/video/onCdnPrefetchFinish");
+        request.put("callbackUrl", internalBaseUrl + "/video/onCdnPrefetchFinish");
         log.info("通知预热cdn, missionId = " + missionId + ", size = " + urlList.size());
         String response = HttpUtil.post(cdnPrefetchUrl, request.toJSONString());
         log.info("请求预热，软路由回复：");

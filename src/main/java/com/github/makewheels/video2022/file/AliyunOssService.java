@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AliyunOssService {
-
     @Value("${aliyun.oss.bucket}")
     private String bucket;
     @Value("${aliyun.oss.endpoint}")

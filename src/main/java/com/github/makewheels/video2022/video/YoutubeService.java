@@ -1,7 +1,10 @@
 package com.github.makewheels.video2022.video;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.github.makewheels.usermicroservice2022.User;
+import com.github.makewheels.video2022.file.File;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,8 +19,8 @@ import java.util.Map;
 public class YoutubeService {
     @Value("${youtube-service-url}")
     private String youtubeServiceUrl;
-    @Value("${base-url}")
-    private String baseUrl;
+    @Value("${external-base-url}")
+    private String externalBaseUrl;
 
     /**
      * 获取文件拓展名
@@ -45,16 +48,16 @@ public class YoutubeService {
             e.printStackTrace();
         }
         if (uri == null) return null;
-        String query = uri.getQuery();
-        String[] params = query.split("&");
-        Map<String, String> map = new HashMap<>(params.length);
-        for (String param : params) {
-            String[] kv = param.split("=");
-            map.put(kv[0], kv[1]);
-        }
         String host = uri.getHost();
         //https://www.youtube.com/watch?v=XRWFWB2BP_s&list=PLAhTBeRe8IhMUrLYjdxNCX59YK4Kit43q
         if (host.equals("www.youtube.com")) {
+            String query = uri.getQuery();
+            String[] params = query.split("&");
+            Map<String, String> map = new HashMap<>(params.length);
+            for (String param : params) {
+                String[] kv = param.split("=");
+                map.put(kv[0], kv[1]);
+            }
             return map.get("v");
         } else if (host.equals("youtu.be")) {
             //https://youtu.be/tci5eYHwjMc?t=72
@@ -65,16 +68,29 @@ public class YoutubeService {
 
     /**
      * 提交搬运任务
-     *
-     * @param video
-     * @return
      */
-    public JSONObject submitMission(Video video) {
+    public JSONObject submitMission(User user, Video video, File file) {
         JSONObject body = new JSONObject();
-        body.put("missionId", video.getId());
+        body.put("missionId", IdUtil.nanoId());
         body.put("youtubeVideoId", video.getYoutubeVideoId());
-        body.put("uploadKey", video.getOriginalFileKey());
-        body.put("callbackUrl", baseUrl + "/");
+        body.put("key", file.getKey());
+        body.put("provider", video.getProvider());
+        body.put("fileId", file.getId());
+        body.put("watchId", video.getWatchId());
+        body.put("videoId", video.getId());
+
+        //获取文件上传凭证地址
+        body.put("getUploadCredentialsUrl", externalBaseUrl + "/file/getUploadCredentials" +
+                "?fileId=" + file.getId() + "&token=" + user.getToken());
+
+        //文件上传完成回调地址
+        body.put("fileUploadFinishCallbackUrl", externalBaseUrl + "/file/uploadFinish"
+                + "?fileId=" + file.getId() + "&token=" + user.getToken());
+
+        //视频原始文件上传完成回调地址
+        body.put("videoOriginalFileUploadFinishCallbackUrl", externalBaseUrl + "/video/originalFileUploadFinish"
+                + "?videoId=" + video.getId() + "&token=" + user.getToken());
+
         log.info("提交搬运任务，body = " + body.toJSONString());
         String json = HttpUtil.post(youtubeServiceUrl + "/youtube/submitMission",
                 body.toJSONString());

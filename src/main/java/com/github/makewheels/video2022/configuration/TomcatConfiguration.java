@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.etc;
+package com.github.makewheels.video2022.configuration;
 
 import org.apache.catalina.connector.Connector;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class TomcatConfig {
+public class TomcatConfiguration {
 
     private final int httpPort = 5023;
 
