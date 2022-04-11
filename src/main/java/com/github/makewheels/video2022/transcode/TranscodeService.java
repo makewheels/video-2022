@@ -29,7 +29,6 @@ import java.util.List;
 @Service
 @Slf4j
 public class TranscodeService {
-
     @Value("${baidu.bos.bucket}")
     private String bucket;
     @Value("${baidu.mcp.accessKeyId}")
@@ -51,69 +50,13 @@ public class TranscodeService {
     @Resource
     private ThumbnailRepository thumbnailRepository;
 
-    private MediaClient mediaClient;
-
     @Resource
     private ThumbnailService thumbnailService;
 
-    private MediaClient getMediaClient() {
-        if (mediaClient != null) {
-            return mediaClient;
-        }
-        BceClientConfiguration config = new BceClientConfiguration();
-        config.setCredentials(new DefaultBceCredentials(accessKeyId, secretKey));
-        config.setEndpoint("https://media.bj.baidubce.com");
-        // 设置HTTP最大连接数为10
-        config.setMaxConnections(10);
-        // 设置TCP连接超时为5000毫秒
-        config.setConnectionTimeoutInMillis(5000);
-        // 设置Socket传输数据超时的时间为2000毫秒
-        config.setSocketTimeoutInMillis(2000);
-        mediaClient = new MediaClient(config);
-        return mediaClient;
-    }
+    @Resource
+    private AliyunMpsService aliyunMpsService;
+    private BaiduMcpService baiduMcpService;
 
-    /**
-     * 获取视频信息
-     *
-     * @param key
-     * @return
-     */
-    public GetMediaInfoOfFileResponse getMediaInfo(String key) {
-        return getMediaClient().getMediaInfoOfFile(bucket, key);
-    }
-
-    /**
-     * 创建转码任务
-     *
-     * @param sourceKey
-     * @param targetKey
-     * @param resolution
-     * @return
-     */
-    public CreateTranscodingJobResponse createTranscodingJob(
-            String sourceKey, String targetKey, String resolution) {
-        String presetName;
-        if (resolution.equals(Resolution.R_1080P)) {
-            presetName = "t_1080p";
-        } else if (resolution.equals(Resolution.R_720P)) {
-            presetName = "t_720p";
-        } else {
-            presetName = "t_1080p";
-        }
-        return getMediaClient().createTranscodingJob(
-                pipelineName, sourceKey, targetKey, presetName);
-    }
-
-    /**
-     * 获取转码任务详情
-     *
-     * @param jobId
-     * @return
-     */
-    public GetTranscodingJobResponse getTranscodingJob(String jobId) {
-        return getMediaClient().getTranscodingJob(jobId);
-    }
 
     /**
      * 处理回调
@@ -172,7 +115,7 @@ public class TranscodeService {
      */
     private void handleTranscodeCallback(Transcode transcode) {
         String jobId = transcode.getJobId();
-        GetTranscodingJobResponse response = getTranscodingJob(jobId);
+        GetTranscodingJobResponse response = baiduMcpService.getTranscodingJob(jobId);
         //更新status
         transcode.setStatus(response.getJobStatus());
         //如果已完成，不论成功失败，都保存数据库
@@ -227,16 +170,6 @@ public class TranscodeService {
     }
 
     /**
-     * 返回最后一个斜杠前的url
-     *
-     * @param url
-     * @return
-     */
-    private String getBaseUrl(String url) {
-        return url.substring(0, url.lastIndexOf("/") + 1);
-    }
-
-    /**
      * 当视频已就绪时
      *
      * @param videoId
@@ -251,7 +184,7 @@ public class TranscodeService {
         List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
         for (Transcode transcode : transcodeList) {
             String m3u8CdnUrl = transcode.getM3u8CdnUrl();
-            String baseUrl = getBaseUrl(m3u8CdnUrl);
+            String baseUrl = m3u8CdnUrl.substring(0, m3u8CdnUrl.lastIndexOf("/") + 1);
             String[] eachLine = HttpUtil.get(m3u8CdnUrl).split("\n");
             for (String line : eachLine) {
                 if (line.startsWith("#")) continue;

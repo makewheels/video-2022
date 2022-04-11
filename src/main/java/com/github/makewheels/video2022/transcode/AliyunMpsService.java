@@ -36,11 +36,11 @@ public class AliyunMpsService {
         config.endpoint = "mts.cn-beijing.aliyuncs.com";
         config.protocol = "https";
         try {
-            return new Client(config);
+            client = new Client(config);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return client;
     }
 
     private String getInput(String key) {
@@ -84,10 +84,13 @@ public class AliyunMpsService {
      * @return
      */
     public SubmitJobsResponse submitTranscodeJob(String from, String to, String templateId) {
+        JSONObject outputs = new JSONObject();
+        outputs.put("OutputObject", URLUtil.encode(to));
+        outputs.put("TemplateId", templateId);
+
         SubmitJobsRequest request = new SubmitJobsRequest()
                 .setInput(getInput(from))
-                .setOutputs("[{\"OutputObject\":\"" + URLUtil.encode(to) + "\",\"" +
-                        "TemplateId\":\"" + templateId + "\"}]")
+                .setOutputs(outputs.toJSONString())
                 .setOutputBucket(bucket)
                 .setPipelineId("6c126c07a9b34a85b7093e7bfa9c3ad9");
         log.info("阿里云转码任务: from = " + from);
