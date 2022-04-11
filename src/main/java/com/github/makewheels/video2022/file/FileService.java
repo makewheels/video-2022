@@ -18,6 +18,7 @@ import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.video.Provider;
 import com.github.makewheels.video2022.video.VideoType;
 import com.github.makewheels.video2022.video.YoutubeService;
+import jdk.nashorn.internal.objects.NativeUint8Array;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -35,38 +36,22 @@ import java.util.Date;
 public class FileService {
     @Resource
     private MongoTemplate mongoTemplate;
+    @Resource
+    private YoutubeService youtubeService;
+    @Resource
+    private AliyunOssService aliyunOssService;
+    @Resource
+    private BaiduBosService baiduBosService;
 
-    @Value("${baidu.bos.bucket}")
-    private String baiduBosBucket;
-    @Value("${baidu.bos.endpoint}")
-    private String baiduBosEndpoint;
-    @Value("${baidu.bos.accessKeyId}")
-    private String baiduBosAccessKeyId;
-    @Value("${baidu.bos.secretKey}")
-    private String baiduBosSecretKey;
     @Value("${baidu.bos.accessBaseUrl}")
     private String baiduBosAccessBaseUrl;
     @Value("${baidu.bos.cdnBaseUrl}")
     private String baiduBosCdnBaseUrl;
 
-    private BosClient bosClient;
-
-
-    @Value("${aliyun.oss.bucket}")
-    private String aliyunOssBucket;
-    @Value("${aliyun.oss.endpoint}")
-    private String aliyunOssEndpoint;
-    @Value("${aliyun.oss.accessKeyId}")
-    private String aliyunOssAccessKeyId;
-    @Value("${aliyun.oss.secretKey}")
-    private String aliyunOssSecretKey;
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
     @Value("${aliyun.oss.cdnBaseUrl}")
     private String aliyunOssCdnBaseUrl;
-
-    @Resource
-    private YoutubeService youtubeService;
 
     /**
      * 新建视频时创建文件
@@ -104,55 +89,6 @@ public class FileService {
         return file;
     }
 
-    private BosClient getBosClient() {
-        if (bosClient != null) {
-            return bosClient;
-        }
-        BosClientConfiguration config = new BosClientConfiguration();
-        config.setCredentials(new DefaultBceCredentials(aliyunOssAccessKeyId, aliyunOssSecretKey));
-        config.setEndpoint("bj.bcebos.com");
-        config.setProtocol(Protocol.HTTPS);
-        // 设置HTTP最大连接数为10
-        config.setMaxConnections(10);
-        // 设置TCP连接超时为5000毫秒
-        config.setConnectionTimeoutInMillis(5000);
-        // 设置Socket传输数据超时的时间为2000毫秒
-        config.setSocketTimeoutInMillis(2000);
-        // 设置PUT操作为同步方式，默认异步
-        config.setEnableHttpAsyncPut(false);
-        bosClient = new BosClient(config);
-        return bosClient;
-    }
-
-    private BosObject getObject(String key) {
-        return getBosClient().getObject(aliyunOssBucket, key);
-    }
-
-    public Result<JSONObject> getUploadCredentials(User user, String fileId) {
-        File file = mongoTemplate.findById(fileId, File.class);
-        if (file == null) return null;
-        if (!StringUtils.equals(user.getId(), file.getUserId())) return null;
-
-        StsClient stsClient = new StsClient(
-                new BceClientConfiguration().withEndpoint("https://sts.bj.baidubce.com")
-                        .withCredentials(new DefaultBceCredentials(aliyunOssAccessKeyId, aliyunOssSecretKey)));
-        GetSessionTokenResponse response = stsClient.getSessionToken(
-                new GetSessionTokenRequest().withDurationSeconds(3 * 60 * 60));
-
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("bucket", aliyunOssBucket);
-        jsonObject.put("key", file.getKey());
-        if (aliyunOssEndpoint.startsWith("http")) {
-            jsonObject.put("endpoint", aliyunOssEndpoint);
-        } else {
-            jsonObject.put("endpoint", "https://" + aliyunOssEndpoint);
-        }
-        jsonObject.put("accessKeyId", response.getAccessKeyId());
-        jsonObject.put("secretKey", response.getSecretAccessKey());
-        jsonObject.put("sessionToken", response.getSessionToken());
-        return Result.ok(jsonObject);
-    }
-
     /**
      * 根据provider获取url
      *
@@ -186,6 +122,34 @@ public class FileService {
     }
 
     /**
+     * 获取上传凭证
+     *
+     * @param user
+     * @param fileId
+     * @return
+     */
+    public Result<JSONObject> getUploadCredentials(User user, String fileId) {
+        File file = mongoTemplate.findById(fileId, File.class);
+        //如果文件不存在，或者token找不到用户
+        if (file == null || user == null) return Result.error(ErrorCode.FAIL);
+        //如果上传文件不属于该用户
+        if (!StringUtils.equals(user.getId(), file.getUserId()))
+            return Result.error(ErrorCode.FAIL);
+        String key = file.getKey();
+        //根据provider，获取上传凭证
+        String provider = file.getProvider();
+        JSONObject credentials = null;
+        if (provider.equals(Provider.BAIDU)) {
+            credentials = baiduBosService.getUploadCredentials(key);
+        } else if (provider.equals(Provider.ALIYUN)) {
+            credentials = aliyunOssService.getUploadCredentials(key);
+        }
+        if (credentials == null) return Result.error(ErrorCode.FAIL);
+        credentials.put("provider", provider);
+        return Result.ok(credentials);
+    }
+
+    /**
      * 通知文件上传完成，和对象存储服务器确认，改变数据库File状态
      *
      * @param user
@@ -195,8 +159,10 @@ public class FileService {
     public Result<Void> uploadFinish(User user, String fileId) {
         File file = mongoTemplate.findById(fileId, File.class);
         if (file == null) return Result.error(ErrorCode.FAIL);
+
         if (!StringUtils.equals(user.getId(), file.getUserId())) return Result.error(ErrorCode.FAIL);
-        BosObject bosObject = getObject(file.getKey());
+
+        BosObject bosObject = baiduBosService.getObject(file.getKey());
         log.info("文件上传完成，fileId = " + fileId);
         log.info(JSONObject.toJSONString(bosObject));
         ObjectMetadata objectMetadata = bosObject.getObjectMetadata();

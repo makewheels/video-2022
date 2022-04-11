@@ -24,6 +24,12 @@ public class UserServiceClient {
     }
 
     public User getUserByRequest(HttpServletRequest request) {
-        return getUserByToken(request.getHeader("token"));
+        //为了更简单的，兼容YouTube搬运海外服务器，获取上传凭证时的，用户校验，
+        //获取token方式有两种，header和url参数
+        String token = request.getHeader("token");
+        if (StringUtils.isEmpty(token)) {
+            token = request.getParameterMap().get("token")[0];
+        }
+        return getUserByToken(token);
     }
 }
