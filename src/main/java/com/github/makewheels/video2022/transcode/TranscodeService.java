@@ -78,7 +78,7 @@ public class TranscodeService {
      * @param jsonObject
      * @return
      */
-    public Result<Void> callback(JSONObject jsonObject) {
+    public Result<Void> baiduCallback(JSONObject jsonObject) {
         JSONObject messageBody = JSONObject.parseObject(jsonObject.getString("messageBody"));
         String jobId = messageBody.getString("jobId");
         log.info("处理视频转码回调：jobId = " + jobId + ", messageBody = ");

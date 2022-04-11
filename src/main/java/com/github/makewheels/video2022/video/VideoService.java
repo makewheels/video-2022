@@ -111,8 +111,10 @@ public class VideoService {
         video.setType(type);
         if (type.equals(VideoType.USER_UPLOAD)) {
             provider = Provider.BAIDU;
+            log.info("新建视频，provider = 百度云");
         } else if (type.equals(VideoType.YOUTUBE)) {
             provider = Provider.ALIYUN;
+            log.info("新建视频，provider = 阿里云");
             String youtubeUrl = requestBody.getString("youtubeUrl");
             video.setYoutubeUrl(youtubeUrl);
             video.setYoutubeVideoId(youtubeService.getYoutubeVideoId(youtubeUrl));
@@ -150,7 +152,6 @@ public class VideoService {
         log.info("新建视频：" + JSON.toJSONString(video));
 
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
-        //如果是用户上传，就没有这个步骤
         if (type.equals(VideoType.YOUTUBE)) {
             new Thread(() -> {
                 //因为海外服务器获取文件拓展名很慢，所以放到这里，在子线程中执行，先给前端放回结果
