@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.file;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -21,7 +22,7 @@ public class File {
     private String originalFilename;
 
     private Long size;
-    private String md5;
+    private String etag;
 
     @Indexed
     private String type;
@@ -40,4 +41,5 @@ public class File {
     private Date createTime;
     @Indexed
     private Date uploadTime;
+
 }
