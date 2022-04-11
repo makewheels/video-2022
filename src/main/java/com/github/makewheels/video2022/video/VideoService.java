@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.video;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
@@ -152,11 +153,25 @@ public class VideoService {
         //如果是用户上传，就没有这个步骤
         if (type.equals(VideoType.YOUTUBE)) {
             new Thread(() -> {
+                //因为海外服务器获取文件拓展名很慢，所以放到这里，在子线程中执行，先给前端放回结果
+                //之前已保存到数据库的file和video的sourceKey有可能需要更新
+                //YouTube搬运视频没有源文件名，只有拓展名，是yt-dlp给的，之后上传的key也会用这个拓展名
+                String youtubeUrl = requestBody.getString("youtubeUrl");
+                String youtubeVideoId = youtubeService.getYoutubeVideoId(youtubeUrl);
+                String extension = youtubeService.getFileExtension(youtubeVideoId);
+                if (!file.getExtension().equals(extension)) {
+                    //更新file
+                    file.setExtension(extension);
+                    file.setKey(FileNameUtil.mainName(file.getKey() + "." + extension));
+                    mongoTemplate.save(file);
+                    //更新video的source key
+                    video.setOriginalFileKey(file.getKey());
+                    mongoTemplate.save(video);
+                }
                 //提交任务给海外服务器
                 youtubeService.submitMission(user, video, file);
-                //获取视频信息
+                //获取视频信息，保存title和description到数据库
                 JSONObject jsonObject = youtubeService.getVideoInfo(video);
-                //更新数据库保存的title和description
                 video.setYoutubeVideoInfo(jsonObject);
                 JSONObject snippet = jsonObject.getJSONObject("snippet");
                 video.setTitle(snippet.getString("title"));
@@ -229,7 +244,7 @@ public class VideoService {
             jobId = job.getJobId();
             jobStatus = baiduMcpService.getTranscodingJob(jobId).getJobStatus();
         }
-        log.info("jobId = " + jobId);
+        log.info("转码jobId = " + jobId + ", resolution = " + resolution);
         transcode.setJobId(jobId);
         transcode.setStatus(jobStatus);
         mongoTemplate.save(transcode);

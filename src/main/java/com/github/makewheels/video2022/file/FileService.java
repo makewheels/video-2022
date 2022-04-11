@@ -65,11 +65,8 @@ public class FileService {
             file.setOriginalFilename(originalFilename);
             file.setExtension(FilenameUtils.getExtension(originalFilename).toLowerCase());
         } else if (videoType.equals(VideoType.YOUTUBE)) {
-            //YouTube搬运视频没有源文件名，只有拓展名，是yt-dlp给的，之后上传的key也会用这个拓展名
-            String youtubeUrl = requestBody.getString("youtubeUrl");
-            String youtubeVideoId = youtubeService.getYoutubeVideoId(youtubeUrl);
-            String extension = youtubeService.getFileExtension(youtubeVideoId);
-            file.setExtension(extension);
+            //由于海外服务器获取拓展名太慢，所以移到后面的子线程中进行
+            file.setExtension("webm");
         }
 
         file.setStatus(FileStatus.CREATED);
