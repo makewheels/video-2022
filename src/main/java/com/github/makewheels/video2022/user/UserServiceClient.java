@@ -28,7 +28,10 @@ public class UserServiceClient {
         //获取token方式有两种，header和url参数
         String token = request.getHeader("token");
         if (StringUtils.isEmpty(token)) {
-            token = request.getParameterMap().get("token")[0];
+            String[] tokens = request.getParameterMap().get("token");
+            if (tokens != null) {
+                token = tokens[0];
+            }
         }
         return getUserByToken(token);
     }

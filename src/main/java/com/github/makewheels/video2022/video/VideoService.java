@@ -331,10 +331,7 @@ public class VideoService {
         watchInfo.setPlayUrlList(playUrlList);
         watchInfo.setVideoStatus(video.getStatus());
 
-        //缓存redis
-        //先判断视频状态：
-        //如果是READY，也就是转码已完成，再加入缓存
-        //如果是正在转码，就不放入Redis
+        //缓存redis，先判断视频状态：只有READY才放入缓存
         if (video.getStatus().equals(VideoStatus.READY)) {
             videoRedisService.setWatchInfo(watchId, watchInfo);
         }
