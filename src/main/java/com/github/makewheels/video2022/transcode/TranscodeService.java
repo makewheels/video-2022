@@ -41,7 +41,7 @@ public class TranscodeService {
 
     @Value("${cdn-prefetch-url}")
     private String cdnPrefetchUrl;
-    @Value("${baseUrl}")
+    @Value("${base-url}")
     private String baseUrl;
 
     @Resource

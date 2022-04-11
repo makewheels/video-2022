@@ -61,7 +61,7 @@ public class VideoService {
     @Resource
     private YoutubeService youtubeService;
 
-    @Value("${baseUrl}")
+    @Value("${base-url}")
     private String baseUrl;
     @Value("${short-url-service}")
     private String shortUrlService;

@@ -16,6 +16,8 @@ import java.util.Map;
 public class YoutubeService {
     @Value("${youtube-service-url}")
     private String youtubeServiceUrl;
+    @Value("${base-url}")
+    private String baseUrl;
 
     /**
      * 获取文件拓展名
@@ -72,6 +74,7 @@ public class YoutubeService {
         body.put("missionId", video.getId());
         body.put("youtubeVideoId", video.getYoutubeVideoId());
         body.put("uploadKey", video.getOriginalFileKey());
+        body.put("callbackUrl", baseUrl + "/");
         log.info("提交搬运任务，body = " + body.toJSONString());
         String json = HttpUtil.post(youtubeServiceUrl + "/youtube/submitMission",
                 body.toJSONString());
@@ -86,7 +89,7 @@ public class YoutubeService {
      * @return
      */
     public JSONObject getVideoInfo(Video video) {
-        log.info("获取视频信息：");
+        log.info("获取视频信息：youtubeVideoId = " + video.getYoutubeVideoId());
         String json = HttpUtil.get(youtubeServiceUrl + "/youtube/getVideoInfo?youtubeVideoId="
                 + video.getYoutubeVideoId());
         log.info("海外服务器返回：" + json);
