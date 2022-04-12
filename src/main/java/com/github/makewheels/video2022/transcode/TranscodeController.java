@@ -20,9 +20,9 @@ public class TranscodeController {
     /**
      * 当转码状态发生变化时，处理回调
      */
-    @PostMapping("baiduCallback")
-    public Result<Void> baiduCallback(@RequestBody JSONObject jsonObject) {
+    @PostMapping("baiduTranscodeCallback")
+    public Result<Void> baiduTranscodeCallback(@RequestBody JSONObject jsonObject) {
         log.debug("收到百度转码回调：" + jsonObject.toJSONString());
-        return transcodeService.baiduCallback(jsonObject);
+        return transcodeService.baiduTranscodeCallback(jsonObject);
     }
 }

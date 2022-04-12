@@ -42,16 +42,6 @@ public class AliyunOssService {
         return ossClient;
     }
 
-    public OSS getStsClient() {
-        ClientBuilderConfiguration configuration = new ClientBuilderConfiguration();
-        configuration.setProtocol(Protocol.HTTPS);
-        String securityToken = "yourSecurityToken";
-        ossClient = new OSSClientBuilder().build(endpoint,
-                Base64.decodeStr(accessKeyId), Base64.decodeStr(secretKey),
-                securityToken, configuration);
-        return ossClient;
-    }
-
     public OSSObject getObject(String key) {
         return getClient().getObject(bucket, key);
     }

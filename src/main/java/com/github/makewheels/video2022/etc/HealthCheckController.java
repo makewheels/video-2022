@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 public class HealthCheckController {
     @GetMapping("healthCheck")
     public String healthCheck(HttpServletRequest request) {
-        log.info("healthCheck " + request.getRequestURL());
-        return request.getRequestURL() + " " + System.currentTimeMillis();
+        log.info("healthCheck " + System.currentTimeMillis() + " " + request.getRequestURL());
+        return "ok " + System.currentTimeMillis();
     }
 }

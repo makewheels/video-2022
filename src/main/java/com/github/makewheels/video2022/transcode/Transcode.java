@@ -60,7 +60,7 @@ public class Transcode {
      *
      * @return
      */
-    public boolean isSuccess() {
+    public boolean isSuccessStatus() {
         if (provider.equals(Provider.ALIYUN)) {
             return StringUtils.equals(status, AliyunTranscodeStatus.TranscodeSuccess);
         } else if (provider.equals(Provider.BAIDU)) {

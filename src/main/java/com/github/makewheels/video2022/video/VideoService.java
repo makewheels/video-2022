@@ -111,10 +111,10 @@ public class VideoService {
         video.setType(type);
         if (type.equals(VideoType.USER_UPLOAD)) {
             provider = Provider.BAIDU;
-            log.info("新建视频，type = " + type + ", provider = 百度云");
+            log.info("新建视频类型：type = " + type + ", provider = 百度云");
         } else if (type.equals(VideoType.YOUTUBE)) {
             provider = Provider.ALIYUN;
-            log.info("新建视频，type = " + type + ", provider = 阿里云");
+            log.info("新建视频类型：type = " + type + ", provider = 阿里云");
             String youtubeUrl = requestBody.getString("youtubeUrl");
             video.setYoutubeUrl(youtubeUrl);
             video.setYoutubeVideoId(youtubeService.getYoutubeVideoId(youtubeUrl));
@@ -233,19 +233,23 @@ public class VideoService {
             SubmitJobsResponseBody.SubmitJobsResponseBodyJobResultListJobResultJob job
                     = aliyunMpsService.createTranscodingJobByResolution(sourceKey, m3u8Key, resolution)
                     .getBody().getJobResultList().getJobResult().get(0).getJob();
-            log.info("发起阿里云转码 response = " + JSON.toJSONString(job));
             jobId = job.getJobId();
+            log.info("发起阿里云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
             jobStatus = job.getState();
         } else if (provider.equals(Provider.BAIDU)) {
             CreateTranscodingJobResponse job = baiduMcpService.createTranscodingJob(
                     sourceKey, m3u8Key, resolution);
-            log.info("发起百度云转码 jobId  = " + jobId + "response = " + JSON.toJSONString(job));
             jobId = job.getJobId();
+            log.info("发起百度云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
             jobStatus = baiduMcpService.getTranscodingJob(jobId).getJobStatus();
         }
         transcode.setJobId(jobId);
         transcode.setStatus(jobStatus);
         mongoTemplate.save(transcode);
+        //异步轮询查询阿里云转码状态，并回调
+        if (provider.equals(Provider.ALIYUN)) {
+            new Thread(() -> transcodeService.iterateQueryAliyunTranscodeJob(video, transcode)).start();
+        }
     }
 
     /**
@@ -304,7 +308,7 @@ public class VideoService {
             log.info("视频源文件上传完成，通过阿里云获取视频信息，videoId = " + videoId);
             SubmitMediaInfoJobResponseBody body = aliyunMpsService.getMediaInfo(sourceKey).getBody();
             SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJob job = body.getMediaInfoJob();
-            log.info(JSON.toJSONString(job));
+            log.info("阿里云获取视频信息返回：" + JSON.toJSONString(job));
             //给video保存媒体信息到数据库
             video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(job)));
             String jobId = job.getJobId();
@@ -325,12 +329,13 @@ public class VideoService {
             video.setWidth(mediaInfo.getVideo().getWidthInPixel());
             video.setHeight(mediaInfo.getVideo().getHeightInPixel());
         }
+        video.setStatus(VideoStatus.TRANSCODING);
         mongoTemplate.save(video);
 
         //开始转码，首先一定会发起720p的转码
         transcodeSingleResolution(user, video, Resolution.R_720P);
 
-        //如果大于1280*720，再次发起1080p转码
+        //如果宽高大于1280*720，再次发起1080p转码
         if ((video.getWidth() * video.getHeight()) > (1280 * 720)) {
             transcodeSingleResolution(user, video, Resolution.R_1080P);
         }
@@ -401,6 +406,7 @@ public class VideoService {
         //如果没有缓存，查数据库，缓存，返回
         Video video = videoRepository.getByWatchId(watchId);
         if (video == null) {
+            log.error("查不到这个video, watchId = " + watchId);
             return Result.error(ErrorCode.FAIL);
         }
         String videoId = video.getId();

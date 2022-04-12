@@ -100,14 +100,14 @@ public class AliyunMpsService {
                 .setPipelineId("6c126c07a9b34a85b7093e7bfa9c3ad9");
         log.info("阿里云转码任务: from = " + from);
         log.info("阿里云转码任务: to = " + to);
-        log.info("submitJobsRequest = " + JSON.toJSONString(request));
+        log.info("阿里云转码任务: SubmitJobsRequest = " + JSON.toJSONString(request));
         SubmitJobsResponse response = null;
         try {
             response = getClient().submitJobs(request);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        log.info("阿里云转码任务提交任务相应: SubmitJobsResponse = " + JSON.toJSONString(response));
+        log.info("阿里云转码任务提交任务响应: " + JSON.toJSONString(response));
         return response;
     }
 
