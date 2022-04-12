@@ -2,6 +2,7 @@ package com.github.makewheels.video2022.cdn;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.transcode.Transcode;
@@ -12,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -28,31 +31,24 @@ public class CdnService {
     /**
      * 软路由预热
      */
-    public void softRoutePrefetch(String videoId) {
-        log.info("预热到软路由，videoId = " + videoId);
-        //通知预加载缓存
+    public void softRoutePrefetch(Transcode transcode) {
+        log.info("预热到软路由 " + JSON.toJSONString(transcode));
         JSONObject request = new JSONObject();
         String missionId = IdUtil.getSnowflakeNextIdStr();
-        request.put("missionId", missionId);
-        List<String> urlList = new ArrayList<>();
-        List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
-        transcodeList.forEach(transcode -> {
-            String m3u8CdnUrl = transcode.getM3u8CdnUrl();
-            String baseUrl = m3u8CdnUrl.substring(0, m3u8CdnUrl.lastIndexOf("/") + 1);
-            String[] eachLine = HttpUtil.get(m3u8CdnUrl).split("\n");
-            for (String line : eachLine) {
-                if (line.startsWith("#")) continue;
-                urlList.add(baseUrl + line);
-            }
-        });
+        request.put("missionId", missionId + "-" + transcode.getVideoId() + "-" + transcode.getId());
+        //组装url list
+        String m3u8CdnUrl = transcode.getM3u8CdnUrl();
+        String baseUrl = m3u8CdnUrl.substring(0, m3u8CdnUrl.lastIndexOf("/") + 1);
+        String[] eachLine = HttpUtil.get(m3u8CdnUrl).split("\n");
+        List<String> urlList = Arrays.stream(eachLine)
+                .filter(e -> !e.startsWith("#")).map(e -> baseUrl + e)
+                .collect(Collectors.toList());
         request.put("urlList", urlList);
         request.put("callbackUrl", internalBaseUrl + "/cdn/onSoftRoutePrefetchFinish");
-        log.info("通知预热cdn, missionId = " + missionId + ", size = " + urlList.size());
-        log.info(cdnPrefetchUrl);
-        log.info(request.toJSONString());
+        log.info("通知软路由预热，size = " + urlList.size() + ", resolution = " + transcode.getResolution()
+                + request + request.toJSONString());
         String response = HttpUtil.post(cdnPrefetchUrl, request.toJSONString());
-        log.info("请求预热，软路由回复：");
-        log.info(response);
+        log.info("请求预热，软路由回复：" + response);
     }
 
     /**

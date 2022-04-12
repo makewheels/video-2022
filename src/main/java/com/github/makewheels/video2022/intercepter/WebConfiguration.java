@@ -30,7 +30,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/watch")
                 .excludePathPatterns("/video/addWatchLog")
                 .excludePathPatterns("/save-token.html")
-                .excludePathPatterns("/video/onCdnPrefetchFinish")
+                .excludePathPatterns("/cdn/onSoftRoutePrefetchFinish")
                 .excludePathPatterns("/upload.html")
         ;
     }

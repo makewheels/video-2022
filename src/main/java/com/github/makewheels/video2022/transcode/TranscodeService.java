@@ -78,8 +78,7 @@ public class TranscodeService {
     public Result<Void> baiduCallback(JSONObject jsonObject) {
         JSONObject messageBody = JSONObject.parseObject(jsonObject.getString("messageBody"));
         String jobId = messageBody.getString("jobId");
-        log.info("处理视频转码回调：jobId = " + jobId + ", messageBody = ");
-        log.info(messageBody.toJSONString());
+        log.info("处理视频转码回调：jobId = " + jobId + ", messageBody = " + messageBody.toJSONString());
         //根据jobId查询数据库，首先查询transcode，如果没有再查询thumbnail
         Transcode transcode = transcodeRepository.getByJobId(jobId);
         //如果是转码任务
@@ -94,19 +93,30 @@ public class TranscodeService {
             //如果是截帧任务
             Thumbnail thumbnail = thumbnailRepository.getByJobId(jobId);
             //判断是不是已完成
-            if (thumbnail != null) {
-                if (thumbnail.isFinishStatus()) {
-                    log.info("百度截帧转码已完成，跳过 " + JSON.toJSONString(thumbnail));
-                    return Result.ok();
-                }
-                thumbnailService.handleThumbnailCallback(thumbnail);
+            if (thumbnail == null) {
+                log.info("找不到该jobId，跳过 jobId = " + jobId);
+                return Result.ok();
             }
+            log.info("百度获取到截帧任务结果：" + JSON.toJSONString(thumbnail));
+            if (thumbnail.isFinishStatus()) {
+                log.info("百度截帧转码已完成，跳过 " + JSON.toJSONString(thumbnail));
+                return Result.ok();
+            }
+            thumbnailService.handleThumbnailCallback(thumbnail);
         }
         return Result.ok();
     }
 
     /**
-     * 处理transcode回调
+     * 处理阿里云视频转码回调
+     */
+    public void aliyunTranscodeCallback(String jobId) {
+        Transcode transcode = transcodeRepository.getByJobId(jobId);
+        handleTranscodeCallback(transcode);
+    }
+
+    /**
+     * 处理transcode回调，根据jobId查询百度或阿里接口获取转码情况
      * 这个处理是通用的，同时兼容百度和阿里，
      * 前面不管是那个服务商，只需根据jobId从数据库查出transcode对象传入即可
      */
@@ -131,52 +141,55 @@ public class TranscodeService {
             transcode.setResult(JSONObject.parseObject(transcodeResultJson));
             mongoTemplate.save(transcode);
             //通知视频转码完成
-            transcodeFinish(transcode);
+            singleTranscodeFinish(transcode);
         }
     }
 
     /**
      * 当有一个转码job完成时回调
-     * 主要目的是更新video状态
+     * 主要目的是：更新video状态
      *
      * @param transcode
      */
-    public void transcodeFinish(Transcode transcode) {
+    public void singleTranscodeFinish(Transcode transcode) {
         String videoId = transcode.getVideoId();
         Video video = mongoTemplate.findById(videoId, Video.class);
         if (video == null) return;
-        //从数据库中查出，该视频对应的其它的转码任务
+        //从数据库中查出，该视频对应的所有转码任务
         List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
         //统计已完成数量
         int completeCount = (int) transcodeList.stream().filter(Transcode::isFinishStatus).count();
-        String videoStatus = null;
+        String videoStatus;
         //如果是部分完成
         if (completeCount > 0 && completeCount != transcodeList.size()) {
             videoStatus = VideoStatus.TRANSCODING_PARTLY_COMPLETED;
         } else if (completeCount == transcodeList.size()) {
             //如果全部完成
             videoStatus = VideoStatus.READY;
-        } else if (completeCount == 0) {
-            //如果一个都没完成，那就是所有任务都在转码
+        } else {
+            //如果一个都没完成
             videoStatus = VideoStatus.TRANSCODING;
         }
-        //更新到数据库
+        //更新video到数据库
         if (!StringUtils.equals(videoStatus, video.getStatus())) {
             video.setStatus(videoStatus);
             mongoTemplate.save(video);
         }
-        //当视频已就绪时，也就是所有转码任务都完成了
+        //当所有转码都完成了，也就是视频已就绪时
         if (StringUtils.equals(video.getStatus(), VideoStatus.READY)) {
             onVideoReady(video);
         }
+        //判断如果是转码成功状态，请求软路由预热，
+        //只有转码成功才预热，失败不预热
+        if (transcode.isSuccess())
+            cdnService.softRoutePrefetch(transcode);
     }
 
     /**
      * 当视频已就绪时
      */
     public void onVideoReady(Video video) {
-        //预热到软路由
-        cdnService.softRoutePrefetch(video.getId());
+        log.info("视频已就绪 videoId = " + video.getId());
     }
 
 }
