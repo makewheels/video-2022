@@ -1,6 +1,5 @@
 package com.github.makewheels.video2022.intercepter;
 
-import cn.hutool.core.util.URLUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.video2022.user.UserServiceClient;
@@ -13,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 
 @Slf4j
 public class LoginInterceptor implements HandlerInterceptor {

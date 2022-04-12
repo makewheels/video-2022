@@ -24,20 +24,6 @@ import java.util.List;
 @Service
 @Slf4j
 public class TranscodeService {
-    @Value("${baidu.bos.bucket}")
-    private String bucket;
-    @Value("${baidu.mcp.accessKeyId}")
-    private String accessKeyId;
-    @Value("${baidu.mcp.secretKey}")
-    private String secretKey;
-    @Value("${baidu.mcp.pipelineName}")
-    private String pipelineName;
-
-    @Value("${cdn-prefetch-url}")
-    private String cdnPrefetchUrl;
-    @Value("${internal-base-url}")
-    private String internalBaseUrl;
-
     @Resource
     private MongoTemplate mongoTemplate;
     @Resource
@@ -46,14 +32,14 @@ public class TranscodeService {
     private ThumbnailRepository thumbnailRepository;
 
     @Resource
-    private ThumbnailService thumbnailService;
-    @Resource
-    private CdnService cdnService;
-
-    @Resource
     private AliyunMpsService aliyunMpsService;
     @Resource
     private BaiduMcpService baiduMcpService;
+
+    @Resource
+    private ThumbnailService thumbnailService;
+    @Resource
+    private CdnService cdnService;
 
     /**
      * 处理百度视频转码回调
@@ -75,7 +61,7 @@ public class TranscodeService {
      * @param jsonObject
      * @return
      */
-    public Result<Void> baiduCallback(JSONObject jsonObject) {
+    public Result<Void> baiduTranscodeCallback(JSONObject jsonObject) {
         JSONObject messageBody = JSONObject.parseObject(jsonObject.getString("messageBody"));
         String jobId = messageBody.getString("jobId");
         log.info("处理视频转码回调：jobId = " + jobId + ", messageBody = " + messageBody.toJSONString());
@@ -111,8 +97,54 @@ public class TranscodeService {
      * 处理阿里云视频转码回调
      */
     public void aliyunTranscodeCallback(String jobId) {
+        log.info("阿里云转码回调开始：jobId = " + jobId);
         Transcode transcode = transcodeRepository.getByJobId(jobId);
         handleTranscodeCallback(transcode);
+    }
+
+    /**
+     * 因为阿里云的http回调收费，两块钱一个topic，那就一直不停的迭代查询job状态
+     */
+    public void iterateQueryAliyunTranscodeJob(Video video, Transcode transcode) {
+        String jobId = transcode.getJobId();
+        Integer duration = video.getDuration();
+        long startTime = System.currentTimeMillis();
+        //轮询
+        for (int i = 0; i < 1000000000; i++) {
+            log.info("i = " + i + " 开始睡觉");
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            long currentTime = System.currentTimeMillis();
+            long costTime = currentTime - startTime;
+
+            //前20%的时间跳过，不可能转码完成的
+            if ((costTime * 1.0 / duration) < 0.2) {
+                log.info("前20%的时间跳过 costTime = " + costTime + ", duration = " + duration);
+                continue;
+            }
+
+            //如果花了视频的3倍时长都没转完，就跳出
+            if ((System.currentTimeMillis() - startTime) > 3L * duration) {
+                log.error("花了视频的3倍时长都没转完，来人看看这是啥 jobId = {}, video = {}, transcode = {}",
+                        jobId, JSON.toJSONString(video), transcode);
+                log.error("transcode = " + JSON.toJSONString(transcode));
+                break;
+            }
+
+            //查询任务
+            QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
+                    = aliyunMpsService.queryJob(jobId).getBody().getJobList().getJob().get(0);
+            String jobStatus = job.getState();
+            log.info("阿里云轮询查询job结果: jobStatus = {},job = {}", jobStatus, JSON.toJSONString(job));
+            //如果转码已完成，回调
+            if (AliyunTranscodeStatus.isFinishedStatus(jobStatus)) {
+                aliyunTranscodeCallback(jobId);
+                break;
+            }
+        }
     }
 
     /**
@@ -181,8 +213,9 @@ public class TranscodeService {
         }
         //判断如果是转码成功状态，请求软路由预热，
         //只有转码成功才预热，失败不预热
-        if (transcode.isSuccess())
+        if (transcode.isSuccessStatus()) {
             cdnService.softRoutePrefetch(transcode);
+        }
     }
 
     /**

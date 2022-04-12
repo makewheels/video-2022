@@ -32,7 +32,6 @@ public class CdnService {
      * 软路由预热
      */
     public void softRoutePrefetch(Transcode transcode) {
-        log.info("预热到软路由 " + JSON.toJSONString(transcode));
         JSONObject request = new JSONObject();
         String missionId = IdUtil.getSnowflakeNextIdStr();
         request.put("missionId", missionId + "-" + transcode.getVideoId() + "-" + transcode.getId());
@@ -45,8 +44,8 @@ public class CdnService {
                 .collect(Collectors.toList());
         request.put("urlList", urlList);
         request.put("callbackUrl", internalBaseUrl + "/cdn/onSoftRoutePrefetchFinish");
-        log.info("通知软路由预热，size = " + urlList.size() + ", resolution = " + transcode.getResolution()
-                + request + request.toJSONString());
+        log.info("通知软路由预热 " + transcode.getResolution() + ", size = " + urlList.size()
+                + " " + request + request.toJSONString());
         String response = HttpUtil.post(cdnPrefetchUrl, request.toJSONString());
         log.info("请求预热，软路由回复：" + response);
     }

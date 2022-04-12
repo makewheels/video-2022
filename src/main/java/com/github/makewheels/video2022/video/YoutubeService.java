@@ -94,7 +94,7 @@ public class YoutubeService {
         log.info("提交搬运任务，body = " + body.toJSONString());
         String json = HttpUtil.post(youtubeServiceUrl + "/youtube/submitMission",
                 body.toJSONString());
-        log.info("海外服务器返回：" + json);
+        log.info("提交搬运任务，海外服务器返回：" + json);
         return JSONObject.parseObject(json);
     }
 
@@ -105,10 +105,10 @@ public class YoutubeService {
      * @return
      */
     public JSONObject getVideoInfo(Video video) {
-        log.info("获取视频信息：youtubeVideoId = " + video.getYoutubeVideoId());
+        log.info("获取YouTube视频信息：youtubeVideoId = " + video.getYoutubeVideoId());
         String json = HttpUtil.get(youtubeServiceUrl + "/youtube/getVideoInfo?youtubeVideoId="
                 + video.getYoutubeVideoId());
-        log.info("海外服务器返回：" + json);
+        log.info("获取YouTube视频信息，海外服务器返回：" + json);
         return JSONObject.parseObject(json);
     }
 }
