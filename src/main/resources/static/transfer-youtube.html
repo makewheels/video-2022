@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>搬运YouTube</title>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://code.bdstatic.com/npm/@baiducloud/sdk@1.0.0-rc.32/dist/baidubce-sdk.bundle.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/async/3.2.3/async.min.js"></script>
+</head>
+
+<body>
+<script>
+    //看有没有token，如果没有跳转登录页
+    if (localStorage.getItem("token") == null) {
+        window.location.href = "//" + document.domain + ":5021/user-micro-service-2022/login.html" +
+            "?target=" + window.location.href
+    }
+</script>
+
+<span>YouTube URL:</span>
+<input id="input_youtubeUrl" type="text" maxlength="100"/>
+<br>
+
+<button id="btn_submit" type="button">提交</button>
+<br>
+
+<span id="shortUrl"></span>
+<br>
+
+<span id="watchUrl"></span>
+<br>
+
+<script>
+    let input_youtubeUrl = document.getElementById("input_youtubeUrl");
+
+    let btn_submit = document.getElementById("btn_submit");
+
+    let shortUrl = document.getElementById("shortUrl");
+    let watchUrl = document.getElementById("watchUrl");
+
+    btn_submit.addEventListener("click", function () {
+        axios.post("/video/create", {
+            "type": "YOUTUBE",
+            "youtubeUrl": input_youtubeUrl.value
+        }, {
+            headers: {"token": localStorage.token}
+        }).then(function (res) {
+            let data = res.data.data;
+            shortUrl.innerText = data.shortUrl;
+            watchUrl.innerText = data.watchUrl;
+        });
+    });
+
+</script>
+
+</body>
+</html>

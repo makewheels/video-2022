@@ -32,6 +32,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/save-token.html")
                 .excludePathPatterns("/cdn/onSoftRoutePrefetchFinish")
                 .excludePathPatterns("/upload.html")
+                .excludePathPatterns("/transfer-youtube.html")
         ;
     }
 }

@@ -121,10 +121,10 @@ public class TranscodeService {
             long costTime = currentTime - startTime;
 
             //前20%的时间跳过，不可能转码完成的
-            if ((costTime * 1.0 / duration) < 0.2) {
-                log.info("前20%的时间跳过 costTime = " + costTime + ", duration = " + duration);
-                continue;
-            }
+//            if ((costTime * 1.0 / duration) < 0.2) {
+//                log.info("前20%的时间跳过 costTime = " + costTime + ", duration = " + duration);
+//                continue;
+//            }
 
             //如果花了视频的3倍时长都没转完，就跳出
             if ((System.currentTimeMillis() - startTime) > 3L * duration) {
