@@ -108,14 +108,13 @@ public class VideoService {
         //搬运因为是海外服务器api上传，就用阿里云对象存储，转码也是阿里云
         String provider = null;
         String type = requestBody.getString("type");
-        log.info("新建视频，type = " + type);
         video.setType(type);
         if (type.equals(VideoType.USER_UPLOAD)) {
             provider = Provider.BAIDU;
-            log.info("新建视频，provider = 百度云");
+            log.info("新建视频，type = " + type + ", provider = 百度云");
         } else if (type.equals(VideoType.YOUTUBE)) {
             provider = Provider.ALIYUN;
-            log.info("新建视频，provider = 阿里云");
+            log.info("新建视频，type = " + type + ", provider = 阿里云");
             String youtubeUrl = requestBody.getString("youtubeUrl");
             video.setYoutubeUrl(youtubeUrl);
             video.setYoutubeVideoId(youtubeService.getYoutubeVideoId(youtubeUrl));
@@ -231,22 +230,19 @@ public class VideoService {
         String jobId = null;
         String jobStatus = null;
         if (provider.equals(Provider.ALIYUN)) {
-            log.info("使用阿里云发起转码：");
             SubmitJobsResponseBody.SubmitJobsResponseBodyJobResultListJobResultJob job
                     = aliyunMpsService.createTranscodingJobByResolution(sourceKey, m3u8Key, resolution)
                     .getBody().getJobResultList().getJobResult().get(0).getJob();
-            log.info(JSON.toJSONString(job));
+            log.info("发起阿里云转码 response = " + JSON.toJSONString(job));
             jobId = job.getJobId();
             jobStatus = job.getState();
         } else if (provider.equals(Provider.BAIDU)) {
-            log.info("使用百度云发起转码：");
             CreateTranscodingJobResponse job = baiduMcpService.createTranscodingJob(
                     sourceKey, m3u8Key, resolution);
-            log.info(JSON.toJSONString(job));
+            log.info("发起百度云转码 jobId  = " + jobId + "response = " + JSON.toJSONString(job));
             jobId = job.getJobId();
             jobStatus = baiduMcpService.getTranscodingJob(jobId).getJobStatus();
         }
-        log.info("转码jobId = " + jobId + ", resolution = " + resolution);
         transcode.setJobId(jobId);
         transcode.setStatus(jobStatus);
         mongoTemplate.save(transcode);
@@ -271,10 +267,10 @@ public class VideoService {
         thumbnail.setProvider(Provider.BAIDU);
 
         String targetKeyPrefix = "videos/" + userId + "/" + videoId + "/cover/" + videoId;
-        log.info("通过百度云发起截帧任务：video = " + videoId);
         CreateThumbnailJobResponse thumbnailJob
                 = thumbnailService.createThumbnailJob(sourceKey, targetKeyPrefix);
-        log.info(JSON.toJSONString(thumbnailJob));
+        log.info("通过百度云发起截帧任务：CreateThumbnailJobResponse = " + JSON.toJSONString(thumbnailJob));
+
 
         thumbnail.setTargetKeyPrefix(targetKeyPrefix);
         String key = targetKeyPrefix + ".jpg";
@@ -305,7 +301,7 @@ public class VideoService {
 
         //获取视频信息
         if (provider.equals(Provider.ALIYUN)) {
-            log.info("通过阿里云获取视频信息，videoId = " + videoId);
+            log.info("视频源文件上传完成，通过阿里云获取视频信息，videoId = " + videoId);
             SubmitMediaInfoJobResponseBody body = aliyunMpsService.getMediaInfo(sourceKey).getBody();
             SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJob job = body.getMediaInfoJob();
             log.info(JSON.toJSONString(job));
@@ -319,10 +315,9 @@ public class VideoService {
             video.setHeight(Integer.parseInt(properties.getHeight()));
             video.setWidth(Integer.parseInt(properties.getWidth()));
         } else if (provider.equals(Provider.BAIDU)) {
-            log.info("通过百度云获取视频信息，videoId = " + videoId);
-            log.info("源文件上传完成，获取mediaInfo：videoId = " + videoId);
             GetMediaInfoOfFileResponse mediaInfo = baiduMcpService.getMediaInfo(sourceKey);
-            log.info(JSON.toJSONString(mediaInfo));
+            log.info("视频源文件上传完成，通过百度获取视频信息，videoId = " + videoId
+                    + ", mediaInfo = " + JSON.toJSONString(mediaInfo));
             //截帧
             createThumbnail(user, video);
             video.setDuration(mediaInfo.getDurationInMillisecond());

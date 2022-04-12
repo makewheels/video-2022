@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.transcode;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.video.Provider;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -50,6 +51,20 @@ public class Transcode {
             return AliyunTranscodeStatus.isFinishedStatus(status);
         } else if (provider.equals(Provider.BAIDU)) {
             return BaiduTranscodeStatus.isFinishedStatus(status);
+        }
+        return true;
+    }
+
+    /**
+     * 判断是否是转码成功状态
+     *
+     * @return
+     */
+    public boolean isSuccess() {
+        if (provider.equals(Provider.ALIYUN)) {
+            return StringUtils.equals(status, AliyunTranscodeStatus.TranscodeSuccess);
+        } else if (provider.equals(Provider.BAIDU)) {
+            return StringUtils.equals(status, BaiduTranscodeStatus.SUCCESS);
         }
         return true;
     }

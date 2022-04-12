@@ -143,14 +143,13 @@ public class FileService {
      * @return
      */
     public Result<Void> uploadFinish(User user, String fileId) {
-        log.info("开始处理文件上传完成，fileId = " + fileId);
-
         File file = mongoTemplate.findById(fileId, File.class);
         if (file == null) return Result.error(ErrorCode.FAIL);
         if (!StringUtils.equals(user.getId(), file.getUserId())) return Result.error(ErrorCode.FAIL);
 
         String key = file.getKey();
-        log.info("key = " + key);
+        log.info("处理文件上传完成，fileId = " + fileId + ", key = " + key);
+
         //判断provider
         if (file.getProvider().equals(Provider.ALIYUN)) {
             OSSObject object = aliyunOssService.getObject(key);
