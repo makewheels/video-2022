@@ -39,9 +39,11 @@ public class CdnService {
         String m3u8CdnUrl = transcode.getM3u8CdnUrl();
         String baseUrl = m3u8CdnUrl.substring(0, m3u8CdnUrl.lastIndexOf("/") + 1);
         String[] eachLine = HttpUtil.get(m3u8CdnUrl).split("\n");
-        List<String> urlList = Arrays.stream(eachLine)
+        List<String> urlList = new ArrayList<>(eachLine.length + 1);
+        urlList.add(m3u8CdnUrl);
+        urlList.addAll(Arrays.stream(eachLine)
                 .filter(e -> !e.startsWith("#")).map(e -> baseUrl + e)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
         request.put("urlList", urlList);
         request.put("callbackUrl", internalBaseUrl + "/cdn/onSoftRoutePrefetchFinish");
         log.info("通知软路由预热 " + transcode.getResolution() + ", size = " + urlList.size()
