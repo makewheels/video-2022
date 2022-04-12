@@ -15,7 +15,6 @@
             src="https://g.alicdn.com/de/prismplayer/2.9.19/aliplayer-min.js"></script>
 
     <!--引入微信sdk，解决自动播放问题-->
-    <script src="https://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
     <script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 
 </head>
@@ -49,7 +48,7 @@
             jsApiList: []
         });
         wx.ready(function () {
-            const video = $(player.el()).find('video')[0];
+            const video = document.getElementById("player-con").getElementsByTagName("video")[0];
             video.play();
         });
     }
