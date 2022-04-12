@@ -1,6 +1,9 @@
 package com.github.makewheels.video2022.thumbnail;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.makewheels.video2022.transcode.AliyunTranscodeStatus;
+import com.github.makewheels.video2022.transcode.BaiduTranscodeStatus;
+import com.github.makewheels.video2022.video.Provider;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -41,4 +44,18 @@ public class Thumbnail {
     private String key;
 
     private JSONObject result;
+
+    /**
+     * 根据对应的provider判断是否是已结束状态
+     *
+     * @return
+     */
+    public boolean isFinishStatus() {
+        if (provider.equals(Provider.ALIYUN)) {
+            return AliyunTranscodeStatus.isFinishedStatus(status);
+        } else if (provider.equals(Provider.BAIDU)) {
+            return BaiduTranscodeStatus.isFinishedStatus(status);
+        }
+        return true;
+    }
 }

@@ -22,8 +22,7 @@ public class TranscodeController {
      */
     @PostMapping("baiduCallback")
     public Result<Void> baiduCallback(@RequestBody JSONObject jsonObject) {
-        log.debug("收到视频处理回调：");
-        log.debug(jsonObject.toJSONString());
+        log.debug("收到百度转码回调：" + jsonObject.toJSONString());
         return transcodeService.baiduCallback(jsonObject);
     }
 }

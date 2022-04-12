@@ -1,20 +1,15 @@
 package com.github.makewheels.video2022.transcode;
 
-import cn.hutool.core.util.IdUtil;
-import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.baidubce.BceClientConfiguration;
-import com.baidubce.auth.DefaultBceCredentials;
-import com.baidubce.services.media.MediaClient;
-import com.baidubce.services.media.model.CreateTranscodingJobResponse;
-import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
+import com.aliyun.mts20140618.models.QueryJobListResponseBody;
 import com.baidubce.services.media.model.GetTranscodingJobResponse;
 import com.github.makewheels.video2022.cdn.CdnService;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
 import com.github.makewheels.video2022.thumbnail.ThumbnailService;
+import com.github.makewheels.video2022.video.Provider;
 import com.github.makewheels.video2022.video.Video;
 import com.github.makewheels.video2022.video.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +19,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -62,7 +56,7 @@ public class TranscodeService {
     private BaiduMcpService baiduMcpService;
 
     /**
-     * 处理回调
+     * 处理百度视频转码回调
      * 参考：
      * https://cloud.baidu.com/doc/MCT/s/Hkc9x65yv
      * <p>
@@ -90,51 +84,60 @@ public class TranscodeService {
         Transcode transcode = transcodeRepository.getByJobId(jobId);
         //如果是转码任务
         if (transcode != null) {
-            //检查是不是已完成
-            if (StringUtils.equals(transcode.getStatus(), BaiduTranscodeStatus.SUCCESS)) {
-                log.info("转码已完成，跳过");
+            //判断是不是已完成
+            if (transcode.isFinishStatus()) {
+                log.info("百度视频转码已完成，跳过 " + JSON.toJSONString(transcode));
                 return Result.ok();
             }
             handleTranscodeCallback(transcode);
         } else {
             //如果是截帧任务
             Thumbnail thumbnail = thumbnailRepository.getByJobId(jobId);
+            //判断是不是已完成
             if (thumbnail != null) {
-                if (StringUtils.equals(thumbnail.getStatus(), BaiduTranscodeStatus.SUCCESS)) {
-                    log.info("转码已完成，跳过");
+                if (thumbnail.isFinishStatus()) {
+                    log.info("百度截帧转码已完成，跳过 " + JSON.toJSONString(thumbnail));
                     return Result.ok();
                 }
                 thumbnailService.handleThumbnailCallback(thumbnail);
             }
         }
-
         return Result.ok();
     }
 
     /**
      * 处理transcode回调
-     *
-     * @param transcode
+     * 这个处理是通用的，同时兼容百度和阿里，
+     * 前面不管是那个服务商，只需根据jobId从数据库查出transcode对象传入即可
      */
     private void handleTranscodeCallback(Transcode transcode) {
         String jobId = transcode.getJobId();
-        GetTranscodingJobResponse response = baiduMcpService.getTranscodingJob(jobId);
-        //更新status
-        transcode.setStatus(response.getJobStatus());
-        //如果已完成，不论成功失败，都保存数据库
-        //只有完成状态保存result，pending 和 running不保存result，只保存状态
-        if (StringUtils.equals(response.getJobStatus(), BaiduTranscodeStatus.FAILED)
-                || StringUtils.equals(response.getJobStatus(), BaiduTranscodeStatus.SUCCESS)) {
-            transcode.setResult(JSONObject.parseObject(JSON.toJSONString(response)));
+        String jobStatus = null;
+        String transcodeResultJson = null;
+        //向对应的云服务商查询转码任务
+        if (transcode.getProvider().equals(Provider.ALIYUN)) {
+            QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
+                    = aliyunMpsService.queryJob(jobId).getBody().getJobList().getJob().get(0);
+            jobStatus = job.getState();
+            transcodeResultJson = JSON.toJSONString(job);
+        } else if (transcode.getProvider().equals(Provider.BAIDU)) {
+            GetTranscodingJobResponse job = baiduMcpService.getTranscodingJob(jobId);
+            jobStatus = job.getJobStatus();
+            transcodeResultJson = JSON.toJSONString(job);
         }
-        //保存数据库
-        mongoTemplate.save(transcode);
-        //通知视频转码完成
-        transcodeFinish(transcode);
+        //只有在新老状态不一致时，才保存数据库
+        if (!StringUtils.equals(jobStatus, transcode.getStatus())) {
+            transcode.setStatus(jobStatus);
+            transcode.setResult(JSONObject.parseObject(transcodeResultJson));
+            mongoTemplate.save(transcode);
+            //通知视频转码完成
+            transcodeFinish(transcode);
+        }
     }
 
     /**
      * 当有一个转码job完成时回调
+     * 主要目的是更新video状态
      *
      * @param transcode
      */
@@ -142,15 +145,10 @@ public class TranscodeService {
         String videoId = transcode.getVideoId();
         Video video = mongoTemplate.findById(videoId, Video.class);
         if (video == null) return;
+        //从数据库中查出，该视频对应的其它的转码任务
         List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
-        int completeCount = 0;
         //统计已完成数量
-        for (Transcode eachTranscode : transcodeList) {
-            String status = eachTranscode.getStatus();
-            if (status.equals(BaiduTranscodeStatus.SUCCESS) || status.equals(BaiduTranscodeStatus.FAILED)) {
-                completeCount++;
-            }
-        }
+        int completeCount = (int) transcodeList.stream().filter(Transcode::isFinishStatus).count();
         String videoStatus = null;
         //如果是部分完成
         if (completeCount > 0 && completeCount != transcodeList.size()) {

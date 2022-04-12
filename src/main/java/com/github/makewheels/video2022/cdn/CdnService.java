@@ -48,6 +48,8 @@ public class CdnService {
         request.put("urlList", urlList);
         request.put("callbackUrl", internalBaseUrl + "/cdn/onSoftRoutePrefetchFinish");
         log.info("通知预热cdn, missionId = " + missionId + ", size = " + urlList.size());
+        log.info(cdnPrefetchUrl);
+        log.info(request.toJSONString());
         String response = HttpUtil.post(cdnPrefetchUrl, request.toJSONString());
         log.info("请求预热，软路由回复：");
         log.info(response);

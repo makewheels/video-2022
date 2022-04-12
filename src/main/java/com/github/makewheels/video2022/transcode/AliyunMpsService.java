@@ -140,15 +140,4 @@ public class AliyunMpsService {
         return null;
     }
 
-    /**
-     * 是否是已结束的状态
-     *
-     * @param jobState
-     * @return
-     */
-    private boolean isFinishedStatus(String jobState) {
-        return StringUtils.equalsAny(jobState, AliyunTranscodeStatus.TranscodeSuccess,
-                AliyunTranscodeStatus.TranscodeFail, AliyunTranscodeStatus.TranscodeCancelled);
-    }
-
 }

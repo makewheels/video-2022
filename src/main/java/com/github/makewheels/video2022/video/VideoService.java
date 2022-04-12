@@ -268,11 +268,12 @@ public class VideoService {
         thumbnail.setStatus(BaiduTranscodeStatus.CREATED);
         thumbnail.setSourceKey(sourceKey);
         thumbnail.setExtension("jpg");
+        thumbnail.setProvider(Provider.BAIDU);
 
         String targetKeyPrefix = "videos/" + userId + "/" + videoId + "/cover/" + videoId;
+        log.info("通过百度云发起截帧任务：video = " + videoId);
         CreateThumbnailJobResponse thumbnailJob
                 = thumbnailService.createThumbnailJob(sourceKey, targetKeyPrefix);
-        log.info("通过百度云发起截帧任务：video = " + videoId);
         log.info(JSON.toJSONString(thumbnailJob));
 
         thumbnail.setTargetKeyPrefix(targetKeyPrefix);
