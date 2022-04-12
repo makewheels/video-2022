@@ -10,31 +10,39 @@
     <title id="title">播放页</title>
     <script src="https://unpkg.com/axios@0.26.1/dist/axios.min.js"></script>
 
-    <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.9.19/skins/default/aliplayer-min.css"/>
-    <script type="text/javascript" charset="utf-8"
-            src="https://g.alicdn.com/de/prismplayer/2.9.19/aliplayer-min.js"></script>
+    <!--    <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.9.19/skins/default/aliplayer-min.css"/>-->
+    <!--    <script type="text/javascript" charset="utf-8"-->
+    <!--            src="https://g.alicdn.com/de/prismplayer/2.9.19/aliplayer-min.js"></script>-->
 
     <!--引入微信sdk，解决自动播放问题-->
     <script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+
+    <!--腾讯云播放器-->
+    <link href="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/tcplayer.min.css" rel="stylesheet"/>
+    <!--如果需要在 Chrome 和 Firefox 等现代浏览器中通过 H5 播放 Webrtc 视频，需要在 tcplayer.vx.x.x.min.js之前引入 TXLivePlayer-x.x.x.min.js。-->
+    <!--有些浏览器环境不支持 Webrtc，播放器会将 Webrtc 流地址自动转换为 HLS 格式地址，因此快直播场景同样需要引入hls.min.x.xx.xm.js。-->
+    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/libs/TXLivePlayer-1.2.0.min.js"></script>
+    <!--如果需要在 Chrome 和 Firefox 等现代浏览器中通过 H5 播放 HLS 格式的视频，需要在 tcplayer.vx.x.x.min.js 之前引入 hls.min.x.xx.xm.js。-->
+    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/libs/hls.min.0.13.2m.js"></script>
+    <!--播放器脚本文件-->
+    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/tcplayer.v4.5.1.min.js"></script>
 
 </head>
 
 <body>
 
-<div id="app">
-    <div class="prism-player" id="player-con"></div>
+<div>
+    <!--    <div class="prism-player" id="player-con">-->
+    <video id="player-container-id" width="100%" height="350px"
+           preload="auto" playsinline webkit-playsinline>
+    </video>
+    <!--    </div>-->
     <div><span id="errorInfo" style="font-size: 30px"></span></div>
     <div id="div_title" style="font-size: 30px"></div>
     <div id="watchCount" style="font-size: 20px"></div>
     <div id="createTime" style="font-size: 20px"></div>
     <div id="description" style="font-size: 20px"></div>
 </div>
-
-<style>
-    .prism-cover {
-        background-size: 100% 450px !important;
-    }
-</style>
 
 <script>
     function autoPlay() {
@@ -48,7 +56,8 @@
             jsApiList: []
         });
 
-        let video = document.getElementById("player-con").getElementsByTagName("video")[0];
+        // let video = document.getElementById("player-con").getElementsByTagName("video")[0];
+        let video = document.getElementById("player-container-id");
         wx.ready(function () {
             video.play();
         });
@@ -102,22 +111,30 @@
 
                 //判断视频状态，如果已就绪，就创建播放器。如果还没就绪，就提示
                 if (data.videoStatus === "READY") {
-                    player = new Aliplayer({
-                        "id": "player-con",
-                        "source": '{"HD":"' + HD + '","SD":"' + SD + '"}',
-                        // "cover": coverUrl,
-                        "width": "100%",
-                        "height": "350px",
-                        "autoplay": true,
-                        "isLive": false,
-                        "rePlay": false,
-                        "playsinline": true,
-                        "preload": true,
-                        "controlBarVisibility": "hover",
-                        "useH5Prism": true
-                    }, function (player) {
-                        autoPlay();
-                    });
+                    // player = new Aliplayer({
+                    //     "id": "player-con",
+                    //     "source": '{"HD":"' + HD + '","SD":"' + SD + '"}',
+                    //     // "cover": coverUrl,
+                    //     "width": "100%",
+                    //     "height": "350px",
+                    //     "autoplay": true,
+                    //     "isLive": false,
+                    //     "rePlay": false,
+                    //     "playsinline": true,
+                    //     "preload": true,
+                    //     "controlBarVisibility": "hover",
+                    //     "useH5Prism": true
+                    // }, function (player) {
+                    //     autoPlay();
+                    // });
+
+                    player = TCPlayer('player-container-id', {autoplay: true});
+                    if (HD != null) {
+                        player.src(HD);
+                    } else {
+                        player.src(SD);
+                    }
+                    document.getElementById("player-container-id").style.width = (window.innerWidth - 30) + "px";
                 } else {
                     document.getElementById("errorInfo").innerHTML
                         = "视频正在上传或转码<br>"
@@ -201,7 +218,6 @@
             + '&clientId=' + localStorage.clientId
             + '&sessionId=' + sessionStorage.sessionId)
             .then(function (res) {
-                console.log("all ready");
             });
     }
 

@@ -138,7 +138,7 @@ public class TranscodeService {
             QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
                     = aliyunMpsService.queryJob(jobId).getBody().getJobList().getJob().get(0);
             String jobStatus = job.getState();
-            log.info("阿里云轮询查询job结果: jobStatus = {},job = {}", jobStatus, JSON.toJSONString(job));
+            log.info("阿里云轮询查询job结果: jobStatus = {}, job = {}", jobStatus, JSON.toJSONString(job));
             //如果转码已完成，回调
             if (AliyunTranscodeStatus.isFinishedStatus(jobStatus)) {
                 aliyunTranscodeCallback(jobId);
