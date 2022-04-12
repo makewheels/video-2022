@@ -14,6 +14,10 @@
     <script type="text/javascript" charset="utf-8"
             src="https://g.alicdn.com/de/prismplayer/2.9.19/aliplayer-min.js"></script>
 
+    <!--引入微信sdk，解决自动播放问题-->
+    <script src="https://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+
 </head>
 
 <body>
@@ -32,6 +36,26 @@
         background-size: 100% 450px !important;
     }
 </style>
+
+<script>
+    function autoPlay() {
+        wx.config({
+            // 配置信息, 即使不正确也能使用 wx.ready
+            debug: false,
+            appId: '',
+            timestamp: 1,
+            nonceStr: '',
+            signature: '',
+            jsApiList: []
+        });
+        wx.ready(function() {
+            const video = $(player.el()).find('video')[0];
+            video.play();
+        });
+    }
+    // 解决ios不自动播放的问题
+    autoPlay();
+</script>
 
 <script>
     let videoId;
