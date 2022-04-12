@@ -10,6 +10,7 @@ import com.baidubce.services.media.MediaClient;
 import com.baidubce.services.media.model.CreateTranscodingJobResponse;
 import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
 import com.baidubce.services.media.model.GetTranscodingJobResponse;
+import com.github.makewheels.video2022.cdn.CdnService;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
@@ -52,6 +53,8 @@ public class TranscodeService {
 
     @Resource
     private ThumbnailService thumbnailService;
+    @Resource
+    private CdnService cdnService;
 
     @Resource
     private AliyunMpsService aliyunMpsService;
@@ -159,44 +162,23 @@ public class TranscodeService {
             //如果一个都没完成，那就是所有任务都在转码
             videoStatus = VideoStatus.TRANSCODING;
         }
+        //更新到数据库
         if (!StringUtils.equals(videoStatus, video.getStatus())) {
             video.setStatus(videoStatus);
             mongoTemplate.save(video);
         }
         //当视频已就绪时，也就是所有转码任务都完成了
         if (StringUtils.equals(video.getStatus(), VideoStatus.READY)) {
-            onVideoReady(videoId);
+            onVideoReady(video);
         }
     }
 
     /**
      * 当视频已就绪时
-     *
-     * @param videoId
      */
-    public void onVideoReady(String videoId) {
-        log.info("视频已就绪, videoId = " + videoId);
-        //通知预加载缓存
-        JSONObject request = new JSONObject();
-        String missionId = IdUtil.getSnowflakeNextIdStr();
-        request.put("missionId", missionId);
-        List<String> urlList = new ArrayList<>();
-        List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
-        for (Transcode transcode : transcodeList) {
-            String m3u8CdnUrl = transcode.getM3u8CdnUrl();
-            String baseUrl = m3u8CdnUrl.substring(0, m3u8CdnUrl.lastIndexOf("/") + 1);
-            String[] eachLine = HttpUtil.get(m3u8CdnUrl).split("\n");
-            for (String line : eachLine) {
-                if (line.startsWith("#")) continue;
-                urlList.add(baseUrl + line);
-            }
-        }
-        request.put("urlList", urlList);
-        request.put("callbackUrl", internalBaseUrl + "/video/onCdnPrefetchFinish");
-        log.info("通知预热cdn, missionId = " + missionId + ", size = " + urlList.size());
-        String response = HttpUtil.post(cdnPrefetchUrl, request.toJSONString());
-        log.info("请求预热，软路由回复：");
-        log.info(response);
+    public void onVideoReady(Video video) {
+        //预热到软路由
+        cdnService.softRoutePrefetch(video.getId());
     }
 
 }
