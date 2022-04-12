@@ -108,6 +108,7 @@ public class VideoService {
         //搬运因为是海外服务器api上传，就用阿里云对象存储，转码也是阿里云
         String provider = null;
         String type = requestBody.getString("type");
+        log.info("新建视频，type = " + type);
         video.setType(type);
         if (type.equals(VideoType.USER_UPLOAD)) {
             provider = Provider.BAIDU;
@@ -325,10 +326,10 @@ public class VideoService {
             createThumbnail(user, video);
             video.setDuration(mediaInfo.getDurationInMillisecond());
             video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(mediaInfo)));
-            mongoTemplate.save(video);
             video.setWidth(mediaInfo.getVideo().getWidthInPixel());
             video.setHeight(mediaInfo.getVideo().getHeightInPixel());
         }
+        mongoTemplate.save(video);
 
         //开始转码，首先一定会发起720p的转码
         transcodeSingleResolution(user, video, Resolution.R_720P);
@@ -497,15 +498,4 @@ public class VideoService {
         return Result.ok();
     }
 
-    /**
-     * 在cdn预热完成时
-     *
-     * @param body
-     * @return
-     */
-    public Result<Void> onCdnPrefetchFinish(JSONObject body) {
-        log.info("收到软路由预热完成回调：");
-        log.info(body.toJSONString());
-        return Result.ok();
-    }
 }

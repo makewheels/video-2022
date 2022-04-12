@@ -104,11 +104,4 @@ public class VideoController {
         return videoService.addWatchLog(request, user, clientId, sessionId, videoId);
     }
 
-    /**
-     * 在cdn预热完成时
-     */
-    @PostMapping("onCdnPrefetchFinish")
-    public Result<Void> onCdnPrefetchFinish(@RequestBody JSONObject body) {
-        return videoService.onCdnPrefetchFinish(body);
-    }
 }

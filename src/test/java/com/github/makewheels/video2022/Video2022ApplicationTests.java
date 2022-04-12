@@ -13,7 +13,6 @@ class Video2022ApplicationTests {
 
     @Test
     void contextLoads() {
-        transcodeService.onVideoReady("624be4bd8bd8926b18d541ed");
     }
 
 }
