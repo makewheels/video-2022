@@ -48,16 +48,12 @@
             signature: '',
             jsApiList: []
         });
-        wx.ready(function() {
+        wx.ready(function () {
             const video = $(player.el()).find('video')[0];
             video.play();
         });
     }
-    // 解决ios不自动播放的问题
-    autoPlay();
-</script>
 
-<script>
     let videoId;
     let watchId;
 
@@ -115,6 +111,7 @@
                         "controlBarVisibility": "hover",
                         "useH5Prism": true
                     }, function (player) {
+                        autoPlay();
                     });
                 } else {
                     document.getElementById("errorInfo").innerHTML
