@@ -53,6 +53,8 @@
         });
     }
 
+    autoPlay();
+
     let videoId;
     let watchId;
 
@@ -110,7 +112,6 @@
                         "controlBarVisibility": "hover",
                         "useH5Prism": true
                     }, function (player) {
-                        autoPlay();
                     });
                 } else {
                     document.getElementById("errorInfo").innerHTML
