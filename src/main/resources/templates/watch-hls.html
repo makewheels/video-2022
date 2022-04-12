@@ -47,13 +47,20 @@
             signature: '',
             jsApiList: []
         });
+
+        let video = document.getElementById("player-con").getElementsByTagName("video")[0];
         wx.ready(function () {
-            const video = document.getElementById("player-con").getElementsByTagName("video")[0];
             video.play();
         });
-    }
 
-    autoPlay();
+        document.addEventListener('WeixinJSBridgeReady', function () {
+            video.play();
+        }, false);
+
+        document.addEventListener('touchstart', function () {
+            video.play();
+        }, false);
+    }
 
     let videoId;
     let watchId;
@@ -112,6 +119,7 @@
                         "controlBarVisibility": "hover",
                         "useH5Prism": true
                     }, function (player) {
+                        autoPlay();
                     });
                 } else {
                     document.getElementById("errorInfo").innerHTML
