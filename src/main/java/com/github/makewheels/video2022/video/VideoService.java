@@ -458,19 +458,12 @@ public class VideoService {
             JSONObject publishedAt = youtubeVideoInfo.getJSONObject("snippet").getJSONObject("publishedAt");
             int timeZoneShift = publishedAt.getInteger("timeZoneShift");
             long value = publishedAt.getLong("value");
-            ZonedDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneId.of("UTC+" + timeZoneShift));
+            Instant instant = ZonedDateTime.ofInstant(
+                    Instant.ofEpochMilli(value), ZoneId.of("UTC+" + timeZoneShift)).toInstant();
+            createTime = Date.from(ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).toInstant());
         }
         videoInfo.setCreateTimeString(DateUtil.formatDateTime(createTime));
         return Result.ok(videoInfo);
-    }
-
-    public static void main(String[] args) {
-        int timeZoneShift = 0;
-        long value = 1649843112000L;
-        Instant instant = ZonedDateTime.ofInstant(
-                Instant.ofEpochMilli(value), ZoneId.of("UTC+" + timeZoneShift)).toInstant();
-        System.out.println(instant);
-        System.out.println(ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()));
     }
 
     /**
