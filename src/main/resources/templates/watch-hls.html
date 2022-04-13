@@ -41,7 +41,7 @@
     <div id="div_title" style="font-size: 30px"></div>
     <div id="watchCount" style="font-size: 20px"></div>
     <div id="createTime" style="font-size: 20px"></div>
-    <div id="description" style="font-size: 20px"></div>
+    <div id="description" style="font-size: 17px"></div>
 </div>
 
 <script>
@@ -70,6 +70,8 @@
 
     let videoId;
     let watchId;
+
+    let videoStatus;
 
     //获取url路径中的参数
     function getUrlVariable(key) {
@@ -109,6 +111,7 @@
                     }
                 }
 
+                videoStatus = data.videoStatus;
                 //判断视频状态，如果已就绪，就创建播放器。如果还没就绪，就提示
                 if (data.videoStatus === "READY") {
                     // player = new Aliplayer({
@@ -212,13 +215,15 @@
             || hasAddWatchLog) {
             return;
         }
-        //增加观看次数
-        hasAddWatchLog = true;
-        axios.get('/video/addWatchLog?videoId=' + videoId
-            + '&clientId=' + localStorage.clientId
-            + '&sessionId=' + sessionStorage.sessionId)
-            .then(function (res) {
-            });
+        //增加观看次数，只有在ready状态，才增加
+        if (videoStatus === "READY") {
+            axios.get('/video/addWatchLog?videoId=' + videoId
+                + '&clientId=' + localStorage.clientId
+                + '&sessionId=' + sessionStorage.sessionId)
+                .then(function (res) {
+                    hasAddWatchLog = true;
+                });
+        }
     }
 
     //从这里开始
