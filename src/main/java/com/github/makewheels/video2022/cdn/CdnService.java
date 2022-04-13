@@ -53,7 +53,7 @@ public class CdnService {
     }
 
     /**
-     * 在cdn预热完成时
+     * 在软路由cdn预热完成时
      *
      * @param body
      * @return
@@ -61,5 +61,13 @@ public class CdnService {
     public Result<Void> onSoftRoutePrefetchFinish(JSONObject body) {
         log.info("收到软路由预热完成回调：" + body.toJSONString());
         return Result.ok();
+    }
+
+    /**
+     * 通知阿里云cdn预热
+     * @return
+     */
+    public void aliyunCdnPrefetch(Transcode transcode) {
+        log.info("阿里云cdn预热 " + transcode.getId());
     }
 }
