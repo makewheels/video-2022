@@ -6,9 +6,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.aliyun.mts20140618.models.SubmitJobsResponse;
 import com.aliyun.mts20140618.models.SubmitJobsResponseBody;
-import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponse;
 import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
 import com.baidubce.services.media.model.CreateThumbnailJobResponse;
 import com.baidubce.services.media.model.CreateTranscodingJobResponse;
@@ -36,6 +34,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -450,8 +451,26 @@ public class VideoService {
         }
         VideoInfo videoInfo = new VideoInfo();
         BeanUtils.copyProperties(video, videoInfo);
-        videoInfo.setCreateTimeString(DateUtil.formatDateTime(videoInfo.getCreateTime()));
+        Date createTime = videoInfo.getCreateTime();
+        //如果是YouTube搬运视频，那就按照YouTube的发布时间来，不按照我搬运的时间
+        if (video.isYoutube()) {
+            JSONObject youtubeVideoInfo = video.getYoutubeVideoInfo();
+            JSONObject publishedAt = youtubeVideoInfo.getJSONObject("snippet").getJSONObject("publishedAt");
+            int timeZoneShift = publishedAt.getInteger("timeZoneShift");
+            long value = publishedAt.getLong("value");
+            ZonedDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneId.of("UTC+" + timeZoneShift));
+        }
+        videoInfo.setCreateTimeString(DateUtil.formatDateTime(createTime));
         return Result.ok(videoInfo);
+    }
+
+    public static void main(String[] args) {
+        int timeZoneShift = 0;
+        long value = 1649843112000L;
+        Instant instant = ZonedDateTime.ofInstant(
+                Instant.ofEpochMilli(value), ZoneId.of("UTC+" + timeZoneShift)).toInstant();
+        System.out.println(instant);
+        System.out.println(ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()));
     }
 
     /**

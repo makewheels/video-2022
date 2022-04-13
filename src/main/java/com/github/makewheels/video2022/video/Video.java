@@ -51,4 +51,8 @@ public class Video {
     private JSONObject mediaInfo;
 
     private JSONObject youtubeVideoInfo;
+
+    public boolean isYoutube() {
+        return type.equals(VideoType.YOUTUBE);
+    }
 }
