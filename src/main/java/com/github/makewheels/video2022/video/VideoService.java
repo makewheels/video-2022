@@ -111,10 +111,10 @@ public class VideoService {
         String type = requestBody.getString("type");
         video.setType(type);
         if (type.equals(VideoType.USER_UPLOAD)) {
-            provider = Provider.BAIDU;
+            provider = S3Provider.BAIDU_BOS;
             log.info("新建视频类型：type = " + type + ", provider = 百度云");
         } else if (type.equals(VideoType.YOUTUBE)) {
-            provider = Provider.ALIYUN;
+            provider = S3Provider.ALIYUN_OSS;
             log.info("新建视频类型：type = " + type + ", provider = 阿里云");
             String youtubeUrl = requestBody.getString("youtubeUrl");
             video.setYoutubeUrl(youtubeUrl);
@@ -217,10 +217,10 @@ public class VideoService {
         String m3u8Key = "videos/" + userId + "/" + videoId + "/transcode/"
                 + resolution + "/" + videoId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
-        if (provider.equals(Provider.ALIYUN)) {
+        if (provider.equals(S3Provider.ALIYUN_OSS)) {
             transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
             transcode.setM3u8CdnUrl(aliyunOssCdnBaseUrl + m3u8Key);
-        } else if (provider.equals(Provider.BAIDU)) {
+        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
             transcode.setM3u8AccessUrl(baiduBosAccessBaseUrl + m3u8Key);
             transcode.setM3u8CdnUrl(baiduBosCdnBaseUrl + m3u8Key);
         }
@@ -230,14 +230,14 @@ public class VideoService {
         log.info("发起 " + resolution + " 转码：videoId = " + videoId);
         String jobId = null;
         String jobStatus = null;
-        if (provider.equals(Provider.ALIYUN)) {
+        if (provider.equals(S3Provider.ALIYUN_OSS)) {
             SubmitJobsResponseBody.SubmitJobsResponseBodyJobResultListJobResultJob job
                     = aliyunMpsService.createTranscodingJobByResolution(sourceKey, m3u8Key, resolution)
                     .getBody().getJobResultList().getJobResult().get(0).getJob();
             jobId = job.getJobId();
             log.info("发起阿里云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
             jobStatus = job.getState();
-        } else if (provider.equals(Provider.BAIDU)) {
+        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
             CreateTranscodingJobResponse job = baiduMcpService.createTranscodingJob(
                     sourceKey, m3u8Key, resolution);
             jobId = job.getJobId();
@@ -248,7 +248,7 @@ public class VideoService {
         transcode.setStatus(jobStatus);
         mongoTemplate.save(transcode);
         //异步轮询查询阿里云转码状态，并回调
-        if (provider.equals(Provider.ALIYUN)) {
+        if (provider.equals(S3Provider.ALIYUN_OSS)) {
             new Thread(() -> transcodeService.iterateQueryAliyunTranscodeJob(video, transcode)).start();
         }
     }
@@ -269,7 +269,7 @@ public class VideoService {
         thumbnail.setStatus(BaiduTranscodeStatus.CREATED);
         thumbnail.setSourceKey(sourceKey);
         thumbnail.setExtension("jpg");
-        thumbnail.setProvider(Provider.BAIDU);
+        thumbnail.setProvider(S3Provider.BAIDU_BOS);
 
         String targetKeyPrefix = "videos/" + userId + "/" + videoId + "/cover/" + videoId;
         CreateThumbnailJobResponse thumbnailJob
@@ -305,7 +305,7 @@ public class VideoService {
         String provider = video.getProvider();
 
         //获取视频信息
-        if (provider.equals(Provider.ALIYUN)) {
+        if (provider.equals(S3Provider.ALIYUN_OSS)) {
             log.info("视频源文件上传完成，通过阿里云获取视频信息，videoId = " + videoId);
             SubmitMediaInfoJobResponseBody body = aliyunMpsService.getMediaInfo(sourceKey).getBody();
             SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJob job = body.getMediaInfoJob();
@@ -319,7 +319,7 @@ public class VideoService {
             video.setDuration((int) (Double.parseDouble(properties.getDuration()) * 1000));
             video.setHeight(Integer.parseInt(properties.getHeight()));
             video.setWidth(Integer.parseInt(properties.getWidth()));
-        } else if (provider.equals(Provider.BAIDU)) {
+        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
             GetMediaInfoOfFileResponse mediaInfo = baiduMcpService.getMediaInfo(sourceKey);
             log.info("视频源文件上传完成，通过百度获取视频信息，videoId = " + videoId
                     + ", mediaInfo = " + JSON.toJSONString(mediaInfo));

@@ -110,6 +110,12 @@
             <artifactId>mts20140618</artifactId>
             <version>3.3.45</version>
         </dependency>
+        <!--阿里云cdn-->
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>cdn20180510</artifactId>
+            <version>1.0.9</version>
+        </dependency>
 
     </dependencies>
 

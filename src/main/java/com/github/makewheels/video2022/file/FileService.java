@@ -7,7 +7,7 @@ import com.baidubce.services.bos.model.BosObject;
 import com.github.makewheels.usermicroservice2022.User;
 import com.github.makewheels.usermicroservice2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
-import com.github.makewheels.video2022.video.Provider;
+import com.github.makewheels.video2022.video.S3Provider;
 import com.github.makewheels.video2022.video.VideoType;
 import com.github.makewheels.video2022.video.YoutubeService;
 import lombok.extern.slf4j.Slf4j;
@@ -83,9 +83,9 @@ public class FileService {
      */
     public String getAccessUrl(File file) {
         String provider = file.getProvider();
-        if (provider.equals(Provider.ALIYUN)) {
+        if (provider.equals(S3Provider.ALIYUN_OSS)) {
             return aliyunOssAccessBaseUrl + file.getKey();
-        } else if (provider.equals(Provider.BAIDU)) {
+        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
             return baiduBosAccessBaseUrl + file.getKey();
         }
         return null;
@@ -99,9 +99,9 @@ public class FileService {
      */
     public String getCdnUrl(File file) {
         String provider = file.getProvider();
-        if (provider.equals(Provider.ALIYUN)) {
+        if (provider.equals(S3Provider.ALIYUN_OSS)) {
             return aliyunOssCdnBaseUrl + file.getKey();
-        } else if (provider.equals(Provider.BAIDU)) {
+        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
             return baiduBosCdnBaseUrl + file.getKey();
         }
         return null;
@@ -124,9 +124,9 @@ public class FileService {
         //根据provider，获取上传凭证
         String provider = file.getProvider();
         JSONObject credentials = null;
-        if (provider.equals(Provider.BAIDU)) {
+        if (provider.equals(S3Provider.BAIDU_BOS)) {
             credentials = baiduBosService.getUploadCredentials(key);
-        } else if (provider.equals(Provider.ALIYUN)) {
+        } else if (provider.equals(S3Provider.ALIYUN_OSS)) {
             credentials = aliyunOssService.getUploadCredentials(key);
         }
         if (credentials == null) return Result.error(ErrorCode.FAIL);
@@ -151,11 +151,11 @@ public class FileService {
         log.info("处理文件上传完成，fileId = " + fileId + ", key = " + key);
 
         //判断provider
-        if (file.getProvider().equals(Provider.ALIYUN)) {
+        if (file.getProvider().equals(S3Provider.ALIYUN_OSS)) {
             OSSObject object = aliyunOssService.getObject(key);
             file.setSize(object.getObjectMetadata().getContentLength());
             file.setEtag(object.getObjectMetadata().getETag());
-        } else if (file.getProvider().equals(Provider.BAIDU)) {
+        } else if (file.getProvider().equals(S3Provider.BAIDU_BOS)) {
             BosObject object = baiduBosService.getObject(key);
             file.setSize(object.getObjectMetadata().getContentLength());
             file.setEtag(object.getObjectMetadata().getETag());

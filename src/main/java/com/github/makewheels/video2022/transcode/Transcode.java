@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.transcode;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.video.Provider;
+import com.github.makewheels.video2022.video.S3Provider;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
@@ -47,9 +47,9 @@ public class Transcode {
      * @return
      */
     public boolean isFinishStatus() {
-        if (provider.equals(Provider.ALIYUN)) {
+        if (provider.equals(S3Provider.ALIYUN_OSS)) {
             return AliyunTranscodeStatus.isFinishedStatus(status);
-        } else if (provider.equals(Provider.BAIDU)) {
+        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
             return BaiduTranscodeStatus.isFinishedStatus(status);
         }
         return true;
@@ -61,9 +61,9 @@ public class Transcode {
      * @return
      */
     public boolean isSuccessStatus() {
-        if (provider.equals(Provider.ALIYUN)) {
+        if (provider.equals(S3Provider.ALIYUN_OSS)) {
             return StringUtils.equals(status, AliyunTranscodeStatus.TranscodeSuccess);
-        } else if (provider.equals(Provider.BAIDU)) {
+        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
             return StringUtils.equals(status, BaiduTranscodeStatus.SUCCESS);
         }
         return true;
