@@ -3,7 +3,7 @@ package com.github.makewheels.video2022.thumbnail;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.transcode.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.BaiduTranscodeStatus;
-import com.github.makewheels.video2022.video.Provider;
+import com.github.makewheels.video2022.video.S3Provider;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -51,9 +51,9 @@ public class Thumbnail {
      * @return
      */
     public boolean isFinishStatus() {
-        if (provider.equals(Provider.ALIYUN)) {
+        if (provider.equals(S3Provider.ALIYUN_OSS)) {
             return AliyunTranscodeStatus.isFinishedStatus(status);
-        } else if (provider.equals(Provider.BAIDU)) {
+        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
             return BaiduTranscodeStatus.isFinishedStatus(status);
         }
         return true;

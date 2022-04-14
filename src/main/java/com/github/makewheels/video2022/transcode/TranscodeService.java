@@ -9,12 +9,11 @@ import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
 import com.github.makewheels.video2022.thumbnail.ThumbnailService;
-import com.github.makewheels.video2022.video.Provider;
+import com.github.makewheels.video2022.video.S3Provider;
 import com.github.makewheels.video2022.video.Video;
 import com.github.makewheels.video2022.video.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -157,12 +156,12 @@ public class TranscodeService {
         String jobStatus = null;
         String transcodeResultJson = null;
         //向对应的云服务商查询转码任务
-        if (transcode.getProvider().equals(Provider.ALIYUN)) {
+        if (transcode.getProvider().equals(S3Provider.ALIYUN_OSS)) {
             QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
                     = aliyunMpsService.queryJob(jobId).getBody().getJobList().getJob().get(0);
             jobStatus = job.getState();
             transcodeResultJson = JSON.toJSONString(job);
-        } else if (transcode.getProvider().equals(Provider.BAIDU)) {
+        } else if (transcode.getProvider().equals(S3Provider.BAIDU_BOS)) {
             GetTranscodingJobResponse job = baiduMcpService.getTranscodingJob(jobId);
             jobStatus = job.getJobStatus();
             transcodeResultJson = JSON.toJSONString(job);
@@ -214,7 +213,7 @@ public class TranscodeService {
         //判断如果是转码成功状态，请求软路由预热，
         //只有转码成功才预热，失败不预热
         if (transcode.isSuccessStatus()) {
-            cdnService.softRoutePrefetch(transcode);
+            cdnService.prefetchCdn(transcode);
         }
     }
 
