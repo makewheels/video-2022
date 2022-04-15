@@ -125,9 +125,9 @@ public class TranscodeService {
 //                continue;
 //            }
 
-            //如果花了视频的3倍时长都没转完，就跳出
-            if ((System.currentTimeMillis() - startTime) > 3L * duration) {
-                log.error("花了视频的3倍时长都没转完，来人看看这是啥 jobId = {}, video = {}, transcode = {}",
+            //如果花了视频的5倍时长都没转完，就跳出
+            if ((System.currentTimeMillis() - startTime) > 5L * duration) {
+                log.error("花了视频的5倍时长都没转完，来人看看这是啥 jobId = {}, video = {}, transcode = {}",
                         jobId, JSON.toJSONString(video), transcode);
                 log.error("transcode = " + JSON.toJSONString(transcode));
                 break;
