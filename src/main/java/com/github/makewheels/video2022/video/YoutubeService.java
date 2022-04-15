@@ -29,9 +29,12 @@ public class YoutubeService {
      * @return
      */
     public String getFileExtension(String youtubeVideoId) {
-        String json = HttpUtil.get(youtubeServiceUrl + "/youtube/getFileExtension" +
-                "?youtubeVideoId=" + youtubeVideoId);
-        return JSONObject.parseObject(json).getString("extension");
+//        String json = HttpUtil.get(youtubeServiceUrl + "/youtube/getFileExtension" +
+//                "?youtubeVideoId=" + youtubeVideoId);
+//        return JSONObject.parseObject(json).getString("extension");
+        //2022年4月15日12:54:27
+        //因为发现yt-dlp总是返回webm，但实际上可能是mkv，就先统一叫做，yv吧，就是youtube video
+        return "yv";
     }
 
     /**
