@@ -1,8 +1,6 @@
 package com.github.makewheels.video2022.response;
 
-import com.github.makewheels.usermicroservice2022.response.ErrorCode;
 import lombok.Data;
-
 @Data
 public class Result<T> {
 

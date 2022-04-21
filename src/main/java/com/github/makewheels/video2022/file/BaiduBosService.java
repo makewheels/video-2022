@@ -10,13 +10,8 @@ import com.baidubce.services.bos.model.BosObject;
 import com.baidubce.services.sts.StsClient;
 import com.baidubce.services.sts.model.GetSessionTokenRequest;
 import com.baidubce.services.sts.model.GetSessionTokenResponse;
-import com.github.makewheels.usermicroservice2022.User;
-import com.github.makewheels.video2022.response.Result;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 
 @Service
 public class BaiduBosService {
