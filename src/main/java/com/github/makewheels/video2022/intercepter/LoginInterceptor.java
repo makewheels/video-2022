@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.intercepter;
 
 import com.alibaba.fastjson.JSON;
-import com.github.makewheels.usermicroservice2022.User;
+import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.user.UserServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
