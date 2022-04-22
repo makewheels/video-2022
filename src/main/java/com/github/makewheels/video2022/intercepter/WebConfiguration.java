@@ -33,6 +33,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/cdn/onSoftRoutePrefetchFinish")
                 .excludePathPatterns("/upload.html")
                 .excludePathPatterns("/transfer-youtube.html")
+                .excludePathPatterns("/transcode/aliyunCloudFunctionTranscodeCallback")
         ;
     }
 }

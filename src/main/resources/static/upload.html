@@ -6,7 +6,7 @@
 
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://code.bdstatic.com/npm/@baiducloud/sdk@1.0.0-rc.32/dist/baidubce-sdk.bundle.min.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/async/3.2.3/async.min.js"></script>
+    <script src="https://lib.baomitu.com/async/3.2.3/async.min.js"></script>
 </head>
 
 <body>
@@ -229,7 +229,7 @@
         };
     }
 
-    let chunkSize = 1024 * 1024; // 分块大小
+    let chunkSize = 2 * 1024 * 1024; // 分块大小
     let uploadId;
 
     let bucket;

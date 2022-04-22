@@ -38,10 +38,10 @@
     </video>
     <!--    </div>-->
     <div><span id="errorInfo" style="font-size: 30px"></span></div>
-    <div id="div_title" style="font-size: 30px"></div>
-    <div id="watchCount" style="font-size: 20px"></div>
-    <div id="createTime" style="font-size: 20px"></div>
-    <div id="description" style="font-size: 17px"></div>
+    <div id="div_title" style="font-size: 30px;color: blue"></div>
+    <div id="watchCount" style="font-size: 17px;color: darkcyan"></div>
+    <div id="createTime" style="font-size: 17px;color: darkcyan"></div>
+    <div id="description" style="font-size: 20px"></div>
 </div>
 
 <script>
@@ -86,6 +86,23 @@
         return false;
     }
 
+    /**
+     * 判断是否是pc端
+     */
+    function IsPC() {
+        var userAgentInfo = navigator.userAgent;
+        var Agents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
+        var flagPc = true;
+        for (var v = 0; v < Agents.length; v++) {
+            if (userAgentInfo.indexOf(Agents[v]) > 0) {
+                flagPc = false;
+                break;
+            }
+            return flagPc;
+        }
+    }
+
+    //console.log(flag) //true为PC端，false为手机端
     //加载视频
     function loadWatchInfo() {
         let player;
@@ -137,7 +154,12 @@
                     } else {
                         player.src(SD);
                     }
-                    document.getElementById("player-container-id").style.width = (window.innerWidth - 30) + "px";
+                    let playerVideo = document.getElementById("player-container-id");
+                    playerVideo.style.width = (window.innerWidth - 30) + "px";
+                    //pc端自动网页全屏
+                    if (IsPC()) {
+                        playerVideo.style.height = (window.innerHeight - 50) + "px";
+                    }
                 } else {
                     document.getElementById("errorInfo").innerHTML
                         = "视频正在上传或转码<br>"
@@ -145,6 +167,7 @@
                         + "videoId=" + videoId + "<br>"
                         + "当前状态：<br>"
                         + data.videoStatus;
+                    document.getElementById("player-container-id").style.display = "none";
                 }
 
                 afterVideoLoaded(videoId);

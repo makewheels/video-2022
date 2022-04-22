@@ -126,14 +126,14 @@ public class VideoService {
         video.setType(type);
         if (type.equals(VideoType.USER_UPLOAD)) {
             provider = S3Provider.BAIDU_BOS;
-            log.info("新建视频类型：type = " + type + ", S3Provider = " + provider);
         } else if (type.equals(VideoType.YOUTUBE)) {
             provider = S3Provider.ALIYUN_OSS;
-            log.info("新建视频类型：type = " + type + ", S3Provider = " + provider);
             String youtubeUrl = requestBody.getString("youtubeUrl");
             video.setYoutubeUrl(youtubeUrl);
             video.setYoutubeVideoId(youtubeService.getYoutubeVideoId(youtubeUrl));
         }
+        log.info("新建视频类型：type = " + type + ", S3Provider = " + provider);
+
         video.setProvider(provider);
 
         //创建 file
@@ -256,7 +256,11 @@ public class VideoService {
             //说白了就是，往小了转就要编解码，往大了转（当然没这种情况）就源片，所以我云函数不改分辨率，正好
         } else if (isResolutionOverThanTarget(width, height, resolution)) {
             transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
+            //如果，是264，分辨率也不用改，但是是百度对象存储，那还得用百度，因为云函数只有阿里云
+        } else if (video.getProvider().equals(S3Provider.BAIDU_BOS)) {
+            transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
         } else {
+            //其它情况用阿里云 云函数
             transcodeProvider = TranscodeProvider.ALIYUN_CLOUD_FUNCTION;
         }
         transcode.setProvider(transcodeProvider);
@@ -301,13 +305,12 @@ public class VideoService {
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 jobId = IdUtil.simpleUUID();
                 String callbackUrl = externalBaseUrl + "/transcode/aliyunCloudFunctionTranscodeCallback";
-                String response = cloudFunctionTranscodeService.transcode(
+                cloudFunctionTranscodeService.transcode(
                         sourceKey,
                         m3u8Key.substring(0, m3u8Key.lastIndexOf("/")),
                         videoId, transcodeId, jobId, resolution, width, height,
                         VideoCodec.H264, AudioCodec.AAC, "keep", callbackUrl
                 );
-                log.info("阿里云 云函数转码返回： jobId = " + jobId + ", response = " + response);
                 break;
         }
         //保存jobId，更新jobStatus
