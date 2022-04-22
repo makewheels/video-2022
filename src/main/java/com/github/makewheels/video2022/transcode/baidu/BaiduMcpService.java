@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.transcode;
+package com.github.makewheels.video2022.transcode.baidu;
 
 import com.baidubce.BceClientConfiguration;
 import com.baidubce.auth.DefaultBceCredentials;
@@ -6,6 +6,7 @@ import com.baidubce.services.media.MediaClient;
 import com.baidubce.services.media.model.CreateTranscodingJobResponse;
 import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
 import com.baidubce.services.media.model.GetTranscodingJobResponse;
+import com.github.makewheels.video2022.transcode.Resolution;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

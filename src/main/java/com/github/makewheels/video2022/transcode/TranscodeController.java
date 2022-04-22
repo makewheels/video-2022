@@ -18,11 +18,21 @@ public class TranscodeController {
     private TranscodeService transcodeService;
 
     /**
-     * 当转码状态发生变化时，处理回调
+     * 百度转码完成回调
      */
     @PostMapping("baiduTranscodeCallback")
     public Result<Void> baiduTranscodeCallback(@RequestBody JSONObject jsonObject) {
         log.debug("收到百度转码回调：" + jsonObject.toJSONString());
         return transcodeService.baiduTranscodeCallback(jsonObject);
+    }
+
+    /**
+     * 阿里云 云函数转码完成回调
+     */
+    @PostMapping("aliyunCloudFunctionTranscodeCallback")
+    public Result<Void> aliyunCloudFunctionTranscodeCallback(@RequestBody JSONObject jsonObject) {
+        //TODO aliyunCloudFunctionTranscodeCallback
+        log.debug("aliyunCloudFunctionTranscodeCallback" + jsonObject.toJSONString());
+        return null;
     }
 }

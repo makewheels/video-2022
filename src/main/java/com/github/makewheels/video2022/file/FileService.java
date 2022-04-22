@@ -7,9 +7,7 @@ import com.baidubce.services.bos.model.BosObject;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
-import com.github.makewheels.video2022.video.S3Provider;
-import com.github.makewheels.video2022.video.VideoType;
-import com.github.makewheels.video2022.video.YoutubeService;
+import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,8 +23,6 @@ import java.util.Date;
 public class FileService {
     @Resource
     private MongoTemplate mongoTemplate;
-    @Resource
-    private YoutubeService youtubeService;
     @Resource
     private AliyunOssService aliyunOssService;
     @Resource

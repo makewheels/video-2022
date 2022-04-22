@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.video;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -33,11 +34,13 @@ public class Video {
 
     private Integer width;
     private Integer height;
+    private String videoCodec;
+    private String audioCodec;
 
     @Indexed
     private String type;
     @Indexed
-    private String provider;
+    private String provider;    //它就是对象存储提供商，和file是一对一关系
 
     @Indexed
     private String youtubeVideoId;
