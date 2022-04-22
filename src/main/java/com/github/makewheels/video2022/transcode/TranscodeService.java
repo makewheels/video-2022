@@ -9,9 +9,12 @@ import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
 import com.github.makewheels.video2022.thumbnail.ThumbnailService;
-import com.github.makewheels.video2022.video.S3Provider;
+import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
+import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
+import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
+import com.github.makewheels.video2022.file.S3Provider;
 import com.github.makewheels.video2022.video.Video;
-import com.github.makewheels.video2022.video.VideoStatus;
+import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -112,18 +115,10 @@ public class TranscodeService {
         for (int i = 0; i < 1000000000; i++) {
             log.info("i = " + i + " 开始睡觉");
             try {
-                Thread.sleep(2000);
+                Thread.sleep(2500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            long currentTime = System.currentTimeMillis();
-            long costTime = currentTime - startTime;
-
-            //前20%的时间跳过，不可能转码完成的
-//            if ((costTime * 1.0 / duration) < 0.2) {
-//                log.info("前20%的时间跳过 costTime = " + costTime + ", duration = " + duration);
-//                continue;
-//            }
 
             //如果花了视频的5倍时长都没转完，就跳出
             if ((System.currentTimeMillis() - startTime) > 5L * duration) {
@@ -137,7 +132,7 @@ public class TranscodeService {
             QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
                     = aliyunMpsService.queryJob(jobId).getBody().getJobList().getJob().get(0);
             String jobStatus = job.getState();
-            log.info("阿里云轮询查询job结果: jobStatus = {}, job = {}", jobStatus, JSON.toJSONString(job));
+            log.debug("阿里云轮询查询job结果: jobStatus = {}, job = {}", jobStatus, JSON.toJSONString(job));
             //如果转码已完成，回调
             if (AliyunTranscodeStatus.isFinishedStatus(jobStatus)) {
                 aliyunTranscodeCallback(jobId);

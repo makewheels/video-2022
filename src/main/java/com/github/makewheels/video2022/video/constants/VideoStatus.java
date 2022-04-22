@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.video;
+package com.github.makewheels.video2022.video.constants;
 
 public class VideoStatus {
     public static final String CREATED = "CREATED";

@@ -11,6 +11,7 @@ import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
 import com.baidubce.services.media.model.CreateThumbnailJobResponse;
 import com.baidubce.services.media.model.CreateTranscodingJobResponse;
 import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
+import com.github.makewheels.video2022.file.S3Provider;
 import com.github.makewheels.video2022.response.ErrorCode;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.file.File;
@@ -21,6 +22,11 @@ import com.github.makewheels.video2022.thumbnail.Thumbnail;
 import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
 import com.github.makewheels.video2022.thumbnail.ThumbnailService;
 import com.github.makewheels.video2022.transcode.*;
+import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
+import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
+import com.github.makewheels.video2022.transcode.baidu.BaiduTranscodeStatus;
+import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeService;
+import com.github.makewheels.video2022.video.constants.*;
 import com.github.makewheels.video2022.watch.WatchLog;
 import com.github.makewheels.video2022.watch.WatchRepository;
 import com.github.makewheels.video2022.watch.watchinfo.PlayUrl;
@@ -71,9 +77,13 @@ public class VideoService {
     private AliyunMpsService aliyunMpsService;
     @Resource
     private BaiduMcpService baiduMcpService;
+    @Resource
+    private CloudFunctionTranscodeService cloudFunctionTranscodeService;
 
     @Value("${internal-base-url}")
     private String internalBaseUrl;
+    @Value("${external-base-url}")
+    private String externalBaseUrl;
     @Value("${short-url-service}")
     private String shortUrlService;
 
@@ -107,15 +117,19 @@ public class VideoService {
         //决定提供商是阿里云还是百度云
         //现在为了兼容上传网页，用户上传继续用百度云
         //搬运因为是海外服务器api上传，就用阿里云对象存储，转码也是阿里云
+
+        //视频的provider和file的provider是一回事，视频和源文件是一对一关系
+        //但是transcode的provider可能和video的不一样
+        // 不一定文件上传到阿里云对象存储，就用阿里云的转码，也可能用我自建的云函数
         String provider = null;
         String type = requestBody.getString("type");
         video.setType(type);
         if (type.equals(VideoType.USER_UPLOAD)) {
             provider = S3Provider.BAIDU_BOS;
-            log.info("新建视频类型：type = " + type + ", provider = 百度云");
+            log.info("新建视频类型：type = " + type + ", S3Provider = " + provider);
         } else if (type.equals(VideoType.YOUTUBE)) {
             provider = S3Provider.ALIYUN_OSS;
-            log.info("新建视频类型：type = " + type + ", provider = 阿里云");
+            log.info("新建视频类型：type = " + type + ", S3Provider = " + provider);
             String youtubeUrl = requestBody.getString("youtubeUrl");
             video.setYoutubeUrl(youtubeUrl);
             video.setYoutubeVideoId(youtubeService.getYoutubeVideoId(youtubeUrl));
@@ -164,7 +178,8 @@ public class VideoService {
                 if (!file.getExtension().equals(extension)) {
                     //更新file
                     file.setExtension(extension);
-                    file.setKey(FileNameUtil.mainName(file.getKey() + "." + extension));
+                    String newKey = file.getKey();
+                    file.setKey(newKey.substring(0, newKey.lastIndexOf(".")) + "." + extension);
                     mongoTemplate.save(file);
                     //更新video的source key
                     video.setOriginalFileKey(file.getKey());
@@ -191,6 +206,19 @@ public class VideoService {
         return Result.ok(jsonObject);
     }
 
+    private boolean isResolutionOverThan720p(int width, int height) {
+        return width * height > 1280 * 720;
+    }
+
+    private boolean isResolutionOverThanTarget(int width, int height, String resolution) {
+        if (resolution.equals(Resolution.R_720P)) {
+            return width * height > 1280 * 720;
+        } else if (resolution.equals(Resolution.R_1080P)) {
+            return width * height > 1920 * 1080;
+        }
+        return false;
+    }
+
     /**
      * 转码单分辨率
      *
@@ -201,54 +229,94 @@ public class VideoService {
     private void transcodeSingleResolution(User user, Video video, String resolution) {
         String userId = user.getId();
         String videoId = video.getId();
-        String provider = video.getProvider();
+        String s3Provider = video.getProvider();
         String sourceKey = video.getOriginalFileKey();
+        int width = video.getWidth();
+        int height = video.getHeight();
 
         //新建transcode对象，保存到数据库
         Transcode transcode = new Transcode();
         transcode.setUserId(userId);
         transcode.setVideoId(videoId);
-        transcode.setProvider(provider);
-        transcode.setCreateTime(new Date());
-        //已创建状态，反正后面马上就要再次请求更新状态，所以这里就先保存CREATED
-        transcode.setStatus(BaiduTranscodeStatus.CREATED);
         transcode.setResolution(resolution);
         transcode.setSourceKey(sourceKey);
+        transcode.setCreateTime(new Date());
+        //已创建状态，反正后面马上就要再次请求更新状态，所以这里就先保存CREATED
+        transcode.setStatus("CREATED");
+
+        //这里问题来了：如何决定用谁转码？
+        //如果不是h264，用阿里云。暂不考虑音频编码，仅音频不是aac也是我来转
+        //如果是h264，源视频分辨率和目标分辨率不一致，用阿里云
+        //其它情况用自建的阿里云 云函数
+        String transcodeProvider;
+        if (!VideoCodec.isH264(video.getVideoCodec())) {
+            transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
+            //关于源视频和转码模板分辨率是否一致，我这样判断：
+            //源片分辨率面积小于目标，就一致。大于目标，就不一致
+            //说白了就是，往小了转就要编解码，往大了转（当然没这种情况）就源片，所以我云函数不改分辨率，正好
+        } else if (isResolutionOverThanTarget(width, height, resolution)) {
+            transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
+        } else {
+            transcodeProvider = TranscodeProvider.ALIYUN_CLOUD_FUNCTION;
+        }
+        transcode.setProvider(transcodeProvider);
+        mongoTemplate.save(transcode);
+        String transcodeId = transcode.getId();
+
+        //设置m3u8 url
         String m3u8Key = "videos/" + userId + "/" + videoId + "/transcode/"
-                + resolution + "/" + videoId + ".m3u8";
+                + resolution + "/" + transcodeId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
-        if (provider.equals(S3Provider.ALIYUN_OSS)) {
+        if (s3Provider.equals(S3Provider.ALIYUN_OSS)) {
             transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
             transcode.setM3u8CdnUrl(aliyunOssCdnBaseUrl + m3u8Key);
-        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
+        } else if (s3Provider.equals(S3Provider.BAIDU_BOS)) {
             transcode.setM3u8AccessUrl(baiduBosAccessBaseUrl + m3u8Key);
             transcode.setM3u8CdnUrl(baiduBosCdnBaseUrl + m3u8Key);
         }
         mongoTemplate.save(transcode);
 
-        //发起转码，保存jobId，更新jobStatus
-        log.info("发起 " + resolution + " 转码：videoId = " + videoId);
+        //发起转码
+        log.info("发起 " + resolution + " 转码：videoId = " + videoId + ", transcode-provider = " + transcodeProvider);
         String jobId = null;
         String jobStatus = null;
-        if (provider.equals(S3Provider.ALIYUN_OSS)) {
-            SubmitJobsResponseBody.SubmitJobsResponseBodyJobResultListJobResultJob job
-                    = aliyunMpsService.createTranscodingJobByResolution(sourceKey, m3u8Key, resolution)
-                    .getBody().getJobResultList().getJobResult().get(0).getJob();
-            jobId = job.getJobId();
-            log.info("发起阿里云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
-            jobStatus = job.getState();
-        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
-            CreateTranscodingJobResponse job = baiduMcpService.createTranscodingJob(
-                    sourceKey, m3u8Key, resolution);
-            jobId = job.getJobId();
-            log.info("发起百度云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
-            jobStatus = baiduMcpService.getTranscodingJob(jobId).getJobStatus();
+        switch (transcodeProvider) {
+            case TranscodeProvider.ALIYUN_MPS: {
+                SubmitJobsResponseBody.SubmitJobsResponseBodyJobResultListJobResultJob job
+                        = aliyunMpsService.createTranscodingJobByResolution(sourceKey, m3u8Key, resolution)
+                        .getBody().getJobResultList().getJobResult().get(0).getJob();
+                jobId = job.getJobId();
+                log.info("发起阿里云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
+                jobStatus = job.getState();
+                break;
+            }
+            case TranscodeProvider.BAIDU_MCP: {
+                CreateTranscodingJobResponse job = baiduMcpService.createTranscodingJob(
+                        sourceKey, m3u8Key, resolution);
+                jobId = job.getJobId();
+                log.info("发起百度云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
+                jobStatus = baiduMcpService.getTranscodingJob(jobId).getJobStatus();
+                break;
+            }
+            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
+                jobId = IdUtil.simpleUUID();
+                String callbackUrl = externalBaseUrl + "/transcode/aliyunCloudFunctionTranscodeCallback";
+                String response = cloudFunctionTranscodeService.transcode(
+                        sourceKey,
+                        m3u8Key.substring(0, m3u8Key.lastIndexOf("/")),
+                        videoId, transcodeId, jobId, resolution, width, height,
+                        VideoCodec.H264, AudioCodec.AAC, "keep", callbackUrl
+                );
+                log.info("阿里云 云函数转码返回： jobId = " + jobId + ", response = " + response);
+                break;
         }
+        //保存jobId，更新jobStatus
         transcode.setJobId(jobId);
         transcode.setStatus(jobStatus);
         mongoTemplate.save(transcode);
+
         //异步轮询查询阿里云转码状态，并回调
-        if (provider.equals(S3Provider.ALIYUN_OSS)) {
+        if (transcodeProvider.equals(TranscodeProvider.ALIYUN_MPS)) {
             new Thread(() -> transcodeService.iterateQueryAliyunTranscodeJob(video, transcode)).start();
         }
     }
@@ -260,7 +328,7 @@ public class VideoService {
         String userId = user.getId();
         String videoId = video.getId();
         String sourceKey = video.getOriginalFileKey();
-        String provider = video.getProvider();
+        String videoProvider = video.getProvider();
 
         Thumbnail thumbnail = new Thumbnail();
         thumbnail.setCreateTime(new Date());
@@ -275,7 +343,6 @@ public class VideoService {
         CreateThumbnailJobResponse thumbnailJob
                 = thumbnailService.createThumbnailJob(sourceKey, targetKeyPrefix);
         log.info("通过百度云发起截帧任务：CreateThumbnailJobResponse = " + JSON.toJSONString(thumbnailJob));
-
 
         thumbnail.setTargetKeyPrefix(targetKeyPrefix);
         String key = targetKeyPrefix + ".jpg";
@@ -302,10 +369,10 @@ public class VideoService {
         String videoId = video.getId();
 
         String sourceKey = video.getOriginalFileKey();
-        String provider = video.getProvider();
+        String videoProvider = video.getProvider();
 
         //获取视频信息
-        if (provider.equals(S3Provider.ALIYUN_OSS)) {
+        if (videoProvider.equals(S3Provider.ALIYUN_OSS)) {
             log.info("视频源文件上传完成，通过阿里云获取视频信息，videoId = " + videoId);
             SubmitMediaInfoJobResponseBody body = aliyunMpsService.getMediaInfo(sourceKey).getBody();
             SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJob job = body.getMediaInfoJob();
@@ -314,12 +381,18 @@ public class VideoService {
             video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(job)));
             String jobId = job.getJobId();
             log.info("获取视频信息 jobId = " + jobId);
-            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties properties
-                    = job.getProperties();
+            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties
+                    properties = job.getProperties();
             video.setDuration((int) (Double.parseDouble(properties.getDuration()) * 1000));
             video.setHeight(Integer.parseInt(properties.getHeight()));
             video.setWidth(Integer.parseInt(properties.getWidth()));
-        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
+            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreams
+                    streams = properties.getStreams();
+            video.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
+            video.setAudioCodec(streams.getAudioStreamList().getAudioStream().get(0).getCodecName());
+            //TODO 阿里云对象存储截帧，这我云函数也可以自己做，甚至雪碧图
+
+        } else if (videoProvider.equals(S3Provider.BAIDU_BOS)) {
             GetMediaInfoOfFileResponse mediaInfo = baiduMcpService.getMediaInfo(sourceKey);
             log.info("视频源文件上传完成，通过百度获取视频信息，videoId = " + videoId
                     + ", mediaInfo = " + JSON.toJSONString(mediaInfo));
@@ -329,7 +402,10 @@ public class VideoService {
             video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(mediaInfo)));
             video.setWidth(mediaInfo.getVideo().getWidthInPixel());
             video.setHeight(mediaInfo.getVideo().getHeightInPixel());
+            video.setVideoCodec(mediaInfo.getVideo().getCodec());
+            video.setAudioCodec(mediaInfo.getAudio().getCodec());
         }
+        //更新数据库video状态
         video.setStatus(VideoStatus.TRANSCODING);
         mongoTemplate.save(video);
 
@@ -337,7 +413,7 @@ public class VideoService {
         transcodeSingleResolution(user, video, Resolution.R_720P);
 
         //如果宽高大于1280*720，再次发起1080p转码
-        if ((video.getWidth() * video.getHeight()) > (1280 * 720)) {
+        if (isResolutionOverThan720p(video.getWidth(), video.getHeight())) {
             transcodeSingleResolution(user, video, Resolution.R_1080P);
         }
     }

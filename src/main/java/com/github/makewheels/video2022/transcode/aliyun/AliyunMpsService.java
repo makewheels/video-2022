@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.transcode;
+package com.github.makewheels.video2022.transcode.aliyun;
 
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.URLUtil;
@@ -9,6 +9,7 @@ import com.aliyun.mts20140618.Client;
 import com.aliyun.mts20140618.models.*;
 import com.aliyun.teaopenapi.models.Config;
 import com.baidubce.services.media.model.CreateTranscodingJobResponse;
+import com.github.makewheels.video2022.transcode.Resolution;
 import jdk.nashorn.internal.scripts.JO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

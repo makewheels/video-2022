@@ -1,9 +1,9 @@
 package com.github.makewheels.video2022.thumbnail;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.transcode.AliyunTranscodeStatus;
-import com.github.makewheels.video2022.transcode.BaiduTranscodeStatus;
-import com.github.makewheels.video2022.video.S3Provider;
+import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
+import com.github.makewheels.video2022.transcode.baidu.BaiduTranscodeStatus;
+import com.github.makewheels.video2022.file.S3Provider;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;

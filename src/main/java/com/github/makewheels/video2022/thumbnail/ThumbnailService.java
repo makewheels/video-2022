@@ -7,7 +7,7 @@ import com.baidubce.auth.DefaultBceCredentials;
 import com.baidubce.services.media.MediaClient;
 import com.baidubce.services.media.model.CreateThumbnailJobResponse;
 import com.baidubce.services.media.model.GetThumbnailJobResponse;
-import com.github.makewheels.video2022.transcode.BaiduTranscodeStatus;
+import com.github.makewheels.video2022.transcode.baidu.BaiduTranscodeStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
