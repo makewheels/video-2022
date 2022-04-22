@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.transcode.cloudfunction;
 
 import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -41,7 +42,12 @@ public class CloudFunctionTranscodeService {
                 "https://transcoe-master-video-transcode-pqrshwejna.cn-beijing.fcapp.run");
         post.body(request.toJSONString());
         post.header("X-Fc-Invocation-Type", "Async");
-        return post.execute().body();
+        HttpResponse response = post.execute();
+        String requestId = response.header("X-Fc-Request-Id");
+        log.info("调用阿里云 云函数发起转码：requestId = " + requestId);
+
+        //异步调用，没有返回值
+        return response.body();
     }
 
 }

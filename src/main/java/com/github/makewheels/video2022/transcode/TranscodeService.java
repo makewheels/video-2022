@@ -12,7 +12,6 @@ import com.github.makewheels.video2022.thumbnail.ThumbnailService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
-import com.github.makewheels.video2022.file.S3Provider;
 import com.github.makewheels.video2022.video.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -60,11 +59,11 @@ public class TranscodeService {
      * "signature": "BQSsignature"
      * }
      *
-     * @param jsonObject
+     * @param body
      * @return
      */
-    public Result<Void> baiduTranscodeCallback(JSONObject jsonObject) {
-        JSONObject messageBody = JSONObject.parseObject(jsonObject.getString("messageBody"));
+    public Result<Void> baiduTranscodeCallback(JSONObject body) {
+        JSONObject messageBody = JSONObject.parseObject(body.getString("messageBody"));
         String jobId = messageBody.getString("jobId");
         log.info("处理视频转码回调：jobId = " + jobId + ", messageBody = " + messageBody.toJSONString());
         //根据jobId查询数据库，首先查询transcode，如果没有再查询thumbnail
@@ -92,6 +91,17 @@ public class TranscodeService {
             }
             thumbnailService.handleThumbnailCallback(thumbnail);
         }
+        return Result.ok();
+    }
+
+    /**
+     * 阿里云 云函数转码完成回调
+     */
+    public Result<Void> aliyunCloudFunctionTranscodeCallback(JSONObject body) {
+        String jobId = body.getString("jobId");
+        log.info("开始处理 阿里云 云函数转码完成回调：jobId = " + jobId);
+        Transcode transcode = transcodeRepository.getByJobId(jobId);
+        handleTranscodeCallback(transcode);
         return Result.ok();
     }
 
@@ -132,7 +142,7 @@ public class TranscodeService {
             QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
                     = aliyunMpsService.queryJob(jobId).getBody().getJobList().getJob().get(0);
             String jobStatus = job.getState();
-            log.debug("阿里云轮询查询job结果: jobStatus = {}, job = {}", jobStatus, JSON.toJSONString(job));
+            log.info("阿里云轮询查询job结果: jobStatus = {}, job = {}", jobStatus, JSON.toJSONString(job));
             //如果转码已完成，回调
             if (AliyunTranscodeStatus.isFinishedStatus(jobStatus)) {
                 aliyunTranscodeCallback(jobId);
@@ -151,15 +161,23 @@ public class TranscodeService {
         String jobStatus = null;
         String transcodeResultJson = null;
         //向对应的云服务商查询转码任务
-        if (transcode.getProvider().equals(S3Provider.ALIYUN_OSS)) {
-            QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
-                    = aliyunMpsService.queryJob(jobId).getBody().getJobList().getJob().get(0);
-            jobStatus = job.getState();
-            transcodeResultJson = JSON.toJSONString(job);
-        } else if (transcode.getProvider().equals(S3Provider.BAIDU_BOS)) {
-            GetTranscodingJobResponse job = baiduMcpService.getTranscodingJob(jobId);
-            jobStatus = job.getJobStatus();
-            transcodeResultJson = JSON.toJSONString(job);
+        switch (transcode.getProvider()) {
+            case TranscodeProvider.ALIYUN_MPS: {
+                QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
+                        = aliyunMpsService.queryJob(jobId).getBody().getJobList().getJob().get(0);
+                jobStatus = job.getState();
+                transcodeResultJson = JSON.toJSONString(job);
+                break;
+            }
+            case TranscodeProvider.BAIDU_MCP: {
+                GetTranscodingJobResponse job = baiduMcpService.getTranscodingJob(jobId);
+                jobStatus = job.getJobStatus();
+                transcodeResultJson = JSON.toJSONString(job);
+                break;
+            }
+            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
+                jobStatus = "FINISHED";
+                break;
         }
         //只有在新老状态不一致时，才保存数据库
         if (!StringUtils.equals(jobStatus, transcode.getStatus())) {
@@ -167,7 +185,7 @@ public class TranscodeService {
             transcode.setResult(JSONObject.parseObject(transcodeResultJson));
             mongoTemplate.save(transcode);
             //通知视频转码完成
-            singleTranscodeFinish(transcode);
+            onTranscodeFinish(transcode);
         }
     }
 
@@ -177,7 +195,7 @@ public class TranscodeService {
      *
      * @param transcode
      */
-    public void singleTranscodeFinish(Transcode transcode) {
+    public void onTranscodeFinish(Transcode transcode) {
         String videoId = transcode.getVideoId();
         Video video = mongoTemplate.findById(videoId, Video.class);
         if (video == null) return;

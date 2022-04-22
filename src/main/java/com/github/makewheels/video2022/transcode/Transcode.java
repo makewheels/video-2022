@@ -3,7 +3,7 @@ package com.github.makewheels.video2022.transcode;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.baidu.BaiduTranscodeStatus;
-import com.github.makewheels.video2022.file.S3Provider;
+import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeStatus;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
@@ -49,10 +49,13 @@ public class Transcode {
      * @return
      */
     public boolean isFinishStatus() {
-        if (provider.equals(S3Provider.ALIYUN_OSS)) {
-            return AliyunTranscodeStatus.isFinishedStatus(status);
-        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
-            return BaiduTranscodeStatus.isFinishedStatus(status);
+        switch (provider) {
+            case TranscodeProvider.ALIYUN_MPS:
+                return AliyunTranscodeStatus.isFinishedStatus(status);
+            case TranscodeProvider.BAIDU_MCP:
+                return BaiduTranscodeStatus.isFinishedStatus(status);
+            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
+                return CloudFunctionTranscodeStatus.isFinishedStatus(status);
         }
         return true;
     }
@@ -63,10 +66,13 @@ public class Transcode {
      * @return
      */
     public boolean isSuccessStatus() {
-        if (provider.equals(S3Provider.ALIYUN_OSS)) {
-            return StringUtils.equals(status, AliyunTranscodeStatus.TranscodeSuccess);
-        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
-            return StringUtils.equals(status, BaiduTranscodeStatus.SUCCESS);
+        switch (provider) {
+            case TranscodeProvider.ALIYUN_MPS:
+                return StringUtils.equals(status, AliyunTranscodeStatus.TranscodeSuccess);
+            case TranscodeProvider.BAIDU_MCP:
+                return StringUtils.equals(status, BaiduTranscodeStatus.SUCCESS);
+            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
+                return true;
         }
         return true;
     }
