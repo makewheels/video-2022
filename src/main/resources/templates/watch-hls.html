@@ -185,7 +185,7 @@
         axios.get('/video/getVideoInfo?videoId=' + videoId)
             .then(function (res) {
                 let data = res.data.data;
-                document.getElementById("title").innerText = "video-2022-正在播放";
+                document.getElementById("title").innerText = "video-2022-" + videoId;
                 document.getElementById("div_title").innerText = data.title;
                 document.getElementById("watchCount").innerText = "观看次数：" + data.watchCount;
                 document.getElementById("createTime").innerText = "发布时间：" + data.createTimeString;
