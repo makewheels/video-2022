@@ -15,6 +15,7 @@ import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeProvider;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -49,8 +50,7 @@ public class CdnService {
         List<String> urlList = M3u8Util.getUrlListFromM3u8(transcode.getM3u8CdnUrl());
         request.put("urlList", urlList);
         request.put("callbackUrl", internalBaseUrl + "/cdn/onSoftRoutePrefetchFinish");
-        log.info("通知软路由预热 " + transcode.getResolution() + ", size = " + urlList.size()
-                + " " + request + request.toJSONString());
+        log.info("通知软路由预热 " + transcode.getResolution() + ", size = " + urlList.size() + " " + request + request.toJSONString());
         String response = HttpUtil.post(cdnPrefetchUrl, request.toJSONString());
         log.info("请求预热，软路由回复：" + response);
     }
@@ -75,9 +75,7 @@ public class CdnService {
         log.info("阿里云cdn预热 " + transcode.getId());
         List<String> urlList = M3u8Util.getUrlListFromM3u8(transcode.getM3u8CdnUrl());
         log.info("urlList长度 = " + urlList.size());
-        Config config = new Config()
-                .setAccessKeyId(Base64.decodeStr(aliyunCdnAccessKeyId))
-                .setAccessKeySecret(Base64.decodeStr(aliyunCdnSecretKey));
+        Config config = new Config().setAccessKeyId(Base64.decodeStr(aliyunCdnAccessKeyId)).setAccessKeySecret(Base64.decodeStr(aliyunCdnSecretKey));
         config.endpoint = "cdn.aliyuncs.com";
         try {
             Client client = new Client(config);
@@ -97,7 +95,9 @@ public class CdnService {
      * @param transcode
      */
     public void prefetchCdn(Transcode transcode) {
-        if (transcode.getProvider().equals(TranscodeProvider.ALIYUN_MPS)) {
+        String transcodeProvider = transcode.getProvider();
+        if (StringUtils.equalsAny(transcodeProvider,
+                TranscodeProvider.ALIYUN_CLOUD_FUNCTION, TranscodeProvider.ALIYUN_MPS)) {
             aliyunCdnPrefetch(transcode);
         }
         softRoutePrefetch(transcode);
