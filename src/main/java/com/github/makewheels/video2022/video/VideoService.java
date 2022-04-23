@@ -127,7 +127,7 @@ public class VideoService {
         String type = requestBody.getString("type");
         video.setType(type);
         if (type.equals(VideoType.USER_UPLOAD)) {
-            provider = S3Provider.BAIDU_BOS;
+            provider = S3Provider.ALIYUN_OSS;
         } else if (type.equals(VideoType.YOUTUBE)) {
             provider = S3Provider.ALIYUN_OSS;
             String youtubeUrl = requestBody.getString("youtubeUrl");
@@ -252,19 +252,23 @@ public class VideoService {
         //其它情况用自建的阿里云 云函数
         String transcodeProvider;
         if (!VideoCodec.isH264(video.getVideoCodec())) {
+            log.info("决定用谁转码：源视频不是h264，用阿里云MPS转码, videoId = " + videoId);
             transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
             //关于源视频和转码模板分辨率是否一致，我这样判断：
             //源片分辨率面积小于目标，就一致。大于目标，就不一致
             //说白了就是，往小了转就要编解码，往大了转（当然没这种情况）就源片，所以我云函数不改分辨率，正好
         } else if (isResolutionOverThanTarget(width, height, resolution)) {
+            log.info("决定用谁转码：分辨率OverThanTarget，用阿里云MPS转码, videoId = " + videoId);
             transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
             //如果，是264，分辨率也不用改，但是是百度对象存储，那还得用百度，因为云函数只有阿里云
         } else if (video.getProvider().equals(S3Provider.BAIDU_BOS)) {
+            log.info("决定用谁转码：因为文件在百度对象存储，就用百度MCP转码, videoId = " + videoId);
             transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
         } else {
             //其它情况用阿里云 云函数
             transcodeProvider = TranscodeProvider.ALIYUN_CLOUD_FUNCTION;
         }
+        log.info("transcodeProvider = {}, videoId = {}", transcodeProvider, videoId);
         transcode.setProvider(transcodeProvider);
         mongoTemplate.save(transcode);
         String transcodeId = transcode.getId();
