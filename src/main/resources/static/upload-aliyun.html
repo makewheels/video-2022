@@ -1,180 +1,179 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>上传视频</title>
-    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <title>上传视频-阿里云</title>
 
-    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"/>-->
-    <!--<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>-->
-
-    <!-- 引入 layui.css -->
-    <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css">
-    <!-- 引入 layui.js -->
-    <script src="//unpkg.com/layui@2.6.8/dist/layui.js"></script>
-
-    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
-
-    <!--引入的自己的common.js-->
-    <script src="js/common.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://code.bdstatic.com/npm/@baiducloud/sdk@1.0.0-rc.32/dist/baidubce-sdk.bundle.min.js"></script>
+    <script src="https://lib.baomitu.com/async/3.2.3/async.min.js"></script>
 
     <!--阿里云oss-->
-    <script src="https://gosspublic.alicdn.com/aliyun-oss-sdk-6.15.0.min.js"></script>
+    <script src="https://gosspublic.alicdn.com/aliyun-oss-sdk-6.17.0.min.js"></script>
 </head>
 
 <body>
+<script>
+    //看有没有token，如果没有跳转登录页
+    if (localStorage.getItem("token") == null) {
+        window.location.href = "//" + document.domain + ":5021/user-micro-service-2022/login.html" +
+            "?target=" + window.location.href
+    }
+</script>
 
-<form class="layui-form" lay-filter="form">
+<input type="file" id="input_file"/>
+<br>
 
-    <input type="file" id="file"/>
+<span>Title:</span>
+<input id="input_title" type="text" maxlength="100"/>
+<br>
 
-    <div class="layui-form-item">
-        <label class="layui-form-label">Title</label>
-        <div class="layui-input-block">
-            <input id="input_title" type="text" name="title" lay-verify="title" autocomplete="off"
-                   placeholder="请输入标题" class="layui-input">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">Description</label>
-        <div class="layui-input-block">
-            <input id="input_description" type="text" name="description" lay-verify="required"
-                   placeholder="请输入描述" autocomplete="off" class="layui-input">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">Visibility</label>
-        <div class="layui-input-block">
-            <input type="radio" name="visibility" value="Public" title="Public" checked=""/>
-            <input type="radio" name="visibility" value="Unlisted" title="Unlisted">
-            <input type="radio" name="visibility" value="Private" title="Private">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">有效期</label>
-        <div class="layui-input-block">
-            <input type="radio" name="expireTimeLength" value="0" title="Never" checked=""/>
-            <input type="radio" name="expireTimeLength" value="604800000" title="7 days"/>
-            <input type="radio" name="expireTimeLength" value="2592000000" title="30 days">
-        </div>
-    </div>
-</form>
+<span>Description:</span>
+<input id="input_description" type="text" maxlength="1000"/>
+<br>
 
-<button id="btn_upload" type="button" class="layui-btn">开始上传</button>
+<button id="btn_update" type="button">修改</button>
+<br>
+
+<span id="shortUrl"></span>
+<br>
+
+<span id="watchUrl"></span>
+<br>
+
 <b>
     <span id="text_progress" style="color: blue;margin-left: 20px;font-size: 30px"></span>
 </b>
 
 <script>
-    //进度显示
-    var text_progress = document.getElementById("text_progress");
+    let input_file = document.getElementById("input_file");
+
+    let input_title = document.getElementById("input_title");
+    let input_description = document.getElementById("input_description");
+    let btn_update = document.getElementById("btn_update");
+
+    let shortUrl = document.getElementById("shortUrl");
+    let watchUrl = document.getElementById("watchUrl");
+
+    let text_progress = document.getElementById("text_progress");
+
+    // 监听选中文件
+    input_file.onchange = () => {
+        const selectedFile = input_file.files[0];
+        let originalFilename = selectedFile.name;
+        let size = selectedFile.size;
+        input_title.value = originalFilename.substring(0, originalFilename.indexOf("."));
+        createVideo(originalFilename, size, "USER_UPLOAD");
+    }
+
+    let fileId;
+    let videoId;
+    let watchId;
 
     //创建视频
-    function createVideo() {
-        //拿到表单中的参数
-        var title = document.getElementById("input_title").value;
-        var description = document.getElementById("input_description").value;
-        var visibility = layui.form.val('form').visibility;
-        var expireTimeLength = layui.form.val('form').expireTimeLength;
-        var file = document.getElementById('file').files[0];
-        var originalFilename = file.name;
+    function createVideo(originalFilename, size, type) {
+        axios.post("/video/create", {
+            originalFilename: originalFilename,
+            size: size,
+            type: type
+        }, {
+            headers: {"token": localStorage.token}
+        }).then(function (res) {
+            let data = res.data.data;
+            fileId = data.fileId;
+            videoId = data.videoId;
+            watchId = data.watchId;
 
-        axios.post(APIURL + "/video-service/video/createVideo",
-            {
-                title: title,
-                description: description,
-                visibility: visibility,
-                expireTimeLength: expireTimeLength,
-                originalFilename: originalFilename
-            }
-        ).then(function (response) {
-            var data = response.data;
-            if (data.code === 0) {
-                getCredential(data.data);
-            } else {
-                alert(data.message);
-            }
+            shortUrl.innerText = data.shortUrl;
+            watchUrl.innerText = data.watchUrl;
+            beginUpload();
         });
     }
 
-    //获取上传对象存储的凭证
-    function getCredential(data) {
-        var uploadPath = data.uploadPath;
-        var uploadToken = data.uploadToken;
-        var originalFilename = document.getElementById('file').files[0].name;
-        axios.post(APIURL + "/file-service/file/getTemporaryCredential",
-            {
-                uploadToken: uploadToken,
-                originalFilename: originalFilename
-            }
-        ).then(function (response) {
-            var body = response.data;
-            if (body.code === 0) {
-                var realData = body.data;
-                var accessKeyId = realData.accessKeyId;
-                var accessKeySecret = realData.accessKeySecret;
-                var bucket = realData.bucket;
-                var fileSnowflakeId = realData.fileSnowflakeId;
-                var region = realData.region;
-                var securityToken = realData.securityToken;
-                putObject(region, accessKeyId, accessKeySecret, securityToken, bucket, uploadPath, fileSnowflakeId);
-            } else {
-                alert(body.message);
-            }
+    //修改视频信息按钮
+    btn_update.addEventListener("click", function () {
+        if (videoId === undefined) {
+            return;
+        }
+        axios.post("/video/updateInfo", {
+            id: videoId,
+            title: input_title.value,
+            description: input_description.value
+        }, {
+            headers: {"token": localStorage.token}
+        }).then(function (res) {
+        });
+    });
+
+    function updateProgress(state) {
+        let progress = state.loaded / state.total;
+        progress = progress * 100;
+        text_progress.innerText = (progress.toFixed(2) + " %");
+    }
+
+
+    let chunkSize = 1024 * 1024; // 分块大小
+    let uploadId;
+
+    let bucket;
+    let key;
+
+    let bosClient;
+
+    //我的开始上传文件
+    function beginUpload() {
+        //获取上传凭证
+        axios.get("/file/getUploadCredentials?fileId=" + fileId, {
+            headers: {"token": localStorage.token}
+        }).then(function (res) {
+            runUpload(res.data.data);
         });
     }
 
-    //上传阿里云对象存储
-    async function putObject(region, accessKeyId, accessKeySecret, stsToken, bucket, path, fileSnowflakeId) {
-        const file = document.getElementById('file').files[0];
+    //拿到凭证之后，真正开始上传
+    async function runUpload(uploadCredentials) {
+        const file = document.getElementById('input_file').files[0];
+
+        let key = uploadCredentials.key;
         const client = new OSS({
-            region: region,
-            accessKeyId: accessKeyId,
-            accessKeySecret: accessKeySecret,
-            stsToken: stsToken,
-            bucket: bucket,
+            // region: "cn-beijing",
+            bucket: uploadCredentials.bucket,
+            endpoint: uploadCredentials.endpoint,
+            accessKeyId: uploadCredentials.accessKeyId,
+            accessKeySecret: uploadCredentials.secretKey,
+            stsToken: uploadCredentials.sessionToken,
             secure: true
         });
 
-        //普通上传
-        // const result = await client.put(path, file);
-
         //分片上传
-        const result = await client.multipartUpload(path, file, {
+        const result = await client.multipartUpload(key, file, {
             partSize: 1024 * 1024,
             progress: function (p, checkpoint) {
-                var percent = p * 100;
+                let percent = p * 100;
                 text_progress.innerText = percent.toFixed(2) + " %";
             }
         });
-        // {"name":"upload/video/1443616374344781824/1444172191220764672.jpg","url":"http://video-share-bucket.oss-cn-beijing.aliyuncs.com/upload/video/1443616374344781824/1444172191220764672.jpg","res":{"status":200,"statusCode":200,"headers":{"content-length":"0"},"size":0,"aborted":false,"rt":149,"keepAliveSocket":false,"data":{"type":"Buffer","data":[]},"requestUrls":["http://video-share-bucket.oss-cn-beijing.aliyuncs.com/upload/video/1443616374344781824/1444172191220764672.jpg"],"timing":null,"remoteAddress":"","remotePort":""}}
 
         if (result.res.status === 200) {
-            onUploadFinish(fileSnowflakeId);
+            onUploadFinish();
         }
     }
 
-    //当上传完成时
-    function onUploadFinish(fileSnowflakeId) {
-        axios.post(APIURL + "/file-service/file/uploadFinish",
-            {
-                fileSnowflakeId: fileSnowflakeId
-            }
-        ).then(function (response) {
-            var body = response.data;
-            if (body.code === 0) {
-                //跳转网页
-                location.href = "/uploadFinish";
-            } else {
-                alert(body.message);
-            }
+
+    //在上传完成时
+    function onUploadFinish() {
+        //通知文件上传完成
+        axios.get("/file/uploadFinish?fileId=" + fileId, {
+            headers: {"token": localStorage.token}
+        }).then(function (res) {
+            //通知视频 源文件上传完成
+            axios.get("/video/originalFileUploadFinish?videoId=" + videoId, {
+                headers: {"token": localStorage.token}
+            }).then(function (res) {
+                text_progress.innerText = "上传已完成";
+            });
         });
     }
-
-    document.getElementById("btn_upload").addEventListener('click', function () {
-        createVideo();
-    });
-
 </script>
 
 </body>
