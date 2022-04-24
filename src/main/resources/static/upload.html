@@ -10,12 +10,28 @@
 </head>
 
 <body>
+
 <script>
-    //看有没有token，如果没有跳转登录页
-    if (localStorage.getItem("token") == null) {
+    function jumpToLogin() {
         window.location.href = "//" + document.domain + ":5021/user-micro-service-2022/login.html" +
-            "?target=" + window.location.href
+            "?target=" + window.location.href;
     }
+
+    function checkToken() {
+        //检查token，如果没有跳转登录页
+        if (localStorage.token == null) {
+            jumpToLogin();
+            return;
+        }
+        axios.get(document.domain + ":5021/user-micro-service-2022/user/getUserByToken?token=" + localStorage.token)
+            .then(function (res) {
+                if (res.data.code === 1001) {
+                    jumpToLogin();
+                }
+            });
+    }
+
+    checkToken();
 </script>
 
 <input type="file" id="input_file"/>
