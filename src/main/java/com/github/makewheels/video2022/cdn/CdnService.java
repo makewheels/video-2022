@@ -20,7 +20,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 @Service
@@ -71,20 +74,29 @@ public class CdnService {
      *
      * @return
      */
-    private void aliyunCdnPrefetch(Transcode transcode) {
+    private void aliyunCdnPrefetch(Transcode transcode) throws Exception {
         log.info("阿里云cdn预热 " + transcode.getId());
         List<String> urlList = M3u8Util.getUrlListFromM3u8(transcode.getM3u8CdnUrl());
         log.info("urlList长度 = " + urlList.size());
-        Config config = new Config().setAccessKeyId(Base64.decodeStr(aliyunCdnAccessKeyId)).setAccessKeySecret(Base64.decodeStr(aliyunCdnSecretKey));
-        config.endpoint = "cdn.aliyuncs.com";
-        try {
-            Client client = new Client(config);
+        Config config = new Config()
+                .setAccessKeyId(Base64.decodeStr(aliyunCdnAccessKeyId))
+                .setAccessKeySecret(Base64.decodeStr(aliyunCdnSecretKey));
+        config.setEndpoint("cdn.aliyuncs.com");
+        Client client = new Client(config);
+
+        //每次提交100个 https://help.aliyun.com/document_detail/27140.html#section-81a-rm1-sis
+        Queue<String> queue = new LinkedList<>(urlList);
+        while (!queue.isEmpty()) {
+            int size = Math.min(queue.size(), 100);
+            List<String> listForRequest = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                listForRequest.add(queue.poll());
+            }
             PushObjectCacheRequest request = new PushObjectCacheRequest();
-            request.setObjectPath(urlList.stream().map(e -> e + "\n").collect(Collectors.joining()));
+            request.setObjectPath(listForRequest.stream()
+                    .map(e -> e + "\n").collect(Collectors.joining()));
             PushObjectCacheResponse response = client.pushObjectCache(request);
-            log.info("阿里云response = " + JSON.toJSONString(response));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.info("阿里云发起预热cdn请求: size = {}, response = {}", size, JSON.toJSONString(response));
         }
     }
 
@@ -98,7 +110,11 @@ public class CdnService {
         String transcodeProvider = transcode.getProvider();
         if (StringUtils.equalsAny(transcodeProvider,
                 TranscodeProvider.ALIYUN_CLOUD_FUNCTION, TranscodeProvider.ALIYUN_MPS)) {
-            aliyunCdnPrefetch(transcode);
+            try {
+                aliyunCdnPrefetch(transcode);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         softRoutePrefetch(transcode);
     }
