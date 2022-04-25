@@ -182,13 +182,19 @@
     //加载视频信息
     function loadVideoInfo(videoId) {
         //加载title等信息
-        axios.get('/video/getVideoInfo?videoId=' + videoId)
+        axios.get('/video/getVideoDetail?videoId=' + videoId)
             .then(function (res) {
                 let data = res.data.data;
                 document.getElementById("title").innerText = "video-2022-" + videoId;
                 document.getElementById("div_title").innerText = data.title;
                 document.getElementById("watchCount").innerText = "观看次数：" + data.watchCount;
-                document.getElementById("createTime").innerText = "发布时间：" + data.createTimeString;
+                //如果是用户自己上传的视频，使用create time
+                //如果是youtube搬运视频，使用publish time
+                if (data.type === "USER_UPLOAD") {
+                    document.getElementById("createTime").innerText = "发布时间：" + data.createTimeString;
+                } else if (data.type === "USER_UPLOAD") {
+                    document.getElementById("createTime").innerText = "发布时间：" + data.youtubePublishTimeString;
+                }
                 document.getElementById("description").innerText = data.description;
             });
     }

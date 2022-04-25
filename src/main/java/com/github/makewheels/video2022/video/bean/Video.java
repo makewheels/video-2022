@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.video;
+package com.github.makewheels.video2022.video.bean;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.video.constants.VideoType;
@@ -45,6 +45,8 @@ public class Video {
     @Indexed
     private String youtubeVideoId;
     private String youtubeUrl;
+    private JSONObject youtubeVideoInfo;
+    private Date youtubePublishTime;
 
     @Indexed
     private String status;
@@ -52,8 +54,6 @@ public class Video {
     private Date createTime;
 
     private JSONObject mediaInfo;
-
-    private JSONObject youtubeVideoInfo;
 
     public boolean isYoutube() {
         return type.equals(VideoType.YOUTUBE);

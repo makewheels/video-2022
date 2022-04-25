@@ -1,11 +1,11 @@
 package com.github.makewheels.video2022.video;
 
+import com.github.makewheels.video2022.video.bean.Video;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.mongodb.core.query.UpdateDefinition;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
@@ -34,7 +34,9 @@ public class VideoRepository {
                 .with(Sort.by(Sort.Direction.DESC, "createTime"))
                 .skip(skip)
                 .limit(limit);
-        query.fields().exclude("mediaInfo", "originalFileId", "originalFileKey");
+        query.fields().exclude("mediaInfo", "youtubeVideoInfo", "description",
+                "originalFileId", "originalFileKey", " width", "height",
+                "videoCodec", "audioCodec");
         return mongoTemplate.find(query, Video.class);
     }
 
