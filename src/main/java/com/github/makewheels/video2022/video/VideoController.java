@@ -82,10 +82,18 @@ public class VideoController {
      */
     @GetMapping("getVideoListByUserId")
     public Result<List<VideoInfo>> getVideoList(
-            HttpServletRequest request, @RequestParam String userId,
-            @RequestParam int skip, @RequestParam int limit) {
+            @RequestParam String userId, @RequestParam int skip, @RequestParam int limit) {
+        return videoService.getVideoList(userId, skip, limit);
+    }
+
+    /**
+     * 分页获取我的视频
+     */
+    @GetMapping("getMyVideoList")
+    public Result<List<VideoInfo>> getVideoList(
+            HttpServletRequest request, @RequestParam int skip, @RequestParam int limit) {
         User user = userServiceClient.getUserByRequest(request);
-        return videoService.getVideoList(user, userId, skip, limit);
+        return videoService.getVideoList(user.getId(), skip, limit);
     }
 
     /**

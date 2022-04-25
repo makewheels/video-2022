@@ -554,20 +554,19 @@ public class VideoService {
     /**
      * 分页获取指定userId视频列表
      *
-     * @param user
      * @param userId
      * @param skip
      * @param limit
      * @return
      */
-    public Result<List<VideoInfo>> getVideoList(User user, String userId, int skip, int limit) {
+    public Result<List<VideoInfo>> getVideoList(String userId, int skip, int limit) {
         List<Video> videoList = videoRepository.getVideoList(userId, skip, limit);
         List<VideoInfo> videoInfoList = new ArrayList<>(videoList.size());
-        for (Video video : videoList) {
+        videoList.forEach(video -> {
             VideoInfo videoInfo = new VideoInfo();
             BeanUtils.copyProperties(video, videoInfo);
             videoInfoList.add(videoInfo);
-        }
+        });
         return Result.ok(videoInfoList);
     }
 
