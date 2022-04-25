@@ -22,7 +22,7 @@ public class Video {
     private String originalFileKey;
 
     private Integer watchCount;
-    private Integer duration;
+    private Long duration;
     private String coverUrl;
 
     @Indexed

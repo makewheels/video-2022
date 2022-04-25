@@ -119,7 +119,7 @@ public class TranscodeService {
      */
     public void iterateQueryAliyunTranscodeJob(Video video, Transcode transcode) {
         String jobId = transcode.getJobId();
-        Integer duration = video.getDuration();
+        long duration = video.getDuration();
         long startTime = System.currentTimeMillis();
         //轮询
         for (int i = 0; i < 1000000000; i++) {

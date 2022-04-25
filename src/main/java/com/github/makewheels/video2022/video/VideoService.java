@@ -392,7 +392,7 @@ public class VideoService {
             log.info("获取视频信息 jobId = " + jobId);
             SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties
                     properties = job.getProperties();
-            video.setDuration((int) (Double.parseDouble(properties.getDuration()) * 1000));
+            video.setDuration((long) (Double.parseDouble(properties.getDuration()) * 1000));
             video.setHeight(Integer.parseInt(properties.getHeight()));
             video.setWidth(Integer.parseInt(properties.getWidth()));
             SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreams
@@ -407,7 +407,7 @@ public class VideoService {
                     + ", mediaInfo = " + JSON.toJSONString(mediaInfo));
             //截帧
             createThumbnail(user, video);
-            video.setDuration(mediaInfo.getDurationInMillisecond());
+            video.setDuration(Long.valueOf(mediaInfo.getDurationInMillisecond()));
             video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(mediaInfo)));
             video.setWidth(mediaInfo.getVideo().getWidthInPixel());
             video.setHeight(mediaInfo.getVideo().getHeightInPixel());
