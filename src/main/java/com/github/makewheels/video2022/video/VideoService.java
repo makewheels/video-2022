@@ -25,6 +25,9 @@ import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
 import com.github.makewheels.video2022.transcode.baidu.BaiduTranscodeStatus;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeService;
+import com.github.makewheels.video2022.video.bean.Video;
+import com.github.makewheels.video2022.video.bean.VideoDetail;
+import com.github.makewheels.video2022.video.bean.VideoSimpleInfo;
 import com.github.makewheels.video2022.video.constants.AudioCodec;
 import com.github.makewheels.video2022.video.constants.VideoCodec;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
@@ -171,9 +174,6 @@ public class VideoService {
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
         if (type.equals(VideoType.YOUTUBE)) {
             new Thread(() -> {
-                //因为海外服务器获取文件拓展名很慢，所以放到这里，在子线程中执行，先给前端放回结果
-                //之前已保存到数据库的file和video的sourceKey有可能需要更新
-                //YouTube搬运视频没有源文件名，只有拓展名，是yt-dlp给的，之后上传的key也会用这个拓展名
                 String youtubeUrl = requestBody.getString("youtubeUrl");
                 String youtubeVideoId = youtubeService.getYoutubeVideoId(youtubeUrl);
                 String extension = youtubeService.getFileExtension(youtubeVideoId);
@@ -189,10 +189,21 @@ public class VideoService {
                 }
                 //提交任务给海外服务器
                 youtubeService.submitMission(user, video, file);
+
                 //获取视频信息，保存title和description到数据库
-                JSONObject jsonObject = youtubeService.getVideoInfo(video);
-                video.setYoutubeVideoInfo(jsonObject);
-                JSONObject snippet = jsonObject.getJSONObject("snippet");
+                JSONObject youtubeVideoInfo = youtubeService.getVideoInfo(video);
+                video.setYoutubeVideoInfo(youtubeVideoInfo);
+
+                //更新youtube publish time
+                JSONObject publishedAt = youtubeVideoInfo.getJSONObject("snippet").getJSONObject("publishedAt");
+                int timeZoneShift = publishedAt.getInteger("timeZoneShift");
+                long value = publishedAt.getLong("value");
+                ZoneId zoneId = ZoneId.of("UTC+" + timeZoneShift);
+                Instant instant = ZonedDateTime.ofInstant(Instant.ofEpochMilli(value), zoneId).toInstant();
+                Date youtubePublishTime = Date.from(ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).toInstant());
+                video.setYoutubePublishTime(youtubePublishTime);
+
+                JSONObject snippet = youtubeVideoInfo.getJSONObject("snippet");
                 video.setTitle(snippet.getString("title"));
                 video.setDescription(snippet.getString("description"));
                 mongoTemplate.save(video);
@@ -529,26 +540,16 @@ public class VideoService {
      * @param videoId
      * @return
      */
-    public Result<VideoInfo> getVideoInfo(User user, String videoId) {
+    public Result<VideoDetail> getVideoDetail(User user, String videoId) {
         Video video = mongoTemplate.findById(videoId, Video.class);
         if (video == null) {
             return Result.error(ErrorCode.FAIL);
         }
-        VideoInfo videoInfo = new VideoInfo();
-        BeanUtils.copyProperties(video, videoInfo);
-        Date createTime = videoInfo.getCreateTime();
-        //如果是YouTube搬运视频，那就按照YouTube的发布时间来，不按照我搬运的时间
-        if (video.isYoutube()) {
-            JSONObject youtubeVideoInfo = video.getYoutubeVideoInfo();
-            JSONObject publishedAt = youtubeVideoInfo.getJSONObject("snippet").getJSONObject("publishedAt");
-            int timeZoneShift = publishedAt.getInteger("timeZoneShift");
-            long value = publishedAt.getLong("value");
-            Instant instant = ZonedDateTime.ofInstant(
-                    Instant.ofEpochMilli(value), ZoneId.of("UTC+" + timeZoneShift)).toInstant();
-            createTime = Date.from(ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).toInstant());
-        }
-        videoInfo.setCreateTimeString(DateUtil.formatDateTime(createTime));
-        return Result.ok(videoInfo);
+        VideoDetail videoDetail = new VideoDetail();
+        BeanUtils.copyProperties(video, videoDetail);
+        videoDetail.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
+        videoDetail.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
+        return Result.ok(videoDetail);
     }
 
     /**
@@ -559,15 +560,17 @@ public class VideoService {
      * @param limit
      * @return
      */
-    public Result<List<VideoInfo>> getVideoList(String userId, int skip, int limit) {
-        List<Video> videoList = videoRepository.getVideoList(userId, skip, limit);
-        List<VideoInfo> videoInfoList = new ArrayList<>(videoList.size());
-        videoList.forEach(video -> {
-            VideoInfo videoInfo = new VideoInfo();
-            BeanUtils.copyProperties(video, videoInfo);
-            videoInfoList.add(videoInfo);
+    public Result<List<VideoSimpleInfo>> getVideoList(String userId, int skip, int limit) {
+        List<Video> videos = videoRepository.getVideoList(userId, skip, limit);
+        List<VideoSimpleInfo> itemList = new ArrayList<>(videos.size());
+        videos.forEach(video -> {
+            VideoSimpleInfo item = new VideoSimpleInfo();
+            BeanUtils.copyProperties(video, item);
+            item.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
+            item.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
+            itemList.add(item);
         });
-        return Result.ok(videoInfoList);
+        return Result.ok(itemList);
     }
 
     /**

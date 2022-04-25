@@ -4,6 +4,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.user.UserServiceClient;
 import com.github.makewheels.video2022.response.Result;
+import com.github.makewheels.video2022.video.bean.Video;
+import com.github.makewheels.video2022.video.bean.VideoDetail;
+import com.github.makewheels.video2022.video.bean.VideoSimpleInfo;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -59,29 +62,28 @@ public class VideoController {
     }
 
     /**
-     * 根据videoId获取单个视频信息
+     * 根据videoId获取视频详情
      *
      * @param request
      * @param videoId
      * @return
      */
-    @GetMapping("getVideoInfo")
-    public Result<VideoInfo> getVideoInfo(HttpServletRequest request, @RequestParam String videoId) {
+    @GetMapping("getVideoDetail")
+    public Result<VideoDetail> getVideoDetail(HttpServletRequest request, @RequestParam String videoId) {
         User user = userServiceClient.getUserByRequest(request);
-        return videoService.getVideoInfo(user, videoId);
+        return videoService.getVideoDetail(user, videoId);
     }
 
     /**
      * 分页获取指定userId视频列表
      *
-     * @param request
      * @param userId
      * @param skip
      * @param limit
      * @return
      */
     @GetMapping("getVideoListByUserId")
-    public Result<List<VideoInfo>> getVideoList(
+    public Result<List<VideoSimpleInfo>> getVideoList(
             @RequestParam String userId, @RequestParam int skip, @RequestParam int limit) {
         return videoService.getVideoList(userId, skip, limit);
     }
@@ -90,7 +92,7 @@ public class VideoController {
      * 分页获取我的视频
      */
     @GetMapping("getMyVideoList")
-    public Result<List<VideoInfo>> getVideoList(
+    public Result<List<VideoSimpleInfo>> getVideoList(
             HttpServletRequest request, @RequestParam int skip, @RequestParam int limit) {
         User user = userServiceClient.getUserByRequest(request);
         return videoService.getVideoList(user.getId(), skip, limit);
