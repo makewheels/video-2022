@@ -191,7 +191,7 @@ public class VideoService {
                 youtubeService.submitMission(user, video, file);
 
                 //获取视频信息，保存title和description到数据库
-                JSONObject youtubeVideoInfo = youtubeService.getVideoInfo(video);
+                JSONObject youtubeVideoInfo = youtubeService.getVideoInfo(video.getYoutubeVideoId());
                 video.setYoutubeVideoInfo(youtubeVideoInfo);
 
                 //更新youtube publish time
@@ -411,7 +411,6 @@ public class VideoService {
             video.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
             video.setAudioCodec(streams.getAudioStreamList().getAudioStream().get(0).getCodecName());
             //TODO 阿里云对象存储截帧，这我云函数也可以自己做，甚至雪碧图
-
         } else if (videoProvider.equals(S3Provider.BAIDU_BOS)) {
             GetMediaInfoOfFileResponse mediaInfo = baiduMcpService.getMediaInfo(sourceKey);
             log.info("视频源文件上传完成，通过百度获取视频信息，videoId = " + videoId
@@ -561,7 +560,9 @@ public class VideoService {
      * @return
      */
     public Result<List<VideoSimpleInfo>> getVideoList(String userId, int skip, int limit) {
+        userId = "624effe6bef3cf0b1b776673";
         List<Video> videos = videoRepository.getVideoList(userId, skip, limit);
+
         List<VideoSimpleInfo> itemList = new ArrayList<>(videos.size());
         videos.forEach(video -> {
             VideoSimpleInfo item = new VideoSimpleInfo();
@@ -583,7 +584,6 @@ public class VideoService {
         if (watchRepository.isWatchLogExist(videoId, sessionId)) {
             return Result.ok();
         }
-
         //保存观看记录
         WatchLog watchLog = new WatchLog();
         watchLog.setIp(request.getRemoteAddr());
@@ -599,4 +599,12 @@ public class VideoService {
         return Result.ok();
     }
 
+    /**
+     * 获取视频信息
+     */
+    public Result<JSONObject> getYoutubeVideoInfo(String youtubeUrl) {
+        String youtubeVideoId = youtubeService.getYoutubeVideoId(youtubeUrl);
+        JSONObject videoInfo = youtubeService.getVideoInfo(youtubeVideoId);
+        return Result.ok(videoInfo);
+    }
 }

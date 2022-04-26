@@ -104,14 +104,11 @@ public class YoutubeService {
 
     /**
      * 获取视频信息
-     *
-     * @param video
-     * @return
      */
-    public JSONObject getVideoInfo(Video video) {
-        log.info("获取YouTube视频信息：youtubeVideoId = " + video.getYoutubeVideoId());
+    public JSONObject getVideoInfo(String youtubeVideoId) {
+        log.info("获取YouTube视频信息：youtubeVideoId = " + youtubeVideoId);
         String json = HttpUtil.get(youtubeServiceUrl + "/youtube/getVideoInfo?youtubeVideoId="
-                + video.getYoutubeVideoId());
+                + youtubeVideoId);
         log.info("获取YouTube视频信息，海外服务器返回：" + json);
         return JSONObject.parseObject(json);
     }

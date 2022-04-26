@@ -12,6 +12,8 @@ import java.util.List;
 public class CommentService {
     @Resource
     private MongoTemplate mongoTemplate;
+    @Resource
+    private CommentRepository commentRepository;
 
     /**
      * 新增评论
@@ -34,6 +36,8 @@ public class CommentService {
      * @return
      */
     public Result<List<Comment>> getByVideoId(String videoId, int skip, int limit) {
-        return null;
+        List<Comment> comments = commentRepository.getCommentsByVideoId(videoId, skip, limit);
+        comments.forEach(comment -> comment.setSessionId(null));
+        return Result.ok(comments);
     }
 }
