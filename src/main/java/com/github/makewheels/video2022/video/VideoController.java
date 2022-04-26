@@ -2,8 +2,8 @@ package com.github.makewheels.video2022.video;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.user.User;
-import com.github.makewheels.video2022.user.UserServiceClient;
 import com.github.makewheels.video2022.response.Result;
+import com.github.makewheels.video2022.user.UserServiceClient;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.bean.VideoDetail;
 import com.github.makewheels.video2022.video.bean.VideoSimpleInfo;
@@ -112,6 +112,16 @@ public class VideoController {
             @RequestParam String clientId, @RequestParam String sessionId) {
         User user = userServiceClient.getUserByRequest(request);
         return videoService.addWatchLog(request, user, clientId, sessionId, videoId);
+    }
+
+    /**
+     * 根据youtube url获取视频信息
+     */
+    @GetMapping("getYoutubeVideoInfo")
+    public Result<JSONObject> getYoutubeVideoInfo(
+            HttpServletRequest request, @RequestParam String youtubeUrl) {
+        User user = userServiceClient.getUserByRequest(request);
+        return videoService.getYoutubeVideoInfo(youtubeUrl);
     }
 
 }
