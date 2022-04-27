@@ -28,9 +28,9 @@ public class VideoController {
      * 预创建，主要目的是指定上传路径
      */
     @PostMapping("create")
-    public Result<JSONObject> create(HttpServletRequest request, @RequestBody JSONObject requestBody) {
+    public Result<JSONObject> create(HttpServletRequest request, @RequestBody JSONObject body) {
         User user = userServiceClient.getUserByRequest(request);
-        return videoService.create(user, requestBody);
+        return videoService.create(user, body);
     }
 
     /**
@@ -119,9 +119,9 @@ public class VideoController {
      */
     @GetMapping("getYoutubeVideoInfo")
     public Result<JSONObject> getYoutubeVideoInfo(
-            HttpServletRequest request, @RequestParam String youtubeUrl) {
+            HttpServletRequest request, @RequestParam JSONObject body) {
         User user = userServiceClient.getUserByRequest(request);
-        return videoService.getYoutubeVideoInfo(youtubeUrl);
+        return videoService.getYoutubeVideoInfo(body);
     }
 
 }
