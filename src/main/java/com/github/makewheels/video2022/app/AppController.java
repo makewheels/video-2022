@@ -13,11 +13,12 @@ public class AppController {
     @GetMapping("checkUpdate")
     public Result<JSONObject> checkUpdate(@RequestParam String platform) {
         JSONObject response = new JSONObject();
-        response.put("latestVersionCode", 1);
-        response.put("latestVersionName", "1.0.0");
-        response.put("latestVersionInfo", "最新版本信息：alpha内测，2022年4月25日20:41:46");
+        response.put("versionCode", 1);
+        response.put("versionName", "1.0.0");
+        response.put("versionInfo", "最新版本信息：alpha内测，2022年4月25日20:41:46");
         response.put("isForceUpdate", false);
         response.put("downloadUrl", "http://baidu.com");
+        response.put("compareVersion", false);
         return Result.ok(response);
     }
 }

@@ -115,7 +115,7 @@ public class VideoService {
         return HttpUtil.post(shortUrlService, body.toJSONString());
     }
 
-    public Result<JSONObject> create(User user, JSONObject requestBody) {
+    public Result<JSONObject> create(User user, JSONObject body) {
         String userId = user.getId();
         Video video = new Video();
 
@@ -127,13 +127,13 @@ public class VideoService {
         //但是transcode的provider可能和video的不一样
         // 不一定文件上传到阿里云对象存储，就用阿里云的转码，也可能用我自建的云函数
         String provider = null;
-        String type = requestBody.getString("type");
+        String type = body.getString("type");
         video.setType(type);
         if (type.equals(VideoType.USER_UPLOAD)) {
             provider = S3Provider.ALIYUN_OSS;
         } else if (type.equals(VideoType.YOUTUBE)) {
             provider = S3Provider.ALIYUN_OSS;
-            String youtubeUrl = requestBody.getString("youtubeUrl");
+            String youtubeUrl = body.getString("youtubeUrl");
             video.setYoutubeUrl(youtubeUrl);
             video.setYoutubeVideoId(youtubeService.getYoutubeVideoId(youtubeUrl));
         }
@@ -142,7 +142,7 @@ public class VideoService {
         video.setProvider(provider);
 
         //创建 file
-        File file = fileService.create(user, provider, requestBody);
+        File file = fileService.create(user, provider, body);
 
         String fileId = file.getId();
         //创建 video
@@ -174,7 +174,7 @@ public class VideoService {
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
         if (type.equals(VideoType.YOUTUBE)) {
             new Thread(() -> {
-                String youtubeUrl = requestBody.getString("youtubeUrl");
+                String youtubeUrl = body.getString("youtubeUrl");
                 String youtubeVideoId = youtubeService.getYoutubeVideoId(youtubeUrl);
                 String extension = youtubeService.getFileExtension(youtubeVideoId);
                 if (!file.getExtension().equals(extension)) {
@@ -602,7 +602,8 @@ public class VideoService {
     /**
      * 获取视频信息
      */
-    public Result<JSONObject> getYoutubeVideoInfo(String youtubeUrl) {
+    public Result<JSONObject> getYoutubeVideoInfo(JSONObject body) {
+        String youtubeUrl = body.getString("youtubeUrl");
         String youtubeVideoId = youtubeService.getYoutubeVideoId(youtubeUrl);
         JSONObject videoInfo = youtubeService.getVideoInfo(youtubeVideoId);
         return Result.ok(videoInfo);

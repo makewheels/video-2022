@@ -25,7 +25,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/healthCheck")
                 .excludePathPatterns("/transcode/baiduTranscodeCallback")
                 .excludePathPatterns("/video/getWatchInfo")
-                .excludePathPatterns("/video/getVideoInfo")
+                .excludePathPatterns("/video/getVideoDetail")
                 .excludePathPatterns("/video/getVideoListByUserId")
                 .excludePathPatterns("/watch")
                 .excludePathPatterns("/video/addWatchLog")
