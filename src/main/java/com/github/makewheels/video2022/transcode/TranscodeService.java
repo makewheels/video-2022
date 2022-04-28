@@ -6,9 +6,9 @@ import com.aliyun.mts20140618.models.QueryJobListResponseBody;
 import com.baidubce.services.media.model.GetTranscodingJobResponse;
 import com.github.makewheels.video2022.cdn.CdnService;
 import com.github.makewheels.video2022.response.Result;
-import com.github.makewheels.video2022.thumbnail.Thumbnail;
-import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
-import com.github.makewheels.video2022.thumbnail.ThumbnailService;
+import com.github.makewheels.video2022.cover.Cover;
+import com.github.makewheels.video2022.cover.CoverRepository;
+import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
@@ -30,7 +30,7 @@ public class TranscodeService {
     @Resource
     private TranscodeRepository transcodeRepository;
     @Resource
-    private ThumbnailRepository thumbnailRepository;
+    private CoverRepository coverRepository;
 
     @Resource
     private AliyunMpsService aliyunMpsService;
@@ -38,7 +38,7 @@ public class TranscodeService {
     private BaiduMcpService baiduMcpService;
 
     @Resource
-    private ThumbnailService thumbnailService;
+    private CoverService coverService;
     @Resource
     private CdnService cdnService;
 
@@ -78,18 +78,18 @@ public class TranscodeService {
             handleTranscodeCallback(transcode);
         } else {
             //如果是截帧任务
-            Thumbnail thumbnail = thumbnailRepository.getByJobId(jobId);
+            Cover cover = coverRepository.getByJobId(jobId);
             //判断是不是已完成
-            if (thumbnail == null) {
+            if (cover == null) {
                 log.info("找不到该jobId，跳过 jobId = " + jobId);
                 return Result.ok();
             }
-            log.info("百度获取到截帧任务结果：" + JSON.toJSONString(thumbnail));
-            if (thumbnail.isFinishStatus()) {
-                log.info("百度截帧转码已完成，跳过 " + JSON.toJSONString(thumbnail));
+            log.info("百度获取到截帧任务结果：" + JSON.toJSONString(cover));
+            if (cover.isFinishStatus()) {
+                log.info("百度截帧转码已完成，跳过 " + JSON.toJSONString(cover));
                 return Result.ok();
             }
-            thumbnailService.handleThumbnailCallback(thumbnail);
+            coverService.handleThumbnailCallback(cover);
         }
         return Result.ok();
     }

@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.thumbnail;
+package com.github.makewheels.video2022.cover;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -18,7 +18,7 @@ import javax.annotation.Resource;
 
 @Service
 @Slf4j
-public class ThumbnailService {
+public class CoverService {
     private MediaClient mediaClient;
 
     @Value("${baidu.mcp.accessKeyId}")
@@ -74,21 +74,21 @@ public class ThumbnailService {
     /**
      * 处理thumbnail回调
      *
-     * @param thumbnail
+     * @param cover
      */
-    public void handleThumbnailCallback(Thumbnail thumbnail) {
-        String jobId = thumbnail.getJobId();
+    public void handleThumbnailCallback(Cover cover) {
+        String jobId = cover.getJobId();
         GetThumbnailJobResponse response = getThumbnailJob(jobId);
         //更新status
-        thumbnail.setStatus(response.getJobStatus());
+        cover.setStatus(response.getJobStatus());
         //如果已完成，不论成功失败，都保存数据库
         //只有完成状态保存result，pending 和 running不保存result，只保存状态
         if (StringUtils.equals(response.getJobStatus(), BaiduTranscodeStatus.FAILED) ||
                 StringUtils.equals(response.getJobStatus(), BaiduTranscodeStatus.SUCCESS)) {
-            thumbnail.setResult(JSONObject.parseObject(JSON.toJSONString(response)));
+            cover.setResult(JSONObject.parseObject(JSON.toJSONString(response)));
         }
         //保存数据库
-        mongoTemplate.save(thumbnail);
+        mongoTemplate.save(cover);
         //转码会通知video，截帧就不通知了
     }
 }

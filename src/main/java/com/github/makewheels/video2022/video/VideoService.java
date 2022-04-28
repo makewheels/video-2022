@@ -11,20 +11,20 @@ import com.baidubce.services.media.model.CreateThumbnailJobResponse;
 import com.baidubce.services.media.model.CreateTranscodingJobResponse;
 import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
 import com.github.makewheels.usermicroservice2022.user.User;
+import com.github.makewheels.video2022.cover.Cover;
+import com.github.makewheels.video2022.cover.CoverRepository;
+import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.FileStatus;
 import com.github.makewheels.video2022.file.S3Provider;
 import com.github.makewheels.video2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
-import com.github.makewheels.video2022.thumbnail.Thumbnail;
-import com.github.makewheels.video2022.thumbnail.ThumbnailRepository;
-import com.github.makewheels.video2022.thumbnail.ThumbnailService;
 import com.github.makewheels.video2022.transcode.*;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
-import com.github.makewheels.video2022.transcode.baidu.BaiduTranscodeStatus;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeService;
+import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.bean.VideoDetail;
 import com.github.makewheels.video2022.video.bean.VideoSimpleInfo;
@@ -62,12 +62,12 @@ public class VideoService {
     @Resource
     private TranscodeService transcodeService;
     @Resource
-    private ThumbnailService thumbnailService;
+    private CoverService coverService;
 
     @Resource
     private VideoRepository videoRepository;
     @Resource
-    private ThumbnailRepository thumbnailRepository;
+    private CoverRepository coverRepository;
     @Resource
     private TranscodeRepository transcodeRepository;
     @Resource
@@ -118,7 +118,6 @@ public class VideoService {
     public Result<JSONObject> create(User user, JSONObject body) {
         String userId = user.getId();
         Video video = new Video();
-
         //决定提供商是阿里云还是百度云
         //现在为了兼容上传网页，用户上传继续用百度云
         //搬运因为是海外服务器api上传，就用阿里云对象存储，转码也是阿里云
@@ -127,24 +126,24 @@ public class VideoService {
         //但是transcode的provider可能和video的不一样
         // 不一定文件上传到阿里云对象存储，就用阿里云的转码，也可能用我自建的云函数
         String provider = null;
-        String type = body.getString("type");
-        video.setType(type);
-        if (type.equals(VideoType.USER_UPLOAD)) {
+        String videoType = body.getString("type");
+        video.setType(videoType);
+        if (videoType.equals(VideoType.USER_UPLOAD)) {
             provider = S3Provider.ALIYUN_OSS;
-        } else if (type.equals(VideoType.YOUTUBE)) {
+        } else if (videoType.equals(VideoType.YOUTUBE)) {
             provider = S3Provider.ALIYUN_OSS;
             String youtubeUrl = body.getString("youtubeUrl");
             video.setYoutubeUrl(youtubeUrl);
             video.setYoutubeVideoId(youtubeService.getYoutubeVideoId(youtubeUrl));
         }
-        log.info("新建视频类型：type = " + type + ", S3Provider = " + provider);
+        log.info("新建视频类型：type = " + videoType + ", S3Provider = " + provider);
 
         video.setProvider(provider);
 
-        //创建 file
-        File file = fileService.create(user, provider, body);
+        //创建 video file
+        File videoFile = fileService.createVideoFile(user, provider, body);
 
-        String fileId = file.getId();
+        String fileId = videoFile.getId();
         //创建 video
         video.setWatchCount(0);
         video.setOriginalFileId(fileId);
@@ -153,70 +152,78 @@ public class VideoService {
         video.setWatchId(watchId);
         String watchUrl = internalBaseUrl + "/watch?v=" + watchId;
         video.setWatchUrl(watchUrl);
-        video.setShortUrl(getShortUrl(watchUrl));
+        String shortUrl = getShortUrl(watchUrl);
+        video.setShortUrl(shortUrl);
         video.setStatus(VideoStatus.CREATED);
         video.setCreateTime(new Date());
         mongoTemplate.save(video);
 
         String videoId = video.getId();
-        file.setVideoId(videoId);
+        videoFile.setVideoId(videoId);
         // 更新file上传路径
-        String key = "videos/" + userId + "/" + videoId + "/original/" + videoId + "." + file.getExtension();
-        file.setKey(key);
-        mongoTemplate.save(file);
-        log.info("新建文件：" + JSON.toJSONString(file));
+        videoFile.setKey(PathUtil.getS3VideoPrefix(userId, videoId)
+                + "/original/" + videoId + "." + videoFile.getExtension());
+        mongoTemplate.save(videoFile);
+        log.info("新建文件：" + JSON.toJSONString(videoFile));
 
         //更新video的source key
-        video.setOriginalFileKey(key);
+        video.setOriginalFileKey(videoFile.getKey());
         mongoTemplate.save(video);
         log.info("新建视频：" + JSON.toJSONString(video));
 
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
-        if (type.equals(VideoType.YOUTUBE)) {
-            new Thread(() -> {
-                String youtubeUrl = body.getString("youtubeUrl");
-                String youtubeVideoId = youtubeService.getYoutubeVideoId(youtubeUrl);
-                String extension = youtubeService.getFileExtension(youtubeVideoId);
-                if (!file.getExtension().equals(extension)) {
-                    //更新file
-                    file.setExtension(extension);
-                    String newKey = file.getKey();
-                    file.setKey(newKey.substring(0, newKey.lastIndexOf(".")) + "." + extension);
-                    mongoTemplate.save(file);
-                    //更新video的source key
-                    video.setOriginalFileKey(file.getKey());
-                    mongoTemplate.save(video);
-                }
-                //提交任务给海外服务器
-                youtubeService.transferVideo(user, video, file);
-
-                //获取视频信息，保存title和description到数据库
-                JSONObject youtubeVideoInfo = youtubeService.getVideoInfo(video.getYoutubeVideoId());
-                video.setYoutubeVideoInfo(youtubeVideoInfo);
-
-                //更新youtube publish time
-                JSONObject publishedAt = youtubeVideoInfo.getJSONObject("snippet").getJSONObject("publishedAt");
-                int timeZoneShift = publishedAt.getInteger("timeZoneShift");
-                long value = publishedAt.getLong("value");
-                ZoneId zoneId = ZoneId.of("UTC+" + timeZoneShift);
-                Instant instant = ZonedDateTime.ofInstant(Instant.ofEpochMilli(value), zoneId).toInstant();
-                Date youtubePublishTime = Date.from(ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).toInstant());
-                video.setYoutubePublishTime(youtubePublishTime);
-
-                JSONObject snippet = youtubeVideoInfo.getJSONObject("snippet");
-                video.setTitle(snippet.getString("title"));
-                video.setDescription(snippet.getString("description"));
-                mongoTemplate.save(video);
-            }).start();
+        if (videoType.equals(VideoType.YOUTUBE)) {
+            new Thread(() -> handleYoutubeOnCreate(video, user, videoFile)).start();
         }
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("fileId", fileId);
-        jsonObject.put("videoId", video.getId());
-        jsonObject.put("watchId", video.getWatchId());
-        jsonObject.put("watchUrl", video.getWatchUrl());
-        jsonObject.put("shortUrl", video.getShortUrl());
-        return Result.ok(jsonObject);
+        JSONObject response = new JSONObject();
+        response.put("fileId", fileId);
+        response.put("videoId", video);
+        response.put("watchId", watchId);
+        response.put("watchUrl", watchUrl);
+        response.put("shortUrl", shortUrl);
+        return Result.ok(response);
+    }
+
+    /**
+     * 创建视频：处理youtube
+     *
+     * @param video
+     * @param user
+     * @param videoFile
+     */
+    private void handleYoutubeOnCreate(Video video, User user, File videoFile) {
+        String extension = youtubeService.getFileExtension(video.getYoutubeVideoId());
+        if (!videoFile.getExtension().equals(extension)) {
+            //更新file
+            videoFile.setExtension(extension);
+            String newKey = videoFile.getKey();
+            videoFile.setKey(newKey.substring(0, newKey.lastIndexOf(".")) + "." + extension);
+            mongoTemplate.save(videoFile);
+            //更新video的source key
+            video.setOriginalFileKey(videoFile.getKey());
+            mongoTemplate.save(video);
+        }
+        //提交任务给海外服务器
+        youtubeService.transferVideo(user, video, videoFile);
+
+        //获取视频信息，保存title和description到数据库
+        JSONObject youtubeVideoInfo = youtubeService.getVideoInfo(video.getYoutubeVideoId());
+        video.setYoutubeVideoInfo(youtubeVideoInfo);
+
+        //更新youtube publish time
+        JSONObject publishedAt = youtubeVideoInfo.getJSONObject("snippet").getJSONObject("publishedAt");
+        int timeZoneShift = publishedAt.getInteger("timeZoneShift");
+        long value = publishedAt.getLong("value");
+        ZoneId zoneId = ZoneId.of("UTC+" + timeZoneShift);
+        Instant instant = ZonedDateTime.ofInstant(Instant.ofEpochMilli(value), zoneId).toInstant();
+        Date youtubePublishTime = Date.from(ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).toInstant());
+        video.setYoutubePublishTime(youtubePublishTime);
+
+        JSONObject snippet = youtubeVideoInfo.getJSONObject("snippet");
+        video.setTitle(snippet.getString("title"));
+        video.setDescription(snippet.getString("description"));
+        mongoTemplate.save(video);
     }
 
     private boolean isResolutionOverThan720p(int width, int height) {
@@ -285,8 +292,8 @@ public class VideoService {
         String transcodeId = transcode.getId();
 
         //设置m3u8 url
-        String m3u8Key = "videos/" + userId + "/" + videoId + "/transcode/"
-                + resolution + "/" + transcodeId + ".m3u8";
+        String m3u8Key = PathUtil.getS3VideoPrefix(userId, videoId)
+                + "/transcode/" + resolution + "/" + transcodeId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
         if (s3Provider.equals(S3Provider.ALIYUN_OSS)) {
             transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
@@ -303,17 +310,14 @@ public class VideoService {
         String jobStatus = null;
         switch (transcodeProvider) {
             case TranscodeProvider.ALIYUN_MPS: {
-                SubmitJobsResponseBody.SubmitJobsResponseBodyJobResultListJobResultJob job
-                        = aliyunMpsService.createTranscodingJobByResolution(sourceKey, m3u8Key, resolution)
-                        .getBody().getJobResultList().getJobResult().get(0).getJob();
+                SubmitJobsResponseBody.SubmitJobsResponseBodyJobResultListJobResultJob job = aliyunMpsService.createTranscodingJobByResolution(sourceKey, m3u8Key, resolution).getBody().getJobResultList().getJobResult().get(0).getJob();
                 jobId = job.getJobId();
                 log.info("发起阿里云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
                 jobStatus = job.getState();
                 break;
             }
             case TranscodeProvider.BAIDU_MCP: {
-                CreateTranscodingJobResponse job = baiduMcpService.createTranscodingJob(
-                        sourceKey, m3u8Key, resolution);
+                CreateTranscodingJobResponse job = baiduMcpService.createTranscodingJob(sourceKey, m3u8Key, resolution);
                 jobId = job.getJobId();
                 log.info("发起百度云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
                 jobStatus = baiduMcpService.getTranscodingJob(jobId).getJobStatus();
@@ -322,12 +326,7 @@ public class VideoService {
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 jobId = IdUtil.simpleUUID();
                 String callbackUrl = externalBaseUrl + "/transcode/aliyunCloudFunctionTranscodeCallback";
-                cloudFunctionTranscodeService.transcode(
-                        sourceKey,
-                        m3u8Key.substring(0, m3u8Key.lastIndexOf("/")),
-                        videoId, transcodeId, jobId, resolution, width, height,
-                        VideoCodec.H264, AudioCodec.AAC, "keep", callbackUrl
-                );
+                cloudFunctionTranscodeService.transcode(sourceKey, m3u8Key.substring(0, m3u8Key.lastIndexOf("/")), videoId, transcodeId, jobId, resolution, width, height, VideoCodec.H264, AudioCodec.AAC, "keep", callbackUrl);
                 break;
         }
         //保存jobId，更新jobStatus
@@ -344,41 +343,41 @@ public class VideoService {
     /**
      * 发起截帧任务
      */
-    private void createThumbnail(User user, Video video) {
+    private void createCover(User user, Video video) {
+        //逻辑：
         String userId = user.getId();
         String videoId = video.getId();
         String sourceKey = video.getOriginalFileKey();
         String videoProvider = video.getProvider();
 
-        Thumbnail thumbnail = new Thumbnail();
-        thumbnail.setCreateTime(new Date());
-        thumbnail.setUserId(userId);
-        thumbnail.setVideoId(videoId);
-        thumbnail.setStatus(BaiduTranscodeStatus.CREATED);
-        thumbnail.setSourceKey(sourceKey);
-        thumbnail.setExtension("jpg");
-        thumbnail.setProvider(S3Provider.BAIDU_BOS);
+        Cover cover = new Cover();
+        cover.setCreateTime(new Date());
+        cover.setUserId(userId);
+        cover.setVideoId(videoId);
+        cover.setStatus("CREATED");
+        cover.setSourceKey(sourceKey);
+        cover.setExtension("jpg");
+        cover.setProvider(S3Provider.BAIDU_BOS);
 
-        String targetKeyPrefix = "videos/" + userId + "/" + videoId + "/cover/" + videoId;
-        CreateThumbnailJobResponse thumbnailJob
-                = thumbnailService.createThumbnailJob(sourceKey, targetKeyPrefix);
+        String targetKeyPrefix = PathUtil.getS3VideoPrefix(userId, videoId) + "/cover/" + videoId;
+        CreateThumbnailJobResponse thumbnailJob = coverService.createThumbnailJob(sourceKey, targetKeyPrefix);
         log.info("通过百度云发起截帧任务：CreateThumbnailJobResponse = " + JSON.toJSONString(thumbnailJob));
 
-        thumbnail.setTargetKeyPrefix(targetKeyPrefix);
+        cover.setTargetKeyPrefix(targetKeyPrefix);
         String key = targetKeyPrefix + ".jpg";
-        thumbnail.setKey(key);
-        thumbnail.setAccessUrl(baiduBosAccessBaseUrl + key);
-        thumbnail.setCdnUrl(baiduBosCdnBaseUrl + key);
+        cover.setKey(key);
+        cover.setAccessUrl(baiduBosAccessBaseUrl + key);
+        cover.setCdnUrl(baiduBosCdnBaseUrl + key);
 
         String thumbnailJobId = thumbnailJob.getJobId();
-        thumbnail.setJobId(thumbnailJobId);
+        cover.setJobId(thumbnailJobId);
 
-        mongoTemplate.save(thumbnail);
+        mongoTemplate.save(cover);
         //再次查询，更新状态
-        thumbnail.setStatus(thumbnailService.getThumbnailJob(thumbnailJobId).getJobStatus());
-        mongoTemplate.save(thumbnail);
+        cover.setStatus(coverService.getThumbnailJob(thumbnailJobId).getJobStatus());
+        mongoTemplate.save(cover);
         //更新video的冗余字段coverUrl
-        video.setCoverUrl(thumbnail.getCdnUrl());
+        video.setCoverUrl(cover.getCdnUrl());
         mongoTemplate.save(video);
     }
 
@@ -401,22 +400,19 @@ public class VideoService {
             video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(job)));
             String jobId = job.getJobId();
             log.info("获取视频信息 jobId = " + jobId);
-            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties
-                    properties = job.getProperties();
+            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties properties = job.getProperties();
             video.setDuration((long) (Double.parseDouble(properties.getDuration()) * 1000));
             video.setHeight(Integer.parseInt(properties.getHeight()));
             video.setWidth(Integer.parseInt(properties.getWidth()));
-            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreams
-                    streams = properties.getStreams();
+            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreams streams = properties.getStreams();
             video.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
             video.setAudioCodec(streams.getAudioStreamList().getAudioStream().get(0).getCodecName());
             //TODO 阿里云对象存储截帧，这我云函数也可以自己做，甚至雪碧图
         } else if (videoProvider.equals(S3Provider.BAIDU_BOS)) {
             GetMediaInfoOfFileResponse mediaInfo = baiduMcpService.getMediaInfo(sourceKey);
-            log.info("视频源文件上传完成，通过百度获取视频信息，videoId = " + videoId
-                    + ", mediaInfo = " + JSON.toJSONString(mediaInfo));
-            //截帧
-            createThumbnail(user, video);
+            log.info("视频源文件上传完成，通过百度获取视频信息，videoId = " + videoId + ", mediaInfo = " + JSON.toJSONString(mediaInfo));
+            //封面
+            createCover(user, video);
             video.setDuration(Long.valueOf(mediaInfo.getDurationInMillisecond()));
             video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(mediaInfo)));
             video.setWidth(mediaInfo.getVideo().getWidthInPixel());
@@ -452,8 +448,7 @@ public class VideoService {
         if (video == null) return Result.error(ErrorCode.FAIL);
         File file = mongoTemplate.findById(video.getOriginalFileId(), File.class);
         if (file == null) return Result.error(ErrorCode.FAIL);
-        if (!file.getStatus().equals(FileStatus.READY))
-            return Result.error(ErrorCode.FAIL);
+        if (!file.getStatus().equals(FileStatus.READY)) return Result.error(ErrorCode.FAIL);
 
         //更新视频为正在转码状态
         video.setStatus(VideoStatus.TRANSCODING);
@@ -509,9 +504,9 @@ public class VideoService {
         watchInfo = new WatchInfo();
         watchInfo.setVideoId(videoId);
         //通过videoId查找封面
-        Thumbnail thumbnail = thumbnailRepository.getByVideoId(videoId);
-        if (thumbnail != null) {
-            watchInfo.setCoverUrl(thumbnail.getCdnUrl());
+        Cover cover = coverRepository.getByVideoId(videoId);
+        if (cover != null) {
+            watchInfo.setCoverUrl(cover.getCdnUrl());
         }
         //通过videoId查找m3u8播放地址
         List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
@@ -577,9 +572,7 @@ public class VideoService {
     /**
      * 增加观看记录
      */
-    public Result<Void> addWatchLog(
-            HttpServletRequest request, User user,
-            String clientId, String sessionId, String videoId) {
+    public Result<Void> addWatchLog(HttpServletRequest request, User user, String clientId, String sessionId, String videoId) {
         //观看记录根据videoId和sessionId判断是否已存在观看记录，如果已存在则跳过
         if (watchRepository.isWatchLogExist(videoId, sessionId)) {
             return Result.ok();
