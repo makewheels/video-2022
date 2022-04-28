@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.cover.Cover;
+import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.cover.CoverRepository;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
@@ -50,9 +51,15 @@ public class VideoService {
     private MongoTemplate mongoTemplate;
 
     @Resource
+    private VideoRedisService videoRedisService;
+    @Resource
+    private YoutubeService youtubeService;
+    @Resource
     private FileService fileService;
     @Resource
     private TranscodeLauncher transcodeLauncher;
+    @Resource
+    private CoverLauncher coverLauncher;
 
     @Resource
     private VideoRepository videoRepository;
@@ -63,15 +70,8 @@ public class VideoService {
     @Resource
     private WatchRepository watchRepository;
 
-    @Resource
-    private VideoRedisService videoRedisService;
-    @Resource
-    private YoutubeService youtubeService;
-
     @Value("${internal-base-url}")
     private String internalBaseUrl;
-    @Value("${external-base-url}")
-    private String externalBaseUrl;
     @Value("${short-url-service}")
     private String shortUrlService;
 
@@ -233,9 +233,10 @@ public class VideoService {
         video.setStatus(VideoStatus.TRANSCODING);
         mongoTemplate.save(video);
 
-        //创建子线程执行转码任务，先给前端返回结果
+        //创建子线程发起转码，先给前端返回结果
         new Thread(() -> transcodeLauncher.transcodeVideo(user, video)).start();
-
+        //封面
+        new Thread(() -> coverLauncher.createCover(user, video)).start();
         return Result.ok();
     }
 
@@ -351,7 +352,8 @@ public class VideoService {
     /**
      * 增加观看记录
      */
-    public Result<Void> addWatchLog(HttpServletRequest request, User user, String clientId, String sessionId, String videoId) {
+    public Result<Void> addWatchLog(HttpServletRequest request, User user, String clientId,
+                                    String sessionId, String videoId) {
         //观看记录根据videoId和sessionId判断是否已存在观看记录，如果已存在则跳过
         if (watchRepository.isWatchLogExist(videoId, sessionId)) {
             return Result.ok();
