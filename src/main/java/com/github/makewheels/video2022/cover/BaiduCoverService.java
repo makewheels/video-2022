@@ -18,7 +18,7 @@ import javax.annotation.Resource;
 
 @Service
 @Slf4j
-public class CoverService {
+public class BaiduCoverService {
     private MediaClient mediaClient;
 
     @Value("${baidu.mcp.accessKeyId}")
@@ -48,7 +48,6 @@ public class CoverService {
         return mediaClient;
     }
 
-
     /**
      * 创建抽帧任务
      *
@@ -59,7 +58,6 @@ public class CoverService {
     public CreateThumbnailJobResponse createThumbnailJob(String sourceKey, String targetKeyPrefix) {
         return getMediaClient().createThumbnailJob(
                 pipelineName, "jpg_idl", sourceKey, targetKeyPrefix);
-
     }
 
     /**

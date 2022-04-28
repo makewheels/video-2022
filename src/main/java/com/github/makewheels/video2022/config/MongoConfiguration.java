@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.configuration;
+package com.github.makewheels.video2022.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

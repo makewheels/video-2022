@@ -15,7 +15,7 @@ import javax.annotation.Resource;
 @Slf4j
 public class TranscodeController {
     @Resource
-    private TranscodeService transcodeService;
+    private TranscodeCallbackService transcodeCallbackService;
 
     /**
      * 百度转码完成回调
@@ -23,7 +23,7 @@ public class TranscodeController {
     @PostMapping("baiduTranscodeCallback")
     public Result<Void> baiduTranscodeCallback(@RequestBody JSONObject body) {
         log.debug("收到百度转码回调：" + body.toJSONString());
-        return transcodeService.baiduTranscodeCallback(body);
+        return transcodeCallbackService.baiduTranscodeCallback(body);
     }
 
     /**
@@ -32,6 +32,6 @@ public class TranscodeController {
     @PostMapping("aliyunCloudFunctionTranscodeCallback")
     public Result<Void> aliyunCloudFunctionTranscodeCallback(@RequestBody JSONObject body) {
         log.info("收到阿里云 云函数转码回调：" + body.toJSONString());
-        return transcodeService.aliyunCloudFunctionTranscodeCallback(body);
+        return transcodeCallbackService.aliyunCloudFunctionTranscodeCallback(body);
     }
 }

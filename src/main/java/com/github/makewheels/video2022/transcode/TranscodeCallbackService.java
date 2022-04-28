@@ -8,7 +8,7 @@ import com.github.makewheels.video2022.cdn.CdnService;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
-import com.github.makewheels.video2022.cover.CoverService;
+import com.github.makewheels.video2022.cover.BaiduCoverService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
@@ -22,9 +22,12 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.List;
 
+/**
+ * 处理转码回调
+ */
 @Service
 @Slf4j
-public class TranscodeService {
+public class TranscodeCallbackService {
     @Resource
     private MongoTemplate mongoTemplate;
     @Resource
@@ -38,7 +41,7 @@ public class TranscodeService {
     private BaiduMcpService baiduMcpService;
 
     @Resource
-    private CoverService coverService;
+    private BaiduCoverService baiduCoverService;
     @Resource
     private CdnService cdnService;
 
@@ -89,7 +92,7 @@ public class TranscodeService {
                 log.info("百度截帧转码已完成，跳过 " + JSON.toJSONString(cover));
                 return Result.ok();
             }
-            coverService.handleThumbnailCallback(cover);
+            baiduCoverService.handleThumbnailCallback(cover);
         }
         return Result.ok();
     }
