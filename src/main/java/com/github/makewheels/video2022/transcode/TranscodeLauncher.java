@@ -5,12 +5,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.SubmitJobsResponseBody;
 import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
-import com.baidubce.services.media.model.CreateThumbnailJobResponse;
 import com.baidubce.services.media.model.CreateTranscodingJobResponse;
 import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
 import com.github.makewheels.usermicroservice2022.user.User;
-import com.github.makewheels.video2022.cover.Cover;
-import com.github.makewheels.video2022.cover.BaiduCoverService;
 import com.github.makewheels.video2022.file.S3Provider;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
@@ -39,8 +36,6 @@ public class TranscodeLauncher {
 
     @Resource
     private TranscodeCallbackService transcodeCallbackService;
-    @Resource
-    private BaiduCoverService baiduCoverService;
 
     @Resource
     private AliyunMpsService aliyunMpsService;
@@ -49,8 +44,6 @@ public class TranscodeLauncher {
     @Resource
     private CloudFunctionTranscodeService cloudFunctionTranscodeService;
 
-    @Value("${internal-base-url}")
-    private String internalBaseUrl;
     @Value("${external-base-url}")
     private String externalBaseUrl;
     @Value("${baidu.bos.accessBaseUrl}")
@@ -177,47 +170,6 @@ public class TranscodeLauncher {
     }
 
     /**
-     * 发起截帧任务
-     */
-    private void createCover(User user, Video video) {
-        //逻辑：
-        String userId = user.getId();
-        String videoId = video.getId();
-        String sourceKey = video.getOriginalFileKey();
-        String videoProvider = video.getProvider();
-
-        Cover cover = new Cover();
-        cover.setCreateTime(new Date());
-        cover.setUserId(userId);
-        cover.setVideoId(videoId);
-        cover.setStatus(VideoStatus.CREATED);
-        cover.setSourceKey(sourceKey);
-        cover.setExtension("jpg");
-        cover.setProvider(S3Provider.BAIDU_BOS);
-
-        String targetKeyPrefix = PathUtil.getS3VideoPrefix(userId, videoId) + "/cover/" + videoId;
-        CreateThumbnailJobResponse thumbnailJob = baiduCoverService.createThumbnailJob(sourceKey, targetKeyPrefix);
-        log.info("通过百度云发起截帧任务：CreateThumbnailJobResponse = " + JSON.toJSONString(thumbnailJob));
-
-        cover.setTargetKeyPrefix(targetKeyPrefix);
-        String key = targetKeyPrefix + ".jpg";
-        cover.setKey(key);
-        cover.setAccessUrl(baiduBosAccessBaseUrl + key);
-        cover.setCdnUrl(baiduBosCdnBaseUrl + key);
-
-        String thumbnailJobId = thumbnailJob.getJobId();
-        cover.setJobId(thumbnailJobId);
-
-        mongoTemplate.save(cover);
-        //再次查询，更新状态
-        cover.setStatus(baiduCoverService.getThumbnailJob(thumbnailJobId).getJobStatus());
-        mongoTemplate.save(cover);
-        //更新video的冗余字段coverUrl
-        video.setCoverUrl(cover.getCdnUrl());
-        mongoTemplate.save(video);
-    }
-
-    /**
      * 开始发起对单个视频的转码
      */
     public void transcodeVideo(User user, Video video) {
@@ -261,8 +213,7 @@ public class TranscodeLauncher {
         video.setStatus(VideoStatus.TRANSCODING);
         mongoTemplate.save(video);
 
-        //封面
-        createCover(user, video);
+
 
         //开始转码，首先一定会发起720p的转码
         transcodeSingleResolution(user, video, Resolution.R_720P);
