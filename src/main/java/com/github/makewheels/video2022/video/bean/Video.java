@@ -23,6 +23,7 @@ public class Video {
 
     private Integer watchCount;
     private Long duration;
+    private String coverFileId;
     private String coverUrl;
 
     @Indexed

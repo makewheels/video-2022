@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.thumbnail;
+package com.github.makewheels.video2022.cover;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
@@ -13,7 +13,7 @@ import java.util.Date;
 
 @Data
 @Document
-public class Thumbnail {
+public class Cover {
     @Id
     private String id;
     @Indexed
@@ -34,6 +34,7 @@ public class Thumbnail {
     @Indexed
     private String status;
 
+    private String downloadUrl;
     private String sourceKey;
     private String targetKeyPrefix;
 

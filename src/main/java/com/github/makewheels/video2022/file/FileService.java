@@ -46,7 +46,40 @@ public class FileService {
      * @param requestBody
      * @return
      */
-    public File create(User user, String provider, JSONObject requestBody) {
+    public File createVideoFile(User user, String provider, JSONObject requestBody) {
+        File file = new File();
+        file.setType(FileType.ORIGINAL_VIDEO);
+        file.setUserId(user.getId());
+
+        file.setProvider(provider);
+        String videoType = requestBody.getString("type");
+        file.setVideoType(videoType);
+
+        //原始文件名和后缀
+        if (videoType.equals(VideoType.USER_UPLOAD)) {
+            String originalFilename = requestBody.getString("originalFilename");
+            file.setOriginalFilename(originalFilename);
+            file.setExtension(FilenameUtils.getExtension(originalFilename).toLowerCase());
+        } else if (videoType.equals(VideoType.YOUTUBE)) {
+            //由于海外服务器获取拓展名太慢，所以移到后面的子线程中进行
+            file.setExtension("webm");
+        }
+
+        file.setStatus(FileStatus.CREATED);
+        file.setCreateTime(new Date());
+        mongoTemplate.save(file);
+        return file;
+    }
+
+    /**
+     * 新建封面文件
+     *
+     * @param user
+     * @param provider
+     * @param requestBody
+     * @return
+     */
+    public File createCoverFile(User user, String provider, JSONObject requestBody) {
         File file = new File();
         file.setType(FileType.ORIGINAL_VIDEO);
         file.setUserId(user.getId());
@@ -147,11 +180,12 @@ public class FileService {
         log.info("处理文件上传完成，fileId = " + fileId + ", key = " + key);
 
         //判断provider
-        if (file.getProvider().equals(S3Provider.ALIYUN_OSS)) {
+        String provider = file.getProvider();
+        if (provider.equals(S3Provider.ALIYUN_OSS)) {
             OSSObject object = aliyunOssService.getObject(key);
             file.setSize(object.getObjectMetadata().getContentLength());
             file.setEtag(object.getObjectMetadata().getETag());
-        } else if (file.getProvider().equals(S3Provider.BAIDU_BOS)) {
+        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
             BosObject object = baiduBosService.getObject(key);
             file.setSize(object.getObjectMetadata().getContentLength());
             file.setEtag(object.getObjectMetadata().getETag());
