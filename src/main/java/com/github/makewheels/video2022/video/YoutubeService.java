@@ -44,7 +44,7 @@ public class YoutubeService {
      * @param youtubeUrl
      * @return
      */
-    public String getYoutubeVideoId(String youtubeUrl) {
+    public String getYoutubeVideoIdByUrl(String youtubeUrl) {
         URI uri = null;
         try {
             uri = new URI(youtubeUrl);
@@ -71,6 +71,17 @@ public class YoutubeService {
     }
 
     /**
+     * 获取视频信息
+     */
+    public JSONObject getVideoInfo(String youtubeVideoId) {
+        log.info("获取YouTube视频信息：youtubeVideoId = " + youtubeVideoId);
+        String json = HttpUtil.get(youtubeServiceUrl + "/youtube/getVideoInfo?youtubeVideoId="
+                + youtubeVideoId);
+        log.info("获取YouTube视频信息，海外服务器返回：" + json);
+        return JSONObject.parseObject(json);
+    }
+
+    /**
      * 提交搬运任务
      */
     public JSONObject transferVideo(User user, Video video, File file) {
@@ -91,35 +102,7 @@ public class YoutubeService {
         body.put("fileUploadFinishCallbackUrl", externalBaseUrl + "/file/uploadFinish"
                 + "?fileId=" + file.getId() + "&token=" + user.getToken());
 
-        //视频原始文件上传完成回调地址
-        body.put("businessUploadFinishCallbackUrl", externalBaseUrl + "/video/originalFileUploadFinish"
-                + "?videoId=" + video.getId() + "&token=" + user.getToken());
-
-        log.info("提交搬运视频任务，body = " + body.toJSONString());
-        String json = HttpUtil.post(youtubeServiceUrl + "/youtube/transferVideo",
-                body.toJSONString());
-        log.info("提交搬运视频任务，海外服务器返回：" + json);
-        return JSONObject.parseObject(json);
-    }
-    public JSONObject transferCover(User user, Video video, File file) {
-        JSONObject body = new JSONObject();
-        body.put("missionId", IdUtil.nanoId());
-        body.put("youtubeVideoId", video.getYoutubeVideoId());
-        body.put("key", file.getKey());
-        body.put("provider", video.getProvider());
-        body.put("fileId", file.getId());
-        body.put("watchId", video.getWatchId());
-        body.put("videoId", video.getId());
-
-        //获取文件上传凭证地址
-        body.put("getUploadCredentialsUrl", externalBaseUrl + "/file/getUploadCredentials" +
-                "?fileId=" + file.getId() + "&token=" + user.getToken());
-
-        //文件上传完成回调地址
-        body.put("fileUploadFinishCallbackUrl", externalBaseUrl + "/file/uploadFinish"
-                + "?fileId=" + file.getId() + "&token=" + user.getToken());
-
-        //视频原始文件上传完成回调地址
+        //通知业务原始文件上传完成回调地址
         body.put("businessUploadFinishCallbackUrl", externalBaseUrl + "/video/originalFileUploadFinish"
                 + "?videoId=" + video.getId() + "&token=" + user.getToken());
 
@@ -131,13 +114,31 @@ public class YoutubeService {
     }
 
     /**
-     * 获取视频信息
+     * 搬运文件到国内对象存储
      */
-    public JSONObject getVideoInfo(String youtubeVideoId) {
-        log.info("获取YouTube视频信息：youtubeVideoId = " + youtubeVideoId);
-        String json = HttpUtil.get(youtubeServiceUrl + "/youtube/getVideoInfo?youtubeVideoId="
-                + youtubeVideoId);
-        log.info("获取YouTube视频信息，海外服务器返回：" + json);
+    public JSONObject transferFile(User user, File file, String businessUploadFinishCallbackUrl) {
+        JSONObject body = new JSONObject();
+        body.put("missionId", IdUtil.nanoId());
+        body.put("key", file.getKey());
+        body.put("fileId", file.getId());
+
+        //获取文件上传凭证地址
+        body.put("getUploadCredentialsUrl", externalBaseUrl + "/file/getUploadCredentials" +
+                "?fileId=" + file.getId() + "&token=" + user.getToken());
+
+        //文件上传完成回调地址
+        body.put("fileUploadFinishCallbackUrl", externalBaseUrl + "/file/uploadFinish"
+                + "?fileId=" + file.getId() + "&token=" + user.getToken());
+
+        //通知业务原始文件上传完成回调地址
+        body.put("businessUploadFinishCallbackUrl", businessUploadFinishCallbackUrl);
+
+        log.info("提交搬运文件任务，body = " + body.toJSONString());
+        String json = HttpUtil.post(youtubeServiceUrl + "/youtube/transferVideo",
+                body.toJSONString());
+        log.info("提交搬运文件任务，海外服务器返回：" + json);
         return JSONObject.parseObject(json);
     }
+
+
 }

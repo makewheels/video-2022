@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.transcode;
+package com.github.makewheels.video2022.utils;
 
 import cn.hutool.http.HttpUtil;
 

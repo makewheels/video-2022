@@ -10,16 +10,14 @@ import com.aliyun.cdn20180510.models.PushObjectCacheRequest;
 import com.aliyun.cdn20180510.models.PushObjectCacheResponse;
 import com.aliyun.teaopenapi.models.Config;
 import com.github.makewheels.video2022.response.Result;
-import com.github.makewheels.video2022.transcode.M3u8Util;
 import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeProvider;
-import com.github.makewheels.video2022.transcode.TranscodeRepository;
+import com.github.makewheels.video2022.utils.M3u8Util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,9 +27,6 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class CdnService {
-    @Resource
-    private TranscodeRepository transcodeRepository;
-
     @Value("${aliyun.cdn.accessKeyId}")
     private String aliyunCdnAccessKeyId;
     @Value("${aliyun.cdn.secretKey}")
@@ -108,6 +103,7 @@ public class CdnService {
      */
     public void prefetchCdn(Transcode transcode) {
         String transcodeProvider = transcode.getProvider();
+        //如果是阿里云mps转码，或者是阿里云 云函数转码，就发起阿里云cdn预热
         if (StringUtils.equalsAny(transcodeProvider,
                 TranscodeProvider.ALIYUN_CLOUD_FUNCTION, TranscodeProvider.ALIYUN_MPS)) {
             try {
@@ -116,6 +112,7 @@ public class CdnService {
                 e.printStackTrace();
             }
         }
+        //发起软路由预热
         softRoutePrefetch(transcode);
     }
 }
