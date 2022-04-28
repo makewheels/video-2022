@@ -34,9 +34,7 @@ public class Cover {
     @Indexed
     private String status;
 
-    private String downloadUrl;
     private String sourceKey;
-    private String targetKeyPrefix;
 
     private String accessUrl;
     private String cdnUrl;
