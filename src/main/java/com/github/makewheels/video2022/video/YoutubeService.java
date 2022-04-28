@@ -92,7 +92,7 @@ public class YoutubeService {
                 + "?fileId=" + file.getId() + "&token=" + user.getToken());
 
         //视频原始文件上传完成回调地址
-        body.put("videoOriginalFileUploadFinishCallbackUrl", externalBaseUrl + "/video/originalFileUploadFinish"
+        body.put("businessUploadFinishCallbackUrl", externalBaseUrl + "/video/originalFileUploadFinish"
                 + "?videoId=" + video.getId() + "&token=" + user.getToken());
 
         log.info("提交搬运任务，body = " + body.toJSONString());
