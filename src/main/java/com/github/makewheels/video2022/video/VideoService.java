@@ -189,12 +189,17 @@ public class VideoService {
             video.setOriginalFileKey(videoFile.getKey());
             mongoTemplate.save(video);
         }
-        //提交任务给海外服务器
+
+        //提交搬运视频任务给海外服务器
         youtubeService.transferVideo(user, video, videoFile);
 
         //获取视频信息，保存title和description到数据库
         JSONObject youtubeVideoInfo = youtubeService.getVideoInfo(video.getYoutubeVideoId());
         video.setYoutubeVideoInfo(youtubeVideoInfo);
+
+        //youtube视频可以直接发起搬运封面，不必等源视频上传完成
+        //上传完成的截帧操作已做幂等性处理，会判断如果是youtube视频，跳过截帧
+        new Thread(() -> coverLauncher.createCover(user, video)).start();
 
         //更新youtube publish time
         JSONObject publishedAt = youtubeVideoInfo.getJSONObject("snippet").getJSONObject("publishedAt");
@@ -235,8 +240,10 @@ public class VideoService {
 
         //创建子线程发起转码，先给前端返回结果
         new Thread(() -> transcodeLauncher.transcodeVideo(user, video)).start();
-        //封面
-        new Thread(() -> coverLauncher.createCover(user, video)).start();
+        //封面：如果是youtube视频，之前创建的时候已经搬运封面了，用户上传视频要截帧
+        if (!video.isYoutube()) {
+            new Thread(() -> coverLauncher.createCover(user, video)).start();
+        }
         return Result.ok();
     }
 
