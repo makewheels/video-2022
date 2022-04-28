@@ -116,11 +116,12 @@ public class YoutubeService {
     /**
      * 搬运文件到国内对象存储
      */
-    public JSONObject transferFile(User user, File file, String businessUploadFinishCallbackUrl) {
+    public JSONObject transferFile(User user, File file, String downloadUrl, String businessUploadFinishCallbackUrl) {
         JSONObject body = new JSONObject();
         body.put("missionId", IdUtil.nanoId());
         body.put("key", file.getKey());
         body.put("fileId", file.getId());
+        body.put("downloadUrl", downloadUrl);
 
         //获取文件上传凭证地址
         body.put("getUploadCredentialsUrl", externalBaseUrl + "/file/getUploadCredentials" +
