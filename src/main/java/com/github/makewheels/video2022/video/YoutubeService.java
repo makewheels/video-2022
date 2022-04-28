@@ -73,7 +73,7 @@ public class YoutubeService {
     /**
      * 提交搬运任务
      */
-    public JSONObject submitMission(User user, Video video, File file) {
+    public JSONObject transferVideo(User user, Video video, File file) {
         JSONObject body = new JSONObject();
         body.put("missionId", IdUtil.nanoId());
         body.put("youtubeVideoId", video.getYoutubeVideoId());
@@ -96,7 +96,7 @@ public class YoutubeService {
                 + "?videoId=" + video.getId() + "&token=" + user.getToken());
 
         log.info("提交搬运任务，body = " + body.toJSONString());
-        String json = HttpUtil.post(youtubeServiceUrl + "/youtube/submitMission",
+        String json = HttpUtil.post(youtubeServiceUrl + "/youtube/transferVideo",
                 body.toJSONString());
         log.info("提交搬运任务，海外服务器返回：" + json);
         return JSONObject.parseObject(json);
