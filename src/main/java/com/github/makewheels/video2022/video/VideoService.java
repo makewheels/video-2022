@@ -560,7 +560,6 @@ public class VideoService {
      * @return
      */
     public Result<List<VideoSimpleInfo>> getVideoList(String userId, int skip, int limit) {
-        userId = "624effe6bef3cf0b1b776673";
         List<Video> videos = videoRepository.getVideoList(userId, skip, limit);
 
         List<VideoSimpleInfo> itemList = new ArrayList<>(videos.size());
@@ -569,6 +568,7 @@ public class VideoService {
             BeanUtils.copyProperties(video, item);
             item.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
             item.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
+            item.setCoverUrl("https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png");
             itemList.add(item);
         });
         return Result.ok(itemList);
