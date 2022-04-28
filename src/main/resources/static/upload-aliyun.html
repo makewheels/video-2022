@@ -180,7 +180,7 @@
             headers: {"token": localStorage.token}
         }).then(function (res) {
             //通知视频 源文件上传完成
-            axios.get("/video/originalFileUploadFinish?body=" + videoId, {
+            axios.get("/video/originalFileUploadFinish?videoId=" + videoId, {
                 headers: {"token": localStorage.token}
             }).then(function (res) {
                 text_progress.innerText = "上传已完成";
