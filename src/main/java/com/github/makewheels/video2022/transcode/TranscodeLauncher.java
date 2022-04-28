@@ -213,8 +213,6 @@ public class TranscodeLauncher {
         video.setStatus(VideoStatus.TRANSCODING);
         mongoTemplate.save(video);
 
-
-
         //开始转码，首先一定会发起720p的转码
         transcodeSingleResolution(user, video, Resolution.R_720P);
 

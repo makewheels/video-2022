@@ -1,10 +1,13 @@
 package com.github.makewheels.video2022.cover;
 
+import cn.hutool.core.io.file.FileNameUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baidubce.services.media.model.CreateThumbnailJobResponse;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileStatus;
+import com.github.makewheels.video2022.file.FileType;
 import com.github.makewheels.video2022.file.S3Provider;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.YoutubeService;
@@ -19,6 +22,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Date;
 
+/**
+ * 发起截帧
+ */
 @Service
 @Slf4j
 public class CoverLauncher {
@@ -30,6 +36,8 @@ public class CoverLauncher {
     @Resource
     private YoutubeService youtubeService;
 
+    @Value("${external-base-url}")
+    private String externalBaseUrl;
     @Value("${baidu.bos.accessBaseUrl}")
     private String baiduBosAccessBaseUrl;
     @Value("${baidu.bos.cdnBaseUrl}")
@@ -60,6 +68,7 @@ public class CoverLauncher {
         cover.setVideoId(videoId);
         cover.setStatus(VideoStatus.CREATED);
         cover.setSourceKey(sourceKey);
+        mongoTemplate.save(cover);
 
         File file = new File();
         file.setCreateTime(new Date());
@@ -80,6 +89,7 @@ public class CoverLauncher {
             }
         }
 
+        mongoTemplate.save(cover);
         //更新video的封面地址coverUrl
         video.setCoverUrl(cover.getCdnUrl());
         mongoTemplate.save(video);
@@ -89,11 +99,41 @@ public class CoverLauncher {
      * 生成封面：youtube搬运
      */
     private void handleYoutubeCover(User user, Video video, Cover cover, File file) {
+        String userId = user.getId();
+        String videoId = video.getId();
+        String coverId = cover.getId();
+        String videoProvider = video.getProvider();
+        cover.setProvider(CoverProvider.YOUTUBE);
+        //获取youtube下载url
+        JSONObject snippet = video.getYoutubeVideoInfo().getJSONObject("snippet");
+        String downloadUrl = snippet.getJSONObject("thumbnails").getJSONObject("standard").getString("url");
+        //设置cover
+        String extension = FileNameUtil.extName(downloadUrl);
+        cover.setExtension(extension);
+        String key = PathUtil.getS3VideoPrefix(userId, videoId) + "/cover/" + coverId + extension;
+        cover.setKey(key);
+        if (videoProvider.equals(S3Provider.ALIYUN_OSS)) {
+            cover.setAccessUrl(aliyunOssAccessBaseUrl + key);
+            cover.setCdnUrl(aliyunOssCdnBaseUrl + key);
+        }
 
+        //设置file
+        file.setKey(key);
+        file.setExtension(extension);
+        file.setOriginalFilename(FileNameUtil.getName(downloadUrl));
+        file.setType(FileType.COVER);
+        file.setProvider(videoProvider);
+        file.setVideoType(video.getType());
+        mongoTemplate.save(file);
+
+        //发起请求，搬运youtube封面
+        String businessUploadFinishCallbackUrl = externalBaseUrl + "/cover/youtubeUploadFinish"
+                + "?coverId=" + coverId + "&token=" + user.getToken();
+        youtubeService.transferFile(user, file, downloadUrl, businessUploadFinishCallbackUrl);
     }
 
     /**
-     * 生成封面：阿里云云函数
+     * 生成封面：阿里云云函数，ffmpeg截帧
      */
     private void handleCloudFunctionCover(User user, Video video, Cover cover, File file) {
 
@@ -107,9 +147,9 @@ public class CoverLauncher {
         String videoId = video.getId();
         String sourceKey = video.getOriginalFileKey();
         cover.setExtension("jpg");
-        cover.setProvider(S3Provider.BAIDU_BOS);
+        cover.setProvider(CoverProvider.BAIDU_MCP);
 
-        String targetKeyPrefix = PathUtil.getS3VideoPrefix(userId, videoId) + "/cover/" + videoId;
+        String targetKeyPrefix = PathUtil.getS3VideoPrefix(userId, videoId) + "/cover/" + cover.getId();
         CreateThumbnailJobResponse thumbnailJob = baiduCoverService.createThumbnailJob(sourceKey, targetKeyPrefix);
         log.info("通过百度云发起截帧任务：CreateThumbnailJobResponse = " + JSON.toJSONString(thumbnailJob));
 
@@ -124,6 +164,5 @@ public class CoverLauncher {
         mongoTemplate.save(cover);
         //再次查询，更新状态
         cover.setStatus(baiduCoverService.getThumbnailJob(thumbnailJobId).getJobStatus());
-        mongoTemplate.save(cover);
     }
 }
