@@ -188,7 +188,7 @@ public class VideoService {
                     mongoTemplate.save(video);
                 }
                 //提交任务给海外服务器
-                youtubeService.submitMission(user, video, file);
+                youtubeService.transferVideo(user, video, file);
 
                 //获取视频信息，保存title和description到数据库
                 JSONObject youtubeVideoInfo = youtubeService.getVideoInfo(video.getYoutubeVideoId());
