@@ -48,7 +48,8 @@ public class CdnService {
         List<String> urlList = M3u8Util.getUrlListFromM3u8(transcode.getM3u8CdnUrl());
         request.put("urlList", urlList);
         request.put("callbackUrl", internalBaseUrl + "/cdn/onSoftRoutePrefetchFinish");
-        log.info("通知软路由预热 " + transcode.getResolution() + ", size = " + urlList.size() + " " + request + request.toJSONString());
+        log.info("通知软路由预热 resolution = " + transcode.getResolution() + ", size = " + urlList.size()
+                + " " + request + request.toJSONString());
         String response = HttpUtil.post(cdnPrefetchUrl, request.toJSONString());
         log.info("请求预热，软路由回复：" + response);
     }
@@ -70,9 +71,9 @@ public class CdnService {
      * @return
      */
     private void aliyunCdnPrefetch(Transcode transcode) throws Exception {
-        log.info("阿里云cdn预热 " + transcode.getId());
+        log.info("阿里云cdn预热 transcodeId = {}", transcode.getId());
         List<String> urlList = M3u8Util.getUrlListFromM3u8(transcode.getM3u8CdnUrl());
-        log.info("urlList长度 = " + urlList.size());
+        log.info("预热urlList长度 = " + urlList.size());
         Config config = new Config()
                 .setAccessKeyId(Base64.decodeStr(aliyunCdnAccessKeyId))
                 .setAccessKeySecret(Base64.decodeStr(aliyunCdnSecretKey));
@@ -91,7 +92,7 @@ public class CdnService {
             request.setObjectPath(listForRequest.stream()
                     .map(e -> e + "\n").collect(Collectors.joining()));
             PushObjectCacheResponse response = client.pushObjectCache(request);
-            log.info("阿里云发起预热cdn请求: size = {}, response = {}", size, JSON.toJSONString(response));
+            log.info("发起阿里云预热cdn: size = {}, response = {}", size, JSON.toJSONString(response));
         }
     }
 
