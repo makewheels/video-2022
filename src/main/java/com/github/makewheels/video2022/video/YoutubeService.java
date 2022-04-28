@@ -89,7 +89,7 @@ public class YoutubeService {
         body.put("missionId", IdUtil.nanoId());
         body.put("youtubeVideoId", video.getYoutubeVideoId());
         body.put("key", file.getKey());
-        body.put("provider", video.getProvider());
+        body.put("provider", file.getProvider());
         body.put("fileId", file.getId());
         body.put("watchId", video.getWatchId());
         body.put("videoId", video.getId());
@@ -120,6 +120,7 @@ public class YoutubeService {
         JSONObject body = new JSONObject();
         body.put("missionId", IdUtil.nanoId());
         body.put("key", file.getKey());
+        body.put("provider", file.getProvider());
         body.put("fileId", file.getId());
         body.put("downloadUrl", downloadUrl);
 
@@ -135,7 +136,7 @@ public class YoutubeService {
         body.put("businessUploadFinishCallbackUrl", businessUploadFinishCallbackUrl);
 
         log.info("提交搬运文件任务，body = " + body.toJSONString());
-        String json = HttpUtil.post(youtubeServiceUrl + "/youtube/transferVideo",
+        String json = HttpUtil.post(youtubeServiceUrl + "/youtube/transferFile",
                 body.toJSONString());
         log.info("提交搬运文件任务，海外服务器返回：" + json);
         return JSONObject.parseObject(json);

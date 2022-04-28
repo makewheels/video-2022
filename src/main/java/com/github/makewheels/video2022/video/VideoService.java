@@ -158,7 +158,7 @@ public class VideoService {
 
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
         if (videoType.equals(VideoType.YOUTUBE)) {
-            new Thread(() -> handleYoutubeOnCreate(video, user, videoFile)).start();
+            new Thread(() -> handleCreateYoutube(video, user, videoFile)).start();
         }
 
         JSONObject response = new JSONObject();
@@ -177,7 +177,7 @@ public class VideoService {
      * @param user
      * @param videoFile
      */
-    private void handleYoutubeOnCreate(Video video, User user, File videoFile) {
+    private void handleCreateYoutube(Video video, User user, File videoFile) {
         String extension = youtubeService.getFileExtension(video.getYoutubeVideoId());
         if (!videoFile.getExtension().equals(extension)) {
             //更新file
@@ -343,7 +343,6 @@ public class VideoService {
             BeanUtils.copyProperties(video, item);
             item.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
             item.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
-            item.setCoverUrl("https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png");
             itemList.add(item);
         });
         return Result.ok(itemList);

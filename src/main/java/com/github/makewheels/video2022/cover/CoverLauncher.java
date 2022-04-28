@@ -12,7 +12,6 @@ import com.github.makewheels.video2022.file.S3Provider;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.YoutubeService;
 import com.github.makewheels.video2022.video.bean.Video;
-import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,7 +65,7 @@ public class CoverLauncher {
         cover.setCreateTime(new Date());
         cover.setUserId(userId);
         cover.setVideoId(videoId);
-        cover.setStatus(VideoStatus.CREATED);
+        cover.setStatus(CoverStatus.CREATED);
         cover.setSourceKey(sourceKey);
         mongoTemplate.save(cover);
 
@@ -110,7 +109,7 @@ public class CoverLauncher {
         //设置cover
         String extension = FileNameUtil.extName(downloadUrl);
         cover.setExtension(extension);
-        String key = PathUtil.getS3VideoPrefix(userId, videoId) + "/cover/" + coverId + extension;
+        String key = PathUtil.getS3VideoPrefix(userId, videoId) + "/cover/" + file.getId() + "." + extension;
         cover.setKey(key);
         if (videoProvider.equals(S3Provider.ALIYUN_OSS)) {
             cover.setAccessUrl(aliyunOssAccessBaseUrl + key);
@@ -127,8 +126,9 @@ public class CoverLauncher {
         mongoTemplate.save(file);
 
         //发起请求，搬运youtube封面
-        String businessUploadFinishCallbackUrl = externalBaseUrl + "/cover/youtubeUploadFinish"
+        String businessUploadFinishCallbackUrl = externalBaseUrl + "/cover/youtubeUploadFinishCallback"
                 + "?coverId=" + coverId + "&token=" + user.getToken();
+        log.info("发起youtube搬运封面请求：downloadUrl = {}", downloadUrl);
         youtubeService.transferFile(user, file, downloadUrl, businessUploadFinishCallbackUrl);
     }
 
