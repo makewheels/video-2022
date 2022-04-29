@@ -163,7 +163,7 @@ public class VideoService {
 
         JSONObject response = new JSONObject();
         response.put("fileId", fileId);
-        response.put("videoId", video);
+        response.put("videoId", videoId);
         response.put("watchId", watchId);
         response.put("watchUrl", watchUrl);
         response.put("shortUrl", shortUrl);
