@@ -192,7 +192,7 @@
                 //如果是youtube搬运视频，使用publish time
                 if (data.type === "USER_UPLOAD") {
                     document.getElementById("createTime").innerText = "发布时间：" + data.createTimeString;
-                } else if (data.type === "USER_UPLOAD") {
+                } else if (data.type === "YOUTUBE") {
                     document.getElementById("createTime").innerText = "发布时间：" + data.youtubePublishTimeString;
                 }
                 document.getElementById("description").innerText = data.description;
