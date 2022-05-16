@@ -108,7 +108,7 @@ public class CdnService {
         if (StringUtils.equalsAny(transcodeProvider,
                 TranscodeProvider.ALIYUN_CLOUD_FUNCTION, TranscodeProvider.ALIYUN_MPS)) {
             try {
-                aliyunCdnPrefetch(transcode);
+//                aliyunCdnPrefetch(transcode);
             } catch (Exception e) {
                 e.printStackTrace();
             }
