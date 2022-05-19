@@ -368,6 +368,7 @@ public class VideoService {
         }
         //保存观看记录
         WatchLog watchLog = new WatchLog();
+        watchLog.setCreateTime(new Date());
         String ip = request.getRemoteAddr();
         watchLog.setIp(ip);
 
