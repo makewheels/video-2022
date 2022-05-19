@@ -18,6 +18,7 @@ import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
+import com.github.makewheels.video2022.utils.IpUtil;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.bean.VideoDetail;
@@ -366,9 +367,15 @@ public class VideoService {
         }
         //保存观看记录
         WatchLog watchLog = new WatchLog();
-        watchLog.setIp(request.getRemoteAddr());
-        watchLog.setUserAgent(request.getHeader("User-Agent"));
+        String ip = request.getRemoteAddr();
+        watchLog.setIp(ip);
 
+        //查询ip归属地
+        JSONObject ipResponse = IpUtil.queryIp(ip);
+        JSONObject ipResult = ipResponse.getJSONObject("result");
+        watchLog.setIpInfo(ipResult);
+
+        watchLog.setUserAgent(request.getHeader("User-Agent"));
         watchLog.setVideoId(videoId);
         watchLog.setClientId(clientId);
         watchLog.setSessionId(sessionId);
@@ -376,6 +383,13 @@ public class VideoService {
         mongoTemplate.save(watchLog);
         //增加video观看次数
         videoRepository.addWatchCount(videoId);
+
+        //推送钉钉
+        String province = ipResult.getString("province");
+        String city = ipResult.getString("city");
+        String district = ipResult.getString("district");
+        log.info("观看记录：videoId = {}, {} {} {}", videoId, province, city, district);
+
         return Result.ok();
     }
 
