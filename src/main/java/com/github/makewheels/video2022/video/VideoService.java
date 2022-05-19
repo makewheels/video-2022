@@ -388,7 +388,7 @@ public class VideoService {
         String province = ipResult.getString("province");
         String city = ipResult.getString("city");
         String district = ipResult.getString("district");
-        log.info("观看记录：videoId = {}, {} {} {}", videoId, province, city, district);
+        log.info("观看记录：videoId = {},{} {} {} {}", ip, videoId, province, city, district);
 
         return Result.ok();
     }
