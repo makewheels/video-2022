@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.watch;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,4 +18,6 @@ public class WatchLog {
     private String sessionId;
     private String userAgent;
     private Date createTime;
+
+    private JSONObject ipInfo;
 }
