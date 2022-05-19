@@ -46,7 +46,7 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
-            <version>5.7.22</version>
+            <version>5.8.0</version>
         </dependency>
 
         <dependency>
@@ -115,6 +115,18 @@
             <groupId>com.aliyun</groupId>
             <artifactId>cdn20180510</artifactId>
             <version>1.0.9</version>
+        </dependency>
+
+        <!--钉钉-->
+        <dependency>
+            <groupId>net.guerlab.cloud.dingtalk</groupId>
+            <artifactId>guerlab-cloud-dingtalk-core</artifactId>
+            <version>2022.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>alibaba-dingtalk-service-sdk</artifactId>
+            <version>2.0.0</version>
         </dependency>
 
     </dependencies>
