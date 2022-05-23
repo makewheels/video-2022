@@ -95,11 +95,10 @@
         var flagPc = true;
         for (var v = 0; v < Agents.length; v++) {
             if (userAgentInfo.indexOf(Agents[v]) > 0) {
-                flagPc = false;
-                break;
+                return false;
             }
-            return flagPc;
         }
+        return true;
     }
 
     //console.log(flag) //true为PC端，false为手机端
