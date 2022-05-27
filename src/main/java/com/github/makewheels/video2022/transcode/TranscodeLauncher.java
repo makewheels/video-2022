@@ -103,6 +103,12 @@ public class TranscodeLauncher {
         } else if (isResolutionOverThanTarget(width, height, resolution)) {
             log.info("决定用谁转码：分辨率OverThanTarget，用阿里云MPS转码, videoId = " + videoId);
             transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
+
+            //如果码率超标，用阿里云压缩码率
+        } else if (video.getBitrate() > 12000) {
+            log.info("决定用谁转码：码率超标，用阿里云MPS转码, videoId = " + videoId);
+            transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
+
             //如果，是264，分辨率也不用改，但是是百度对象存储，那还得用百度，因为云函数只有阿里云
         } else if (video.getProvider().equals(S3Provider.BAIDU_BOS)) {
             log.info("决定用谁转码：因为文件在百度对象存储，就用百度MCP转码, videoId = " + videoId);
@@ -193,6 +199,7 @@ public class TranscodeLauncher {
             video.setDuration((long) (Double.parseDouble(properties.getDuration()) * 1000));
             video.setHeight(Integer.parseInt(properties.getHeight()));
             video.setWidth(Integer.parseInt(properties.getWidth()));
+            video.setBitrate((int) Double.parseDouble(properties.getBitrate()));
             SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreams streams
                     = properties.getStreams();
             video.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
@@ -207,6 +214,7 @@ public class TranscodeLauncher {
             video.setHeight(mediaInfo.getVideo().getHeightInPixel());
             video.setVideoCodec(mediaInfo.getVideo().getCodec());
             video.setAudioCodec(mediaInfo.getAudio().getCodec());
+            video.setBitrate(mediaInfo.getVideo().getBitRateInBps() + mediaInfo.getAudio().getBitRateInBps());
         }
 
         //更新数据库video状态

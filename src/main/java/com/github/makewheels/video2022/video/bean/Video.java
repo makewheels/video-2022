@@ -37,6 +37,7 @@ public class Video {
     private Integer height;
     private String videoCodec;
     private String audioCodec;
+    private Integer bitrate;
 
     @Indexed
     private String type;
