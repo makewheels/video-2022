@@ -8,14 +8,15 @@
            maximum-scale=1, minimum-scale=1, user-scalable=no"/>
 
     <title id="title">播放页</title>
-    <script src="https://unpkg.com/axios@0.26.1/dist/axios.min.js"></script>
+<!--    <script src="https://unpkg.com/axios@0.26.1/dist/axios.min.js"></script>-->
+    <script src="https://production-bucket.oss-cn-beijing.aliyuncs.com/dist/axios/axios-0.26.1.min.js"></script>
 
     <!--    <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.9.19/skins/default/aliplayer-min.css"/>-->
     <!--    <script type="text/javascript" charset="utf-8"-->
     <!--            src="https://g.alicdn.com/de/prismplayer/2.9.19/aliplayer-min.js"></script>-->
 
     <!--引入微信sdk，解决自动播放问题-->
-    <script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+<!--    <script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>-->
 
     <!--腾讯云播放器-->
     <link href="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/tcplayer.min.css" rel="stylesheet"/>
@@ -46,21 +47,21 @@
 
 <script>
     function autoPlay() {
-        wx.config({
-            // 配置信息, 即使不正确也能使用 wx.ready
-            debug: false,
-            appId: '',
-            timestamp: 1,
-            nonceStr: '',
-            signature: '',
-            jsApiList: []
-        });
+        // wx.config({
+        //     // 配置信息, 即使不正确也能使用 wx.ready
+        //     debug: false,
+        //     appId: '',
+        //     timestamp: 1,
+        //     nonceStr: '',
+        //     signature: '',
+        //     jsApiList: []
+        // });
 
         // let video = document.getElementById("player-con").getElementsByTagName("video")[0];
         let video = document.getElementById("player-container-id");
-        wx.ready(function () {
-            video.play();
-        });
+        // wx.ready(function () {
+        //     video.play();
+        // });
 
         document.addEventListener('WeixinJSBridgeReady', function () {
             video.play();
