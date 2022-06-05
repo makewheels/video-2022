@@ -114,6 +114,6 @@ public class CdnService {
             }
         }
         //发起软路由预热
-        softRoutePrefetch(transcode);
+//        softRoutePrefetch(transcode);
     }
 }
