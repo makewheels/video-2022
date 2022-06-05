@@ -303,7 +303,12 @@ public class VideoService {
         for (Transcode transcode : transcodeList) {
             PlayUrl playUrl = new PlayUrl();
             playUrl.setResolution(transcode.getResolution());
-            playUrl.setUrl(transcode.getM3u8CdnUrl());
+//            playUrl.setUrl(transcode.getM3u8CdnUrl());
+            //2022年6月5日21:50:10
+            //总有观众说卡顿，我怀疑是cdn回源慢，虽然我软路由预热，但是也卡，
+            //我还试过，压缩更低的码率，也是不行，
+            //我再试试直连，看看有没有改善
+            playUrl.setUrl(transcode.getM3u8AccessUrl());
             playUrlList.add(playUrl);
         }
         watchInfo.setPlayUrlList(playUrlList);
