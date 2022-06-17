@@ -105,7 +105,7 @@ public class TranscodeLauncher {
             transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
 
             //如果码率超标，用阿里云压缩码率
-        } else if (video.getBitrate() > 16000) {
+        } else if (video.getBitrate() > 18000) {
             log.info("决定用谁转码：码率超标，用阿里云MPS转码, videoId = " + videoId);
             transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
 
