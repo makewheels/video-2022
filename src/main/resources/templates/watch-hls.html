@@ -79,12 +79,15 @@
     let player;
 
     //根据url播放
-    function playByM3u8Url(m3u8Url) {
+    function playByM3u8Url(m3u8Url, time) {
         currentUrl = m3u8Url;
         if (player == null) {
             player = TCPlayer('player-container-id', {autoplay: true});
         }
         player.src(m3u8Url);
+        player.ready(function () {
+            player.currentTime(time);
+        });
     }
 
     //加载视频
@@ -118,15 +121,15 @@
                 //判断视频状态，如果已就绪，就创建播放器。如果还没就绪，就提示
                 if (data.videoStatus === "READY") {
                     //先以1080p播放
-                    playByM3u8Url(HD);
+                    playByM3u8Url(HD, 0);
                     currentResolution.innerText = "1080p";
 
                     //如果只有一种分辨率，那就只播一个
                     if (playUrlList.length === 1) {
                         if (HD != null) {
-                            playByM3u8Url(HD);
+                            playByM3u8Url(HD, 0);
                         } else {
-                            playByM3u8Url(SD);
+                            playByM3u8Url(SD, 0);
                         }
                         //隐藏分辨率按钮组
                         resolutionGroups.style.display = "none";
@@ -136,13 +139,13 @@
                             //如果当前不是HD，那就切换成HD播放
                             if (currentUrl !== HD) {
                                 currentResolution.innerText = "1080p";
-                                playByM3u8Url(HD);
+                                playByM3u8Url(HD, player.currentTime());
                             }
                         });
                         btn720.addEventListener("click", function () {
                             if (currentUrl !== SD) {
                                 currentResolution.innerText = "720p";
-                                playByM3u8Url(SD);
+                                playByM3u8Url(SD, player.currentTime());
                             }
                         });
                     }
