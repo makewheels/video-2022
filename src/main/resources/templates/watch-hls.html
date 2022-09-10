@@ -85,6 +85,7 @@
             player = TCPlayer('player-container-id', {autoplay: true});
         }
         player.src(m3u8Url);
+        player.play();
         player.ready(function () {
             player.currentTime(time);
         });
