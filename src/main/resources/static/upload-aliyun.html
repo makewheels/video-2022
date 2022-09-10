@@ -128,7 +128,7 @@
     //一键复制按钮
     btn_copy.addEventListener("click", function () {
         let content = "【" + input_title.value + "】" + "\n" + shortUrl;
-        navigator.clipboard.writeText(copyText.value);
+        navigator.clipboard.writeText(content);
     });
 
     function updateProgress(state) {
