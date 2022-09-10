@@ -221,12 +221,13 @@ public class TranscodeLauncher {
         video.setStatus(VideoStatus.TRANSCODING);
         mongoTemplate.save(video);
 
-        //发起转码，2022年5月16日22:49:36
-        //现在的转码策略改为，只转一个
+        //开始转码，首先一定会发起720p的转码
+        transcodeSingleResolution(user, video, Resolution.R_720P);
+
+        //如果宽高大于1280*720，再次发起1080p转码
         if (isResolutionOverThan720p(video.getWidth(), video.getHeight())) {
             transcodeSingleResolution(user, video, Resolution.R_1080P);
-        } else {
-            transcodeSingleResolution(user, video, Resolution.R_720P);
         }
+
     }
 }
