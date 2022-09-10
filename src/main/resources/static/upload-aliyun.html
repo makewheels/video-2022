@@ -127,7 +127,7 @@
 
     //一键复制按钮
     btn_copy.addEventListener("click", function () {
-        let content = "【" + input_title.value + "】" + "\n" + shortUrl;
+        let content = "【" + input_title.value + "】" + "\n" + shortUrl.value;
         navigator.clipboard.writeText(content);
     });
 
