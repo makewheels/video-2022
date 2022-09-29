@@ -143,7 +143,6 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
-                    <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:29912</jvmArguments>
                 </configuration>
             </plugin>
         </plugins>
