@@ -128,7 +128,6 @@
             <artifactId>alibaba-dingtalk-service-sdk</artifactId>
             <version>2.0.0</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -144,6 +143,7 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                    <jvmArguments>-Xdebug -Xrunjdwp:transport=dt_socket,address=29912,server=y,suspend=n</jvmArguments>
                 </configuration>
             </plugin>
         </plugins>
