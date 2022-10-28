@@ -5,10 +5,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QueryJobListResponseBody;
 import com.baidubce.services.media.model.GetTranscodingJobResponse;
 import com.github.makewheels.video2022.cdn.CdnService;
-import com.github.makewheels.video2022.response.Result;
+import com.github.makewheels.video2022.cover.BaiduCoverService;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
-import com.github.makewheels.video2022.cover.BaiduCoverService;
+import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
@@ -205,7 +205,7 @@ public class TranscodeCallbackService {
         //从数据库中查出，该视频对应的所有转码任务
         List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
         //统计已完成数量
-        int completeCount = (int) transcodeList.stream().filter(Transcode::isFinishStatus).count();
+        long completeCount = transcodeList.stream().filter(Transcode::isFinishStatus).count();
         String videoStatus;
         //如果是部分完成
         if (completeCount > 0 && completeCount != transcodeList.size()) {
