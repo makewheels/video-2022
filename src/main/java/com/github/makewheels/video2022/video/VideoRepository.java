@@ -59,11 +59,7 @@ public class VideoRepository {
     public List<Video> getExpiredVideos(int skip, int limit) {
         Query query = Query.query(Criteria.where("isPermanent").is(false)
                         .and("expireTime").lt(new Date()))
-                .skip(skip)
-                .limit(limit);
-        query.fields().exclude("mediaInfo", "youtubeVideoInfo", "description",
-                "originalFileId", "originalFileKey", " width", "height",
-                "videoCodec", "audioCodec");
+                .skip(skip).limit(limit);
         return mongoTemplate.find(query, Video.class);
     }
 }
