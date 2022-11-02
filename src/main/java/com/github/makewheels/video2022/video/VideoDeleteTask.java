@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,10 +32,15 @@ public class VideoDeleteTask {
             String transcodePath = PathUtil.getS3TranscodePrefix(video.getUserId(), video.getId());
             //列举文件
             List<OSSObjectSummary> objects = fileService.listObjects(transcodePath);
-            List<String> keys = objects.stream()
-                    .map(OSSObjectSummary::getKey).collect(Collectors.toList());
+            List<String> keys = objects.stream().map(OSSObjectSummary::getKey).collect(Collectors.toList());
+            //执行删除
             List<String> deletedKeys = fileService.deleteObjects(keys);
             log.info("删除视频: deletedKeys = {}", JSON.toJSONString(deletedKeys));
+
+            //更新视频状态
+            video.setIsFilesDeleted(true);
+            video.setDeleteTime(new Date());
+            videoService.save(video);
         }
     }
 }
