@@ -7,7 +7,7 @@ import com.aliyun.oss.ClientBuilderConfiguration;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.common.comm.Protocol;
-import com.aliyun.oss.model.OSSObject;
+import com.aliyun.oss.model.*;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.auth.sts.AssumeRoleRequest;
 import com.aliyuncs.auth.sts.AssumeRoleResponse;
@@ -16,6 +16,9 @@ import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class AliyunOssService {
@@ -46,7 +49,6 @@ public class AliyunOssService {
 
     public boolean doesObjectExist(String key) {
         return getClient().doesObjectExist(bucket, key);
-
     }
 
     public JSONObject getUploadCredentials(String key) {
@@ -83,4 +85,35 @@ public class AliyunOssService {
         credentials.put("expiration", responseCredentials.getExpiration());
         return credentials;
     }
+
+    /**
+     * 列列举所有文件，内部分页遍历所有文件
+     */
+    public List<OSSObjectSummary> listObjects(String prefix) {
+        List<OSSObjectSummary> objects = new ArrayList<>();
+
+        String nextContinuationToken = null;
+        ListObjectsV2Result result;
+        do {
+            ListObjectsV2Request listObjectsV2Request = new ListObjectsV2Request(bucket).withMaxKeys(1000);
+            listObjectsV2Request.setContinuationToken(nextContinuationToken);
+            result = getClient().listObjectsV2(listObjectsV2Request);
+
+            objects.addAll(result.getObjectSummaries());
+
+            nextContinuationToken = result.getNextContinuationToken();
+        } while (result.isTruncated());
+        return objects;
+    }
+
+    /**
+     * 删除文件
+     */
+    public List<String> deleteObjects(List<String> keys) {
+        DeleteObjectsResult deleteObjectsResult = getClient()
+                .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keys));
+        return deleteObjectsResult.getDeletedObjects();
+    }
+
+
 }

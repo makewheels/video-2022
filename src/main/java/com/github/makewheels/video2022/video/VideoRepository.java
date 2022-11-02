@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -28,7 +29,7 @@ public class VideoRepository {
      * @param limit
      * @return
      */
-    public List<Video> getVideoList(String userId, int skip, int limit) {
+    public List<Video> getVideosByUserId(String userId, int skip, int limit) {
         Query query = Query.query(Criteria.where("userId").is(userId))
                 //根据时间降序排列
                 .with(Sort.by(Sort.Direction.DESC, "createTime"))
@@ -50,5 +51,19 @@ public class VideoRepository {
         Update update = new Update();
         update.inc("watchCount");
         mongoTemplate.updateFirst(query, update, Video.class);
+    }
+
+    /**
+     * 获取过期视频
+     */
+    public List<Video> getExpiredVideos(int skip, int limit) {
+        Query query = Query.query(Criteria.where("isPermanent").is(false)
+                        .and("expireTime").lt(new Date()))
+                .skip(skip)
+                .limit(limit);
+        query.fields().exclude("mediaInfo", "youtubeVideoInfo", "description",
+                "originalFileId", "originalFileKey", " width", "height",
+                "videoCodec", "audioCodec");
+        return mongoTemplate.find(query, Video.class);
     }
 }

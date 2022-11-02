@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -143,6 +144,13 @@ public class VideoService {
         video.setShortUrl(shortUrl);
         video.setStatus(VideoStatus.CREATED);
         video.setCreateTime(new Date());
+
+        //视频过期时间
+        long expireTimeInMillis = Duration.ofDays(30).toMillis();
+        Date expireTime = new Date(System.currentTimeMillis() + expireTimeInMillis);
+        video.setExpireTime(expireTime);
+        video.setIsPermanent(false);
+
         mongoTemplate.save(video);
 
         String videoId = video.getId();
@@ -349,7 +357,7 @@ public class VideoService {
      * @return
      */
     public Result<List<VideoSimpleInfo>> getVideoList(String userId, int skip, int limit) {
-        List<Video> videos = videoRepository.getVideoList(userId, skip, limit);
+        List<Video> videos = videoRepository.getVideosByUserId(userId, skip, limit);
 
         List<VideoSimpleInfo> itemList = new ArrayList<>(videos.size());
         videos.forEach(video -> {
@@ -418,5 +426,12 @@ public class VideoService {
         String youtubeVideoId = youtubeService.getYoutubeVideoIdByUrl(youtubeUrl);
         JSONObject videoInfo = youtubeService.getVideoInfo(youtubeVideoId);
         return Result.ok(videoInfo);
+    }
+
+    /**
+     * 获取过期视频
+     */
+    public List<Video> getExpiredVideos(int skip, int limit) {
+        return videoRepository.getExpiredVideos(skip, limit);
     }
 }
