@@ -208,7 +208,7 @@ public class TranscodeCallbackService {
         long completeCount = transcodeList.stream().filter(Transcode::isFinishStatus).count();
         String videoStatus;
         //如果是部分完成
-        if (completeCount > 0 && completeCount != transcodeList.size()) {
+        if (completeCount > 0 && completeCount < transcodeList.size()) {
             videoStatus = VideoStatus.TRANSCODING_PARTLY_COMPLETED;
         } else if (completeCount == transcodeList.size()) {
             //如果全部完成

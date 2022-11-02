@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.file;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.OSSObject;
+import com.aliyun.oss.model.OSSObjectSummary;
 import com.baidubce.services.bos.model.BosObject;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.response.ErrorCode;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -163,4 +165,19 @@ public class FileService {
         mongoTemplate.save(file);
         return Result.ok();
     }
+
+    /**
+     * 列举文件
+     */
+    public List<OSSObjectSummary> listObjects(String prefix) {
+        return aliyunOssService.listObjects(prefix);
+    }
+
+    /**
+     * 删除文件
+     */
+    public List<String> deleteObjects(List<String> keys) {
+        return aliyunOssService.deleteObjects(keys);
+    }
+
 }
