@@ -47,4 +47,7 @@ public class File {
     @Indexed
     private Date uploadTime;
 
+    @Indexed
+    private Boolean isDeleted;
+
 }

@@ -59,7 +59,8 @@ public class Video {
     private Date expireTime;
     @Indexed
     private Boolean isPermanent;    //是否是永久视频
-    private Boolean isFilesDeleted; //是否已删除
+    private Boolean isOriginalFileDeleted;
+    private Boolean isTranscodeFilesDeleted;
     private Date deleteTime;        //什么时候删的
 
     private JSONObject mediaInfo;

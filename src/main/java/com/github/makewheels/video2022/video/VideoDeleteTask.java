@@ -31,14 +31,14 @@ public class VideoDeleteTask {
         for (Video video : videos) {
             String transcodePath = PathUtil.getS3TranscodePrefix(video.getUserId(), video.getId());
             //列举文件
-            List<OSSObjectSummary> objects = fileService.listObjects(transcodePath);
+            List<OSSObjectSummary> objects = fileService.listAllObjects(transcodePath);
             List<String> keys = objects.stream().map(OSSObjectSummary::getKey).collect(Collectors.toList());
             //执行删除
             List<String> deletedKeys = fileService.deleteObjects(keys);
             log.info("删除视频: deletedKeys = {}", JSON.toJSONString(deletedKeys));
 
             //更新视频状态
-            video.setIsFilesDeleted(true);
+            video.setIsTranscodeFilesDeleted(true);
             video.setDeleteTime(new Date());
             videoService.save(video);
         }

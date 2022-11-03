@@ -74,6 +74,7 @@ public class CoverLauncher {
         file.setStatus(FileStatus.CREATED);
         file.setUserId(userId);
         file.setVideoId(videoId);
+        file.setIsDeleted(false);
         mongoTemplate.save(file);
 
         //判断类型
