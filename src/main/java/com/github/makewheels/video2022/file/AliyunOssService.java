@@ -43,6 +43,9 @@ public class AliyunOssService {
         return ossClient;
     }
 
+    /**
+     * 获取单个文件
+     */
     public OSSObject getObject(String key) {
         return getClient().getObject(bucket, key);
     }
@@ -115,6 +118,5 @@ public class AliyunOssService {
                 .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keys));
         return deleteObjectsResult.getDeletedObjects();
     }
-
 
 }

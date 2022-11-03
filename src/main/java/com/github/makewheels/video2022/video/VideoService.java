@@ -440,4 +440,11 @@ public class VideoService {
     public void save(Video video) {
         mongoTemplate.save(video);
     }
+
+    /**
+     * 根据mongoId获取视频对象
+     */
+    public Video getById(String videoId) {
+        return mongoTemplate.findById(videoId, Video.class);
+    }
 }

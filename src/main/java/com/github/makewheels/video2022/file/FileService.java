@@ -181,4 +181,11 @@ public class FileService {
         return aliyunOssService.deleteObjects(keys);
     }
 
+    /**
+     * 获取单个文件
+     */
+    public OSSObject getObject(String key) {
+        return aliyunOssService.getObject(key);
+    }
+
 }
