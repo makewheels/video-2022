@@ -68,6 +68,7 @@ public class FileService {
         }
 
         file.setStatus(FileStatus.CREATED);
+        file.setIsDeleted(false);
         file.setCreateTime(new Date());
         mongoTemplate.save(file);
         return file;
@@ -167,10 +168,10 @@ public class FileService {
     }
 
     /**
-     * 列举文件
+     * 列举所有文件
      */
-    public List<OSSObjectSummary> listObjects(String prefix) {
-        return aliyunOssService.listObjects(prefix);
+    public List<OSSObjectSummary> listAllObjects(String prefix) {
+        return aliyunOssService.listAllObjects(prefix);
     }
 
     /**

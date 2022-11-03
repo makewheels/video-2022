@@ -150,7 +150,8 @@ public class VideoService {
         Date expireTime = new Date(System.currentTimeMillis() + expireTimeInMillis);
         video.setExpireTime(expireTime);
         video.setIsPermanent(false);
-        video.setIsFilesDeleted(false);
+        video.setIsOriginalFileDeleted(false);
+        video.setIsTranscodeFilesDeleted(false);
 
         mongoTemplate.save(video);
 

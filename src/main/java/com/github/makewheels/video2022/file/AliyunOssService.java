@@ -89,15 +89,16 @@ public class AliyunOssService {
     /**
      * 列列举所有文件，内部分页遍历所有文件
      */
-    public List<OSSObjectSummary> listObjects(String prefix) {
+    public List<OSSObjectSummary> listAllObjects(String prefix) {
         List<OSSObjectSummary> objects = new ArrayList<>();
 
         String nextContinuationToken = null;
         ListObjectsV2Result result;
         do {
-            ListObjectsV2Request listObjectsV2Request = new ListObjectsV2Request(bucket).withMaxKeys(1000);
-            listObjectsV2Request.setContinuationToken(nextContinuationToken);
-            result = getClient().listObjectsV2(listObjectsV2Request);
+            ListObjectsV2Request request = new ListObjectsV2Request(bucket).withMaxKeys(1000);
+            request.setContinuationToken(nextContinuationToken);
+            request.setPrefix(prefix);
+            result = getClient().listObjectsV2(request);
 
             objects.addAll(result.getObjectSummaries());
 
