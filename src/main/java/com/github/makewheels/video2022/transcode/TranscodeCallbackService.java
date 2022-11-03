@@ -3,15 +3,20 @@ package com.github.makewheels.video2022.transcode;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QueryJobListResponseBody;
+import com.aliyun.oss.model.OSSObject;
 import com.baidubce.services.media.model.GetTranscodingJobResponse;
 import com.github.makewheels.video2022.cdn.CdnService;
 import com.github.makewheels.video2022.cover.BaiduCoverService;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
+import com.github.makewheels.video2022.file.File;
+import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.file.FileType;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
+import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +49,10 @@ public class TranscodeCallbackService {
     private BaiduCoverService baiduCoverService;
     @Resource
     private CdnService cdnService;
+    @Resource
+    private FileService fileService;
+    @Resource
+    private VideoRepository videoRepository;
 
     /**
      * 处理百度视频转码回调
@@ -194,9 +203,6 @@ public class TranscodeCallbackService {
 
     /**
      * 当有一个转码job完成时回调
-     * 主要目的是：更新video状态
-     *
-     * @param transcode
      */
     public void onTranscodeFinish(Transcode transcode) {
         String videoId = transcode.getVideoId();
@@ -224,7 +230,7 @@ public class TranscodeCallbackService {
         }
         //当所有转码都完成了，也就是视频已就绪时
         if (StringUtils.equals(video.getStatus(), VideoStatus.READY)) {
-            onVideoReady(video);
+            saveS3File(transcode);
         }
         //判断如果是转码成功状态，请求软路由预热，
         //只有转码成功才预热，失败不预热
@@ -234,10 +240,33 @@ public class TranscodeCallbackService {
     }
 
     /**
-     * 当视频已就绪时
+     * 转码完成后，更新对象存储ts碎片
      */
-    public void onVideoReady(Video video) {
-        log.info("视频已就绪 videoId = " + video.getId());
+    public void saveS3File(Transcode transcode) {
+        String videoId = transcode.getVideoId();
+        Video video = videoRepository.getById(videoId);
+        String userId = video.getUserId();
+        String m3u8Key = transcode.getM3u8Key();
+
+        File m3u8File = new File();
+        m3u8File.setBaseInfo();
+
+        m3u8File.setKey(m3u8Key);
+        m3u8File.setType(FileType.TRANSCODE_M3U8);
+        m3u8File.setVideoId(videoId);
+        m3u8File.setVideoType(video.getType());
+        m3u8File.setUserId(userId);
+
+        //获取m3u8文件内容
+        OSSObject m3u8Object = fileService.getObject(m3u8Key);
+        m3u8File.setObjectInfo(m3u8Object);
+
+        mongoTemplate.save(m3u8File);
+
+        //获取所有ts碎片
+
+
+        //保存数据库
     }
 
 }

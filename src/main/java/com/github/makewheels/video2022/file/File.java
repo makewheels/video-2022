@@ -1,6 +1,9 @@
 package com.github.makewheels.video2022.file;
 
+import com.aliyun.oss.model.OSSObject;
+import com.aliyun.oss.model.ObjectMetadata;
 import lombok.Data;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -49,5 +52,22 @@ public class File {
 
     @Indexed
     private Boolean isDeleted;
+
+    public void setBaseInfo() {
+        createTime = new Date();
+        isDeleted = false;
+        status = FileStatus.READY;
+        provider = S3Provider.ALIYUN_OSS;
+    }
+
+    public void setObjectInfo(OSSObject object) {
+        String key = object.getKey();
+        ObjectMetadata metadata = object.getObjectMetadata();
+        etag = metadata.getETag();
+        size = metadata.getContentLength();
+        filename = FilenameUtils.getName(key);
+        extension = FilenameUtils.getExtension(key);
+        storageClass = metadata.getObjectStorageClass().toString();
+    }
 
 }
