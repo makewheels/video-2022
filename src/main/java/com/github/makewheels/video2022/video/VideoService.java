@@ -9,10 +9,7 @@ import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.cover.CoverRepository;
-import com.github.makewheels.video2022.file.File;
-import com.github.makewheels.video2022.file.FileService;
-import com.github.makewheels.video2022.file.FileStatus;
-import com.github.makewheels.video2022.file.S3Provider;
+import com.github.makewheels.video2022.file.*;
 import com.github.makewheels.video2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.transcode.Transcode;
@@ -43,9 +40,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -72,6 +69,8 @@ public class VideoService {
     private TranscodeRepository transcodeRepository;
     @Resource
     private WatchRepository watchRepository;
+    @Resource
+    private FileRepository fileRepository;
 
     @Value("${internal-base-url}")
     private String internalBaseUrl;
@@ -446,5 +445,27 @@ public class VideoService {
      */
     public Video getById(String videoId) {
         return mongoTemplate.findById(videoId, Video.class);
+    }
+
+    /**
+     * 根据转码对象获取m3u8内容
+     */
+    public String getM3u8Content(Transcode transcode) {
+        //根据transcodeId找到files
+        String transcodeId = transcode.getId();
+        List<File> files = fileRepository.findByTranscodeId(transcodeId);
+        Map<String, File> fileMap = files.stream().collect(
+                Collectors.toMap(File::getFilename, Function.identity()));
+
+        //拆解m3u8Content
+        List<String> lines = Arrays.asList(transcode.getM3u8Content().split("\n"));
+        for (int i = 0; i < lines.size(); i++) {
+            String filename = lines.get(i);
+            File file = fileMap.get(filename);
+            String url = "https://baidu.com/file/get?fileId=" + file.getId();
+            lines.set(i, url);
+        }
+
+        return "";
     }
 }
