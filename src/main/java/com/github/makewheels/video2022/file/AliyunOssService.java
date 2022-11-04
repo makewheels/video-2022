@@ -4,6 +4,7 @@ import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.ClientBuilderConfiguration;
+import com.aliyun.oss.HttpMethod;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.common.comm.Protocol;
@@ -17,7 +18,9 @@ import com.aliyuncs.profile.IClientProfile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -117,6 +120,14 @@ public class AliyunOssService {
         DeleteObjectsResult deleteObjectsResult = getClient()
                 .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keys));
         return deleteObjectsResult.getDeletedObjects();
+    }
+
+    /**
+     * 预签名下载文件
+     */
+    public String generatePresignedUrl(String key, Duration duration) {
+        Date expiration = new Date(System.currentTimeMillis() + duration.toMillis());
+        return getClient().generatePresignedUrl(bucket, key, expiration, HttpMethod.GET).toString();
     }
 
 }

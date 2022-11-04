@@ -43,6 +43,8 @@ public class Transcode {
 
     private JSONObject result;
 
+    private String m3u8;
+
     /**
      * 根据对应的provider判断是否是已结束状态
      *
