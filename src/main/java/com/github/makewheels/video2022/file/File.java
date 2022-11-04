@@ -53,7 +53,7 @@ public class File {
     @Indexed
     private Boolean isDeleted;
 
-    public void setBaseInfo() {
+    public void init() {
         createTime = new Date();
         isDeleted = false;
         status = FileStatus.READY;

@@ -230,7 +230,7 @@ public class TranscodeCallbackService {
         }
         //当所有转码都完成了，也就是视频已就绪时
         if (StringUtils.equals(video.getStatus(), VideoStatus.READY)) {
-            saveS3File(transcode);
+            saveS3TsFiles(transcode);
         }
         //判断如果是转码成功状态，请求软路由预热，
         //只有转码成功才预热，失败不预热
@@ -242,14 +242,14 @@ public class TranscodeCallbackService {
     /**
      * 转码完成后，更新对象存储ts碎片
      */
-    public void saveS3File(Transcode transcode) {
+    public void saveS3TsFiles(Transcode transcode) {
         String videoId = transcode.getVideoId();
         Video video = videoRepository.getById(videoId);
         String userId = video.getUserId();
         String m3u8Key = transcode.getM3u8Key();
 
         File m3u8File = new File();
-        m3u8File.setBaseInfo();
+        m3u8File.init();
 
         m3u8File.setKey(m3u8Key);
         m3u8File.setType(FileType.TRANSCODE_M3U8);
