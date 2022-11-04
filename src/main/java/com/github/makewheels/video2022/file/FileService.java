@@ -31,6 +31,9 @@ public class FileService {
     @Resource
     private BaiduBosService baiduBosService;
 
+    @Resource
+    private FileRepository fileRepository;
+
     @Value("${baidu.bos.accessBaseUrl}")
     private String baiduBosAccessBaseUrl;
     @Value("${baidu.bos.cdnBaseUrl}")
@@ -115,7 +118,7 @@ public class FileService {
      * @return
      */
     public Result<JSONObject> getUploadCredentials(User user, String fileId) {
-        File file = mongoTemplate.findById(fileId, File.class);
+        File file = fileRepository.findById(fileId);
         //如果文件不存在，或者token找不到用户
         if (file == null || user == null) return Result.error(ErrorCode.FAIL);
         //如果上传文件不属于该用户
@@ -143,7 +146,7 @@ public class FileService {
      * @return
      */
     public Result<Void> uploadFinish(User user, String fileId) {
-        File file = mongoTemplate.findById(fileId, File.class);
+        File file = fileRepository.findById(fileId);
         if (file == null) return Result.error(ErrorCode.FAIL);
         if (!StringUtils.equals(user.getId(), file.getUserId())) return Result.error(ErrorCode.FAIL);
 
