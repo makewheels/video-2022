@@ -1,9 +1,11 @@
 package com.github.makewheels.video2022.transcode;
 
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QueryJobListResponseBody;
 import com.aliyun.oss.model.OSSObject;
+import com.aliyun.oss.model.OSSObjectSummary;
 import com.baidubce.services.media.model.GetTranscodingJobResponse;
 import com.github.makewheels.video2022.cdn.CdnService;
 import com.github.makewheels.video2022.cover.BaiduCoverService;
@@ -20,12 +22,19 @@ import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 处理转码回调
@@ -230,7 +239,7 @@ public class TranscodeCallbackService {
         }
         //当所有转码都完成了，也就是视频已就绪时
         if (StringUtils.equals(video.getStatus(), VideoStatus.READY)) {
-            saveS3TsFiles(transcode);
+            saveS3Files(transcode);
         }
         //判断如果是转码成功状态，请求软路由预热，
         //只有转码成功才预热，失败不预热
@@ -242,7 +251,7 @@ public class TranscodeCallbackService {
     /**
      * 转码完成后，更新对象存储ts碎片
      */
-    public void saveS3TsFiles(Transcode transcode) {
+    public void saveS3Files(Transcode transcode) {
         String videoId = transcode.getVideoId();
         Video video = videoRepository.getById(videoId);
         String userId = video.getUserId();
@@ -260,13 +269,35 @@ public class TranscodeCallbackService {
         //获取m3u8文件内容
         OSSObject m3u8Object = fileService.getObject(m3u8Key);
         m3u8File.setObjectInfo(m3u8Object);
-
         mongoTemplate.save(m3u8File);
 
-        //获取所有ts碎片
+        String m3u8FileUrl = fileService.generatePresignedUrl(m3u8Key, Duration.ofMinutes(10));
+        String m3u8Content = HttpUtil.get(m3u8FileUrl);
+        transcode.setM3u8Content(m3u8Content);
+        mongoTemplate.save(transcode);
 
+        //获取所有ts碎片
+        String transcodeFolder = FilenameUtils.getPath(m3u8Key);
+        List<String> lines = Arrays.asList(m3u8Content.split("\n"));
+        lines = lines.stream().filter(e -> !e.startsWith("#")).collect(Collectors.toList());
+
+        //获取对象存储每一个文件
+        List<OSSObjectSummary> objects = fileService.listAllObjects(transcodeFolder);
+        Map<String, OSSObjectSummary> map = objects.stream().collect(
+                Collectors.toMap(e -> FilenameUtils.getName(e.getKey()), Function.identity()));
+
+        List<File> tsFiles = new ArrayList<>(lines.size());
+        //遍历每一个文件
+        for (String line : lines) {
+            File tsFile = new File();
+            tsFile.init();
+            OSSObjectSummary object = map.get(line);
+            tsFile.setObjectInfo(object);
+            tsFiles.add(tsFile);
+        }
 
         //保存数据库
+        mongoTemplate.save(tsFiles);
     }
 
 }

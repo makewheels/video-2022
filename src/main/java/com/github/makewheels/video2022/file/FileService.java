@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 
@@ -186,6 +187,13 @@ public class FileService {
      */
     public OSSObject getObject(String key) {
         return aliyunOssService.getObject(key);
+    }
+
+    /**
+     * 预签名下载文件
+     */
+    public String generatePresignedUrl(String key, Duration duration) {
+        return aliyunOssService.generatePresignedUrl(key, duration);
     }
 
 }
