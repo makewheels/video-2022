@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.file;
 
 import com.aliyun.oss.model.OSSObject;
+import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.ObjectMetadata;
 import lombok.Data;
 import org.apache.commons.io.FilenameUtils;
@@ -68,6 +69,15 @@ public class File {
         filename = FilenameUtils.getName(key);
         extension = FilenameUtils.getExtension(key);
         storageClass = metadata.getObjectStorageClass().toString();
+    }
+
+    public void setObjectInfo(OSSObjectSummary objectSummary) {
+        String key = objectSummary.getKey();
+        etag = objectSummary.getETag();
+        size = objectSummary.getSize();
+        filename = FilenameUtils.getName(key);
+        extension = FilenameUtils.getExtension(key);
+        storageClass = objectSummary.getStorageClass();
     }
 
 }
