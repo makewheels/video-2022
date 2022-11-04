@@ -13,6 +13,7 @@ import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.file.FileStatus;
 import com.github.makewheels.video2022.file.FileType;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
@@ -255,6 +256,7 @@ public class TranscodeCallbackService {
         String videoId = transcode.getVideoId();
         Video video = videoRepository.getById(videoId);
         String userId = video.getUserId();
+        String videoType = video.getType();
         String m3u8Key = transcode.getM3u8Key();
 
         File m3u8File = new File();
@@ -263,12 +265,13 @@ public class TranscodeCallbackService {
         m3u8File.setKey(m3u8Key);
         m3u8File.setType(FileType.TRANSCODE_M3U8);
         m3u8File.setVideoId(videoId);
-        m3u8File.setVideoType(video.getType());
+        m3u8File.setVideoType(videoType);
         m3u8File.setUserId(userId);
 
         //获取m3u8文件内容
         OSSObject m3u8Object = fileService.getObject(m3u8Key);
         m3u8File.setObjectInfo(m3u8Object);
+        log.info("保存m3u8File: {}", JSON.toJSONString(m3u8File));
         mongoTemplate.save(m3u8File);
 
         String m3u8FileUrl = fileService.generatePresignedUrl(m3u8Key, Duration.ofMinutes(10));
@@ -278,26 +281,38 @@ public class TranscodeCallbackService {
 
         //获取所有ts碎片
         String transcodeFolder = FilenameUtils.getPath(m3u8Key);
-        List<String> lines = Arrays.asList(m3u8Content.split("\n"));
-        lines = lines.stream().filter(e -> !e.startsWith("#")).collect(Collectors.toList());
+        List<String> filenames = Arrays.asList(m3u8Content.split("\n"));
+        filenames = filenames.stream().filter(e -> !e.startsWith("#")).sorted().collect(Collectors.toList());
 
         //获取对象存储每一个文件
         List<OSSObjectSummary> objects = fileService.listAllObjects(transcodeFolder);
-        Map<String, OSSObjectSummary> map = objects.stream().collect(
+        Map<String, OSSObjectSummary> ossMap = objects.stream().collect(
                 Collectors.toMap(e -> FilenameUtils.getName(e.getKey()), Function.identity()));
 
-        List<File> tsFiles = new ArrayList<>(lines.size());
-        //遍历每一个文件
-        for (String line : lines) {
+        List<File> tsFiles = new ArrayList<>(filenames.size());
+        //遍历每一个ts文件
+        for (String filename : filenames) {
             File tsFile = new File();
             tsFile.init();
-            OSSObjectSummary object = map.get(line);
-            tsFile.setObjectInfo(object);
+            tsFile.setType(FileType.TRANSCODE_TS);
+            tsFile.setUserId(userId);
+            tsFile.setVideoId(videoId);
+            tsFile.setVideoType(videoType);
+            tsFile.setStatus(FileStatus.READY);
+
+            tsFile.setTranscodeId(transcode.getId());
+            tsFile.setResolution(transcode.getResolution());
+            //63627b9666445c2fe81c648e-00004.ts -> 4
+            int tsSequence = Integer.parseInt(FilenameUtils.getBaseName(filename).split("-")[1]);
+            tsFile.setTsSequence(tsSequence);
+
+            tsFile.setObjectInfo(ossMap.get(filename));
             tsFiles.add(tsFile);
         }
 
         //保存数据库
-        mongoTemplate.save(tsFiles);
+        log.info("保存tsFiles, 总共 {} 个", tsFiles.size());
+        mongoTemplate.insertAll(tsFiles);
     }
 
 }

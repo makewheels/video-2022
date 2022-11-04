@@ -21,6 +21,16 @@ public class File {
     @Indexed
     private String videoId;
 
+    //ts视频碎片所属于哪一个转码，它的父亲，只有ts碎片文件才有
+    @Indexed
+    private String transcodeId;
+    //ts碎片，转码所属于哪个分辨率，只有ts碎片才有
+    @Indexed
+    private String resolution;
+    //ts碎片，在一个m3u8转码文件中的位置
+    @Indexed
+    private Integer tsSequence;
+
     //原始文件名，只有用户上传的视频源文件才有
     private String originalFilename;
     // 63627b7e66445c2fe81c648a.mp4
@@ -69,6 +79,7 @@ public class File {
         filename = FilenameUtils.getName(key);
         extension = FilenameUtils.getExtension(key);
         storageClass = metadata.getObjectStorageClass().toString();
+        uploadTime = metadata.getLastModified();
     }
 
     public void setObjectInfo(OSSObjectSummary objectSummary) {
@@ -78,6 +89,7 @@ public class File {
         filename = FilenameUtils.getName(key);
         extension = FilenameUtils.getExtension(key);
         storageClass = objectSummary.getStorageClass();
+        uploadTime = objectSummary.getLastModified();
     }
 
 }
