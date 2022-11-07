@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("file")
@@ -30,6 +31,17 @@ public class FileController {
     public Result<Void> uploadFinish(HttpServletRequest request, @RequestParam String fileId) {
         User user = userServiceClient.getUserByRequest(request);
         return fileService.uploadFinish(user, fileId);
+    }
+
+    @GetMapping("access")
+    public Result<Void> access(
+            HttpServletRequest request, HttpServletResponse response,
+            @RequestParam String videoId, @RequestParam String clientId, @RequestParam String sessionId,
+            @RequestParam String resolution, @RequestParam String fileId, @RequestParam String timestamp,
+            @RequestParam String nonce, @RequestParam String sign) {
+        User user = userServiceClient.getUserByRequest(request);
+        return fileService.access(request, response, videoId, clientId, resolution, fileId,
+                timestamp, nonce, sign);
     }
 
 }

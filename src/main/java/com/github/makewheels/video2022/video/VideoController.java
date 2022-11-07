@@ -92,7 +92,7 @@ public class VideoController {
      * 分页获取我的视频
      */
     @GetMapping("getMyVideoList")
-    public Result<List<VideoSimpleInfo>> getVideoList(
+    public Result<List<VideoSimpleInfo>> getMyVideoList(
             HttpServletRequest request, @RequestParam int skip, @RequestParam int limit) {
         User user = userServiceClient.getUserByRequest(request);
         return videoService.getVideoList(user.getId(), skip, limit);
@@ -122,6 +122,19 @@ public class VideoController {
             HttpServletRequest request, @RequestParam JSONObject body) {
         User user = userServiceClient.getUserByRequest(request);
         return videoService.getYoutubeVideoInfo(body);
+    }
+
+    /**
+     * 获取m3u8内容，里面是ts列表链接
+     */
+    @GetMapping("getM3u8Content")
+    public String getM3u8Content(
+            HttpServletRequest request, @RequestParam String videoId,
+            @RequestParam String clientId, @RequestParam String sessionId,
+            @RequestParam String transcodeId, @RequestParam String resolution,
+            @RequestParam String sign) {
+        User user = userServiceClient.getUserByRequest(request);
+        return videoService.getM3u8Content(user, videoId, clientId, sessionId, transcodeId, resolution, sign);
     }
 
 }

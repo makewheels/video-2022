@@ -13,6 +13,10 @@ public class TranscodeRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
+    public Transcode getById(String id) {
+        return mongoTemplate.findById(id, Transcode.class);
+    }
+
     public Transcode getByJobId(String jobId) {
         return mongoTemplate.findOne(Query.query(Criteria.where("jobId").is(jobId)), Transcode.class);
     }
