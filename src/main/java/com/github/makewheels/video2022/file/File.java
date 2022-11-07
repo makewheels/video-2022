@@ -73,6 +73,7 @@ public class File {
 
     public void setObjectInfo(OSSObject object) {
         String key = object.getKey();
+        this.key = key;
         ObjectMetadata metadata = object.getObjectMetadata();
         etag = metadata.getETag();
         size = metadata.getContentLength();
@@ -84,6 +85,7 @@ public class File {
 
     public void setObjectInfo(OSSObjectSummary objectSummary) {
         String key = objectSummary.getKey();
+        this.key = key;
         etag = objectSummary.getETag();
         size = objectSummary.getSize();
         filename = FilenameUtils.getName(key);

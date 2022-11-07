@@ -441,31 +441,40 @@ public class VideoService {
     }
 
     /**
-     * 根据mongoId获取视频对象
+     * 根据转码对象获取m3u8内容，返回String
      */
-    public Video getById(String videoId) {
-        return mongoTemplate.findById(videoId, Video.class);
-    }
+    public String getM3u8Content(
+            User user, String videoId, String clientId, String sessionId,
+            String transcodeId, String resolution, String sign) {
 
-    /**
-     * 根据转码对象获取m3u8内容
-     */
-    public String getM3u8Content(Transcode transcode) {
+        Transcode transcode = transcodeRepository.getById(transcodeId);
         //根据transcodeId找到files
-        String transcodeId = transcode.getId();
         List<File> files = fileRepository.findByTranscodeId(transcodeId);
         Map<String, File> fileMap = files.stream().collect(
                 Collectors.toMap(File::getFilename, Function.identity()));
 
+        String m3u8Content = transcode.getM3u8Content();
+        //TODO 这里需要缓存，key是transcodeId，value是Transcode
+        //TODO 还需要一个 files缓存
+
         //拆解m3u8Content
-        List<String> lines = Arrays.asList(transcode.getM3u8Content().split("\n"));
+        List<String> lines = Arrays.asList(m3u8Content.split("\n"));
         for (int i = 0; i < lines.size(); i++) {
-            String filename = lines.get(i);
-            File file = fileMap.get(filename);
-            String url = "https://baidu.com/file/get?fileId=" + file.getId();
+            String line = lines.get(i);
+            if (StringUtils.startsWith(line, "#")) continue;
+            File file = fileMap.get(line);
+            String url = internalBaseUrl + "/file/access?"
+                    + "videoId=" + transcode.getVideoId()
+                    + "&clientId=" + clientId
+                    + "&sessionId=" + sessionId
+                    + "&resolution=" + transcode.getResolution()
+                    + "&fileId=" + file.getId()
+                    + "&timestamp=" + System.currentTimeMillis()
+                    + "&nonce=" + IdUtil.nanoId()
+                    + "&sign=" + IdUtil.simpleUUID();
             lines.set(i, url);
         }
 
-        return "";
+        return StringUtils.join(lines, "\n");
     }
 }

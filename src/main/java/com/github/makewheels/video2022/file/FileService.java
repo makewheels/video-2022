@@ -17,6 +17,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Date;
 import java.util.List;
@@ -199,4 +202,20 @@ public class FileService {
         return aliyunOssService.generatePresignedUrl(key, duration);
     }
 
+    /**
+     * 重定向到阿里云对象存储
+     */
+    public Result<Void> access(
+            HttpServletRequest request, HttpServletResponse response, String videoId, String clientId,
+            String resolution, String fileId, String timestamp, String nonce, String sign) {
+        File file = fileRepository.findById(fileId);
+        String url = generatePresignedUrl(file.getKey(), Duration.ofHours(3));
+        response.setStatus(HttpServletResponse.SC_FOUND);
+        try {
+            response.sendRedirect(url);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return Result.ok();
+    }
 }
