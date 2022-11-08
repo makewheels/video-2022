@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 发起转码
@@ -134,6 +135,12 @@ public class TranscodeLauncher {
             transcode.setM3u8CdnUrl(baiduBosCdnBaseUrl + m3u8Key);
         }
         mongoTemplate.save(transcode);
+
+        //反向更新video的transcodeIds
+        List<String> transcodeIds = video.getTranscodeIds();
+        transcodeIds.add(transcodeId);
+        video.setTranscodeIds(transcodeIds);
+        mongoTemplate.save(video);
 
         //发起转码
         log.info("发起 " + resolution + " 转码：videoId = " + videoId + ", transcode-provider = " + transcodeProvider);

@@ -3,11 +3,13 @@ package com.github.makewheels.video2022.video.bean;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Document
@@ -58,14 +60,16 @@ public class Video {
     @Indexed
     private Date expireTime;
     @Indexed
-    private Boolean isPermanent;    //是否是永久视频
-    private Boolean isOriginalFileDeleted;
-    private Boolean isTranscodeFilesDeleted;
-    private Date deleteTime;        //什么时候删的
+    private Boolean isPermanent;                //是否是永久视频
+    private Boolean isOriginalFileDeleted;      //源视频是否已删除
+    private Boolean isTranscodeFilesDeleted;    //ts转码文件是否已删除
+    private Date deleteTime;                    //什么时候删的
 
     private JSONObject mediaInfo;
 
+    private List<String> transcodeIds;
+
     public boolean isYoutube() {
-        return type.equals(VideoType.YOUTUBE);
+        return StringUtils.equals(type, VideoType.YOUTUBE);
     }
 }
