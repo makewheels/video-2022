@@ -23,6 +23,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -138,6 +139,7 @@ public class TranscodeLauncher {
 
         //反向更新video的transcodeIds
         List<String> transcodeIds = video.getTranscodeIds();
+        if (transcodeIds == null) transcodeIds = new ArrayList<>();
         transcodeIds.add(transcodeId);
         video.setTranscodeIds(transcodeIds);
         mongoTemplate.save(video);

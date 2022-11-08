@@ -216,7 +216,7 @@ public class TranscodeCallbackService {
         Video video = mongoTemplate.findById(videoId, Video.class);
         if (video == null) return;
         //从数据库中查出，该视频对应的所有转码任务
-        List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
+        List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
         //统计已完成数量
         long completeCount = transcodeList.stream().filter(Transcode::isFinishStatus).count();
         String videoStatus;

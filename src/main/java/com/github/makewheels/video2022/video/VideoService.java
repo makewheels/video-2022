@@ -304,8 +304,8 @@ public class VideoService {
         if (cover != null) {
             watchInfo.setCoverUrl(cover.getCdnUrl());
         }
-        //通过videoId查找m3u8播放地址
-        List<Transcode> transcodeList = transcodeRepository.getByVideoId(videoId);
+        //拿m3u8播放地址
+        List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
         List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
         for (Transcode transcode : transcodeList) {
             PlayUrl playUrl = new PlayUrl();
@@ -443,7 +443,7 @@ public class VideoService {
 
         Transcode transcode = transcodeRepository.getById(transcodeId);
         //找到transcode对应的tsFiles
-        List<File> files = fileRepository.findByIds(transcode.getTsFileIds());
+        List<File> files = fileRepository.getByIds(transcode.getTsFileIds());
         Map<String, File> fileMap = files.stream().collect(
                 Collectors.toMap(File::getFilename, Function.identity()));
 

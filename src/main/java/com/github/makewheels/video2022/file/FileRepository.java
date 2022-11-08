@@ -13,12 +13,11 @@ public class FileRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    public File findById(String id) {
+    public File getById(String id) {
         return mongoTemplate.findById(id, File.class);
     }
 
-    public List<File> findByIds(List<String> ids) {
-        return mongoTemplate.find(
-                Query.query(Criteria.where("id").in(ids)), File.class);
+    public List<File> getByIds(List<String> ids) {
+        return mongoTemplate.find(Query.query(Criteria.where("id").in(ids)), File.class);
     }
 }
