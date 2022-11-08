@@ -2,9 +2,6 @@ package com.github.makewheels.video2022.redis;
 
 /**
  * Redis缓存过期时间，单位是秒
- *
- * @Author makewheels
- * @Time 2021.01.30 13:26:46
  */
 public class RedisTime {
 

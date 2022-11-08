@@ -6,6 +6,7 @@ import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.baidubce.services.bos.model.BosObject;
 import com.github.makewheels.usermicroservice2022.user.User;
+import com.github.makewheels.video2022.fileaccesslog.FileAccessLogService;
 import com.github.makewheels.video2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.video.constants.VideoType;
@@ -36,6 +37,9 @@ public class FileService {
 
     @Resource
     private FileRepository fileRepository;
+
+    @Resource
+    private FileAccessLogService fileAccessLogService;
 
     @Value("${baidu.bos.accessBaseUrl}")
     private String baiduBosAccessBaseUrl;
@@ -209,6 +213,10 @@ public class FileService {
             HttpServletRequest request, HttpServletResponse response, String videoId, String clientId,
             String resolution, String fileId, String timestamp, String nonce, String sign) {
         File file = fileRepository.getById(fileId);
+
+        //异步保存访问File记录
+        new Thread(() -> fileAccessLogService.saveAccessLog(request, videoId, clientId, resolution, fileId)).start();
+
         String url = generatePresignedUrl(file.getKey(), Duration.ofHours(3));
         response.setStatus(HttpServletResponse.SC_FOUND);
         try {

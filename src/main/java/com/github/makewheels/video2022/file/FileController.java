@@ -39,6 +39,7 @@ public class FileController {
             @RequestParam String videoId, @RequestParam String clientId, @RequestParam String sessionId,
             @RequestParam String resolution, @RequestParam String fileId, @RequestParam String timestamp,
             @RequestParam String nonce, @RequestParam String sign) {
+
         User user = userServiceClient.getUserByRequest(request);
         return fileService.access(request, response, videoId, clientId, resolution, fileId,
                 timestamp, nonce, sign);
