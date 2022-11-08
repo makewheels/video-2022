@@ -260,22 +260,20 @@ public class VideoService {
 
     /**
      * 更新视频信息
-     *
-     * @param user
-     * @param updateVideo
-     * @return
      */
-    public Result<Void> updateVideo(User user, Video updateVideo) {
+    public Result<Void> updateVideo(User user, Video newVideo) {
         String userId = user.getId();
-        String videoId = updateVideo.getId();
+        String videoId = newVideo.getId();
         Video oldVideo = mongoTemplate.findById(videoId, Video.class);
         //判断视频是否存在，判断视频是否属于当前用户
         if (oldVideo == null || !StringUtils.equals(userId, oldVideo.getUserId())) {
             return Result.error(ErrorCode.FAIL);
         }
-        oldVideo.setTitle(updateVideo.getTitle());
-        oldVideo.setDescription(updateVideo.getDescription());
+        oldVideo.setTitle(newVideo.getTitle());
+        oldVideo.setDescription(newVideo.getDescription());
         mongoTemplate.save(oldVideo);
+        log.info("更新视频信息：videoId = {}, title = {}, description = {}",
+                videoId, oldVideo.getTitle(), oldVideo.getDescription());
         return Result.ok();
     }
 
@@ -436,10 +434,6 @@ public class VideoService {
         return videoRepository.getExpiredVideos(skip, limit);
     }
 
-    public void save(Video video) {
-        mongoTemplate.save(video);
-    }
-
     /**
      * 根据转码对象获取m3u8内容，返回String
      */
@@ -448,8 +442,8 @@ public class VideoService {
             String transcodeId, String resolution, String sign) {
 
         Transcode transcode = transcodeRepository.getById(transcodeId);
-        //根据transcodeId找到files
-        List<File> files = fileRepository.findByTranscodeId(transcodeId);
+        //找到transcode对应的tsFiles
+        List<File> files = fileRepository.findByIds(transcode.getTsFileIds());
         Map<String, File> fileMap = files.stream().collect(
                 Collectors.toMap(File::getFilename, Function.identity()));
 

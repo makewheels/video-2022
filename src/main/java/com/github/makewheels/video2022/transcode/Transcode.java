@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Document
@@ -45,10 +46,10 @@ public class Transcode {
 
     private String m3u8Content;
 
+    private List<String> tsFileIds;
+
     /**
      * 根据对应的provider判断是否是已结束状态
-     *
-     * @return
      */
     public boolean isFinishStatus() {
         switch (provider) {
@@ -64,8 +65,6 @@ public class Transcode {
 
     /**
      * 判断是否是转码成功状态
-     *
-     * @return
      */
     public boolean isSuccessStatus() {
         switch (provider) {
