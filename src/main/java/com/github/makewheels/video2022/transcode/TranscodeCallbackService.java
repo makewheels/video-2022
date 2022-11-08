@@ -236,7 +236,7 @@ public class TranscodeCallbackService {
             mongoTemplate.save(video);
         }
         //当所有转码都完成了，也就是视频已就绪时
-        if (StringUtils.equals(video.getStatus(), VideoStatus.READY)) {
+        if (video.isReady()) {
             saveS3Files(transcode);
         }
         //判断如果是转码成功状态，请求软路由预热，
