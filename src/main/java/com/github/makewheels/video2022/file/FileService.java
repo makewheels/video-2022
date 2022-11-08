@@ -121,7 +121,7 @@ public class FileService {
      * @return
      */
     public Result<JSONObject> getUploadCredentials(User user, String fileId) {
-        File file = fileRepository.findById(fileId);
+        File file = fileRepository.getById(fileId);
         //如果文件不存在，或者token找不到用户
         if (file == null || user == null) return Result.error(ErrorCode.FAIL);
         //如果上传文件不属于该用户
@@ -149,7 +149,7 @@ public class FileService {
      * @return
      */
     public Result<Void> uploadFinish(User user, String fileId) {
-        File file = fileRepository.findById(fileId);
+        File file = fileRepository.getById(fileId);
         if (file == null) return Result.error(ErrorCode.FAIL);
         if (!StringUtils.equals(user.getId(), file.getUserId())) return Result.error(ErrorCode.FAIL);
 
@@ -208,7 +208,7 @@ public class FileService {
     public Result<Void> access(
             HttpServletRequest request, HttpServletResponse response, String videoId, String clientId,
             String resolution, String fileId, String timestamp, String nonce, String sign) {
-        File file = fileRepository.findById(fileId);
+        File file = fileRepository.getById(fileId);
         String url = generatePresignedUrl(file.getKey(), Duration.ofHours(3));
         response.setStatus(HttpServletResponse.SC_FOUND);
         try {

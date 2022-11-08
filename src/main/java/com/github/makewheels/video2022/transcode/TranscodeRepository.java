@@ -21,7 +21,7 @@ public class TranscodeRepository {
         return mongoTemplate.findOne(Query.query(Criteria.where("jobId").is(jobId)), Transcode.class);
     }
 
-    public List<Transcode> getByVideoId(String videoId) {
-        return mongoTemplate.find(Query.query(Criteria.where("videoId").is(videoId)), Transcode.class);
+    public List<Transcode> getByIds(List<String> ids) {
+        return mongoTemplate.find(Query.query(Criteria.where("id").in(ids)), Transcode.class);
     }
 }
