@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.video.bean;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -71,5 +72,9 @@ public class Video {
 
     public boolean isYoutube() {
         return StringUtils.equals(type, VideoType.YOUTUBE);
+    }
+
+    public boolean isReady() {
+        return StringUtils.equals(status, VideoStatus.READY);
     }
 }

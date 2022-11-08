@@ -183,10 +183,6 @@ public class VideoService {
 
     /**
      * 创建视频：处理youtube
-     *
-     * @param video
-     * @param user
-     * @param videoFile
      */
     private void handleCreateYoutube(Video video, User user, File videoFile) {
         String extension = youtubeService.getFileExtension(video.getYoutubeVideoId());
@@ -230,10 +226,6 @@ public class VideoService {
 
     /**
      * 原始文件上传完成，开始转码
-     *
-     * @param user
-     * @param videoId
-     * @return
      */
     public Result<Void> originalFileUploadFinish(User user, String videoId) {
         //查数据库，找到video
@@ -279,10 +271,6 @@ public class VideoService {
 
     /**
      * 获取播放信息
-     *
-     * @param user
-     * @param watchId
-     * @return
      */
     public Result<WatchInfo> getWatchInfo(User user, String watchId) {
         WatchInfo watchInfo = videoRedisService.getWatchInfo(watchId);
@@ -322,7 +310,7 @@ public class VideoService {
         watchInfo.setVideoStatus(video.getStatus());
 
         //缓存redis，先判断视频状态：只有READY才放入缓存
-        if (video.getStatus().equals(VideoStatus.READY)) {
+        if (video.isReady()) {
             videoRedisService.setWatchInfo(watchId, watchInfo);
         }
         return Result.ok(watchInfo);
@@ -330,10 +318,6 @@ public class VideoService {
 
     /**
      * 获取视频详情
-     *
-     * @param user
-     * @param videoId
-     * @return
      */
     public Result<VideoDetail> getVideoDetail(User user, String videoId) {
         Video video = mongoTemplate.findById(videoId, Video.class);
@@ -349,11 +333,6 @@ public class VideoService {
 
     /**
      * 分页获取指定userId视频列表
-     *
-     * @param userId
-     * @param skip
-     * @param limit
-     * @return
      */
     public Result<List<VideoSimpleInfo>> getVideoList(String userId, int skip, int limit) {
         List<Video> videos = videoRepository.getVideosByUserId(userId, skip, limit);
