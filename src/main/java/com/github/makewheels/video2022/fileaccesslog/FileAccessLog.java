@@ -53,5 +53,7 @@ public class FileAccessLog {
     private Date createTime;
 
     private String ip;
+    private String clientId;
+    private String sessionId;
 
 }

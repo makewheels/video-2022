@@ -210,13 +210,14 @@ public class FileService {
      * 重定向到阿里云对象存储
      */
     public Result<Void> access(
-            HttpServletRequest request, HttpServletResponse response, String videoId, String clientId,
-            String resolution, String fileId, String timestamp, String nonce, String sign) {
+            HttpServletRequest request, HttpServletResponse response, String videoId,
+            String clientId, String sessionId, String resolution, String fileId,
+            String timestamp, String nonce, String sign) {
         File file = fileRepository.getById(fileId);
 
         //异步保存访问File记录
         new Thread(() -> fileAccessLogService.saveAccessLog(
-                request, videoId, clientId, resolution, fileId)).start();
+                request, videoId, clientId, sessionId, resolution, fileId)).start();
 
         String url = generatePresignedUrl(file.getKey(), Duration.ofHours(3));
         response.setStatus(HttpServletResponse.SC_FOUND);

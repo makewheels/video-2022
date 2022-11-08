@@ -25,7 +25,8 @@ public class FileAccessLogService {
     private TranscodeRepository transcodeRepository;
 
     public void saveAccessLog(
-            HttpServletRequest request, String videoId, String clientId, String resolution, String fileId) {
+            HttpServletRequest request, String videoId, String clientId, String sessionId,
+            String resolution, String fileId) {
         File file = fileRepository.getById(fileId);
         Transcode transcode = transcodeRepository.getById(file.getTranscodeId());
 
@@ -33,6 +34,9 @@ public class FileAccessLogService {
         BeanUtils.copyProperties(file, log);
         log.setFileId(file.getId());
         log.setFileType(file.getType());
+
+        log.setClientId(clientId);
+        log.setSessionId(sessionId);
         log.setTranscodeId(transcode.getId());
         log.setResolution(transcode.getResolution());
         log.setCreateTime(new Date());
