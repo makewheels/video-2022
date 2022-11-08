@@ -6,6 +6,7 @@ import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -24,6 +25,9 @@ public class VideoDeleteTask {
     @Resource
     private FileService fileService;
 
+    @Resource
+    private MongoTemplate mongoTemplate;
+
     //    @Scheduled(cron = "")
     public void run() {
         List<Video> videos = videoService.getExpiredVideos(0, 5000);
@@ -40,7 +44,7 @@ public class VideoDeleteTask {
             //更新视频状态
             video.setIsTranscodeFilesDeleted(true);
             video.setDeleteTime(new Date());
-            videoService.save(video);
+            mongoTemplate.save(video);
         }
     }
 }

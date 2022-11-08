@@ -17,8 +17,8 @@ public class FileRepository {
         return mongoTemplate.findById(id, File.class);
     }
 
-    public List<File> findByTranscodeId(String transcodeId) {
-        return mongoTemplate.find(Query.query(Criteria.where("transcodeId").is(transcodeId)), File.class);
-
+    public List<File> findByIds(List<String> ids) {
+        return mongoTemplate.find(
+                Query.query(Criteria.where("id").in(ids)), File.class);
     }
 }

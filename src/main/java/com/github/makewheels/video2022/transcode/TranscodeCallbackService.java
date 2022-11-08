@@ -313,6 +313,11 @@ public class TranscodeCallbackService {
         //保存数据库
         log.info("保存tsFiles, 总共 {} 个", tsFiles.size());
         mongoTemplate.insertAll(tsFiles);
+
+        //反向更新transcode的ts文件id
+        List<String> tsFileIds = tsFiles.stream().map(File::getId).collect(Collectors.toList());
+        transcode.setTsFileIds(tsFileIds);
+        mongoTemplate.save(transcode);
     }
 
 }
