@@ -31,6 +31,8 @@ public class FileAccessLogService {
 
         FileAccessLog log = new FileAccessLog();
         BeanUtils.copyProperties(file, log);
+        log.setFileId(file.getId());
+        log.setFileType(file.getType());
         log.setTranscodeId(transcode.getId());
         log.setResolution(transcode.getResolution());
         log.setCreateTime(new Date());

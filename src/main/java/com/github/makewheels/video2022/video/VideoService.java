@@ -273,7 +273,7 @@ public class VideoService {
     /**
      * 获取播放信息
      */
-    public Result<WatchInfo> getWatchInfo(User user, String watchId) {
+    public Result<WatchInfo> getWatchInfo(User user, String watchId, String clientId, String sessionId) {
         WatchInfo watchInfo = videoRedisService.getWatchInfo(watchId);
         //如果已经存在缓存，直接返回
         if (watchInfo != null) {
@@ -307,9 +307,17 @@ public class VideoService {
         List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
         for (Transcode transcode : transcodeList) {
             PlayUrl playUrl = new PlayUrl();
-            playUrl.setResolution(transcode.getResolution());
+            String resolution = transcode.getResolution();
+            playUrl.setResolution(resolution);
             //改成，调用我自己的getM3u8Content接口，获取m3u8内容
-            playUrl.setUrl(internalBaseUrl + "/video/getM3u8Content");
+            playUrl.setUrl(internalBaseUrl + "/video/getM3u8Content.m3u8?"
+                    + "videoId=" + videoId
+                    + "&clientId=" + clientId
+                    + "&sessionId=" + sessionId
+                    + "&transcodeId=" + transcode.getId()
+                    + "&resolution=" + resolution
+            );
+
             playUrlList.add(playUrl);
         }
         watchInfo.setPlayUrlList(playUrlList);
@@ -424,7 +432,7 @@ public class VideoService {
      */
     public String getM3u8Content(
             User user, String videoId, String clientId, String sessionId,
-            String transcodeId, String resolution, String sign) {
+            String transcodeId, String resolution) {
 
         Transcode transcode = transcodeRepository.getById(transcodeId);
         //找到transcode对应的tsFiles

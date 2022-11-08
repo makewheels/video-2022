@@ -29,8 +29,6 @@ public class FileAccessLog {
     @Indexed
     private Integer tsSequence;
 
-    //原始文件名，只有用户上传的视频源文件才有
-    private String originalFilename;
     // 63627b7e66445c2fe81c648a.mp4
     private String filename;
 

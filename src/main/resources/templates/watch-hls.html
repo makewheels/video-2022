@@ -100,7 +100,9 @@
 
         watchId = getUrlVariable("v");
         //获取播放地址
-        axios.get('/video/getWatchInfo?watchId=' + watchId)
+        axios.get('/video/getWatchInfo?watchId=' + watchId
+            + '&clientId=' + localStorage.clientId
+            + '&sessionId=' + sessionStorage.sessionId)
             .then(function (res) {
                 let data = res.data.data;
                 videoId = data.videoId;
@@ -173,7 +175,6 @@
     //在视频已加载后
     function afterVideoLoaded(videoId) {
         loadVideoInfo(videoId);
-        addWatchLog(videoId);
     }
 
     //加载视频信息
@@ -253,6 +254,8 @@
     }
 
     //从这里开始
+    addWatchLog(videoId);
+
     loadWatchInfo();
 
 </script>

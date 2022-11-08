@@ -28,7 +28,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/video/getVideoDetail")
                 .excludePathPatterns("/video/getVideoListByUserId")
                 .excludePathPatterns("/video/addWatchLog")
-                .excludePathPatterns("/video/getM3u8Content")
+                .excludePathPatterns("/video/getM3u8Content.m3u8")
                 .excludePathPatterns("/file/access")
                 .excludePathPatterns("/watch")
                 .excludePathPatterns("/save-token.html")
