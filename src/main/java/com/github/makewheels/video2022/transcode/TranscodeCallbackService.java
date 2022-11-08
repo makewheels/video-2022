@@ -80,9 +80,6 @@ public class TranscodeCallbackService {
      * "version": "v1alpha",
      * "signature": "BQSsignature"
      * }
-     *
-     * @param body
-     * @return
      */
     public Result<Void> baiduTranscodeCallback(JSONObject body) {
         JSONObject messageBody = JSONObject.parseObject(body.getString("messageBody"));
@@ -314,7 +311,7 @@ public class TranscodeCallbackService {
         log.info("保存tsFiles, 总共 {} 个", tsFiles.size());
         mongoTemplate.insertAll(tsFiles);
 
-        //反向更新transcode的ts文件id
+        //反向更新transcode的ts文件id列表
         List<String> tsFileIds = tsFiles.stream().map(File::getId).collect(Collectors.toList());
         transcode.setTsFileIds(tsFileIds);
         mongoTemplate.save(transcode);
