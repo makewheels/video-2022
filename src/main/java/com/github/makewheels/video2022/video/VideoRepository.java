@@ -39,9 +39,9 @@ public class VideoRepository {
                 .with(Sort.by(Sort.Direction.DESC, "createTime"))
                 .skip(skip)
                 .limit(limit);
-        query.fields().exclude("mediaInfo", "youtubeVideoInfo", "description",
-                "originalFileId", "originalFileKey", " width", "height",
-                "videoCodec", "audioCodec");
+//        query.fields().exclude("mediaInfo", "youtubeVideoInfo", "description",
+//                "originalFileId", "originalFileKey", " width", "height",
+//                "videoCodec", "audioCodec");
         return mongoTemplate.find(query, Video.class);
     }
 
