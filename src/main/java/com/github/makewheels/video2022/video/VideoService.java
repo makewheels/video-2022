@@ -28,6 +28,7 @@ import com.github.makewheels.video2022.watch.WatchRepository;
 import com.github.makewheels.video2022.watch.watchinfo.PlayUrl;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -292,18 +293,23 @@ public class VideoService {
         if (cover != null) {
             watchInfo.setCoverUrl(cover.getCdnUrl());
         }
+
         //拿m3u8播放地址
-        List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
+        List<Transcode> transcodeList;
+        List<String> transcodeIds = video.getTranscodeIds();
+        if (CollectionUtils.isNotEmpty(transcodeIds)) {
+            transcodeList = transcodeRepository.getByIds(transcodeIds);
+        } else {
+            //兼容老视频逻辑，如果video里没存转码id，还是要根据videoId查transcode
+            transcodeList = transcodeRepository.getByVideoId(videoId);
+        }
+
         List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
         for (Transcode transcode : transcodeList) {
             PlayUrl playUrl = new PlayUrl();
             playUrl.setResolution(transcode.getResolution());
-//            playUrl.setUrl(transcode.getM3u8CdnUrl());
-            //2022年6月5日21:50:10
-            //总有观众说卡顿，我怀疑是cdn回源慢，虽然我软路由预热，但是也卡，
-            //我还试过，压缩更低的码率，也是不行，
-            //我再试试直连，看看有没有改善
-            playUrl.setUrl(transcode.getM3u8AccessUrl());
+            //改成，调用我自己的getM3u8Content接口，获取m3u8内容
+            playUrl.setUrl(internalBaseUrl + "/video/getM3u8Content");
             playUrlList.add(playUrl);
         }
         watchInfo.setPlayUrlList(playUrlList);
