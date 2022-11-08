@@ -56,9 +56,11 @@ public class VideoController {
      * 重要接口，决定用户打开网页到开始播放耗时，所以这个接口追求速度，使用redis缓存
      */
     @GetMapping("getWatchInfo")
-    public Result<WatchInfo> getWatchInfo(HttpServletRequest request, @RequestParam String watchId) {
+    public Result<WatchInfo> getWatchInfo(
+            HttpServletRequest request, @RequestParam String watchId,
+            @RequestParam String clientId, @RequestParam String sessionId) {
         User user = userServiceClient.getUserByRequest(request);
-        return videoService.getWatchInfo(user, watchId);
+        return videoService.getWatchInfo(user, watchId, clientId, sessionId);
     }
 
     /**
@@ -127,14 +129,13 @@ public class VideoController {
     /**
      * 获取m3u8内容，里面是ts列表链接
      */
-    @GetMapping("getM3u8Content")
+    @GetMapping("getM3u8Content.m3u8")
     public String getM3u8Content(
             HttpServletRequest request, @RequestParam String videoId,
             @RequestParam String clientId, @RequestParam String sessionId,
-            @RequestParam String transcodeId, @RequestParam String resolution,
-            @RequestParam String sign) {
+            @RequestParam String transcodeId, @RequestParam String resolution) {
         User user = userServiceClient.getUserByRequest(request);
-        return videoService.getM3u8Content(user, videoId, clientId, sessionId, transcodeId, resolution, sign);
+        return videoService.getM3u8Content(user, videoId, clientId, sessionId, transcodeId, resolution);
     }
 
 }

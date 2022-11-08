@@ -215,7 +215,8 @@ public class FileService {
         File file = fileRepository.getById(fileId);
 
         //异步保存访问File记录
-        new Thread(() -> fileAccessLogService.saveAccessLog(request, videoId, clientId, resolution, fileId)).start();
+        new Thread(() -> fileAccessLogService.saveAccessLog(
+                request, videoId, clientId, resolution, fileId)).start();
 
         String url = generatePresignedUrl(file.getKey(), Duration.ofHours(3));
         response.setStatus(HttpServletResponse.SC_FOUND);
