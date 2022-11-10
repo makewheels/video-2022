@@ -32,6 +32,7 @@ public class FileAccessLogService {
 
         FileAccessLog log = new FileAccessLog();
         BeanUtils.copyProperties(file, log);
+        log.setId(null);
         log.setFileId(file.getId());
         log.setFileType(file.getType());
 
