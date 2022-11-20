@@ -145,7 +145,8 @@ public class TranscodeLauncher {
         mongoTemplate.save(video);
 
         //发起转码
-        log.info("发起 " + resolution + " 转码：videoId = " + videoId + ", transcode-provider = " + transcodeProvider);
+        log.info("发起 " + resolution + " 转码：videoId = " + videoId + ", transcode-provider = "
+                + transcodeProvider);
         String jobId = null;
         String jobStatus = null;
         switch (transcodeProvider) {
@@ -159,7 +160,8 @@ public class TranscodeLauncher {
                 break;
             }
             case TranscodeProvider.BAIDU_MCP: {
-                CreateTranscodingJobResponse job = baiduMcpService.createTranscodingJob(sourceKey, m3u8Key, resolution);
+                CreateTranscodingJobResponse job = baiduMcpService.createTranscodingJob(
+                        sourceKey, m3u8Key, resolution);
                 jobId = job.getJobId();
                 log.info("发起百度云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
                 jobStatus = baiduMcpService.getTranscodingJob(jobId).getJobStatus();
@@ -168,9 +170,10 @@ public class TranscodeLauncher {
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 jobId = IdUtil.simpleUUID();
                 String callbackUrl = externalBaseUrl + "/transcode/aliyunCloudFunctionTranscodeCallback";
-                cloudFunctionTranscodeService.transcode(sourceKey, m3u8Key.substring(0, m3u8Key.lastIndexOf("/")),
-                        videoId, transcodeId, jobId, resolution, width, height, VideoCodec.H264, AudioCodec.AAC,
-                        "keep", callbackUrl);
+                cloudFunctionTranscodeService.transcode(
+                        sourceKey, m3u8Key.substring(0, m3u8Key.lastIndexOf("/")),
+                        videoId, transcodeId, jobId, resolution, width, height,
+                        VideoCodec.H264, AudioCodec.AAC, "keep", callbackUrl);
                 jobStatus = VideoStatus.TRANSCODING;
                 break;
         }
@@ -181,7 +184,8 @@ public class TranscodeLauncher {
 
         //异步轮询查询阿里云转码状态，并回调
         if (transcodeProvider.equals(TranscodeProvider.ALIYUN_MPS)) {
-            new Thread(() -> transcodeCallbackService.iterateQueryAliyunTranscodeJob(video, transcode)).start();
+            new Thread(() -> transcodeCallbackService.iterateQueryAliyunTranscodeJob(
+                    video, transcode)).start();
         }
     }
 
@@ -198,7 +202,8 @@ public class TranscodeLauncher {
         if (videoProvider.equals(S3Provider.ALIYUN_OSS)) {
             log.info("视频源文件上传完成，通过阿里云获取视频信息，videoId = " + videoId);
             SubmitMediaInfoJobResponseBody body = aliyunMpsService.getMediaInfo(sourceKey).getBody();
-            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJob job = body.getMediaInfoJob();
+            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJob job
+                    = body.getMediaInfoJob();
             log.info("阿里云获取视频信息返回：" + JSON.toJSONString(job));
             //给video保存媒体信息到数据库
             video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(job)));
@@ -210,8 +215,8 @@ public class TranscodeLauncher {
             video.setHeight(Integer.parseInt(properties.getHeight()));
             video.setWidth(Integer.parseInt(properties.getWidth()));
             video.setBitrate((int) Double.parseDouble(properties.getBitrate()));
-            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreams streams
-                    = properties.getStreams();
+            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreams
+                    streams = properties.getStreams();
             video.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
             video.setAudioCodec(streams.getAudioStreamList().getAudioStream().get(0).getCodecName());
         } else if (videoProvider.equals(S3Provider.BAIDU_BOS)) {
