@@ -41,6 +41,7 @@ public class FileAccessLogService {
         log.setTranscodeId(transcode.getId());
         log.setResolution(transcode.getResolution());
         log.setCreateTime(new Date());
+        //TODO 拿不到ip
         log.setIp(request.getRemoteAddr());
 
         mongoTemplate.save(log);
