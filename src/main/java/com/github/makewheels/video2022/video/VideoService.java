@@ -364,10 +364,11 @@ public class VideoService {
     /**
      * 增加观看记录
      */
-    public Result<Void> addWatchLog(HttpServletRequest request, User user, String clientId,
-                                    String sessionId, String videoId) {
+    public Result<Void> addWatchLog(
+            HttpServletRequest request, User user, String clientId, String sessionId,
+            String videoId, String videoStatus) {
         //观看记录根据videoId和sessionId判断是否已存在观看记录，如果已存在则跳过
-        if (watchRepository.isWatchLogExist(videoId, sessionId)) {
+        if (watchRepository.isWatchLogExist(videoId, sessionId, videoStatus)) {
             return Result.ok();
         }
         //保存观看记录
@@ -382,13 +383,16 @@ public class VideoService {
         watchLog.setIpInfo(ipResult);
         String userAgent = request.getHeader("User-Agent");
         watchLog.setUserAgent(userAgent);
+        watchLog.setVideoStatus(videoStatus);
         watchLog.setVideoId(videoId);
         watchLog.setClientId(clientId);
         watchLog.setSessionId(sessionId);
 
         mongoTemplate.save(watchLog);
-        //增加video观看次数
-        videoRepository.addWatchCount(videoId);
+        //增加video观看次数，只有视频就绪状态才增加播放量，其它状态只记录观看记录，不统计播放量
+        if (videoStatus.equals(VideoStatus.READY)) {
+            videoRepository.addWatchCount(videoId);
+        }
 
         Video video = mongoTemplate.findById(videoId, Video.class);
 

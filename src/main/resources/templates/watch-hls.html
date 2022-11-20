@@ -253,15 +253,12 @@
 
     //增加观看记录
     function runAddWatchLog() {
-        //增加观看次数，只有在ready状态，才增加
-        if (videoStatus === "READY") {
-            axios.get('/video/addWatchLog?videoId=' + videoId
-                + '&clientId=' + localStorage.clientId
-                + '&sessionId=' + sessionStorage.sessionId
-                + '&videoStatus=' + videoStatus)
-                .then(function (res) {
-                });
-        }
+        axios.get('/video/addWatchLog?videoId=' + videoId
+            + '&clientId=' + localStorage.clientId
+            + '&sessionId=' + sessionStorage.sessionId
+            + '&videoStatus=' + videoStatus)
+            .then(function (res) {
+            });
     }
 
     //程序从这里开始

@@ -12,10 +12,12 @@ public class WatchRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    public boolean isWatchLogExist(String videoId, String sessionId) {
+    public boolean isWatchLogExist(String videoId, String sessionId, String videoStatus) {
         Query query = Query.query(
                 Criteria.where("videoId").is(videoId)
-                        .and("sessionId").is(sessionId));
+                        .and("sessionId").is(sessionId)
+                        .and("videoStatus").is(videoStatus)
+        );
         return mongoTemplate.exists(query, WatchLog.class);
     }
 }

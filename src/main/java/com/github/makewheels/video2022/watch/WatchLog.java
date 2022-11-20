@@ -17,6 +17,8 @@ public class WatchLog {
     private String clientId;
     private String sessionId;
     private String userAgent;
+    private String videoStatus;
+
     private Date createTime;
 
     private JSONObject ipInfo;
