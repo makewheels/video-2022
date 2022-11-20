@@ -171,6 +171,7 @@ public class TranscodeLauncher {
                 cloudFunctionTranscodeService.transcode(sourceKey, m3u8Key.substring(0, m3u8Key.lastIndexOf("/")),
                         videoId, transcodeId, jobId, resolution, width, height, VideoCodec.H264, AudioCodec.AAC,
                         "keep", callbackUrl);
+                jobStatus = VideoStatus.TRANSCODING;
                 break;
         }
         //保存jobId，更新jobStatus
