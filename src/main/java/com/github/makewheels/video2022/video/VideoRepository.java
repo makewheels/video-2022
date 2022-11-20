@@ -47,11 +47,9 @@ public class VideoRepository {
 
     /**
      * 增加观看次数
-     *
-     * @param videoId
      */
     public void addWatchCount(String videoId) {
-        Query query = Query.query(Criteria.where("_id").is(videoId));
+        Query query = Query.query(Criteria.where("id").is(videoId));
         Update update = new Update();
         update.inc("watchCount");
         mongoTemplate.updateFirst(query, update, Video.class);
