@@ -28,7 +28,6 @@ import com.github.makewheels.video2022.watch.WatchRepository;
 import com.github.makewheels.video2022.watch.watchinfo.PlayUrl;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -297,12 +296,12 @@ public class VideoService {
         //拿m3u8播放地址
         List<Transcode> transcodeList;
         List<String> transcodeIds = video.getTranscodeIds();
-        if (CollectionUtils.isNotEmpty(transcodeIds)) {
-            transcodeList = transcodeRepository.getByIds(transcodeIds);
-        } else {
-            //兼容老视频逻辑，如果video里没存转码id，还是要根据videoId查transcode
-            transcodeList = transcodeRepository.getByVideoId(videoId);
-        }
+//        if (CollectionUtils.isNotEmpty(transcodeIds)) {
+        transcodeList = transcodeRepository.getByIds(transcodeIds);
+//        } else {
+        //兼容老视频逻辑，如果video里没存转码id，还是要根据videoId查transcode
+//            transcodeList = transcodeRepository.getByVideoId(videoId);
+//        }
 
         List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
         for (Transcode transcode : transcodeList) {
