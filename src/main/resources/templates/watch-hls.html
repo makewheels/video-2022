@@ -42,8 +42,16 @@
 <script>
     let videoId;
     let watchId;
-
     let videoStatus;
+    let SD;
+    let HD;
+    let currentUrl;
+    let player;
+
+    let resolutionGroups = document.getElementById("resolutionGroups");
+    let btn1080 = document.getElementById("btn1080");
+    let btn720 = document.getElementById("btn720");
+    let currentResolution = document.getElementById("currentResolution");
 
     //获取url路径中的参数
     function getUrlVariable(key) {
@@ -58,14 +66,12 @@
         return false;
     }
 
-    /**
-     * 判断是否是pc端
-     */
+    //判断是否是pc端
     function IsPC() {
-        var userAgentInfo = navigator.userAgent;
-        var Agents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
-        var flagPc = true;
-        for (var v = 0; v < Agents.length; v++) {
+        let userAgentInfo = navigator.userAgent;
+        let Agents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
+        let flagPc = true;
+        for (let v = 0; v < Agents.length; v++) {
             if (userAgentInfo.indexOf(Agents[v]) > 0) {
                 return false;
             }
@@ -73,13 +79,8 @@
         return true;
     }
 
-    let SD;
-    let HD;
-    let currentUrl;
-    let player;
-
     //根据url播放
-    function playByM3u8Url(m3u8Url, time) {
+    function playByM3u8UrlAndTime(m3u8Url, time) {
         currentUrl = m3u8Url;
         if (player == null) {
             player = TCPlayer('player-container-id', {autoplay: true});
@@ -92,12 +93,7 @@
     }
 
     //加载视频
-    function loadWatchInfo() {
-        let resolutionGroups = document.getElementById("resolutionGroups");
-        let btn1080 = document.getElementById("btn1080");
-        let btn720 = document.getElementById("btn720");
-        let currentResolution = document.getElementById("currentResolution");
-
+    function loadVideo() {
         watchId = getUrlVariable("v");
         //获取播放地址
         axios.get('/video/getWatchInfo?watchId=' + watchId
@@ -105,76 +101,88 @@
             + '&sessionId=' + sessionStorage.sessionId)
             .then(function (res) {
                 let data = res.data.data;
-                videoId = data.videoId;
-                //封面
-                let coverUrl = data.coverUrl;
-                //播放地址
-                let playUrlList = data.playUrlList;
-
-                for (let i = 0; i < playUrlList.length; i++) {
-                    let each = playUrlList[i];
-                    if (each.resolution === '720p') {
-                        SD = each.url;
-                    } else if (each.resolution === '1080p') {
-                        HD = each.url;
-                    }
-                }
-
-                videoStatus = data.videoStatus;
-                //判断视频状态，如果已就绪，就创建播放器。如果还没就绪，就提示
-                if (data.videoStatus === "READY") {
-                    //先以1080p播放
-                    playByM3u8Url(HD, 0);
-                    currentResolution.innerText = "1080p";
-
-                    //如果只有一种分辨率，那就只播一个
-                    if (playUrlList.length === 1) {
-                        if (HD != null) {
-                            playByM3u8Url(HD, 0);
-                        } else {
-                            playByM3u8Url(SD, 0);
-                        }
-                        //隐藏分辨率按钮组
-                        resolutionGroups.style.display = "none";
-                    } else {
-                        //设置切换分辨率按钮监听
-                        btn1080.addEventListener("click", function () {
-                            //如果当前不是HD，那就切换成HD播放
-                            if (currentUrl !== HD) {
-                                currentResolution.innerText = "1080p";
-                                playByM3u8Url(HD, player.currentTime());
-                            }
-                        });
-                        btn720.addEventListener("click", function () {
-                            if (currentUrl !== SD) {
-                                currentResolution.innerText = "720p";
-                                playByM3u8Url(SD, player.currentTime());
-                            }
-                        });
-                    }
-
-                    let playerVideo = document.getElementById("player-container-id");
-                    playerVideo.style.width = "100%";
-                    //pc端自动网页全屏
-                    if (IsPC()) {
-                        playerVideo.style.height = (window.innerHeight - 50) + "px";
-                    }
-                } else {
-                    document.getElementById("errorInfo").innerHTML
-                        = "视频正在上传或转码<br>"
-                        + "请稍后再来<br>"
-                        + "videoId=" + videoId + "<br>"
-                        + "当前状态：" + data.videoStatus;
-                    document.getElementById("player-container-id").style.display = "none";
-                }
+                //开始播放
+                startPlayVideo(data);
 
                 afterVideoLoaded(videoId);
             })
     }
 
+    //播放视频
+    function startPlayVideo(data) {
+        videoId = data.videoId;
+        //封面
+        let coverUrl = data.coverUrl;
+        //播放地址
+        let playUrlList = data.playUrlList;
+
+        //分辨率url
+        for (let i = 0; i < playUrlList.length; i++) {
+            let each = playUrlList[i];
+            if (each.resolution === '720p') {
+                SD = each.url;
+            } else if (each.resolution === '1080p') {
+                HD = each.url;
+            }
+        }
+
+        //判断视频状态，如果已就绪，就创建播放器。如果还没就绪，就提示
+        videoStatus = data.videoStatus;
+        if (videoStatus === "READY") {
+            //先以1080p播放
+            playByM3u8UrlAndTime(HD, 0);
+            currentResolution.innerText = "1080p";
+
+            //如果只有一种分辨率，那就只播一个
+            if (playUrlList.length === 1) {
+                if (HD != null) {
+                    playByM3u8UrlAndTime(HD, 0);
+                } else {
+                    playByM3u8UrlAndTime(SD, 0);
+                }
+                //隐藏分辨率按钮组
+                resolutionGroups.style.display = "none";
+            } else {
+                //设置切换分辨率按钮监听
+                btn1080.addEventListener("click", function () {
+                    //如果当前不是HD，那就切换成HD播放
+                    if (currentUrl !== HD) {
+                        currentResolution.innerText = "1080p";
+                        playByM3u8UrlAndTime(HD, player.currentTime());
+                    }
+                });
+                btn720.addEventListener("click", function () {
+                    if (currentUrl !== SD) {
+                        currentResolution.innerText = "720p";
+                        playByM3u8UrlAndTime(SD, player.currentTime());
+                    }
+                });
+            }
+
+            //视频组件宽度
+            let playerVideo = document.getElementById("player-container-id");
+            playerVideo.style.width = "98%";
+            //pc端自动网页全屏
+            if (IsPC()) {
+                playerVideo.style.height = (window.innerHeight - 50) + "px";
+            }
+        } else {
+            //如果视频不是已就绪状态
+            document.getElementById("errorInfo").innerHTML
+                = "视频正在上传或转码<br>"
+                + "请稍后再来<br>"
+                + "videoId=" + videoId + "<br>"
+                + "当前状态：" + data.videoStatus;
+            document.getElementById("player-container-id").style.display = "none";
+        }
+    }
+
     //在视频已加载后
     function afterVideoLoaded(videoId) {
+        //加载视频信息
         loadVideoInfo(videoId);
+        //增加观看记录
+        runAddWatchLog();
     }
 
     //加载视频信息
@@ -183,9 +191,12 @@
         axios.get('/video/getVideoDetail?videoId=' + videoId)
             .then(function (res) {
                 let data = res.data.data;
-                document.getElementById("title").innerText = "video-2022-" + videoId;
+                document.getElementById("title").innerText = data.title;
                 document.getElementById("div_title").innerText = data.title;
                 document.getElementById("watchCount").innerText = "观看次数：" + data.watchCount;
+                document.getElementById("description").innerText = data.description;
+
+                //发布时间：
                 //如果是用户自己上传的视频，使用create time
                 //如果是youtube搬运视频，使用publish time
                 // let createTime = document.getElementById("createTime");
@@ -194,69 +205,67 @@
                 // } else if (data.type === "YOUTUBE") {
                 //     createTime.innerText = "发布时间：" + data.youtubePublishTimeString;
                 // }
-                document.getElementById("description").innerText = data.description;
             });
     }
 
-    //增加观看次数
-    function addWatchLog(videoId) {
-        //先搞定clientId和sessionId，请求用户服务器
+    //增加观看记录
+    function handleIds() {
+        //先搞定clientId和sessionId，请求用户微服务
         handleClientId();
         handleSessionId();
     }
 
     //clientId
     function handleClientId() {
-        if (localStorage.getItem("clientId") == null) {
-            axios.get('//' + document.domain + ':5021/user-micro-service-2022/client/requestClientId')
-                .then(function (res) {
-                    let data = res.data.data;
-                    localStorage.clientId = data.clientId;
-                    runAddWatchLog();
-                });
-        } else {
-            runAddWatchLog();
+        if (localStorage.getItem("clientId") != null) {
+            onHandleIdsFinished();
+            return;
         }
+        axios.get('//' + document.domain + ':5021/user-micro-service-2022/client/requestClientId')
+            .then(function (res) {
+                localStorage.clientId = res.data.data.clientId;
+                onHandleIdsFinished();
+            });
     }
 
     //sessionId
     function handleSessionId() {
-        if (sessionStorage.getItem("sessionId") == null) {
-            axios.get('//' + document.domain + ':5021/user-micro-service-2022/session/requestSessionId')
-                .then(function (res) {
-                    let data = res.data.data;
-                    sessionStorage.sessionId = data.sessionId;
-                    runAddWatchLog();
-                });
-        } else {
-            runAddWatchLog();
-        }
-    }
-
-    let hasAddWatchLog = false;
-
-    function runAddWatchLog() {
-        //如果没有clientId或者sessionId，跳过
-        if (localStorage.getItem("clientId") == null
-            || sessionStorage.getItem("sessionId") == null
-            || hasAddWatchLog) {
+        if (sessionStorage.getItem("sessionId") != null) {
+            onHandleIdsFinished();
             return;
         }
+        axios.get('//' + document.domain + ':5021/user-micro-service-2022/session/requestSessionId')
+            .then(function (res) {
+                sessionStorage.sessionId = res.data.data.sessionId;
+                onHandleIdsFinished();
+            });
+    }
+
+    //在获取到两个id之后
+    function onHandleIdsFinished() {
+        //如果没有clientId或者sessionId，跳过
+        if (localStorage.getItem("clientId") == null
+            || sessionStorage.getItem("sessionId") == null) {
+            return;
+        }
+        loadVideo();
+    }
+
+    //增加观看记录
+    function runAddWatchLog() {
         //增加观看次数，只有在ready状态，才增加
         if (videoStatus === "READY") {
             axios.get('/video/addWatchLog?videoId=' + videoId
                 + '&clientId=' + localStorage.clientId
-                + '&sessionId=' + sessionStorage.sessionId)
+                + '&sessionId=' + sessionStorage.sessionId
+                + '&videoStatus=' + videoStatus)
                 .then(function (res) {
-                    hasAddWatchLog = true;
                 });
         }
     }
 
-    //从这里开始
-    addWatchLog(videoId);
-
-    loadWatchInfo();
+    //程序从这里开始
+    handleIds();
 
 </script>
 </body>
