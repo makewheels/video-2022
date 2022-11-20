@@ -324,7 +324,7 @@ public class VideoService {
 
         //缓存redis，先判断视频状态：只有READY才放入缓存
         if (video.isReady()) {
-            videoRedisService.setWatchInfo(watchId, watchInfo);
+//            videoRedisService.setWatchInfo(watchId, watchInfo);
         }
         return Result.ok(watchInfo);
     }
