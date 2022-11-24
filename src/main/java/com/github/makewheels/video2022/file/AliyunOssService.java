@@ -15,15 +15,18 @@ import com.aliyuncs.auth.sts.AssumeRoleResponse;
 import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Service
+@Slf4j
 public class AliyunOssService {
     @Value("${aliyun.oss.bucket}")
     private String bucket;
@@ -137,5 +140,16 @@ public class AliyunOssService {
         getClient().setObjectAcl(bucket, key, cannedAccessControlList);
     }
 
-
+    /**
+     * 上传
+     */
+    public PutObjectResult putObject(String key, InputStream inputStream) {
+        log.info("阿里云OSS上传: key = {}", key);
+        try {
+            getClient().putObject(bucket, key, inputStream);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

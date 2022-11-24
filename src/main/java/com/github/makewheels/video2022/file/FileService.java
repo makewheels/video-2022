@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
+import com.aliyun.oss.model.PutObjectResult;
 import com.baidubce.services.bos.model.BosObject;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.fileaccesslog.FileAccessLogService;
@@ -22,6 +23,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.Date;
 import java.util.List;
@@ -54,11 +56,6 @@ public class FileService {
 
     /**
      * 新建视频时创建文件
-     *
-     * @param user
-     * @param provider
-     * @param requestBody
-     * @return
      */
     public File createVideoFile(User user, String provider, JSONObject requestBody) {
         File file = new File();
@@ -88,9 +85,6 @@ public class FileService {
 
     /**
      * 根据provider获取url
-     *
-     * @param file
-     * @return
      */
     public String getAccessUrl(File file) {
         String provider = file.getProvider();
@@ -103,10 +97,7 @@ public class FileService {
     }
 
     /**
-     * 根据provider获取url
-     *
-     * @param file
-     * @return
+     * 根据provider获取cdn url
      */
     public String getCdnUrl(File file) {
         String provider = file.getProvider();
@@ -120,10 +111,6 @@ public class FileService {
 
     /**
      * 获取上传凭证
-     *
-     * @param user
-     * @param fileId
-     * @return
      */
     public Result<JSONObject> getUploadCredentials(User user, String fileId) {
         File file = fileRepository.getById(fileId);
@@ -148,10 +135,6 @@ public class FileService {
 
     /**
      * 通知文件上传完成，和对象存储服务器确认，改变数据库File状态
-     *
-     * @param user
-     * @param fileId
-     * @return
      */
     public Result<Void> uploadFinish(User user, String fileId) {
         File file = fileRepository.getById(fileId);
@@ -215,7 +198,14 @@ public class FileService {
     }
 
     /**
-     * 重定向到阿里云对象存储
+     * 上传文件
+     */
+    public PutObjectResult putObject(String key, InputStream inputStream) {
+        return aliyunOssService.putObject(key, inputStream);
+    }
+
+    /**
+     * 访问文件：重定向到阿里云对象存储
      */
     public Result<Void> access(
             HttpServletRequest request, HttpServletResponse response, String videoId,
