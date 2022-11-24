@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.cover;
 
 import com.alibaba.fastjson.JSON;
 import com.aliyun.mts20140618.models.QuerySnapshotJobListResponseBody;
+import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.OSSObject;
 import com.github.makewheels.video2022.file.*;
 import com.github.makewheels.video2022.response.ErrorCode;
@@ -110,9 +111,17 @@ public class CoverCallbackService {
 
         //更新file
         File file = fileRepository.getById(cover.getFileId());
-        OSSObject object = fileService.getObject(file.getKey());
+        String key = file.getKey();
+
+        //更改封面的OSS权限为公开读
+        file.setAcl(CannedAccessControlList.PublicRead.toString());
+        fileService.setObjectAcl(key, CannedAccessControlList.PublicRead);
+
+        OSSObject object = fileService.getObject(key);
         file.setObjectInfo(object);
         file.setStatus(FileStatus.READY);
         mongoTemplate.save(file);
+
+
     }
 }

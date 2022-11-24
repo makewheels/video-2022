@@ -130,4 +130,12 @@ public class AliyunOssService {
         return getClient().generatePresignedUrl(bucket, key, expiration, HttpMethod.GET).toString();
     }
 
+    /**
+     * 设置对象权限
+     */
+    public void setObjectAcl(String key, CannedAccessControlList cannedAccessControlList) {
+        getClient().setObjectAcl(bucket, key, cannedAccessControlList);
+    }
+
+
 }
