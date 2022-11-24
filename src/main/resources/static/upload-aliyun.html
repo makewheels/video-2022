@@ -63,6 +63,9 @@
 <b>
     <span id="text_progress" style="color: blue;margin-left: 20px;font-size: 30px"></span>
 </b>
+<br>
+
+<img id="img_wechatQrcode" alt="微信小程序分享码"/>
 
 <script>
     let input_file = document.getElementById("input_file");
@@ -106,6 +109,7 @@
             shortUrl.innerText = data.shortUrl;
             watchUrl.innerText = data.watchUrl;
             beginUpload();
+            loadWeChatMiniProgramShareQrCode();
         });
     }
 
@@ -152,6 +156,11 @@
         }).then(function (res) {
             runUpload(res.data.data);
         });
+    }
+
+    //加载小程序分享码图片
+    function loadWeChatMiniProgramShareQrCode(){
+
     }
 
     //拿到凭证之后，真正开始上传

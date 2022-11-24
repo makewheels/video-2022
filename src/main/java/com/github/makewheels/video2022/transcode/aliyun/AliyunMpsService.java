@@ -28,9 +28,7 @@ public class AliyunMpsService {
 
     private Client getClient() {
         if (client != null) return client;
-        Config config = new Config()
-                .setAccessKeyId(Base64.decodeStr(accessKeyId))
-                .setAccessKeySecret(Base64.decodeStr(accessKeySecret));
+        Config config = new Config().setAccessKeyId(Base64.decodeStr(accessKeyId)).setAccessKeySecret(Base64.decodeStr(accessKeySecret));
         config.endpoint = "mts.cn-beijing.aliyuncs.com";
         config.protocol = "https";
         try {
@@ -76,7 +74,7 @@ public class AliyunMpsService {
      * @param templateId
      * @return
      */
-    public SubmitJobsResponse submitTranscodeJob(String from, String to, String templateId) {
+    private SubmitJobsResponse runSubmitTranscodeJob(String from, String to, String templateId) {
         //阿里云转码的output特殊，
         //如果你给它 /6253dede8706fe314a47a54d
         //它会输出 /6253dede8706fe314a47a54d.m3u8 和 6253dede8706fe314a47a54d-00001.ts
@@ -90,12 +88,7 @@ public class AliyunMpsService {
         output.put("OutputLocation", "oss-cn-beijing");
         JSONArray outputs = new JSONArray();
         outputs.add(output);
-        SubmitJobsRequest request = new SubmitJobsRequest()
-                .setInput(getInput(from))
-                .setOutputs(outputs.toJSONString())
-                .setOutputBucket(bucket)
-                .setOutputLocation("oss-cn-beijing")
-                .setPipelineId("6c126c07a9b34a85b7093e7bfa9c3ad9");
+        SubmitJobsRequest request = new SubmitJobsRequest().setInput(getInput(from)).setOutputs(outputs.toJSONString()).setOutputBucket(bucket).setOutputLocation("oss-cn-beijing").setPipelineId("6c126c07a9b34a85b7093e7bfa9c3ad9");
         log.info("阿里云转码任务: from = " + from);
         log.info("阿里云转码任务: to = " + to);
         log.info("阿里云转码任务: SubmitJobsRequest = " + JSON.toJSONString(request));
@@ -112,30 +105,80 @@ public class AliyunMpsService {
     /**
      * 创建转码任务
      */
-    public SubmitJobsResponse createTranscodingJobByResolution(
-            String sourceKey, String targetKey, String resolution) {
+    public SubmitJobsResponse submitTranscodeJobByResolution(String sourceKey, String targetKey, String resolution) {
         if (resolution.equals(Resolution.R_1080P)) {
-            return submitTranscodeJob(sourceKey, targetKey, "438e72fb70d04b89bf2b37b2769cf1ec");
+            return runSubmitTranscodeJob(sourceKey, targetKey, "438e72fb70d04b89bf2b37b2769cf1ec");
         } else if (resolution.equals(Resolution.R_720P)) {
-            return submitTranscodeJob(sourceKey, targetKey, "f96c8ccf81c44f079d285e13c1a1a104");
+            return runSubmitTranscodeJob(sourceKey, targetKey, "f96c8ccf81c44f079d285e13c1a1a104");
         }
         return null;
     }
 
     /**
-     * 查询转码作业
-     *
-     * @param jobIds
-     * @return
+     * 查询转码job
      */
-    public QueryJobListResponse queryJob(String jobIds) {
-        log.info("阿里云查询转码作业，jobIds = " + jobIds);
+    public QueryJobListResponse queryTranscodeJob(String jobIds) {
+        log.info("查询阿里云转码作业，jobIds = " + jobIds);
         try {
             return getClient().queryJobList(new QueryJobListRequest().setJobIds(jobIds));
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * 提交截图作业
+     */
+    public SubmitSnapshotJobResponse submitSnapshotJob(String sourceKey, String targetKey) {
+        SubmitSnapshotJobRequest request = new SubmitSnapshotJobRequest();
+        request.setInput(getInput(sourceKey));
+
+        //组装参数
+        JSONObject outputFile = new JSONObject();
+        outputFile.put("Bucket", bucket);
+        outputFile.put("Location", "oss-cn-beijing");
+        outputFile.put("Object", URLUtil.encode(targetKey));
+
+        JSONObject snapshotConfig = new JSONObject();
+        snapshotConfig.put("OutputFile", outputFile);
+        snapshotConfig.put("Time", "0");
+        snapshotConfig.put("Num", "1");
+        request.setSnapshotConfig(snapshotConfig.toJSONString());
+        request.setPipelineId("158c291025294f05b7d012a070ac8c28");
+
+        //提交截图任务
+        log.info("阿里云MPS提交截图任务：request = {}", JSON.toJSONString(request));
+        try {
+            return getClient().submitSnapshotJob(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    /**
+     * 查询截帧job
+     */
+    public QuerySnapshotJobListResponse querySnapshotJob(String jobIds) {
+        log.info("查询阿里云截帧作业，jobIds = " + jobIds);
+        QuerySnapshotJobListRequest request = new QuerySnapshotJobListRequest();
+        request.setSnapshotJobIds(jobIds);
+        try {
+            return getClient().querySnapshotJobList(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 简单查一个job
+     */
+    public QuerySnapshotJobListResponseBody.QuerySnapshotJobListResponseBodySnapshotJobListSnapshotJob
+    simpleQueryOneJob(String jobId) {
+        return querySnapshotJob(jobId).getBody().getSnapshotJobList().getSnapshotJob().get(0);
     }
 
 }

@@ -36,6 +36,9 @@ public class File {
     // 63627b7e66445c2fe81c648a.mp4
     private String filename;
 
+    @Indexed
+    private String type;
+
     // videos/62511690c3afe0646f9c670b/63627b7e66445c2fe81c648a/original/63627b7e66445c2fe81c648a.mp4
     private String key;
     private String extension;
@@ -43,9 +46,6 @@ public class File {
     private Long size;
     @Indexed
     private String etag;
-
-    @Indexed
-    private String type;
 
     @Indexed
     private String provider;

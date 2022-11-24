@@ -130,10 +130,10 @@ public class TranscodeLauncher {
         transcode.setM3u8Key(m3u8Key);
         if (s3Provider.equals(S3Provider.ALIYUN_OSS)) {
             transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
-            transcode.setM3u8CdnUrl(aliyunOssCdnBaseUrl + m3u8Key);
+//            transcode.setM3u8CdnUrl(aliyunOssCdnBaseUrl + m3u8Key);
         } else if (s3Provider.equals(S3Provider.BAIDU_BOS)) {
             transcode.setM3u8AccessUrl(baiduBosAccessBaseUrl + m3u8Key);
-            transcode.setM3u8CdnUrl(baiduBosCdnBaseUrl + m3u8Key);
+//            transcode.setM3u8CdnUrl(baiduBosCdnBaseUrl + m3u8Key);
         }
         mongoTemplate.save(transcode);
 
@@ -152,7 +152,7 @@ public class TranscodeLauncher {
         switch (transcodeProvider) {
             case TranscodeProvider.ALIYUN_MPS: {
                 SubmitJobsResponseBody.SubmitJobsResponseBodyJobResultListJobResultJob job
-                        = aliyunMpsService.createTranscodingJobByResolution(sourceKey, m3u8Key, resolution)
+                        = aliyunMpsService.submitTranscodeJobByResolution(sourceKey, m3u8Key, resolution)
                         .getBody().getJobResultList().getJobResult().get(0).getJob();
                 jobId = job.getJobId();
                 log.info("发起阿里云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
