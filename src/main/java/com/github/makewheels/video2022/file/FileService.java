@@ -2,6 +2,7 @@ package com.github.makewheels.video2022.file;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.baidubce.services.bos.model.BosObject;
@@ -204,6 +205,13 @@ public class FileService {
      */
     public String generatePresignedUrl(String key, Duration duration) {
         return aliyunOssService.generatePresignedUrl(key, duration);
+    }
+
+    /**
+     * 设置对象权限
+     */
+    public void setObjectAcl(String key, CannedAccessControlList cannedAccessControlList) {
+        aliyunOssService.setObjectAcl(key, cannedAccessControlList);
     }
 
     /**

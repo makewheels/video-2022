@@ -46,6 +46,7 @@ public class File {
     private Long size;
     @Indexed
     private String etag;
+    private String acl;
 
     @Indexed
     private String provider;
