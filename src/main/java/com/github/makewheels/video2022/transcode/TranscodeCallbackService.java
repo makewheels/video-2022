@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.transcode;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -30,10 +31,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -151,15 +149,15 @@ public class TranscodeCallbackService {
 
             //如果花了视频的15倍时长都没转完，就跳出
             if ((System.currentTimeMillis() - startTime) > 15L * duration) {
-                log.error("花了视频的15倍时长都没转完，来人看看这是啥 jobId = {}, video = {}, transcode = {}",
-                        jobId, JSON.toJSONString(video), transcode);
+                log.error("花了视频的15倍时长都没转完，来人看看这是啥 jobId = {}, video = {}",
+                        jobId, JSON.toJSONString(video));
                 log.error("transcode = " + JSON.toJSONString(transcode));
                 break;
             }
 
             //查询任务
             QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
-                    = aliyunMpsService.queryJob(jobId).getBody().getJobList().getJob().get(0);
+                    = aliyunMpsService.queryTranscodeJob(jobId).getBody().getJobList().getJob().get(0);
             String jobStatus = job.getState();
             log.info("阿里云轮询查询job结果: jobStatus = {}, job = {}", jobStatus, JSON.toJSONString(job));
             //如果转码已完成，回调
@@ -183,19 +181,22 @@ public class TranscodeCallbackService {
         switch (transcode.getProvider()) {
             case TranscodeProvider.ALIYUN_MPS: {
                 QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
-                        = aliyunMpsService.queryJob(jobId).getBody().getJobList().getJob().get(0);
+                        = aliyunMpsService.queryTranscodeJob(jobId).getBody().getJobList().getJob().get(0);
                 jobStatus = job.getState();
+                transcode.setFinishTime(DateUtil.parseUTC(job.getFinishTime()));
                 transcodeResultJson = JSON.toJSONString(job);
                 break;
             }
             case TranscodeProvider.BAIDU_MCP: {
                 GetTranscodingJobResponse job = baiduMcpService.getTranscodingJob(jobId);
                 jobStatus = job.getJobStatus();
+                transcode.setFinishTime(job.getEndTime());
                 transcodeResultJson = JSON.toJSONString(job);
                 break;
             }
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 jobStatus = "FINISHED";
+                transcode.setFinishTime(new Date());
                 break;
         }
         //只有在新老状态不一致时，才保存数据库
@@ -239,10 +240,10 @@ public class TranscodeCallbackService {
         if (video.isReady()) {
             saveS3Files(transcode);
         }
-        //判断如果是转码成功状态，请求软路由预热，
+        //判断如果是转码成功状态，请求软路由预热
         //只有转码成功才预热，失败不预热
         if (transcode.isSuccessStatus()) {
-            cdnService.prefetchCdn(transcode);
+//            cdnService.prefetchCdn(transcode);
         }
     }
 

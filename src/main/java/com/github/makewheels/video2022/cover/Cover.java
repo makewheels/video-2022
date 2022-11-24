@@ -25,6 +25,8 @@ public class Cover {
 
     @Indexed
     private String provider;
+    @Indexed
+    private String fileId;
 
     @Indexed
     private String jobId;
@@ -47,8 +49,6 @@ public class Cover {
 
     /**
      * 根据对应的provider判断是否是已结束状态
-     *
-     * @return
      */
     @JSONField(serialize = false)
     public boolean isFinishStatus() {

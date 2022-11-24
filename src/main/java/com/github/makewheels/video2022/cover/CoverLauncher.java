@@ -3,12 +3,15 @@ package com.github.makewheels.video2022.cover;
 import cn.hutool.core.io.file.FileNameUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.aliyun.mts20140618.models.QuerySnapshotJobListResponseBody;
+import com.aliyun.mts20140618.models.SubmitSnapshotJobResponse;
 import com.baidubce.services.media.model.CreateThumbnailJobResponse;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileStatus;
 import com.github.makewheels.video2022.file.FileType;
 import com.github.makewheels.video2022.file.S3Provider;
+import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.YoutubeService;
 import com.github.makewheels.video2022.video.bean.Video;
@@ -27,14 +30,6 @@ import java.util.Date;
 @Service
 @Slf4j
 public class CoverLauncher {
-    @Resource
-    private MongoTemplate mongoTemplate;
-
-    @Resource
-    private BaiduCoverService baiduCoverService;
-    @Resource
-    private YoutubeService youtubeService;
-
     @Value("${external-base-url}")
     private String externalBaseUrl;
     @Value("${baidu.bos.accessBaseUrl}")
@@ -45,6 +40,17 @@ public class CoverLauncher {
     private String aliyunOssAccessBaseUrl;
     @Value("${aliyun.oss.cdnBaseUrl}")
     private String aliyunOssCdnBaseUrl;
+
+    @Resource
+    private MongoTemplate mongoTemplate;
+    @Resource
+    private BaiduCoverService baiduCoverService;
+    @Resource
+    private YoutubeService youtubeService;
+    @Resource
+    private AliyunMpsService aliyunMpsService;
+    @Resource
+    private CoverCallbackService coverCallbackService;
 
     /**
      * 发起截帧任务
@@ -60,22 +66,24 @@ public class CoverLauncher {
         String videoProvider = video.getProvider();
         String videoType = video.getType();
 
-        //先创建cover和file对象
+        //创建file和cover对象
+        File file = new File();
+        file.init();
+        file.setStatus(FileStatus.CREATED);
+        file.setUserId(userId);
+        file.setVideoId(videoId);
+        file.setType(FileType.COVER);
+        file.setVideoType(videoType);
+        mongoTemplate.save(file);
+
         Cover cover = new Cover();
         cover.setCreateTime(new Date());
         cover.setUserId(userId);
         cover.setVideoId(videoId);
         cover.setStatus(CoverStatus.CREATED);
         cover.setSourceKey(sourceKey);
+        cover.setFileId(file.getId());
         mongoTemplate.save(cover);
-
-        File file = new File();
-        file.setCreateTime(new Date());
-        file.setStatus(FileStatus.CREATED);
-        file.setUserId(userId);
-        file.setVideoId(videoId);
-        file.setIsDeleted(false);
-        mongoTemplate.save(file);
 
         //判断类型
         //如果是youtube搬运
@@ -84,15 +92,15 @@ public class CoverLauncher {
             //如果是用户自己上传
         } else if (videoType.equals(VideoType.USER_UPLOAD)) {
             if (videoProvider.equals(S3Provider.ALIYUN_OSS)) {
-                handleCloudFunctionCover(user, video, cover, file);
+                handleAliyunMpsCover(user, video, cover, file);
             } else if (videoProvider.equals(S3Provider.BAIDU_BOS)) {
                 handleBaiduCover(user, video, cover);
             }
         }
 
-        mongoTemplate.save(cover);
-        //更新video的封面地址coverUrl
-        video.setCoverUrl(cover.getCdnUrl());
+        //更新video
+        video.setCoverId(cover.getId());
+        video.setCoverUrl(cover.getAccessUrl());
         mongoTemplate.save(video);
     }
 
@@ -107,22 +115,25 @@ public class CoverLauncher {
         cover.setProvider(CoverProvider.YOUTUBE);
         //获取youtube下载url
         JSONObject snippet = video.getYoutubeVideoInfo().getJSONObject("snippet");
-        String downloadUrl = snippet.getJSONObject("thumbnails").getJSONObject("standard").getString("url");
+        String downloadUrl = snippet.getJSONObject("thumbnails")
+                .getJSONObject("standard").getString("url");
         //设置cover
         String extension = FileNameUtil.extName(downloadUrl);
         cover.setExtension(extension);
-        String key = PathUtil.getS3VideoPrefix(userId, videoId) + "/cover/" + file.getId() + "." + extension;
+        String key = PathUtil.getS3VideoPrefix(userId, videoId)
+                + "/cover/" + coverId + "." + extension;
         cover.setKey(key);
         if (videoProvider.equals(S3Provider.ALIYUN_OSS)) {
             cover.setAccessUrl(aliyunOssAccessBaseUrl + key);
-            cover.setCdnUrl(aliyunOssCdnBaseUrl + key);
+//            cover.setCdnUrl(aliyunOssCdnBaseUrl + key);
         }
+        //更新cover
+        mongoTemplate.save(cover);
 
-        //设置file
+        //更新file
         file.setKey(key);
         file.setExtension(extension);
         file.setOriginalFilename(FileNameUtil.getName(downloadUrl));
-        file.setType(FileType.COVER);
         file.setProvider(videoProvider);
         file.setVideoType(video.getType());
         mongoTemplate.save(file);
@@ -135,10 +146,36 @@ public class CoverLauncher {
     }
 
     /**
-     * 生成封面：阿里云云函数，ffmpeg截帧
+     * 生成封面：阿里云 MPS
      */
-    private void handleCloudFunctionCover(User user, Video video, Cover cover, File file) {
+    private void handleAliyunMpsCover(User user, Video video, Cover cover, File file) {
+        String videoId = video.getId();
+        String targetKey = PathUtil.getS3VideoPrefix(video.getUserId(), videoId)
+                + "/cover/" + cover.getId() + ".jpg";
+        SubmitSnapshotJobResponse response = aliyunMpsService.submitSnapshotJob(
+                video.getOriginalFileKey(), targetKey);
+        String jobId = response.getBody().getSnapshotJob().getId();
 
+        //调一次阿里云接口，查询一次status，更新到数据库的cover
+        QuerySnapshotJobListResponseBody.QuerySnapshotJobListResponseBodySnapshotJobListSnapshotJob
+                job = aliyunMpsService.simpleQueryOneJob(jobId);
+        String jobStatus = job.getState();
+        log.info("截图任务已提交: videoId = {}, jobId = {}, title = {}", videoId, jobId, video.getTitle());
+
+        //更新cover
+        cover.setJobId(jobId);
+        cover.setStatus(jobStatus);
+        cover.setKey(targetKey);
+        cover.setExtension("jpg");
+        cover.setAccessUrl(aliyunOssAccessBaseUrl + targetKey);
+        mongoTemplate.save(cover);
+
+        //更新file
+        file.setKey(targetKey);
+        mongoTemplate.save(file);
+
+        //迭代查询结果
+        coverCallbackService.iterateQueryAliyunSnapshotJob(video, cover);
     }
 
     /**
@@ -152,7 +189,8 @@ public class CoverLauncher {
         cover.setProvider(CoverProvider.BAIDU_MCP);
 
         String targetKeyPrefix = PathUtil.getS3VideoPrefix(userId, videoId) + "/cover/" + cover.getId();
-        CreateThumbnailJobResponse thumbnailJob = baiduCoverService.createThumbnailJob(sourceKey, targetKeyPrefix);
+        CreateThumbnailJobResponse thumbnailJob
+                = baiduCoverService.createThumbnailJob(sourceKey, targetKeyPrefix);
         log.info("通过百度云发起截帧任务：CreateThumbnailJobResponse = " + JSON.toJSONString(thumbnailJob));
 
         String key = targetKeyPrefix + ".jpg";
