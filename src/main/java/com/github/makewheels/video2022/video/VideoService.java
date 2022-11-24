@@ -303,6 +303,11 @@ public class VideoService {
 //            transcodeList = transcodeRepository.getByVideoId(videoId);
 //        }
 
+        //排序，transcodeList里，1080p分辨率放前面
+//        if (transcodeList.size() >= 2 && transcodeList.get(0).getResolution().equals(Resolution.R_720P)) {
+//            Collections.reverse(transcodeList);
+//        }
+
         List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
         for (Transcode transcode : transcodeList) {
             PlayUrl playUrl = new PlayUrl();
