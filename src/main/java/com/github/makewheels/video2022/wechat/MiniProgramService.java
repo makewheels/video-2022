@@ -58,12 +58,14 @@ public class MiniProgramService {
     }
 
     private InputStream getQrCodeInputStream(String videoId) {
+        // https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/qrcode-link/qr-code/getUnlimitedQRCode.html
         JSONObject param = new JSONObject();
         param.put("scene", videoId);
         param.put("page", "pages/share/share");
-        param.put("width", 320);
+        param.put("width", 300);
         if (miniProgramEnv.equals("dev")) {
             param.put("check_path", false);
+//            param.put("env_version", "develop");
             param.put("env_version", "trial");
         }
         String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=" + getAccessToken();
