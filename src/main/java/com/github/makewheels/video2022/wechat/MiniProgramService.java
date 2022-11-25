@@ -105,4 +105,29 @@ public class MiniProgramService {
         response.put("qrCodeUrl", url);
         return Result.ok(response);
     }
+
+    /**
+     * 登录
+     * {
+     * "session_key": "tQY+38pdTVnAIWCBNiM1+A==",
+     * "openid": "o--sB5rdWBfwTidbZzzn4FXfWpEg"
+     * }
+     * <p>
+     * {
+     * "errcode": 40163,
+     * "errmsg": "code been used, rid: 6380622c-50076416-224b40b0"
+     * }
+     */
+    public Result<JSONObject> login(User user, String jscode) {
+        JSONObject json = JSON.parseObject(HttpUtil.get("https://api.weixin.qq.com/sns/jscode2session" +
+                "?appid=wx2b94f07ee281d8ce" +
+                "&secret=cbb6376401f724ab412322367c3fdd87" +
+                "&js_code=" + jscode));
+        String openid = json.getString("openid");
+        String sessionKey = json.getString("session_key");
+        if (openid == null) {
+            throw new RuntimeException("获取不到openid, jscode = " + jscode);
+        }
+        return null;
+    }
 }
