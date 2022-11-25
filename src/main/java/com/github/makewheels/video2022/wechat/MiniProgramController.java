@@ -29,4 +29,13 @@ public class MiniProgramController {
         return miniProgramService.getShareQrCodeUrl(user, videoId);
     }
 
+    /**
+     * 登录
+     */
+    @GetMapping("login")
+    public Result<JSONObject> login(HttpServletRequest request, @RequestParam String jscode) {
+        User user = userServiceClient.getUserByRequest(request);
+        return miniProgramService.login(user,jscode);
+    }
+
 }
