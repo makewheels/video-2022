@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.cdn;
+package com.github.makewheels.video2022.etc.cdn;
 
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.IdUtil;

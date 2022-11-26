@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.app;
+package com.github.makewheels.video2022.etc.app;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.response.Result;
