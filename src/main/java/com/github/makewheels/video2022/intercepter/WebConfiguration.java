@@ -17,8 +17,18 @@ public class WebConfiguration implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(getLoginInterceptor())
                 .addPathPatterns("/**")
+                .excludePathPatterns("/save-token.html")
+                .excludePathPatterns("/upload.html")
+                .excludePathPatterns("/transfer-youtube.html")
+                .excludePathPatterns("/upload-aliyun.html")
+                .excludePathPatterns("/app/checkUpdate")
+                .excludePathPatterns("/favicon.ico")
                 .excludePathPatterns("/healthCheck")
+                .excludePathPatterns("/cdn/onSoftRoutePrefetchFinish")
+
                 .excludePathPatterns("/transcode/baiduTranscodeCallback")
+                .excludePathPatterns("/transcode/aliyunCloudFunctionTranscodeCallback")
+
                 .excludePathPatterns("/video/getWatchInfo")
                 .excludePathPatterns("/video/getVideoDetail")
                 .excludePathPatterns("/video/getVideoListByUserId")
@@ -26,14 +36,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/video/getM3u8Content.m3u8")
                 .excludePathPatterns("/file/access")
                 .excludePathPatterns("/watch")
-                .excludePathPatterns("/save-token.html")
-                .excludePathPatterns("/cdn/onSoftRoutePrefetchFinish")
-                .excludePathPatterns("/upload.html")
-                .excludePathPatterns("/transfer-youtube.html")
-                .excludePathPatterns("/transcode/aliyunCloudFunctionTranscodeCallback")
-                .excludePathPatterns("/upload-aliyun.html")
-                .excludePathPatterns("/app/checkUpdate")
-                .excludePathPatterns("/favicon.ico")
+                .excludePathPatterns("/statistics/getTrafficConsume")
         ;
     }
 }

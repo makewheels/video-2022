@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.health;
+package com.github.makewheels.video2022.etc.health;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;

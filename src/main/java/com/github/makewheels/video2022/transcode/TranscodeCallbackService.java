@@ -8,7 +8,7 @@ import com.aliyun.mts20140618.models.QueryJobListResponseBody;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.baidubce.services.media.model.GetTranscodingJobResponse;
-import com.github.makewheels.video2022.cdn.CdnService;
+import com.github.makewheels.video2022.etc.cdn.CdnService;
 import com.github.makewheels.video2022.cover.BaiduCoverService;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
