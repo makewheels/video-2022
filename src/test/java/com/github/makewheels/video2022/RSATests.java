@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-public class GeneratePassword {
+public class RSATests {
     @Test
     public void generateKeyPairs() {
         Map<String, String> map = RSAUtil.generateKeyPairs();
