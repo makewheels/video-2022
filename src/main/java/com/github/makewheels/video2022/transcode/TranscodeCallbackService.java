@@ -277,7 +277,7 @@ public class TranscodeCallbackService {
         transcode.setM3u8Content(m3u8Content);
         mongoTemplate.save(transcode);
 
-        //获取所有ts碎片
+        //获取所有ts碎片文件名
         String transcodeFolder = FilenameUtils.getPath(m3u8Key);
         List<String> filenames = Arrays.asList(m3u8Content.split("\n"));
         filenames = filenames.stream().filter(e -> !e.startsWith("#")).sorted().collect(Collectors.toList());
@@ -288,8 +288,10 @@ public class TranscodeCallbackService {
                 Collectors.toMap(e -> FilenameUtils.getName(e.getKey()), Function.identity()));
 
         List<File> tsFiles = new ArrayList<>(filenames.size());
+
         //遍历每一个ts文件
-        for (String filename : filenames) {
+        for (int i = 0; i < filenames.size(); i++) {
+            String filename = filenames.get(i);
             File tsFile = new File();
             tsFile.init();
             tsFile.setType(FileType.TRANSCODE_TS);
@@ -300,9 +302,8 @@ public class TranscodeCallbackService {
 
             tsFile.setTranscodeId(transcode.getId());
             tsFile.setResolution(transcode.getResolution());
-            //63627b9666445c2fe81c648e-00004.ts -> 4
-            int tsSequence = Integer.parseInt(FilenameUtils.getBaseName(filename).split("-")[1]);
-            tsFile.setTsSequence(tsSequence);
+//            int tsSequence = Integer.parseInt(FilenameUtils.getBaseName(filename).split("-")[1]);
+            tsFile.setTsSequence(i);
 
             tsFile.setObjectInfo(ossMap.get(filename));
             tsFiles.add(tsFile);
