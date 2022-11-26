@@ -236,11 +236,11 @@ public class TranscodeCallbackService {
             video.setStatus(videoStatus);
             mongoTemplate.save(video);
         }
-        //当所有转码都完成了，也就是视频已就绪时
-        if (video.isReady()) {
-            saveS3Files(transcode);
-        }
+
+        //保存转码结果，OSS中的，3u8文件和ts文件到数据库
+        saveS3Files(transcode);
         //判断如果是转码成功状态，请求软路由预热
+
         //只有转码成功才预热，失败不预热
         if (transcode.isSuccessStatus()) {
 //            cdnService.prefetchCdn(transcode);
