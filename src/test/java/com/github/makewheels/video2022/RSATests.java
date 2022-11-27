@@ -18,7 +18,7 @@ public class RSATests {
 
     @Test
     public void encrypt() {
-        String plain = "8qb284q0787942";
+        String plain = "s2GOVKK3MX2oyaMWmrotN3";
         System.out.println("plainText = " + plain);
 
         String publicKey = FileUtil.readUtf8String("D:\\workSpace\\~keys\\video-2022\\publicKey.txt");
