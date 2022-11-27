@@ -43,9 +43,7 @@ public class AliyunOssService {
         if (ossClient != null) return ossClient;
         ClientBuilderConfiguration configuration = new ClientBuilderConfiguration();
         configuration.setProtocol(Protocol.HTTPS);
-        ossClient = new OSSClientBuilder().build(endpoint,
-                Base64.decodeStr(accessKeyId), Base64.decodeStr(secretKey),
-                configuration);
+        ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, secretKey, configuration);
         return ossClient;
     }
 
