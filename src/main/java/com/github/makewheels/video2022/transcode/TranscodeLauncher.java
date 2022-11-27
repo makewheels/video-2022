@@ -43,10 +43,6 @@ public class TranscodeLauncher {
 
     @Value("${external-base-url}")
     private String externalBaseUrl;
-    @Value("${baidu.bos.accessBaseUrl}")
-    private String baiduBosAccessBaseUrl;
-    @Value("${baidu.bos.cdnBaseUrl}")
-    private String baiduBosCdnBaseUrl;
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
     @Value("${aliyun.oss.cdnBaseUrl}")
@@ -105,11 +101,6 @@ public class TranscodeLauncher {
         } else if (video.getBitrate() > 13000) {
             log.info("决定用谁转码：码率超标，用阿里云MPS转码, videoId = " + videoId);
             transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
-
-            //如果，是264，分辨率也不用改，但是是百度对象存储，那还得用百度，因为云函数只有阿里云
-        } else if (video.getProvider().equals(S3Provider.BAIDU_BOS)) {
-            log.info("决定用谁转码：因为文件在百度对象存储，就用百度MCP转码, videoId = " + videoId);
-            transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
         } else {
             //其它情况用阿里云 云函数
             transcodeProvider = TranscodeProvider.ALIYUN_CLOUD_FUNCTION;
@@ -126,9 +117,6 @@ public class TranscodeLauncher {
         if (s3Provider.equals(S3Provider.ALIYUN_OSS)) {
             transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
 //            transcode.setM3u8CdnUrl(aliyunOssCdnBaseUrl + m3u8Key);
-        } else if (s3Provider.equals(S3Provider.BAIDU_BOS)) {
-            transcode.setM3u8AccessUrl(baiduBosAccessBaseUrl + m3u8Key);
-//            transcode.setM3u8CdnUrl(baiduBosCdnBaseUrl + m3u8Key);
         }
         mongoTemplate.save(transcode);
 
