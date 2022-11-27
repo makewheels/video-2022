@@ -45,6 +45,7 @@ public class PasswordUtil {
      * @param passwordFileName 密文
      */
     private static void handleSingleFile(String configFileName, String passwordFileName) {
+        log.info("getFolderPath() = " + getFolderPath());
         File configFile = new File(getFolderPath(), configFileName);
         File passwordFile = new File(getFolderPath(), passwordFileName);
 
@@ -97,5 +98,9 @@ public class PasswordUtil {
         for (String key : keySet) {
             handleSingleFile(key, map.get(key));
         }
+    }
+
+    public static void main(String[] args) {
+        File file = new File("D:\\video-2022-0.0.1-SNAPSHOT.jar");
     }
 }
