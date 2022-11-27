@@ -1,6 +1,5 @@
 package com.github.makewheels.video2022.transcode.aliyun;
 
-import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.URLUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
@@ -28,7 +27,7 @@ public class AliyunMpsService {
 
     private Client getClient() {
         if (client != null) return client;
-        Config config = new Config().setAccessKeyId(Base64.decodeStr(accessKeyId)).setAccessKeySecret(Base64.decodeStr(accessKeySecret));
+        Config config = new Config().setAccessKeyId(accessKeyId).setAccessKeySecret(accessKeySecret);
         config.endpoint = "mts.cn-beijing.aliyuncs.com";
         config.protocol = "https";
         try {

@@ -10,15 +10,15 @@ public class RSATests {
     @Test
     public void generateKeyPairs() {
         Map<String, String> map = RSAUtil.generateKeyPairs();
-        String privateKey = map.get("privateKey");
         String publicKey = map.get("publicKey");
-        System.out.println("privateKey = " + privateKey);
+        String privateKey = map.get("privateKey");
         System.out.println("publicKey = " + publicKey);
+        System.out.println("privateKey = " + privateKey);
     }
 
     @Test
     public void encrypt() {
-        String plain = "cJJx3LZgpiZkIrIC";
+        String plain = "8qb284q0787942";
         System.out.println("plainText = " + plain);
 
         String publicKey = FileUtil.readUtf8String("D:\\workSpace\\~keys\\video-2022\\publicKey.txt");
