@@ -1,6 +1,5 @@
 package com.github.makewheels.video2022.file;
 
-import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.aliyun.oss.ClientBuilderConfiguration;
@@ -60,8 +59,7 @@ public class AliyunOssService {
 
     public JSONObject getUploadCredentials(String key) {
         DefaultProfile.addEndpoint("cn-beijing", "Sts", "sts.cn-beijing.aliyuncs.com");
-        IClientProfile profile = DefaultProfile.getProfile("cn-beijing",
-                Base64.decodeStr(accessKeyId), Base64.decodeStr(secretKey));
+        IClientProfile profile = DefaultProfile.getProfile("cn-beijing", accessKeyId, secretKey);
         DefaultAcsClient client = new DefaultAcsClient(profile);
         AssumeRoleRequest request = new AssumeRoleRequest();
         //精确定位上传权限
