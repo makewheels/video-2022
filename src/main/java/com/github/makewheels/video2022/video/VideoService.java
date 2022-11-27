@@ -77,11 +77,6 @@ public class VideoService {
     @Value("${short-url-service}")
     private String shortUrlService;
 
-    @Value("${aliyun.oss.accessBaseUrl}")
-    private String aliyunOssAccessBaseUrl;
-    @Value("${aliyun.oss.cdnBaseUrl}")
-    private String aliyunOssCdnBaseUrl;
-
     private String getWatchId() {
 //        String json = HttpUtil.get("https://service-d5xe9zbh-1253319037.bj.apigw.tencentcs.com/release/");
 //        JSONObject jsonObject = JSONObject.parseObject(json);
@@ -93,7 +88,10 @@ public class VideoService {
         JSONObject body = new JSONObject();
         body.put("fullUrl", fullUrl);
         body.put("sign", "DuouXm25hwFWVbUmyw3a");
-        return HttpUtil.post(shortUrlService, body.toJSONString());
+        String response = HttpUtil.post(shortUrlService, body.toJSONString());
+        log.info("getShortUrl: body = {}, response = {}",
+                JSON.toJSONString(body), JSON.toJSONString(response));
+        return response;
     }
 
     /**
