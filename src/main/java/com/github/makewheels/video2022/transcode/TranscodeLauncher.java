@@ -5,12 +5,9 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.aliyun.mts20140618.models.SubmitJobsResponseBody;
 import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
-import com.baidubce.services.media.model.CreateTranscodingJobResponse;
-import com.baidubce.services.media.model.GetMediaInfoOfFileResponse;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.file.S3Provider;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
-import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeService;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
@@ -41,8 +38,6 @@ public class TranscodeLauncher {
 
     @Resource
     private AliyunMpsService aliyunMpsService;
-    @Resource
-    private BaiduMcpService baiduMcpService;
     @Resource
     private CloudFunctionTranscodeService cloudFunctionTranscodeService;
 
@@ -159,14 +154,6 @@ public class TranscodeLauncher {
                 jobStatus = job.getState();
                 break;
             }
-            case TranscodeProvider.BAIDU_MCP: {
-                CreateTranscodingJobResponse job = baiduMcpService.createTranscodingJob(
-                        sourceKey, m3u8Key, resolution);
-                jobId = job.getJobId();
-                log.info("发起百度云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
-                jobStatus = baiduMcpService.getTranscodingJob(jobId).getJobStatus();
-                break;
-            }
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 jobId = IdUtil.simpleUUID();
                 String callbackUrl = externalBaseUrl + "/transcode/aliyunCloudFunctionTranscodeCallback";
@@ -219,17 +206,6 @@ public class TranscodeLauncher {
                     streams = properties.getStreams();
             video.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
             video.setAudioCodec(streams.getAudioStreamList().getAudioStream().get(0).getCodecName());
-        } else if (videoProvider.equals(S3Provider.BAIDU_BOS)) {
-            GetMediaInfoOfFileResponse mediaInfo = baiduMcpService.getMediaInfo(sourceKey);
-            log.info("视频源文件上传完成，通过百度获取视频信息，videoId = " + videoId + ", mediaInfo = "
-                    + JSON.toJSONString(mediaInfo));
-            video.setDuration(Long.valueOf(mediaInfo.getDurationInMillisecond()));
-            video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(mediaInfo)));
-            video.setWidth(mediaInfo.getVideo().getWidthInPixel());
-            video.setHeight(mediaInfo.getVideo().getHeightInPixel());
-            video.setVideoCodec(mediaInfo.getVideo().getCodec());
-            video.setAudioCodec(mediaInfo.getAudio().getCodec());
-            video.setBitrate(mediaInfo.getVideo().getBitRateInBps() + mediaInfo.getAudio().getBitRateInBps());
         }
 
         //更新数据库video状态

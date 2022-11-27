@@ -6,7 +6,6 @@ import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.PutObjectResult;
-import com.baidubce.services.bos.model.BosObject;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.fileaccesslog.FileAccessLogService;
 import com.github.makewheels.video2022.response.ErrorCode;
@@ -35,8 +34,6 @@ public class FileService {
     private MongoTemplate mongoTemplate;
     @Resource
     private AliyunOssService aliyunOssService;
-    @Resource
-    private BaiduBosService baiduBosService;
 
     @Resource
     private FileRepository fileRepository;
@@ -122,9 +119,7 @@ public class FileService {
         //根据provider，获取上传凭证
         String provider = file.getProvider();
         JSONObject credentials = null;
-        if (provider.equals(S3Provider.BAIDU_BOS)) {
-            credentials = baiduBosService.getUploadCredentials(key);
-        } else if (provider.equals(S3Provider.ALIYUN_OSS)) {
+        if (provider.equals(S3Provider.ALIYUN_OSS)) {
             credentials = aliyunOssService.getUploadCredentials(key);
         }
         if (credentials == null) return Result.error(ErrorCode.FAIL);
@@ -148,10 +143,6 @@ public class FileService {
         String provider = file.getProvider();
         if (provider.equals(S3Provider.ALIYUN_OSS)) {
             OSSObject object = aliyunOssService.getObject(key);
-            file.setSize(object.getObjectMetadata().getContentLength());
-            file.setEtag(object.getObjectMetadata().getETag());
-        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
-            BosObject object = baiduBosService.getObject(key);
             file.setSize(object.getObjectMetadata().getContentLength());
             file.setEtag(object.getObjectMetadata().getETag());
         }

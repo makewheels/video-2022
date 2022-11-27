@@ -2,9 +2,8 @@ package com.github.makewheels.video2022.cover;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.annotation.JSONField;
-import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
-import com.github.makewheels.video2022.transcode.baidu.BaiduTranscodeStatus;
 import com.github.makewheels.video2022.file.S3Provider;
+import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -54,8 +53,6 @@ public class Cover {
     public boolean isFinishStatus() {
         if (provider.equals(S3Provider.ALIYUN_OSS)) {
             return AliyunTranscodeStatus.isFinishedStatus(status);
-        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
-            return BaiduTranscodeStatus.isFinishedStatus(status);
         }
         return true;
     }

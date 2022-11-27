@@ -2,7 +2,6 @@ package com.github.makewheels.video2022.transcode;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
-import com.github.makewheels.video2022.transcode.baidu.BaiduTranscodeStatus;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeStatus;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -55,8 +54,6 @@ public class Transcode {
         switch (provider) {
             case TranscodeProvider.ALIYUN_MPS:
                 return AliyunTranscodeStatus.isFinishedStatus(status);
-            case TranscodeProvider.BAIDU_MCP:
-                return BaiduTranscodeStatus.isFinishedStatus(status);
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 return CloudFunctionTranscodeStatus.isFinishedStatus(status);
         }
@@ -70,8 +67,6 @@ public class Transcode {
         switch (provider) {
             case TranscodeProvider.ALIYUN_MPS:
                 return StringUtils.equals(status, AliyunTranscodeStatus.TranscodeSuccess);
-            case TranscodeProvider.BAIDU_MCP:
-                return StringUtils.equals(status, BaiduTranscodeStatus.SUCCESS);
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 return true;
         }
