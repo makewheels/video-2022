@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class CdnService {
-    @Value("${aliyun.cdn.accessKeyId}")
+//    @Value("${aliyun.cdn.accessKeyId}")
     private String aliyunCdnAccessKeyId;
-    @Value("${aliyun.cdn.secretKey}")
+//    @Value("${aliyun.cdn.secretKey}")
     private String aliyunCdnSecretKey;
 
     @Value("${cdn-prefetch-url}")
