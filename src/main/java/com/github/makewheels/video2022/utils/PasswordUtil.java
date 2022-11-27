@@ -19,7 +19,7 @@ public class PasswordUtil {
      * 获取application同级目录
      */
     private static String getFolderPath() {
-        return Video2022Application.class.getResource("/").getFile();
+        return Video2022Application.class.getResource("/").getPath();
     }
 
     /**
