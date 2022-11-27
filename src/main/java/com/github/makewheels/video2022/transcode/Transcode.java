@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.transcode;
 
-import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeStatus;
 import lombok.Data;
