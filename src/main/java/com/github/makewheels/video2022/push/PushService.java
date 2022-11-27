@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.push;
 
 import cn.hutool.http.HttpUtil;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import org.springframework.stereotype.Service;
 
 @Service

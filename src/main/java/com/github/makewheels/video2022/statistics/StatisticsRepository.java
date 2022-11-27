@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.statistics;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;

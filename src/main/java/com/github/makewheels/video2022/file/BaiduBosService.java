@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.file;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.baidubce.BceClientConfiguration;
 import com.baidubce.Protocol;
 import com.baidubce.auth.DefaultBceCredentials;

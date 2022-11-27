@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.video;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.github.makewheels.video2022.redis.RedisKey;
 import com.github.makewheels.video2022.redis.RedisService;
 import com.github.makewheels.video2022.redis.RedisTime;
