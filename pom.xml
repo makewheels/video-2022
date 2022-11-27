@@ -46,13 +46,13 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
-            <version>5.8.0</version>
+            <version>5.8.10</version>
         </dependency>
 
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.80</version>
+            <version>1.2.83</version>
         </dependency>
 
         <dependency>
@@ -65,11 +65,15 @@
         <dependency>
             <groupId>com.baidubce</groupId>
             <artifactId>bce-java-sdk</artifactId>
-            <version>0.10.202</version>
+            <version>0.10.236</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jdk.tools</groupId>
+                    <artifactId>jdk.tools</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -127,12 +131,6 @@
             <groupId>com.aliyun</groupId>
             <artifactId>alibaba-dingtalk-service-sdk</artifactId>
             <version>2.0.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>de.huxhorn.sulky</groupId>
-            <artifactId>de.huxhorn.sulky.ulid</artifactId>
-            <version>8.3.0</version>
         </dependency>
 
     </dependencies>
