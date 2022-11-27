@@ -41,11 +41,6 @@ public class FileService {
     @Resource
     private FileAccessLogService fileAccessLogService;
 
-    @Value("${baidu.bos.accessBaseUrl}")
-    private String baiduBosAccessBaseUrl;
-    @Value("${baidu.bos.cdnBaseUrl}")
-    private String baiduBosCdnBaseUrl;
-
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
     @Value("${aliyun.oss.cdnBaseUrl}")
@@ -87,8 +82,6 @@ public class FileService {
         String provider = file.getProvider();
         if (provider.equals(S3Provider.ALIYUN_OSS)) {
             return aliyunOssAccessBaseUrl + file.getKey();
-        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
-            return baiduBosAccessBaseUrl + file.getKey();
         }
         return null;
     }
@@ -100,8 +93,6 @@ public class FileService {
         String provider = file.getProvider();
         if (provider.equals(S3Provider.ALIYUN_OSS)) {
             return aliyunOssCdnBaseUrl + file.getKey();
-        } else if (provider.equals(S3Provider.BAIDU_BOS)) {
-            return baiduBosCdnBaseUrl + file.getKey();
         }
         return null;
     }

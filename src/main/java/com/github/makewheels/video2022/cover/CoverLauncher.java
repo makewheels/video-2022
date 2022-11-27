@@ -30,10 +30,6 @@ import java.util.Date;
 public class CoverLauncher {
     @Value("${external-base-url}")
     private String externalBaseUrl;
-    @Value("${baidu.bos.accessBaseUrl}")
-    private String baiduBosAccessBaseUrl;
-    @Value("${baidu.bos.cdnBaseUrl}")
-    private String baiduBosCdnBaseUrl;
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
     @Value("${aliyun.oss.cdnBaseUrl}")

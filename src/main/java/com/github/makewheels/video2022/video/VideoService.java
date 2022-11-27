@@ -77,10 +77,6 @@ public class VideoService {
     @Value("${short-url-service}")
     private String shortUrlService;
 
-    @Value("${baidu.bos.accessBaseUrl}")
-    private String baiduBosAccessBaseUrl;
-    @Value("${baidu.bos.cdnBaseUrl}")
-    private String baiduBosCdnBaseUrl;
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
     @Value("${aliyun.oss.cdnBaseUrl}")
