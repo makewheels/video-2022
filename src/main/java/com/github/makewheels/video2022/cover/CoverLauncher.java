@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.cover;
 
 import cn.hutool.core.io.file.FileNameUtil;
-import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QuerySnapshotJobListResponseBody;
 import com.aliyun.mts20140618.models.SubmitSnapshotJobResponse;
 import com.github.makewheels.usermicroservice2022.user.User;

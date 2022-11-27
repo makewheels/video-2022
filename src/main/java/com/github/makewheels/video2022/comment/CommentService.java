@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.comment;
 
-import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.response.Result;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;

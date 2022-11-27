@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.file;
 
 import cn.hutool.core.util.IdUtil;
-import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.ClientBuilderConfiguration;
 import com.aliyun.oss.HttpMethod;
 import com.aliyun.oss.OSS;

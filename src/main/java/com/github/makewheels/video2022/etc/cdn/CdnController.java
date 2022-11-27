@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.etc.cdn;
 
-import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.response.Result;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
