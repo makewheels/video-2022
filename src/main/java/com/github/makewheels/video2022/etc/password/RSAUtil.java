@@ -1,10 +1,13 @@
-package com.github.makewheels.video2022.utils;
+package com.github.makewheels.video2022.etc.password;
 
 import cn.hutool.core.codec.Base64;
+import cn.hutool.crypto.KeyUtil;
+import cn.hutool.crypto.asymmetric.AsymmetricAlgorithm;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
 
 import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,10 +23,14 @@ public class RSAUtil {
      * 生成公私钥对
      */
     public static Map<String, String> generateKeyPairs() {
-        RSA rsa = new RSA();
+        String algorithm = AsymmetricAlgorithm.RSA_ECB_PKCS1.getValue();
+        KeyPair keyPair = KeyUtil.generateKeyPair(algorithm, 2048);
+        String privateKey = Base64.encode(keyPair.getPrivate().getEncoded());
+        String publicKey = Base64.encode(keyPair.getPublic().getEncoded());
+
         Map<String, String> map = new HashMap<>();
-        map.put("privateKey", rsa.getPrivateKeyBase64());
-        map.put("publicKey", rsa.getPublicKeyBase64());
+        map.put("privateKey", privateKey);
+        map.put("publicKey", publicKey);
         return map;
     }
 
