@@ -5,11 +5,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.io.FileNotFoundException;
+
 @SpringBootApplication
 @EnableScheduling
 public class Video2022Application {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         PasswordUtil.load();
 
         SpringApplication.run(Video2022Application.class, args);

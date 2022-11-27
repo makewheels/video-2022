@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.utils;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.setting.dialect.Props;
 import com.github.makewheels.video2022.Video2022Application;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 public class PasswordUtil {
     /**
      * 获取application同级目录
@@ -45,6 +47,9 @@ public class PasswordUtil {
     private static void handleSingleFile(String configFileName, String passwordFileName) {
         File configFile = new File(getFolderPath(), configFileName);
         File passwordFile = new File(getFolderPath(), passwordFileName);
+
+        log.info("configFile = " + configFile.getAbsolutePath());
+        log.info("passwordFile = " + passwordFile.getAbsolutePath());
 
         //加载解密私钥
         String privateKey = getPrivateKey(configFile);
