@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.wechat;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.user.UserServiceClient;
