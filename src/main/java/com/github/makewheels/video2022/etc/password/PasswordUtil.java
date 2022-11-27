@@ -2,7 +2,6 @@ package com.github.makewheels.video2022.etc.password;
 
 import cn.hutool.core.io.FileUtil;
 import com.github.makewheels.video2022.Video2022Application;
-import com.github.makewheels.video2022.utils.RSAUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -40,7 +39,6 @@ public class PasswordUtil {
         }
         return Video2022Application.class.getResourceAsStream("/" + path);
     }
-
 
     /**
      * 获得解密之后的map

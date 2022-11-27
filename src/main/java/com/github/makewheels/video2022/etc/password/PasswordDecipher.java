@@ -16,7 +16,6 @@ import java.util.Map;
  * 密码解密器
  */
 @Slf4j
-
 public class PasswordDecipher implements BeanFactoryPostProcessor, Ordered {
 
     private final ConfigurableEnvironment environment;
