@@ -18,15 +18,6 @@ public class TranscodeController {
     private TranscodeCallbackService transcodeCallbackService;
 
     /**
-     * 百度转码完成回调
-     */
-    @PostMapping("baiduTranscodeCallback")
-    public Result<Void> baiduTranscodeCallback(@RequestBody JSONObject body) {
-        log.debug("收到百度转码回调：" + body.toJSONString());
-        return transcodeCallbackService.baiduTranscodeCallback(body);
-    }
-
-    /**
      * 阿里云 云函数转码完成回调
      */
     @PostMapping("aliyunCloudFunctionTranscodeCallback")

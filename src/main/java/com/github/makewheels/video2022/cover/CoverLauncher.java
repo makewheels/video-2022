@@ -1,11 +1,9 @@
 package com.github.makewheels.video2022.cover;
 
 import cn.hutool.core.io.file.FileNameUtil;
-import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.aliyun.mts20140618.models.QuerySnapshotJobListResponseBody;
 import com.aliyun.mts20140618.models.SubmitSnapshotJobResponse;
-import com.baidubce.services.media.model.CreateThumbnailJobResponse;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileStatus;
@@ -43,8 +41,6 @@ public class CoverLauncher {
 
     @Resource
     private MongoTemplate mongoTemplate;
-    @Resource
-    private BaiduCoverService baiduCoverService;
     @Resource
     private YoutubeService youtubeService;
     @Resource
@@ -93,8 +89,6 @@ public class CoverLauncher {
         } else if (videoType.equals(VideoType.USER_UPLOAD)) {
             if (videoProvider.equals(S3Provider.ALIYUN_OSS)) {
                 handleAliyunMpsCover(user, video, cover, file);
-            } else if (videoProvider.equals(S3Provider.BAIDU_BOS)) {
-                handleBaiduCover(user, video, cover);
             }
         }
 
@@ -178,31 +172,4 @@ public class CoverLauncher {
         coverCallbackService.iterateQueryAliyunSnapshotJob(video, cover);
     }
 
-    /**
-     * 生成封面：百度截帧
-     */
-    private void handleBaiduCover(User user, Video video, Cover cover) {
-        String userId = user.getId();
-        String videoId = video.getId();
-        String sourceKey = video.getOriginalFileKey();
-        cover.setExtension("jpg");
-        cover.setProvider(CoverProvider.BAIDU_MCP);
-
-        String targetKeyPrefix = PathUtil.getS3VideoPrefix(userId, videoId) + "/cover/" + cover.getId();
-        CreateThumbnailJobResponse thumbnailJob
-                = baiduCoverService.createThumbnailJob(sourceKey, targetKeyPrefix);
-        log.info("通过百度云发起截帧任务：CreateThumbnailJobResponse = " + JSON.toJSONString(thumbnailJob));
-
-        String key = targetKeyPrefix + ".jpg";
-        cover.setKey(key);
-        cover.setAccessUrl(baiduBosAccessBaseUrl + key);
-        cover.setCdnUrl(baiduBosCdnBaseUrl + key);
-
-        String thumbnailJobId = thumbnailJob.getJobId();
-        cover.setJobId(thumbnailJobId);
-
-        mongoTemplate.save(cover);
-        //再次查询，更新状态
-        cover.setStatus(baiduCoverService.getThumbnailJob(thumbnailJobId).getJobStatus());
-    }
 }

@@ -82,29 +82,40 @@
             <artifactId>commons-io</artifactId>
             <version>2.11.0</version>
         </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.4</version>
+        </dependency>
 
         <dependency>
             <groupId>com.github.makewheels</groupId>
             <artifactId>user-micro-service-2022</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-
-        <!--百度云-->
-        <dependency>
-            <groupId>com.baidubce</groupId>
-            <artifactId>bce-java-sdk</artifactId>
-            <version>0.10.236</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jdk.tools</groupId>
-                    <artifactId>jdk.tools</artifactId>
+                    <groupId>com.baidubce</groupId>
+                    <artifactId>bce-java-sdk</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!--百度云-->
+<!--        <dependency>-->
+<!--            <groupId>com.baidubce</groupId>-->
+<!--            <artifactId>bce-java-sdk</artifactId>-->
+<!--            <version>0.10.236</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>org.slf4j</groupId>-->
+<!--                    <artifactId>slf4j-log4j12</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>jdk.tools</groupId>-->
+<!--                    <artifactId>jdk.tools</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
 
         <!--阿里云-->
         <dependency>

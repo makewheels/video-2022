@@ -3,9 +3,11 @@ package com.github.makewheels.video2022.utils;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.setting.dialect.Props;
 import com.github.makewheels.video2022.Video2022Application;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,12 +35,22 @@ public class PasswordUtil {
     private static void handleSingleFile(String configFileName, String passwordFileName) {
         File configFile = new File(getFolderPath(), configFileName);
         File passwordFile = new File(getFolderPath(), passwordFileName);
+
+        //源配置文件
+        List<String> configLines = FileUtil.readUtf8Lines(configFile);
+
+        //密码文件
         Props passwords = new Props(passwordFile);
-        Set<Object> keySet = passwords.keySet();
-        for (Object key : keySet) {
+
+        //遍历配置文件
+        for (String line : configLines) {
+            if (StringUtils.isEmpty(line)) {
+                continue;
+            }
+            String key = line.split("=")[0];
             String value = passwords.getStr((String) key);
-            System.out.println(key + " " + value);
         }
+
     }
 
     public static void load() {

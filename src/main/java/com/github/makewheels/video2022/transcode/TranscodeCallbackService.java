@@ -7,11 +7,6 @@ import com.alibaba.fastjson2.JSONObject;
 import com.aliyun.mts20140618.models.QueryJobListResponseBody;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
-import com.baidubce.services.media.model.GetTranscodingJobResponse;
-import com.github.makewheels.video2022.etc.cdn.CdnService;
-import com.github.makewheels.video2022.cover.BaiduCoverService;
-import com.github.makewheels.video2022.cover.Cover;
-import com.github.makewheels.video2022.cover.CoverRepository;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.FileStatus;
@@ -19,7 +14,6 @@ import com.github.makewheels.video2022.file.FileType;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
-import com.github.makewheels.video2022.transcode.baidu.BaiduMcpService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
@@ -45,71 +39,14 @@ public class TranscodeCallbackService {
     private MongoTemplate mongoTemplate;
     @Resource
     private TranscodeRepository transcodeRepository;
-    @Resource
-    private CoverRepository coverRepository;
 
     @Resource
     private AliyunMpsService aliyunMpsService;
-    @Resource
-    private BaiduMcpService baiduMcpService;
 
-    @Resource
-    private BaiduCoverService baiduCoverService;
-    @Resource
-    private CdnService cdnService;
     @Resource
     private FileService fileService;
     @Resource
     private VideoRepository videoRepository;
-
-    /**
-     * 处理百度视频转码回调
-     * 参考：
-     * https://cloud.baidu.com/doc/MCT/s/Hkc9x65yv
-     * <p>
-     * {
-     * "messageId": "bqs-topic-134-1-5",
-     * "messageBody": "{\"jobId\":\"job-ffyfa478uh4mjyrz\",\"pipelineName\":\"a2\",\"jobStatus\":\"FAILED\",
-     * \"createTime\":\"2015-06-23T05:44:21Z\",\"startTime\":\"2015-06-23T05:44:25Z\",\"endTime\":
-     * \"2015-06-23T05:47:36Z\",\"error\":{\"code\":\"JobOverTime\",\"message\":
-     * \"thejobhastimedout.pleaseretryit\"},\"source\":{\"sourceKey\":\"1.mp4\"},\"target\":
-     * {\"targetKey\":\"out.mp4\",\"presetName\":\"bce.video_mp4_854x480_800kbps\"}}",
-     * "subscriptionName": "hello2",
-     * "version": "v1alpha",
-     * "signature": "BQSsignature"
-     * }
-     */
-    public Result<Void> baiduTranscodeCallback(JSONObject body) {
-        JSONObject messageBody = JSONObject.parseObject(body.getString("messageBody"));
-        String jobId = messageBody.getString("jobId");
-        log.info("处理视频转码回调：jobId = " + jobId + ", messageBody = " + messageBody.toJSONString());
-        //根据jobId查询数据库，首先查询transcode，如果没有再查询thumbnail
-        Transcode transcode = transcodeRepository.getByJobId(jobId);
-        //如果是转码任务
-        if (transcode != null) {
-            //判断是不是已完成
-            if (transcode.isFinishStatus()) {
-                log.info("百度视频转码已完成，跳过 " + JSON.toJSONString(transcode));
-                return Result.ok();
-            }
-            handleTranscodeCallback(transcode);
-        } else {
-            //如果是截帧任务
-            Cover cover = coverRepository.getByJobId(jobId);
-            //判断是不是已完成
-            if (cover == null) {
-                log.info("找不到该jobId，跳过 jobId = " + jobId);
-                return Result.ok();
-            }
-            log.info("百度获取到截帧任务结果：" + JSON.toJSONString(cover));
-            if (cover.isFinishStatus()) {
-                log.info("百度截帧转码已完成，跳过 " + JSON.toJSONString(cover));
-                return Result.ok();
-            }
-            baiduCoverService.handleThumbnailCallback(cover);
-        }
-        return Result.ok();
-    }
 
     /**
      * 阿里云 云函数转码完成回调
@@ -187,13 +124,6 @@ public class TranscodeCallbackService {
                 transcodeResultJson = JSON.toJSONString(job);
                 break;
             }
-            case TranscodeProvider.BAIDU_MCP: {
-                GetTranscodingJobResponse job = baiduMcpService.getTranscodingJob(jobId);
-                jobStatus = job.getJobStatus();
-                transcode.setFinishTime(job.getEndTime());
-                transcodeResultJson = JSON.toJSONString(job);
-                break;
-            }
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 jobStatus = "FINISHED";
                 transcode.setFinishTime(new Date());
@@ -239,12 +169,6 @@ public class TranscodeCallbackService {
 
         //保存转码结果，OSS中的，3u8文件和ts文件到数据库
         saveS3Files(transcode);
-        //判断如果是转码成功状态，请求软路由预热
-
-        //只有转码成功才预热，失败不预热
-        if (transcode.isSuccessStatus()) {
-//            cdnService.prefetchCdn(transcode);
-        }
     }
 
     /**
