@@ -2,7 +2,7 @@ package com.github.makewheels.video2022.file;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.user.User;
-import com.github.makewheels.video2022.user.UserServiceClient;
+import com.github.makewheels.video2022.user.UserService;
 import com.github.makewheels.video2022.response.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,19 +17,19 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("file")
 public class FileController {
     @Resource
-    private UserServiceClient userServiceClient;
+    private UserService userService;
     @Resource
     private FileService fileService;
 
     @GetMapping("getUploadCredentials")
     public Result<JSONObject> getUploadCredentials(HttpServletRequest request, @RequestParam String fileId) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return fileService.getUploadCredentials(user, fileId);
     }
 
     @GetMapping("uploadFinish")
     public Result<Void> uploadFinish(HttpServletRequest request, @RequestParam String fileId) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return fileService.uploadFinish(user, fileId);
     }
 
@@ -40,7 +40,7 @@ public class FileController {
             @RequestParam String resolution, @RequestParam String fileId, @RequestParam String timestamp,
             @RequestParam String nonce, @RequestParam String sign) {
 
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return fileService.access(request, response, videoId, clientId, sessionId, resolution, fileId,
                 timestamp, nonce, sign);
     }
