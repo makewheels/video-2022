@@ -8,4 +8,8 @@ public class RedisKey {
         return VIDEO + ":watchInfo:" + watchId;
     }
 
+    public static String ip(String ip) {
+        return ROOT + ":ip";
+    }
+
 }

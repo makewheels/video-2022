@@ -1,7 +1,9 @@
 package com.github.makewheels.video2022.redis;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -14,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Redis工具类
  */
-@Component
+@Service
 public class RedisService {
 
     @Resource
@@ -94,6 +96,20 @@ public class RedisService {
      */
     public Object get(String key) {
         return key == null ? null : redisTemplate.opsForValue().get(key);
+    }
+
+    public String getForString(String key) {
+        return (String) redisTemplate.opsForValue().get(key);
+    }
+
+    public JSONObject getForJSONObject(String key) {
+        String json = (String) redisTemplate.opsForValue().get(key);
+        return JSON.parseObject(json);
+    }
+
+    public <T> T getForObject(String key, Class<T> clazz) {
+        String json = (String) redisTemplate.opsForValue().get(key);
+        return JSON.parseObject(json, clazz);
     }
 
     /**
