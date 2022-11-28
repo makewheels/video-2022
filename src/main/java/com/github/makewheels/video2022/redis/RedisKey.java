@@ -9,7 +9,7 @@ public class RedisKey {
     }
 
     public static String ip(String ip) {
-        return ROOT + ":ip";
+        return ROOT + ":ip:" + ip;
     }
 
 }
