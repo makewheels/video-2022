@@ -66,7 +66,7 @@ public class MiniProgramService {
         if (miniProgramEnv.equals("dev")) {
             param.put("check_path", false);
 //            param.put("env_version", "develop");
-            param.put("env_version", "trial");
+//            param.put("env_version", "trial");
         }
         String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=" + getAccessToken();
         HttpResponse response = HttpUtil.createPost(url).body(param.toJSONString()).execute();
