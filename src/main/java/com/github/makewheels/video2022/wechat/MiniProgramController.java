@@ -3,7 +3,7 @@ package com.github.makewheels.video2022.wechat;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.response.Result;
-import com.github.makewheels.video2022.user.UserServiceClient;
+import com.github.makewheels.video2022.user.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("miniProgram")
 public class MiniProgramController {
     @Resource
-    private UserServiceClient userServiceClient;
+    private UserService userService;
     @Resource
     private MiniProgramService miniProgramService;
 
@@ -25,7 +25,7 @@ public class MiniProgramController {
      */
     @GetMapping("getShareQrCodeUrl")
     public Result<JSONObject> getVideoDetail(HttpServletRequest request, @RequestParam String videoId) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return miniProgramService.getShareQrCodeUrl(user, videoId);
     }
 
@@ -34,7 +34,7 @@ public class MiniProgramController {
      */
     @GetMapping("login")
     public Result<JSONObject> login(HttpServletRequest request, @RequestParam String jscode) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return miniProgramService.login(user,jscode);
     }
 

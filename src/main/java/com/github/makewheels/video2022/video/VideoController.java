@@ -3,7 +3,7 @@ package com.github.makewheels.video2022.video;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.response.Result;
-import com.github.makewheels.video2022.user.UserServiceClient;
+import com.github.makewheels.video2022.user.UserService;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.bean.VideoDetail;
 import com.github.makewheels.video2022.video.bean.VideoSimpleInfo;
@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 public class VideoController {
     @Resource
-    private UserServiceClient userServiceClient;
+    private UserService userService;
     @Resource
     private VideoService videoService;
 
@@ -29,7 +29,7 @@ public class VideoController {
      */
     @PostMapping("create")
     public Result<JSONObject> create(HttpServletRequest request, @RequestBody JSONObject body) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return videoService.create(user, body);
     }
 
@@ -38,7 +38,7 @@ public class VideoController {
      */
     @GetMapping("originalFileUploadFinish")
     public Result<Void> originalFileUploadFinish(HttpServletRequest request, @RequestParam String videoId) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return videoService.originalFileUploadFinish(user, videoId);
     }
 
@@ -47,7 +47,7 @@ public class VideoController {
      */
     @PostMapping("updateInfo")
     public Result<Void> updateInfo(HttpServletRequest request, @RequestBody Video updateVideo) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return videoService.updateVideo(user, updateVideo);
     }
 
@@ -59,7 +59,7 @@ public class VideoController {
     public Result<WatchInfo> getWatchInfo(
             HttpServletRequest request, @RequestParam String watchId,
             @RequestParam String clientId, @RequestParam String sessionId) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return videoService.getWatchInfo(user, watchId, clientId, sessionId);
     }
 
@@ -72,7 +72,7 @@ public class VideoController {
      */
     @GetMapping("getVideoDetail")
     public Result<VideoDetail> getVideoDetail(HttpServletRequest request, @RequestParam String videoId) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return videoService.getVideoDetail(user, videoId);
     }
 
@@ -96,7 +96,7 @@ public class VideoController {
     @GetMapping("getMyVideoList")
     public Result<List<VideoSimpleInfo>> getMyVideoList(
             HttpServletRequest request, @RequestParam int skip, @RequestParam int limit) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return videoService.getVideoList(user.getId(), skip, limit);
     }
 
@@ -112,7 +112,7 @@ public class VideoController {
     public Result<Void> addWatchLog(
             HttpServletRequest request, @RequestParam String videoId, @RequestParam String clientId,
             @RequestParam String sessionId, @RequestParam String videoStatus) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return videoService.addWatchLog(request, user, clientId, sessionId, videoId, videoStatus);
     }
 
@@ -122,7 +122,7 @@ public class VideoController {
     @GetMapping("getYoutubeVideoInfo")
     public Result<JSONObject> getYoutubeVideoInfo(
             HttpServletRequest request, @RequestParam JSONObject body) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return videoService.getYoutubeVideoInfo(body);
     }
 
@@ -134,7 +134,7 @@ public class VideoController {
             HttpServletRequest request, @RequestParam String videoId,
             @RequestParam String clientId, @RequestParam String sessionId,
             @RequestParam String transcodeId, @RequestParam String resolution) {
-        User user = userServiceClient.getUserByRequest(request);
+        User user = userService.getUserByRequest(request);
         return videoService.getM3u8Content(user, videoId, clientId, sessionId, transcodeId, resolution);
     }
 

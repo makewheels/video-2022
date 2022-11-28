@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 
 @Service
-public class UserServiceClient {
+public class UserService {
     private String getBaseUrl() {
         return "http://localhost:5029/user-micro-service-2022/user/";
     }
 
-    public User getUserByToken(String token) {
+    private User getUserByToken(String token) {
         if (StringUtils.isEmpty(token)) return null;
         String json = HttpUtil.get(getBaseUrl() + "getUserByToken?token=" + token);
         JSONObject data = JSONObject.parseObject(json).getJSONObject("data");
