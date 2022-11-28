@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.push;
+package com.github.makewheels.video2022.etc.push;
 
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;

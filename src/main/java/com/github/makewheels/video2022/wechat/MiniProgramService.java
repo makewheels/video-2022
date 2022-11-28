@@ -24,8 +24,12 @@ import java.time.Duration;
 
 @Service
 public class MiniProgramService {
-    @Value("${mini-program.env}")
+    @Value("${wechat.mini-program.env}")
     private String miniProgramEnv;
+    @Value("${wechat.mini-program.AppID}")
+    private String appId;
+    @Value("${wechat.mini-program.AppSecret}")
+    private String appSecret;
 
     @Resource
     private FileService fileService;
@@ -49,8 +53,7 @@ public class MiniProgramService {
         }
         //否则请求微信
         String json = HttpUtil.get("https://api.weixin.qq.com/cgi-bin/token"
-                + "?grant_type=client_credential&appid=wx2b94f07ee281d8ce"
-                + "&secret=cbb6376401f724ab412322367c3fdd87");
+                + "?grant_type=client_credential&appid=" + appId + "&secret=" + appSecret);
         JSONObject jsonObject = JSON.parseObject(json);
         accessToken = jsonObject.getString("access_token");
         accessTokenExpireAt = System.currentTimeMillis() + jsonObject.getInteger("expires_in") * 1000;
@@ -120,9 +123,7 @@ public class MiniProgramService {
      */
     public Result<JSONObject> login(User user, String jscode) {
         JSONObject json = JSON.parseObject(HttpUtil.get("https://api.weixin.qq.com/sns/jscode2session" +
-                "?appid=wx2b94f07ee281d8ce" +
-                "&secret=cbb6376401f724ab412322367c3fdd87" +
-                "&js_code=" + jscode));
+                "?appid=" + appId + "&secret=" + appSecret + "&js_code=" + jscode));
         String openid = json.getString("openid");
         String sessionKey = json.getString("session_key");
         if (openid == null) {
