@@ -30,7 +30,7 @@ public class IpService {
         String json = HttpUtil.createGet("https://ips.market.alicloudapi.com/iplocaltion?ip=" + ip)
                 .header("Authorization", "APPCODE " + appCode).execute().body();
         jsonObject = JSON.parseObject(json);
-        redisService.set(RedisKey.ip(ip), json, RedisTime.THIRTY_MINUTES);
+        redisService.set(RedisKey.ip(ip), json, RedisTime.THREE_HOURS);
         return jsonObject;
     }
 
