@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.intercepter;
 
-import com.alibaba.fastjson.JSON;
 import com.github.makewheels.usermicroservice2022.user.User;
+import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserServiceClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -29,19 +29,30 @@ public class LoginInterceptor implements HandlerInterceptor {
         if (tokens != null) {
             user = userServiceClient.getUserByToken(tokens[0]);
         }
-        log.debug("token = {}, user = {}", token, JSON.toJSONString(user));
-        //如果token校验不通过，让他放回登录页
-        if (user == null) {
-            response.setStatus(403);
-            String target = request.getRequestURL().toString();
-            URI uri = new URI(target);
-            response.sendRedirect(uri.getScheme() + "://" + uri.getHost()
-                    + ":5021/user-micro-service-2022/login.html?target=" + target);
-            return false;
-        } else {
+//        log.debug("token = {}, user = {}", token, JSON.toJSONString(user));
+
+        //找到了用户，校验通过
+        if (user != null) {
+            onLoginCheckPass(user);
             response.setStatus(200);
             return true;
         }
+
+        //如果token校验不通过，让他放回登录页
+        response.setStatus(403);
+        String target = request.getRequestURL().toString();
+        URI uri = new URI(target);
+        response.sendRedirect(uri.getScheme() + "://" + uri.getHost()
+                + ":5021/user-micro-service-2022/login.html?target=" + target);
+        return false;
+    }
+
+    /**
+     * 当用户拦截器校验通过时
+     */
+    private void onLoginCheckPass(User user) {
+        //放入userHolder
+        UserHolder.set(user);
     }
 
 }
