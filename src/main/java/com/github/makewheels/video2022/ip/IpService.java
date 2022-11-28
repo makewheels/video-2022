@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.redis.RedisKey;
 import com.github.makewheels.video2022.redis.RedisService;
+import com.github.makewheels.video2022.redis.RedisTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,9 @@ public class IpService {
         //如果Redis没有，调阿里云接口
         String json = HttpUtil.createGet("https://ips.market.alicloudapi.com/iplocaltion?ip=" + ip)
                 .header("Authorization", "APPCODE " + appCode).execute().body();
-        return JSON.parseObject(json);
+        jsonObject = JSON.parseObject(json);
+        redisService.set(RedisKey.ip(ip), json, RedisTime.THIRTY_MINUTES);
+        return jsonObject;
     }
 
 }
