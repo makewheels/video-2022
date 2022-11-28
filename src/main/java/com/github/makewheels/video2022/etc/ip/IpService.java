@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.ip;
+package com.github.makewheels.video2022.etc.ip;
 
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;

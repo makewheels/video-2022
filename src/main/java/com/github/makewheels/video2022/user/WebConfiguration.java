@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.intercepter;
+package com.github.makewheels.video2022.user;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
