@@ -98,6 +98,13 @@
             </exclusions>
         </dependency>
 
+        <!--钉钉-->
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>alibaba-dingtalk-service-sdk</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+
         <!--阿里云-->
         <dependency>
             <groupId>com.aliyun</groupId>
@@ -142,13 +149,16 @@
             <version>1.1.7</version>
         </dependency>
 
-        <!--钉钉-->
         <dependency>
-            <groupId>com.aliyun</groupId>
-            <artifactId>alibaba-dingtalk-service-sdk</artifactId>
-            <version>2.0.0</version>
+            <groupId>com.aliyun.api.gateway</groupId>
+            <artifactId>sdk-core-java</artifactId>
+            <version>1.1.7</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.14.0</version>
+        </dependency>
     </dependencies>
 
     <build>
