@@ -10,13 +10,13 @@ import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.cover.CoverRepository;
 import com.github.makewheels.video2022.file.*;
+import com.github.makewheels.video2022.ip.IpService;
 import com.github.makewheels.video2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.utils.DingUtil;
-import com.github.makewheels.video2022.utils.IpUtil;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.bean.VideoDetail;
@@ -60,6 +60,8 @@ public class VideoService {
     private TranscodeLauncher transcodeLauncher;
     @Resource
     private CoverLauncher coverLauncher;
+    @Resource
+    private IpService ipService;
 
     @Resource
     private VideoRepository videoRepository;
@@ -377,7 +379,7 @@ public class VideoService {
         watchLog.setIp(ip);
 
         //查询ip归属地
-        JSONObject ipResponse = IpUtil.queryIp(ip);
+        JSONObject ipResponse = ipService.getIpWithRedis(ip);
         JSONObject ipResult = ipResponse.getJSONObject("result");
         watchLog.setIpInfo(ipResult);
         String userAgent = request.getHeader("User-Agent");
