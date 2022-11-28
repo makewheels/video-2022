@@ -24,7 +24,6 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/app/checkUpdate")
                 .excludePathPatterns("/favicon.ico")
                 .excludePathPatterns("/healthCheck")
-                .excludePathPatterns("/cdn/onSoftRoutePrefetchFinish")
 
                 .excludePathPatterns("/transcode/baiduTranscodeCallback")
                 .excludePathPatterns("/transcode/aliyunCloudFunctionTranscodeCallback")

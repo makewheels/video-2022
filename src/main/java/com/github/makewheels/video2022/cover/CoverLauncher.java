@@ -32,8 +32,6 @@ public class CoverLauncher {
     private String externalBaseUrl;
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
-    @Value("${aliyun.oss.cdnBaseUrl}")
-    private String aliyunOssCdnBaseUrl;
 
     @Resource
     private MongoTemplate mongoTemplate;
@@ -115,7 +113,6 @@ public class CoverLauncher {
         cover.setKey(key);
         if (videoProvider.equals(S3Provider.ALIYUN_OSS)) {
             cover.setAccessUrl(aliyunOssAccessBaseUrl + key);
-//            cover.setCdnUrl(aliyunOssCdnBaseUrl + key);
         }
         //更新cover
         mongoTemplate.save(cover);
