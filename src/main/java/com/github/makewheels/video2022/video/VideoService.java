@@ -286,18 +286,13 @@ public class VideoService {
         //通过videoId查找封面
         Cover cover = coverRepository.getByVideoId(videoId);
         if (cover != null) {
-            watchInfo.setCoverUrl(cover.getCdnUrl());
+            watchInfo.setCoverUrl(cover.getAccessUrl());
         }
 
         //拿m3u8播放地址
         List<Transcode> transcodeList;
         List<String> transcodeIds = video.getTranscodeIds();
-//        if (CollectionUtils.isNotEmpty(transcodeIds)) {
         transcodeList = transcodeRepository.getByIds(transcodeIds);
-//        } else {
-        //兼容老视频逻辑，如果video里没存转码id，还是要根据videoId查transcode
-//            transcodeList = transcodeRepository.getByVideoId(videoId);
-//        }
 
         //排序，transcodeList里，1080p分辨率放前面
 //        if (transcodeList.size() >= 2 && transcodeList.get(0).getResolution().equals(Resolution.R_720P)) {

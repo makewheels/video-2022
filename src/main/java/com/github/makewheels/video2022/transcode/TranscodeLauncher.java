@@ -45,8 +45,6 @@ public class TranscodeLauncher {
     private String externalBaseUrl;
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
-    @Value("${aliyun.oss.cdnBaseUrl}")
-    private String aliyunOssCdnBaseUrl;
 
     private boolean isResolutionOverThan720p(int width, int height) {
         return width * height > 1280 * 720;
@@ -116,7 +114,6 @@ public class TranscodeLauncher {
         transcode.setM3u8Key(m3u8Key);
         if (s3Provider.equals(S3Provider.ALIYUN_OSS)) {
             transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
-//            transcode.setM3u8CdnUrl(aliyunOssCdnBaseUrl + m3u8Key);
         }
         mongoTemplate.save(transcode);
 

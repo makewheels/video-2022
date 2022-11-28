@@ -43,8 +43,6 @@ public class FileService {
 
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
-    @Value("${aliyun.oss.cdnBaseUrl}")
-    private String aliyunOssCdnBaseUrl;
 
     /**
      * 新建视频时创建文件
@@ -82,17 +80,6 @@ public class FileService {
         String provider = file.getProvider();
         if (provider.equals(S3Provider.ALIYUN_OSS)) {
             return aliyunOssAccessBaseUrl + file.getKey();
-        }
-        return null;
-    }
-
-    /**
-     * 根据provider获取cdn url
-     */
-    public String getCdnUrl(File file) {
-        String provider = file.getProvider();
-        if (provider.equals(S3Provider.ALIYUN_OSS)) {
-            return aliyunOssCdnBaseUrl + file.getKey();
         }
         return null;
     }

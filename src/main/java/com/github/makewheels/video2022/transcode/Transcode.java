@@ -39,7 +39,6 @@ public class Transcode {
 
     private String m3u8Key;
     private String m3u8AccessUrl;
-    private String m3u8CdnUrl;
 
     private JSONObject result;
 

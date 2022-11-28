@@ -39,7 +39,6 @@ public class Cover {
     private String sourceKey;
 
     private String accessUrl;
-    private String cdnUrl;
 
     private String extension;
     private String key;
