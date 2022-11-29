@@ -221,7 +221,7 @@
             onHandleIdsFinished();
             return;
         }
-        axios.get('//' + document.domain + ':5021/user-micro-service-2022/client/requestClientId')
+        axios.get('//' + document.domain + ':' + location.port + '/client/requestClientId')
             .then(function (res) {
                 localStorage.clientId = res.data.data.clientId;
                 onHandleIdsFinished();
@@ -234,7 +234,7 @@
             onHandleIdsFinished();
             return;
         }
-        axios.get('//' + document.domain + ':5021/user-micro-service-2022/session/requestSessionId')
+        axios.get('//' + document.domain + ':' + location.port + '/session/requestSessionId')
             .then(function (res) {
                 sessionStorage.sessionId = res.data.data.sessionId;
                 onHandleIdsFinished();
