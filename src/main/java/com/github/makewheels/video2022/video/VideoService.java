@@ -17,6 +17,7 @@ import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.utils.DingUtil;
+import com.github.makewheels.video2022.utils.Environment;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.bean.VideoDetail;
@@ -79,6 +80,9 @@ public class VideoService {
     @Value("${short-url-service}")
     private String shortUrlService;
 
+    @Value("${spring.profile.active}")
+    private String environment;
+
     private String getWatchId() {
 //        String json = HttpUtil.get("https://service-d5xe9zbh-1253319037.bj.apigw.tencentcs.com/release/");
 //        JSONObject jsonObject = JSONObject.parseObject(json);
@@ -135,7 +139,10 @@ public class VideoService {
         video.setWatchId(watchId);
         String watchUrl = internalBaseUrl + "/watch?v=" + watchId;
         video.setWatchUrl(watchUrl);
-        String shortUrl = getShortUrl(watchUrl);
+        String shortUrl = null;
+        if (environment.equals(Environment.PRODUCTION)) {
+            shortUrl = getShortUrl(watchUrl);
+        }
         video.setShortUrl(shortUrl);
         video.setStatus(VideoStatus.CREATED);
         video.setCreateTime(new Date());
