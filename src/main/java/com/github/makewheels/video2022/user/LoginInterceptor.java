@@ -1,8 +1,5 @@
 package com.github.makewheels.video2022.user;
 
-import com.github.makewheels.usermicroservice2022.user.User;
-import com.github.makewheels.video2022.user.UserHolder;
-import com.github.makewheels.video2022.user.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -20,8 +17,9 @@ public class LoginInterceptor implements HandlerInterceptor {
     private UserService userService;
 
     @Override
-    public boolean preHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response,
-                             @NotNull Object handler) throws IOException, URISyntaxException {
+    public boolean preHandle(
+            @NotNull HttpServletRequest request, @NotNull HttpServletResponse response,
+            @NotNull Object handler) throws IOException, URISyntaxException {
         //通过token获取User
         User user = userService.getUserByRequest(request);
 

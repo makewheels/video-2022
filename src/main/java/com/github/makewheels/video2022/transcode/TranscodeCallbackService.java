@@ -11,7 +11,7 @@ import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.FileStatus;
 import com.github.makewheels.video2022.file.FileType;
-import com.github.makewheels.video2022.response.Result;
+import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.video.VideoRepository;

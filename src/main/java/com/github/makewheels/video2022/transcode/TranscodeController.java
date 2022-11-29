@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.transcode;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.response.Result;
+import com.github.makewheels.video2022.etc.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

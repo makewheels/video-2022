@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.response;
+package com.github.makewheels.video2022.etc.response;
 
 import lombok.Data;
 @Data

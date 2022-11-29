@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.statistics;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.response.Result;
+import com.github.makewheels.video2022.etc.response.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
