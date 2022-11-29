@@ -92,7 +92,7 @@ public class UserService {
         }
         //验证码校验失败
         if (!verificationCode.getCode().equals(code) && !code.equals("111")) {
-            return Result.error(ErrorCode.MODIFY_PHONE_VERIFICATION_CODE_WRONG);
+            return Result.error(ErrorCode.PHONE_VERIFICATION_CODE_WRONG);
         }
         //验证码校验成功
         //干掉Redis
