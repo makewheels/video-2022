@@ -4,7 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.file.File;
-import com.github.makewheels.video2022.user.User;
+import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.Video;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

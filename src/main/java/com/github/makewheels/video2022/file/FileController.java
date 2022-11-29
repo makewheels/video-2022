@@ -2,7 +2,7 @@ package com.github.makewheels.video2022.file;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.etc.response.Result;
-import com.github.makewheels.video2022.user.User;
+import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

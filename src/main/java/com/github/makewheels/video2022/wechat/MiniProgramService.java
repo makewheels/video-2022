@@ -10,7 +10,7 @@ import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.FileStatus;
 import com.github.makewheels.video2022.file.FileType;
-import com.github.makewheels.video2022.user.User;
+import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;

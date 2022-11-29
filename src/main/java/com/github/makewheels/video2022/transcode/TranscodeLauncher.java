@@ -8,7 +8,7 @@ import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
 import com.github.makewheels.video2022.file.S3Provider;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeService;
-import com.github.makewheels.video2022.user.User;
+import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.AudioCodec;

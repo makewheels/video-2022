@@ -13,8 +13,8 @@
 <script>
     //看有没有token，如果没有跳转登录页
     if (localStorage.getItem("token") == null) {
-        window.location.href = "//" + document.domain + ":5021/user-micro-service-2022/login.html" +
-            "?target=" + window.location.href
+        window.location.href = "//" + document.domain + ":" + location.port + "/login.html"
+            + "?target=" + window.location.href
     }
 </script>
 
