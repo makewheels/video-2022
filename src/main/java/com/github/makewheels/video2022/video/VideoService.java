@@ -9,8 +9,8 @@ import com.github.makewheels.usermicroservice2022.user.User;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.cover.CoverRepository;
-import com.github.makewheels.video2022.file.*;
 import com.github.makewheels.video2022.etc.ip.IpService;
+import com.github.makewheels.video2022.file.*;
 import com.github.makewheels.video2022.response.ErrorCode;
 import com.github.makewheels.video2022.response.Result;
 import com.github.makewheels.video2022.transcode.Transcode;
@@ -142,8 +142,8 @@ public class VideoService {
         String shortUrl = null;
         if (environment.equals(Environment.PRODUCTION)) {
             shortUrl = getShortUrl(watchUrl);
+            video.setShortUrl(shortUrl);
         }
-        video.setShortUrl(shortUrl);
         video.setStatus(VideoStatus.CREATED);
         video.setCreateTime(new Date());
 
