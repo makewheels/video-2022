@@ -86,18 +86,6 @@
             <version>1.9.4</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.github.makewheels</groupId>
-            <artifactId>user-micro-service-2022</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.baidubce</groupId>
-                    <artifactId>bce-java-sdk</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
         <!--钉钉-->
         <dependency>
             <groupId>com.aliyun</groupId>
@@ -140,6 +128,23 @@
             <groupId>com.aliyun</groupId>
             <artifactId>mts20140618</artifactId>
             <version>3.3.54</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.baidubce</groupId>
+            <artifactId>bce-java-sdk</artifactId>
+            <version>0.10.202</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jdk.tools</groupId>
+                    <artifactId>jdk.tools</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
