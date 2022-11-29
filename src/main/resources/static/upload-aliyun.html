@@ -28,7 +28,8 @@
             jumpToLogin();
             return;
         }
-        axios.get("//" + document.domain + ":5021/user-micro-service-2022/user/getUserByToken?token=" + localStorage.token)
+        axios.get("//" + document.domain + ":" + location.port + "/user/getUserByToken?token="
+            + localStorage.token)
             .then(function (res) {
                 if (res.data.code === 1001) {
                     jumpToLogin();

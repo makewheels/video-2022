@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.user;
 
 import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.user.bean.User;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

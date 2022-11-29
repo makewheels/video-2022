@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.redis.RedisKey;
 import com.github.makewheels.video2022.redis.RedisService;
 import com.github.makewheels.video2022.redis.RedisTime;
+import com.github.makewheels.video2022.user.bean.User;
+import com.github.makewheels.video2022.user.bean.VerificationCode;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

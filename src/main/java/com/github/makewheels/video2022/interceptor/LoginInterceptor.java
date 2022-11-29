@@ -1,7 +1,11 @@
-package com.github.makewheels.video2022.user;
+package com.github.makewheels.video2022.interceptor;
 
+import com.github.makewheels.video2022.user.UserHolder;
+import com.github.makewheels.video2022.user.UserService;
+import com.github.makewheels.video2022.user.bean.User;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.annotation.Resource;
@@ -15,6 +19,8 @@ import java.net.URISyntaxException;
 public class LoginInterceptor implements HandlerInterceptor {
     @Resource
     private UserService userService;
+    @Value("${server.port}")
+    private Integer serverPort;
 
     @Override
     public boolean preHandle(
@@ -35,8 +41,8 @@ public class LoginInterceptor implements HandlerInterceptor {
         response.setStatus(403);
         String target = request.getRequestURL().toString();
         URI uri = new URI(target);
-        response.sendRedirect(uri.getScheme() + "://" + uri.getHost()
-                + ":5021/user-micro-service-2022/login.html?target=" + target);
+        response.sendRedirect(uri.getScheme() + "://" + uri.getHost() + ":" + serverPort
+                + "/login.html?target=" + target);
         return false;
     }
 

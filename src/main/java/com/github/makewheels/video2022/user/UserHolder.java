@@ -1,5 +1,7 @@
 package com.github.makewheels.video2022.user;
 
+import com.github.makewheels.video2022.user.bean.User;
+
 public class UserHolder {
     private static final ThreadLocal<User> THREAD_LOCAL = new ThreadLocal<>();
 

@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.redis;
+package com.github.makewheels.video2022.etc.configuration;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

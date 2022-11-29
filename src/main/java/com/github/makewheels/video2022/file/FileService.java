@@ -9,7 +9,7 @@ import com.aliyun.oss.model.PutObjectResult;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.fileaccesslog.FileAccessLogService;
-import com.github.makewheels.video2022.user.User;
+import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;

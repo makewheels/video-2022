@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.user;
 
+import com.github.makewheels.video2022.user.bean.User;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;

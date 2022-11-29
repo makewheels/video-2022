@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.etc.config;
+package com.github.makewheels.video2022.etc.configuration;
 
 import org.apache.catalina.connector.Connector;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
