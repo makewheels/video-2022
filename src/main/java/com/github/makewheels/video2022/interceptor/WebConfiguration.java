@@ -24,6 +24,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/login.html")
                 .excludePathPatterns("/user/requestVerificationCode")
                 .excludePathPatterns("/user/submitVerificationCode")
+                .excludePathPatterns("/user/getUserByToken")
 
                 .excludePathPatterns("/upload.html")
                 .excludePathPatterns("/save-token.html")
