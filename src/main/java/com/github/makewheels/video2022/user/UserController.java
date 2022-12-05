@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.user;
 
+import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.user.bean.User;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,12 @@ public class UserController {
 
     @GetMapping("getUserByToken")
     public Result<User> getUserByToken(@RequestParam String token) {
-        return Result.ok(userService.getUserByToken(token));
+        User user = userService.getUserByToken(token);
+        if (user != null) {
+            return Result.ok(user);
+        } else {
+            return Result.error(ErrorCode.TOKEN_WRONG);
+        }
     }
 
     @GetMapping("getUserById")
