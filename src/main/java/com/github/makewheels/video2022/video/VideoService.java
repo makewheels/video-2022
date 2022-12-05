@@ -143,6 +143,8 @@ public class VideoService {
         if (environment.equals(Environment.PRODUCTION)) {
             shortUrl = getShortUrl(watchUrl);
             video.setShortUrl(shortUrl);
+        } else {
+            video.setShortUrl(watchUrl);
         }
         video.setStatus(VideoStatus.CREATED);
         video.setCreateTime(new Date());
