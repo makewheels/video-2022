@@ -244,7 +244,7 @@
     //在获取到两个id之后
     function onHandleIdsFinished() {
         console.log("clientId = " + localStorage.getItem("clientId"));
-        console.log("sessionId = " + localStorage.getItem("sessionId"));
+        console.log("sessionId = " + sessionStorage.getItem("sessionId"));
         //如果没有clientId或者sessionId，跳过
         if (localStorage.getItem("clientId") == null
             || sessionStorage.getItem("sessionId") == null) {
