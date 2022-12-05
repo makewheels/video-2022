@@ -209,7 +209,7 @@
     }
 
     //增加观看记录
-    function handleIds() {
+    function start() {
         //先搞定clientId和sessionId，请求用户微服务
         handleClientId();
         handleSessionId();
@@ -243,6 +243,8 @@
 
     //在获取到两个id之后
     function onHandleIdsFinished() {
+        console.log("clientId = " + localStorage.getItem("clientId"));
+        console.log("sessionId = " + localStorage.getItem("sessionId"));
         //如果没有clientId或者sessionId，跳过
         if (localStorage.getItem("clientId") == null
             || sessionStorage.getItem("sessionId") == null) {
@@ -262,7 +264,7 @@
     }
 
     //程序从这里开始
-    handleIds();
+    start();
 
 </script>
 </body>
