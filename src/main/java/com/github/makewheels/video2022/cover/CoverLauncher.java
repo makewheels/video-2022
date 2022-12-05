@@ -89,6 +89,7 @@ public class CoverLauncher {
         //更新video
         video.setCoverId(cover.getId());
         video.setCoverUrl(cover.getAccessUrl());
+        video.setUpdateTime(new Date());
         mongoTemplate.save(video);
     }
 

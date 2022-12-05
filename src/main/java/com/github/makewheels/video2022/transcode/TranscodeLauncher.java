@@ -195,6 +195,7 @@ public class TranscodeLauncher {
 
         //更新数据库video状态
         video.setStatus(VideoStatus.TRANSCODING);
+        video.setUpdateTime(new Date());
         mongoTemplate.save(video);
 
         //开始转码，首先一定会发起720p的转码
