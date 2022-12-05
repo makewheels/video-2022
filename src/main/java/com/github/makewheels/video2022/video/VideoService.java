@@ -148,6 +148,7 @@ public class VideoService {
         }
         video.setStatus(VideoStatus.CREATED);
         video.setCreateTime(new Date());
+        video.setUpdateTime(new Date());
 
         //视频过期时间
         long expireTimeInMillis = Duration.ofDays(30).toMillis();
@@ -244,6 +245,7 @@ public class VideoService {
 
         //更新视频为正在转码状态
         video.setStatus(VideoStatus.TRANSCODING);
+        video.setUpdateTime(new Date());
         mongoTemplate.save(video);
 
         //创建子线程发起转码，先给前端返回结果
@@ -268,6 +270,7 @@ public class VideoService {
         }
         oldVideo.setTitle(newVideo.getTitle());
         oldVideo.setDescription(newVideo.getDescription());
+        oldVideo.setUpdateTime(new Date());
         mongoTemplate.save(oldVideo);
         log.info("更新视频信息：videoId = {}, title = {}, description = {}",
                 videoId, oldVideo.getTitle(), oldVideo.getDescription());

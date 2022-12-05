@@ -57,6 +57,8 @@ public class Video {
     private String status;
     @Indexed
     private Date createTime;
+    @Indexed
+    private Date updateTime;
 
     @Indexed
     private Date expireTime;
