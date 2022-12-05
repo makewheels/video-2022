@@ -14,6 +14,7 @@ import com.github.makewheels.video2022.file.FileType;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
+import com.github.makewheels.video2022.utils.DingUtil;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
@@ -167,8 +168,12 @@ public class TranscodeCallbackService {
             mongoTemplate.save(video);
         }
 
-        //保存转码结果，OSS中的，3u8文件和ts文件到数据库
+        //保存转码结果，OSS中的，m3u8文件和ts文件到数据库
         saveS3Files(transcode);
+
+        //通知钉钉
+        DingUtil.sendMarkdown("视频就绪: " + video.getTitle() + "\n\n"
+                + videoId);
     }
 
     /**
