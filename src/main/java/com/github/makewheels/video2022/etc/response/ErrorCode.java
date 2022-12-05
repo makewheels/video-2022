@@ -5,6 +5,7 @@ public enum ErrorCode {
     FAIL(1, "fail"),
 
     PHONE_VERIFICATION_CODE_WRONG(1000, "验证码错误"),
+    TOKEN_WRONG(1001, "登陆token校验未通过"),
 
     RUBBISH(1415926535, "我是垃圾，请忽略我");
 
