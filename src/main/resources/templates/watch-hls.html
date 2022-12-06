@@ -12,12 +12,6 @@
     <!--axios-->
     <script src="https://production-bucket.oss-cn-beijing.aliyuncs.com/dist/axios/axios-0.26.1.min.js"></script>
 
-    <!--腾讯云播放器-->
-    <!--    <link href="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/tcplayer.min.css" rel="stylesheet"/>-->
-    <!--    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/libs/TXLivePlayer-1.2.0.min.js"></script>-->
-    <!--    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/libs/hls.min.0.13.2m.js"></script>-->
-    <!--    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/tcplayer.v4.5.1.min.js"></script>-->
-
     <!--阿里云播放器-->
     <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.13.2/skins/default/aliplayer-min.css"/>
     <script type="text/javascript" charset="utf-8"
@@ -31,12 +25,7 @@
 <body>
 
 <div>
-    <!--    腾讯云播放器-->
-    <!--    <video id="player-container-id" width="100%" height="300px"-->
-    <!--           preload="auto" playsinline webkit-playsinline>-->
-    <!--    </video>-->
-
-    <!--    阿里云播放器-->
+    <!--阿里云播放器-->
     <div class="prism-player" id="player-con"></div>
 
     <div id="resolutionGroups" style="margin-top: 10px;margin-left: 40px">
@@ -97,16 +86,6 @@
     //根据url开始播放，如果换播放器，需要改这里
     function playByM3u8UrlAndTime(m3u8Url, time) {
         currentUrl = m3u8Url;
-
-        //腾讯云播放器
-        // if (player == null) {
-        //     player = TCPlayer('player-container-id', {autoplay: true});
-        // }
-        // player.src(m3u8Url);
-        // player.play();
-        // player.ready(function () {
-        //     player.currentTime(time);
-        // });
 
         //阿里云播放器
         player = new Aliplayer({
@@ -278,6 +257,7 @@
             });
     }
 
+    //是否已经处理完成了id，避免重复提交请求
     let isIdsHandled = false;
 
     //在获取到两个id之后
