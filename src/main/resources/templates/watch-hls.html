@@ -59,11 +59,13 @@
     let HD;
     let currentUrl;
     let player;
+    let playerElement;
 
     let resolutionGroups = document.getElementById("resolutionGroups");
     let btn1080 = document.getElementById("btn1080");
     let btn720 = document.getElementById("btn720");
     let currentResolution = document.getElementById("currentResolution");
+    let playerElement = document.getElementById("player-con");
 
     //获取url路径中的参数
     function getUrlVariable(key) {
@@ -266,8 +268,7 @@
             }
 
             //视频组件宽度
-            let playerVideo = document.getElementById("player-container-id");
-            playerVideo.style.width = "98%";
+            playerElement.style.width = "98%";
             //pc端自动网页全屏
             if (isPC()) {
                 playerVideo.style.height = (window.innerHeight - 30) + "px";
@@ -279,7 +280,7 @@
                 + "请稍后再来<br>"
                 + "videoId=" + videoId + "<br>"
                 + "当前状态：" + data.videoStatus;
-            document.getElementById("player-container-id").style.display = "none";
+            playerElement.style.display = "none";
         }
     }
 
