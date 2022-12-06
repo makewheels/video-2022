@@ -201,7 +201,7 @@
         //加载title等信息
         axios.get('/video/getVideoDetail?videoId=' + videoId)
             .then(function (res) {
-                let data = res.data.data;erVideo.style.height
+                let data = res.data.data;
                 document.getElementById("title").innerText = data.title;
                 document.getElementById("div_title").innerText = data.title;
                 document.getElementById("watchCount").innerText = "观看次数：" + data.watchCount;
