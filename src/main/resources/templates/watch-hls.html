@@ -13,10 +13,10 @@
     <script src="https://production-bucket.oss-cn-beijing.aliyuncs.com/dist/axios/axios-0.26.1.min.js"></script>
 
     <!--腾讯云播放器-->
-    <link href="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/tcplayer.min.css" rel="stylesheet"/>
-    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/libs/TXLivePlayer-1.2.0.min.js"></script>
-    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/libs/hls.min.0.13.2m.js"></script>
-    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/tcplayer.v4.5.1.min.js"></script>
+    <!--    <link href="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/tcplayer.min.css" rel="stylesheet"/>-->
+    <!--    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/libs/TXLivePlayer-1.2.0.min.js"></script>-->
+    <!--    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/libs/hls.min.0.13.2m.js"></script>-->
+    <!--    <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/tcplayer.v4.5.1.min.js"></script>-->
 
     <!--阿里云播放器-->
     <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.13.2/skins/default/aliplayer-min.css"/>
@@ -54,6 +54,9 @@
 <script>
     let videoId;
     let watchId;
+    let coverUrl;
+    let playUrlList;
+
     let videoStatus;
     let SD;
     let HD;
@@ -109,6 +112,7 @@
         player = new Aliplayer({
                 "id": "player-con",
                 "source": m3u8Url,
+                "cover": coverUrl,
                 "width": "100%",
                 "height": "500px",
                 "autoplay": true,
@@ -197,6 +201,7 @@
                 player.seek(time);
             }
         );
+
     }
 
     //加载视频
@@ -219,9 +224,9 @@
     function startPlayVideo(data) {
         videoId = data.videoId;
         //封面
-        let coverUrl = data.coverUrl;
+        coverUrl = data.coverUrl;
         //播放地址
-        let playUrlList = data.playUrlList;
+        playUrlList = data.playUrlList;
 
         //分辨率url
         for (let i = 0; i < playUrlList.length; i++) {
