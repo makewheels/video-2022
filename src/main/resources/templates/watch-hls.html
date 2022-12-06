@@ -74,7 +74,7 @@
     }
 
     //判断是否是pc端
-    function IsPC() {
+    function isPC() {
         let userAgentInfo = navigator.userAgent;
         let Agents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
         let flagPc = true;
@@ -170,8 +170,8 @@
             let playerVideo = document.getElementById("player-container-id");
             playerVideo.style.width = "98%";
             //pc端自动网页全屏
-            if (IsPC()) {
-                playerVideo.style.height = (window.innerHeight - 50) + "px";
+            if (isPC()) {
+                playerVideo.style.height = (window.innerHeight - 30) + "px";
             }
         } else {
             //如果视频不是已就绪状态
