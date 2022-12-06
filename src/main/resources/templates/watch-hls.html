@@ -120,8 +120,11 @@
                 let data = res.data.data;
                 //开始播放
                 startPlayVideo(data);
-                //在视频已加载后
-                afterVideoLoaded(videoId);
+
+                //加载视频信息
+                loadVideoInfo(videoId);
+                //增加观看记录
+                addWatchHistory();
             })
     }
 
@@ -191,14 +194,6 @@
                 + "当前状态：" + data.videoStatus;
             playerElement.style.display = "none";
         }
-    }
-
-    //在视频已加载后
-    function afterVideoLoaded(videoId) {
-        //加载视频信息
-        loadVideoInfo(videoId);
-        //增加观看记录
-        addWatchHistory();
     }
 
     //加载视频信息
