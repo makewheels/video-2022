@@ -153,7 +153,7 @@
             playerElement.style.width = "98%";
             //pc端自动网页全屏
             if (isPC()) {
-                playerVideo.style.height = (window.innerHeight - 30) + "px";
+                playerElement.style.height = (window.innerHeight - 30) + "px";
             }
 
             //如果只有一种分辨率，那就只播一个
@@ -201,7 +201,7 @@
         //加载title等信息
         axios.get('/video/getVideoDetail?videoId=' + videoId)
             .then(function (res) {
-                let data = res.data.data;
+                let data = res.data.data;erVideo.style.height
                 document.getElementById("title").innerText = data.title;
                 document.getElementById("div_title").innerText = data.title;
                 document.getElementById("watchCount").innerText = "观看次数：" + data.watchCount;
