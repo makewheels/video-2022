@@ -31,9 +31,14 @@
 <body>
 
 <div>
-    <video id="player-container-id" width="100%" height="300px"
-           preload="auto" playsinline webkit-playsinline>
-    </video>
+    <!--    腾讯云播放器-->
+    <!--    <video id="player-container-id" width="100%" height="300px"-->
+    <!--           preload="auto" playsinline webkit-playsinline>-->
+    <!--    </video>-->
+
+    <!--    阿里云播放器-->
+    <div class="prism-player" id="player-con"></div>
+
     <div id="resolutionGroups" style="margin-top: 10px;margin-left: 40px">
         <button id="btn1080" type="button" class="mui-btn mui-btn-primary">1080p</button>
         <button id="btn720" style="margin-left: 35px" type="button" class="mui-btn mui-btn-success">720p</button>
@@ -75,28 +80,122 @@
 
     //判断是否是pc端
     function isPC() {
-        let userAgentInfo = navigator.userAgent;
-        let Agents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
-        let flagPc = true;
-        for (let v = 0; v < Agents.length; v++) {
-            if (userAgentInfo.indexOf(Agents[v]) > 0) {
+        let userAgent = navigator.userAgent;
+        let mobileAgents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
+        for (let i = 0; i < mobileAgents.length; i++) {
+            if (userAgent.indexOf(mobileAgents[i]) > 0) {
                 return false;
             }
         }
         return true;
     }
 
-    //根据url播放
+    //根据url开始播放，如果换播放器，需要改这里
     function playByM3u8UrlAndTime(m3u8Url, time) {
         currentUrl = m3u8Url;
-        if (player == null) {
-            player = TCPlayer('player-container-id', {autoplay: true});
-        }
-        player.src(m3u8Url);
-        player.play();
-        player.ready(function () {
-            player.currentTime(time);
-        });
+
+        //腾讯云播放器
+        // if (player == null) {
+        //     player = TCPlayer('player-container-id', {autoplay: true});
+        // }
+        // player.src(m3u8Url);
+        // player.play();
+        // player.ready(function () {
+        //     player.currentTime(time);
+        // });
+
+        //阿里云播放器
+        player = new Aliplayer({
+                "id": "player-con",
+                "source": m3u8Url,
+                "width": "100%",
+                "height": "500px",
+                "autoplay": true,
+                "isLive": false,
+                "rePlay": false,
+                "playsinline": true,
+                "isVBR": true,
+                "preload": true,
+                "controlBarVisibility": "hover",
+                "useH5Prism": true,
+                "skinLayout": [
+                    {
+                        "name": "bigPlayButton",
+                        "align": "blabs",
+                        "x": 30,
+                        "y": 80
+                    },
+                    {
+                        "name": "H5Loading",
+                        "align": "cc"
+                    },
+                    {
+                        "name": "errorDisplay",
+                        "align": "tlabs",
+                        "x": 0,
+                        "y": 0
+                    },
+                    {
+                        "name": "infoDisplay"
+                    },
+                    {
+                        "name": "tooltip",
+                        "align": "blabs",
+                        "x": 0,
+                        "y": 56
+                    },
+                    {
+                        "name": "thumbnail"
+                    },
+                    {
+                        "name": "controlBar",
+                        "align": "blabs",
+                        "x": 0,
+                        "y": 0,
+                        "children": [
+                            {
+                                "name": "progress",
+                                "align": "blabs",
+                                "x": 0,
+                                "y": 44
+                            },
+                            {
+                                "name": "playButton",
+                                "align": "tl",
+                                "x": 15,
+                                "y": 12
+                            },
+                            {
+                                "name": "timeDisplay",
+                                "align": "tl",
+                                "x": 10,
+                                "y": 7
+                            },
+                            {
+                                "name": "fullScreenButton",
+                                "align": "tr",
+                                "x": 10,
+                                "y": 12
+                            },
+                            {
+                                "name": "setting",
+                                "align": "tr",
+                                "x": 15,
+                                "y": 12
+                            },
+                            {
+                                "name": "volume",
+                                "align": "tr",
+                                "x": 5,
+                                "y": 10
+                            }
+                        ]
+                    }
+                ]
+            }, function (player) {
+                player.seek(time);
+            }
+        );
     }
 
     //加载视频
@@ -110,7 +209,7 @@
                 let data = res.data.data;
                 //开始播放
                 startPlayVideo(data);
-
+                //在视频已加载后
                 afterVideoLoaded(videoId);
             })
     }
@@ -155,13 +254,13 @@
                     //如果当前不是HD，那就切换成HD播放
                     if (currentUrl !== HD) {
                         currentResolution.innerText = "1080p";
-                        playByM3u8UrlAndTime(HD, player.currentTime());
+                        playByM3u8UrlAndTime(HD, player.getCurrentTime());
                     }
                 });
                 btn720.addEventListener("click", function () {
                     if (currentUrl !== SD) {
                         currentResolution.innerText = "720p";
-                        playByM3u8UrlAndTime(SD, player.currentTime());
+                        playByM3u8UrlAndTime(SD, player.getCurrentTime());
                     }
                 });
             }
@@ -189,7 +288,7 @@
         //加载视频信息
         loadVideoInfo(videoId);
         //增加观看记录
-        runAddWatchLog();
+        addWatchHistory();
     }
 
     //加载视频信息
@@ -258,11 +357,12 @@
             return;
         }
         isIdsHandled = true;
+        //id完成，开始加载视频
         loadVideo();
     }
 
     //增加观看记录
-    function runAddWatchLog() {
+    function addWatchHistory() {
         axios.get('/video/addWatchLog?videoId=' + videoId
             + '&clientId=' + localStorage.clientId
             + '&sessionId=' + sessionStorage.sessionId
