@@ -148,52 +148,53 @@
 
         //判断视频状态，如果已就绪，就创建播放器。如果还没就绪，就提示
         videoStatus = data.videoStatus;
-        if (videoStatus === "READY") {
-            //视频组件宽度
-            playerElement.style.width = "98%";
-            //pc端自动网页全屏
-            if (isPC()) {
-                playerElement.style.height = (window.innerHeight - 30) + "px";
-            }
-
-            //如果只有一种分辨率，那就只播一个
-            if (playUrlList.length === 1) {
-                if (HD != null) {
-                    //1080p
-                    currentResolution.innerText = "1080p";
-                    playByM3u8UrlAndTime(HD, 0);
-                } else {
-                    //720p
-                    playByM3u8UrlAndTime(SD, 0);
-                }
-                //隐藏分辨率按钮组
-                resolutionGroups.style.display = "none";
-            } else {
-                //如果有两个分辨率
-                //设置切换分辨率按钮监听
-                btn1080.addEventListener("click", function () {
-                    //如果当前不是HD，那就切换成HD播放
-                    if (currentUrl !== HD) {
-                        currentResolution.innerText = "1080p";
-                        playByM3u8UrlAndTime(HD, player.getCurrentTime());
-                    }
-                });
-                btn720.addEventListener("click", function () {
-                    if (currentUrl !== SD) {
-                        currentResolution.innerText = "720p";
-                        playByM3u8UrlAndTime(SD, player.getCurrentTime());
-                    }
-                });
-            }
-        } else {
-            //如果视频不是已就绪状态
+        if (videoStatus !== "READY") {
+            //如果视频不是 已就绪状态
             document.getElementById("errorInfo").innerHTML
-                = "视频正在上传或转码<br>"
-                + "请稍后再来<br>"
-                + "videoId=" + videoId + "<br>"
-                + "当前状态：" + data.videoStatus;
+                = "视频正在上传或转码<br>" + "请稍后再来<br>"
+                + "videoId=" + videoId + "<br>" + "当前状态：" + data.videoStatus;
             playerElement.style.display = "none";
+            return;
         }
+
+        //视频组件宽度
+        playerElement.style.width = "98%";
+        //pc端自动网页全屏
+        if (isPC()) {
+            playerElement.style.height = (window.innerHeight - 30) + "px";
+        }
+
+        //如果只有一种分辨率，那就只播一个
+        if (playUrlList.length === 1) {
+            if (HD != null) {
+                currentResolution.innerText = "1080p";
+                playByM3u8UrlAndTime(HD, 0);
+            } else {
+                currentResolution.innerText = "720p";
+                playByM3u8UrlAndTime(SD, 0);
+            }
+            //隐藏分辨率按钮组
+            resolutionGroups.style.display = "none";
+            return;
+        }
+        //如果有两个分辨率
+        //开始播放1080p
+        currentResolution.innerText = "1080p";
+        playByM3u8UrlAndTime(HD, 0);
+        //设置切换分辨率按钮监听
+        btn1080.addEventListener("click", function () {
+            //如果当前不是HD，那就切换成HD播放
+            if (currentUrl !== HD) {
+                currentResolution.innerText = "1080p";
+                playByM3u8UrlAndTime(HD, player.getCurrentTime());
+            }
+        });
+        btn720.addEventListener("click", function () {
+            if (currentUrl !== SD) {
+                currentResolution.innerText = "720p";
+                playByM3u8UrlAndTime(SD, player.getCurrentTime());
+            }
+        });
     }
 
     //加载视频信息
