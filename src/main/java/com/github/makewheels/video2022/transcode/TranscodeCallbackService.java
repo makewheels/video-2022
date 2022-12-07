@@ -7,11 +7,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QueryJobListResponseBody;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
+import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.FileStatus;
 import com.github.makewheels.video2022.file.FileType;
-import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.utils.DingUtil;
@@ -165,15 +165,15 @@ public class TranscodeCallbackService {
         //更新video到数据库
         if (!StringUtils.equals(videoStatus, video.getStatus())) {
             video.setStatus(videoStatus);
+            video.setUpdateTime(new Date());
             mongoTemplate.save(video);
         }
-
-        //保存转码结果，OSS中的，m3u8文件和ts文件到数据库
-        saveS3Files(transcode);
 
         //通知钉钉
         DingUtil.sendMarkdown("视频就绪: " + video.getTitle() + "\n\n"
                 + videoId);
+        //保存转码结果，OSS中的，m3u8文件和ts文件到数据库
+        saveS3Files(transcode);
     }
 
     /**

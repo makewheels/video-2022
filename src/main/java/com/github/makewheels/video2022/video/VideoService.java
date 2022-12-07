@@ -157,7 +157,7 @@ public class VideoService {
         video.setIsPermanent(false);
         video.setIsOriginalFileDeleted(false);
         video.setIsTranscodeFilesDeleted(false);
-
+        video.setUpdateTime(new Date());
         mongoTemplate.save(video);
 
         String videoId = video.getId();
@@ -170,6 +170,7 @@ public class VideoService {
 
         //更新video的source key
         video.setOriginalFileKey(videoFile.getKey());
+        video.setUpdateTime(new Date());
         mongoTemplate.save(video);
         log.info("新建视频：" + JSON.toJSONString(video));
 
@@ -200,6 +201,7 @@ public class VideoService {
             mongoTemplate.save(videoFile);
             //更新video的source key
             video.setOriginalFileKey(videoFile.getKey());
+            video.setUpdateTime(new Date());
             mongoTemplate.save(video);
         }
 
@@ -226,6 +228,7 @@ public class VideoService {
         JSONObject snippet = youtubeVideoInfo.getJSONObject("snippet");
         video.setTitle(snippet.getString("title"));
         video.setDescription(snippet.getString("description"));
+        video.setUpdateTime(new Date());
         mongoTemplate.save(video);
     }
 
