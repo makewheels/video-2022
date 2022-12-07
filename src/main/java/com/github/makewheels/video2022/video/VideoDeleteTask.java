@@ -44,6 +44,7 @@ public class VideoDeleteTask {
             //更新视频状态
             video.setIsTranscodeFilesDeleted(true);
             video.setDeleteTime(new Date());
+            video.setUpdateTime(new Date());
             mongoTemplate.save(video);
         }
     }

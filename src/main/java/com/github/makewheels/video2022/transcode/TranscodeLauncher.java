@@ -122,6 +122,7 @@ public class TranscodeLauncher {
         if (transcodeIds == null) transcodeIds = new ArrayList<>();
         transcodeIds.add(transcodeId);
         video.setTranscodeIds(transcodeIds);
+        video.setUpdateTime(new Date());
         mongoTemplate.save(video);
 
         //发起转码
