@@ -29,7 +29,7 @@ public class File {
     private String resolution;
     //ts碎片，在一个m3u8转码文件中的位置，只有ts碎片文件才有
     @Indexed
-    private Integer tsSequence;
+    private Integer tsIndex;
 
     //原始文件名，只有用户上传的视频源文件才有
     private String originalFilename;

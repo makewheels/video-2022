@@ -169,11 +169,14 @@ public class TranscodeCallbackService {
             mongoTemplate.save(video);
         }
 
-        //通知钉钉
-        DingUtil.sendMarkdown("视频就绪: " + video.getTitle() + "\n\n"
-                + videoId);
         //保存转码结果，OSS中的，m3u8文件和ts文件到数据库
         saveS3Files(transcode);
+
+        //如果视频已就绪
+        if (videoStatus.equals(VideoStatus.READY)) {
+            //通知钉钉
+            DingUtil.sendMarkdown("视频就绪: " + video.getTitle() + "\n\n" + videoId);
+        }
     }
 
     /**
@@ -231,8 +234,7 @@ public class TranscodeCallbackService {
 
             tsFile.setTranscodeId(transcode.getId());
             tsFile.setResolution(transcode.getResolution());
-//            int tsSequence = Integer.parseInt(FilenameUtils.getBaseName(filename).split("-")[1]);
-            tsFile.setTsSequence(i);
+            tsFile.setTsIndex(i);
 
             tsFile.setObjectInfo(ossMap.get(filename));
             tsFiles.add(tsFile);
