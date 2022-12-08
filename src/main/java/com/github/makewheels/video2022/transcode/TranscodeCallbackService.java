@@ -121,6 +121,7 @@ public class TranscodeCallbackService {
                 QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
                         = aliyunMpsService.queryTranscodeJob(jobId).getBody().getJobList().getJob().get(0);
                 jobStatus = job.getState();
+                transcode.setBitrate(Integer.parseInt(job.getOutput().getProperties().getBitrate()));
                 transcode.setFinishTime(DateUtil.parseUTC(job.getFinishTime()));
                 transcodeResultJson = JSON.toJSONString(job);
                 break;
