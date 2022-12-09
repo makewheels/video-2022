@@ -64,7 +64,7 @@ public class TranscodeCallbackService {
      * 处理阿里云视频转码回调
      */
     public void aliyunTranscodeCallback(String jobId) {
-        log.info("阿里云转码回调开始：jobId = " + jobId);
+        log.info("阿里云MPS转码回调开始：jobId = " + jobId);
         Transcode transcode = transcodeRepository.getByJobId(jobId);
         handleTranscodeCallback(transcode);
     }
