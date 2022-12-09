@@ -420,7 +420,7 @@ public class VideoService {
                         "# ip: " + ip + "\n\n" +
                         "# ipInfo: " + province + " " + city + " " + district + "\n\n" +
                         "# User-Agent: " + userAgent;
-        DingUtil.sendMarkdown(markdownText);
+        DingUtil.sendMarkdown("观看记录", markdownText);
 
         return Result.ok();
     }

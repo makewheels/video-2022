@@ -35,7 +35,8 @@ public class Transcode {
     private String status;
     @Indexed
     private String resolution;
-    private Integer bitrate;
+    private Integer averageBitrate;
+    private Integer maxBitrate;
 
     private String sourceKey;
     private String m3u8Key;

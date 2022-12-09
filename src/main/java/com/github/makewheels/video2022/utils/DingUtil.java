@@ -15,8 +15,6 @@ import java.util.UUID;
 
 /**
  * 钉钉机器人工具类
- *
- * @time 2020-03-16 18:22
  */
 public class DingUtil {
     private final static String webhookUrl = "https://oapi.dingtalk.com/robot/send?" +
@@ -41,18 +39,15 @@ public class DingUtil {
     }
 
     /**
-     * 发送 markdown text
-     *
-     * @param markdownText
-     * @return
+     * 发送 markdown
      */
-    public static OapiRobotSendResponse sendMarkdown(String markdownText) {
+    public static OapiRobotSendResponse sendMarkdown(String title, String markdowntext) {
         DingTalkClient client = new DefaultDingTalkClient(getUrl());
         OapiRobotSendRequest request = new OapiRobotSendRequest();
         request.setMsgtype("markdown");
         OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();
-        markdown.setTitle("title");
-        markdown.setText(markdownText);
+        markdown.setTitle(title);
+        markdown.setText(markdowntext);
         request.setMarkdown(markdown);
         try {
             return client.execute(request);
@@ -65,7 +60,7 @@ public class DingUtil {
     public static void main(String[] args) {
         String text = UUID.randomUUID() + "\n\n" + "fefg";
         System.out.println(text);
-        OapiRobotSendResponse response = sendMarkdown(text);
+        OapiRobotSendResponse response = sendMarkdown("test-title", text);
         if (response != null) {
             System.out.println(response.isSuccess());
             System.out.println(response.getErrmsg());
