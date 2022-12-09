@@ -5,6 +5,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QueryJobListResponseBody;
+import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
@@ -114,6 +115,7 @@ public class TranscodeCallbackService {
         String jobId = transcode.getJobId();
         String jobStatus = null;
         String transcodeResultJson = null;
+
         //向对应的云服务商查询转码任务
         switch (transcode.getProvider()) {
             case TranscodeProvider.ALIYUN_MPS: {
@@ -129,6 +131,7 @@ public class TranscodeCallbackService {
                 transcode.setFinishTime(new Date());
                 break;
         }
+
         //只有在新老状态不一致时，才保存数据库
         if (!StringUtils.equals(jobStatus, transcode.getStatus())) {
             transcode.setStatus(jobStatus);
@@ -144,12 +147,34 @@ public class TranscodeCallbackService {
      */
     public void onTranscodeFinish(Transcode transcode) {
         String videoId = transcode.getVideoId();
-        Video video = mongoTemplate.findById(videoId, Video.class);
+        Video video = videoRepository.getById(videoId);
         if (video == null) return;
+
+        //更新video状态
+        updateVideoStatus(video);
+
+        //保存m3u8文件
+        saveM3u8File(video, transcode);
+
+        //保存对象存储中的ts文件
+        saveS3Files(video, transcode);
+
+        //如果视频已就绪
+        if (video.getStatus().equals(VideoStatus.READY)) {
+            //通知钉钉
+            DingUtil.sendMarkdown("视频就绪", video.getTitle() + "\n\n" + videoId);
+        }
+    }
+
+    /**
+     * 更新视频转码状态
+     */
+    private void updateVideoStatus(Video video) {
         //从数据库中查出，该视频对应的所有转码任务
         List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
         //统计已完成数量
         long completeCount = transcodeList.stream().filter(Transcode::isFinishStatus).count();
+
         String videoStatus;
         //如果是部分完成
         if (completeCount > 0 && completeCount < transcodeList.size()) {
@@ -161,33 +186,19 @@ public class TranscodeCallbackService {
             //如果一个都没完成
             videoStatus = VideoStatus.TRANSCODING;
         }
-        //更新video到数据库
+
+        //更新videoStatus到数据库
         if (!StringUtils.equals(videoStatus, video.getStatus())) {
             video.setStatus(videoStatus);
             video.setUpdateTime(new Date());
             mongoTemplate.save(video);
         }
-
-        //拿到对象存储中所有ts文件
-
-        //保存转码结果，OSS中的，m3u8文件和ts文件到数据库
-        saveS3Files(video, transcode);
-
-        //如果视频已就绪
-        if (videoStatus.equals(VideoStatus.READY)) {
-            //通知钉钉
-            DingUtil.sendMarkdown("视频就绪", video.getTitle() + "\n\n" + videoId);
-        }
     }
 
     /**
-     * 转码完成后，更新对象存储ts碎片
+     * 保存m3u8文件
      */
-    public void saveS3Files(Video video, Transcode transcode) {
-        String videoId = video.getId();
-        String userId = video.getUserId();
-        String videoType = video.getType();
-
+    private void saveM3u8File(Video video, Transcode transcode) {
         String m3u8Key = transcode.getM3u8Key();
 
         File m3u8File = new File();
@@ -196,12 +207,13 @@ public class TranscodeCallbackService {
         m3u8File.setStatus(FileStatus.READY);
         m3u8File.setKey(m3u8Key);
         m3u8File.setType(FileType.TRANSCODE_M3U8);
-        m3u8File.setVideoId(videoId);
-        m3u8File.setVideoType(videoType);
-        m3u8File.setUserId(userId);
+        m3u8File.setVideoId(video.getId());
+        m3u8File.setVideoType(video.getType());
+        m3u8File.setUserId(video.getUserId());
 
         //获取m3u8文件内容
-        m3u8File.setObjectInfo(fileService.getObject(m3u8Key));
+        OSSObject object = fileService.getObject(m3u8Key);
+        m3u8File.setObjectInfo(object);
         log.info("保存m3u8File: {}", JSON.toJSONString(m3u8File));
         mongoTemplate.save(m3u8File);
 
@@ -209,13 +221,21 @@ public class TranscodeCallbackService {
         String m3u8Content = HttpUtil.get(m3u8FileUrl);
         transcode.setM3u8Content(m3u8Content);
         mongoTemplate.save(transcode);
+    }
+
+    /**
+     * 转码完成后，更新对象存储ts碎片
+     */
+    private void saveS3Files(Video video, Transcode transcode) {
+        String videoId = video.getId();
+        String userId = video.getUserId();
 
         //获取所有ts碎片文件名
-        String transcodeFolder = FilenameUtils.getPath(m3u8Key);
-        List<String> filenames = Arrays.asList(m3u8Content.split("\n"));
-        filenames = filenames.stream().filter(e -> !e.startsWith("#")).sorted().collect(Collectors.toList());
+        List<String> filenames = Arrays.stream(transcode.getM3u8Content().split("\n"))
+                .filter(e -> !e.startsWith("#")).collect(Collectors.toList());
 
-        //获取对象存储每一个文件
+        //开始获取对象存储每一个文件
+        String transcodeFolder = FilenameUtils.getPath(transcode.getM3u8Key());
         List<OSSObjectSummary> objects = fileService.listAllObjects(transcodeFolder);
         Map<String, OSSObjectSummary> ossMap = objects.stream().collect(
                 Collectors.toMap(e -> FilenameUtils.getName(e.getKey()), Function.identity()));
@@ -230,7 +250,7 @@ public class TranscodeCallbackService {
             tsFile.setType(FileType.TRANSCODE_TS);
             tsFile.setUserId(userId);
             tsFile.setVideoId(videoId);
-            tsFile.setVideoType(videoType);
+            tsFile.setVideoType(video.getType());
             tsFile.setStatus(FileStatus.READY);
 
             tsFile.setTranscodeId(transcode.getId());
