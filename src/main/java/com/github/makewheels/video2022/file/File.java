@@ -68,7 +68,7 @@ public class File {
     public void init() {
         createTime = new Date();
         isDeleted = false;
-        status = FileStatus.READY;
+        status = FileStatus.CREATED;
         provider = S3Provider.ALIYUN_OSS;
     }
 

@@ -171,7 +171,7 @@ public class TranscodeCallbackService {
         //拿到对象存储中所有ts文件
 
         //保存转码结果，OSS中的，m3u8文件和ts文件到数据库
-        saveS3Files(transcode);
+        saveS3Files(video, transcode);
 
         //如果视频已就绪
         if (videoStatus.equals(VideoStatus.READY)) {
@@ -183,16 +183,17 @@ public class TranscodeCallbackService {
     /**
      * 转码完成后，更新对象存储ts碎片
      */
-    public void saveS3Files(Transcode transcode) {
-        String videoId = transcode.getVideoId();
-        Video video = videoRepository.getById(videoId);
+    public void saveS3Files(Video video, Transcode transcode) {
+        String videoId = video.getId();
         String userId = video.getUserId();
         String videoType = video.getType();
+
         String m3u8Key = transcode.getM3u8Key();
 
         File m3u8File = new File();
         m3u8File.init();
 
+        m3u8File.setStatus(FileStatus.READY);
         m3u8File.setKey(m3u8Key);
         m3u8File.setType(FileType.TRANSCODE_M3U8);
         m3u8File.setVideoId(videoId);
