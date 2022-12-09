@@ -41,13 +41,13 @@ public class DingUtil {
     /**
      * 发送 markdown
      */
-    public static OapiRobotSendResponse sendMarkdown(String title, String markdowntext) {
+    public static OapiRobotSendResponse sendMarkdown(String title, String markdownText) {
         DingTalkClient client = new DefaultDingTalkClient(getUrl());
         OapiRobotSendRequest request = new OapiRobotSendRequest();
         request.setMsgtype("markdown");
         OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();
         markdown.setTitle(title);
-        markdown.setText(markdowntext);
+        markdown.setText(markdownText);
         request.setMarkdown(markdown);
         try {
             return client.execute(request);

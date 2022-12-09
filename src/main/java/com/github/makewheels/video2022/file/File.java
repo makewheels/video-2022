@@ -21,15 +21,18 @@ public class File {
     @Indexed
     private String videoId;
 
-    //ts视频碎片所属于哪一个转码，它的父亲，只有ts碎片文件才有
+    //ts视频碎片所属于哪一个转码，它的父亲
     @Indexed
     private String transcodeId;
-    //ts碎片，转码所属于哪个分辨率，只有ts碎片文件才有
+    //ts碎片，转码所属于哪个分辨率
     @Indexed
     private String resolution;
-    //ts碎片，在一个m3u8转码文件中的位置，只有ts碎片文件才有
+    //ts碎片，在一个m3u8转码文件中的位置
     @Indexed
     private Integer tsIndex;
+
+    //ts碎片，视频码率
+    private Integer bitrate;
 
     //原始文件名，只有用户上传的视频源文件才有
     private String originalFilename;
