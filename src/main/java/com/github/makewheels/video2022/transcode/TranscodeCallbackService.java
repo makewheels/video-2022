@@ -15,6 +15,7 @@ import com.github.makewheels.video2022.file.FileType;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.utils.DingUtil;
+import com.github.makewheels.video2022.utils.M3u8Util;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
@@ -132,7 +133,7 @@ public class TranscodeCallbackService {
                 break;
         }
 
-        //只有在新老状态不一致时，才保存数据库
+        //更新转码状态到数据库
         if (!StringUtils.equals(jobStatus, transcode.getStatus())) {
             transcode.setStatus(jobStatus);
             transcode.setResult(JSONObject.parseObject(transcodeResultJson));
@@ -229,35 +230,35 @@ public class TranscodeCallbackService {
     private void saveS3Files(Video video, Transcode transcode) {
         String videoId = video.getId();
         String userId = video.getUserId();
+        String m3u8Content = transcode.getM3u8Content();
 
         //获取所有ts碎片文件名
-        List<String> filenames = Arrays.stream(transcode.getM3u8Content().split("\n"))
-                .filter(e -> !e.startsWith("#")).collect(Collectors.toList());
+        List<String> filenames = M3u8Util.getFilenames(m3u8Content);
 
         //开始获取对象存储每一个文件
         String transcodeFolder = FilenameUtils.getPath(transcode.getM3u8Key());
         List<OSSObjectSummary> objects = fileService.listAllObjects(transcodeFolder);
-        Map<String, OSSObjectSummary> ossMap = objects.stream().collect(
+        Map<String, OSSObjectSummary> ossFilenameMap = objects.stream().collect(
                 Collectors.toMap(e -> FilenameUtils.getName(e.getKey()), Function.identity()));
 
-        List<File> tsFiles = new ArrayList<>(filenames.size());
-
         //遍历每一个ts文件
+        List<File> tsFiles = new ArrayList<>(filenames.size());
         for (int i = 0; i < filenames.size(); i++) {
             String filename = filenames.get(i);
             File tsFile = new File();
             tsFile.init();
+            tsFile.setStatus(FileStatus.READY);
+
             tsFile.setType(FileType.TRANSCODE_TS);
             tsFile.setUserId(userId);
             tsFile.setVideoId(videoId);
             tsFile.setVideoType(video.getType());
-            tsFile.setStatus(FileStatus.READY);
 
             tsFile.setTranscodeId(transcode.getId());
             tsFile.setResolution(transcode.getResolution());
             tsFile.setTsIndex(i);
 
-            tsFile.setObjectInfo(ossMap.get(filename));
+            tsFile.setObjectInfo(ossFilenameMap.get(filename));
             tsFiles.add(tsFile);
         }
 
