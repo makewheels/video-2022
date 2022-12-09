@@ -35,6 +35,8 @@ public class Transcode {
     private String status;
     @Indexed
     private String resolution;
+    private Integer width;
+    private Integer height;
     private Integer averageBitrate;
     private Integer maxBitrate;
 

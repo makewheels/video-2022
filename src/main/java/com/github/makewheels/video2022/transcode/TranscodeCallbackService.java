@@ -26,6 +26,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.*;
 import java.util.function.Function;
@@ -225,6 +227,19 @@ public class TranscodeCallbackService {
     }
 
     /**
+     * 计算码率
+     *
+     * @param filesize   文件大小
+     * @param timeLength 视频时长
+     * @return
+     */
+    private int getBitrate(long filesize, BigDecimal timeLength) {
+        BigDecimal bitrate = new BigDecimal(filesize * 8)
+                .divide(timeLength, RoundingMode.HALF_UP);
+        return Integer.parseInt(bitrate.toString());
+    }
+
+    /**
      * 转码完成后，更新对象存储ts碎片
      */
     private void saveS3Files(Video video, Transcode transcode) {
@@ -232,14 +247,16 @@ public class TranscodeCallbackService {
         String userId = video.getUserId();
         String m3u8Content = transcode.getM3u8Content();
 
-        //获取所有ts碎片文件名
-        List<String> filenames = M3u8Util.getFilenames(m3u8Content);
-
-        //开始获取对象存储每一个文件
+        //获取对象存储每一个文件
         String transcodeFolder = FilenameUtils.getPath(transcode.getM3u8Key());
         List<OSSObjectSummary> objects = fileService.listAllObjects(transcodeFolder);
         Map<String, OSSObjectSummary> ossFilenameMap = objects.stream().collect(
                 Collectors.toMap(e -> FilenameUtils.getName(e.getKey()), Function.identity()));
+
+        //获取所有ts碎片文件名
+        List<String> filenames = M3u8Util.getFilenames(m3u8Content);
+        //获取ts时长
+        Map<String, BigDecimal> tsTimeLengthMap = M3u8Util.getTsTimeLengthMap(m3u8Content);
 
         //遍历每一个ts文件
         List<File> tsFiles = new ArrayList<>(filenames.size());
@@ -253,22 +270,34 @@ public class TranscodeCallbackService {
             tsFile.setUserId(userId);
             tsFile.setVideoId(videoId);
             tsFile.setVideoType(video.getType());
-
             tsFile.setTranscodeId(transcode.getId());
             tsFile.setResolution(transcode.getResolution());
             tsFile.setTsIndex(i);
-
             tsFile.setObjectInfo(ossFilenameMap.get(filename));
+
+            //计算ts码率
+            tsFile.setBitrate(getBitrate(tsFile.getSize(), tsTimeLengthMap.get(filename)));
+
             tsFiles.add(tsFile);
         }
 
-        //保存数据库
+        //保存所有ts文件到数据库
         log.info("保存tsFiles, 总共 {} 个", tsFiles.size());
         mongoTemplate.insertAll(tsFiles);
 
         //反向更新transcode的ts文件id列表
-        List<String> tsFileIds = tsFiles.stream().map(File::getId).collect(Collectors.toList());
-        transcode.setTsFileIds(tsFileIds);
+        transcode.setTsFileIds(tsFiles.stream().map(File::getId).collect(Collectors.toList()));
+
+        //计算transcode平均码率
+        long tsTotalSize = tsFiles.stream().mapToLong(File::getSize).sum();
+        BigDecimal duration = new BigDecimal(video.getDuration() / 1000);
+        transcode.setAverageBitrate(getBitrate(tsTotalSize, duration));
+
+        //计算transcode最高码率
+        Integer maxBitrate = tsFiles.stream().max(
+                Comparator.comparing(File::getBitrate)).get().getBitrate();
+        transcode.setMaxBitrate(maxBitrate);
+
         mongoTemplate.save(transcode);
     }
 
