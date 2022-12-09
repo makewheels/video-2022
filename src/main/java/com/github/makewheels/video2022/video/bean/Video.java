@@ -25,7 +25,7 @@ public class Video {
     private String originalFileKey;
 
     private Integer watchCount;
-    private Long duration;
+    private Long duration;      //视频时长，单位毫秒
     private String coverId;
     private String coverUrl;
 
