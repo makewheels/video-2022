@@ -5,7 +5,6 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QueryJobListResponseBody;
-import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
@@ -121,7 +120,6 @@ public class TranscodeCallbackService {
                 QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
                         = aliyunMpsService.queryTranscodeJob(jobId).getBody().getJobList().getJob().get(0);
                 jobStatus = job.getState();
-                transcode.setBitrate(Integer.parseInt(job.getOutput().getProperties().getBitrate()));
                 transcode.setFinishTime(DateUtil.parseUTC(job.getFinishTime()));
                 transcodeResultJson = JSON.toJSONString(job);
                 break;
@@ -170,13 +168,15 @@ public class TranscodeCallbackService {
             mongoTemplate.save(video);
         }
 
+        //拿到对象存储中所有ts文件
+
         //保存转码结果，OSS中的，m3u8文件和ts文件到数据库
         saveS3Files(transcode);
 
         //如果视频已就绪
         if (videoStatus.equals(VideoStatus.READY)) {
             //通知钉钉
-            DingUtil.sendMarkdown("视频就绪: " + video.getTitle() + "\n\n" + videoId);
+            DingUtil.sendMarkdown("视频就绪", video.getTitle() + "\n\n" + videoId);
         }
     }
 
@@ -200,8 +200,7 @@ public class TranscodeCallbackService {
         m3u8File.setUserId(userId);
 
         //获取m3u8文件内容
-        OSSObject m3u8Object = fileService.getObject(m3u8Key);
-        m3u8File.setObjectInfo(m3u8Object);
+        m3u8File.setObjectInfo(fileService.getObject(m3u8Key));
         log.info("保存m3u8File: {}", JSON.toJSONString(m3u8File));
         mongoTemplate.save(m3u8File);
 
