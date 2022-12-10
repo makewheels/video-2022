@@ -9,6 +9,7 @@ import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.fileaccesslog.FileAccessLogService;
+import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.VideoType;
@@ -73,7 +74,8 @@ public class FileService {
     /**
      * 获取上传凭证
      */
-    public Result<JSONObject> getUploadCredentials(User user, String fileId) {
+    public Result<JSONObject> getUploadCredentials(String fileId) {
+        User user = UserHolder.get();
         File file = fileRepository.getById(fileId);
         //如果文件不存在，或者token找不到用户
         if (file == null || user == null) return Result.error(ErrorCode.FAIL);
@@ -92,7 +94,8 @@ public class FileService {
     /**
      * 通知文件上传完成，和对象存储服务器确认，改变数据库File状态
      */
-    public Result<Void> uploadFinish(User user, String fileId) {
+    public Result<Void> uploadFinish(String fileId) {
+        User user = UserHolder.get();
         File file = fileRepository.getById(fileId);
         if (file == null) return Result.error(ErrorCode.FAIL);
         if (!StringUtils.equals(user.getId(), file.getUserId())) return Result.error(ErrorCode.FAIL);

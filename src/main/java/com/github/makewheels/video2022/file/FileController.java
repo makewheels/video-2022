@@ -4,8 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.context.Context;
 import com.github.makewheels.video2022.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.Result;
-import com.github.makewheels.video2022.user.UserService;
-import com.github.makewheels.video2022.user.bean.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,20 +17,16 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("file")
 public class FileController {
     @Resource
-    private UserService userService;
-    @Resource
     private FileService fileService;
 
     @GetMapping("getUploadCredentials")
-    public Result<JSONObject> getUploadCredentials(HttpServletRequest request, @RequestParam String fileId) {
-        User user = userService.getUserByRequest(request);
-        return fileService.getUploadCredentials(user, fileId);
+    public Result<JSONObject> getUploadCredentials(@RequestParam String fileId) {
+        return fileService.getUploadCredentials(fileId);
     }
 
     @GetMapping("uploadFinish")
-    public Result<Void> uploadFinish(HttpServletRequest request, @RequestParam String fileId) {
-        User user = userService.getUserByRequest(request);
-        return fileService.uploadFinish(user, fileId);
+    public Result<Void> uploadFinish(@RequestParam String fileId) {
+        return fileService.uploadFinish(fileId);
     }
 
     @GetMapping("access")
