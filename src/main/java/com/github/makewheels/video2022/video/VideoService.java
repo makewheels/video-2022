@@ -303,7 +303,7 @@ public class VideoService {
             String resolution = transcode.getResolution();
             playUrl.setResolution(resolution);
             //改成，调用我自己的getM3u8Content接口，获取m3u8内容
-            playUrl.setUrl(internalBaseUrl + "/video/getM3u8Content.m3u8?"
+            playUrl.setUrl(internalBaseUrl + "/watchController/getM3u8Content.m3u8?"
                     + "videoId=" + videoId
                     + "&clientId=" + clientId
                     + "&sessionId=" + sessionId
