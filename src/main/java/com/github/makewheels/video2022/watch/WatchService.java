@@ -60,7 +60,7 @@ public class WatchService {
             videoRepository.addWatchCount(videoId);
         }
 
-        Video video = mongoTemplate.findById(videoId, Video.class);
+        Video video = videoRepository.getById(videoId);
 
         //推送钉钉
         String province = ipResult.getString("province");
