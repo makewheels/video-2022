@@ -1,11 +1,10 @@
 package com.github.makewheels.video2022.watch;
 
+import com.github.makewheels.video2022.context.Context;
+import com.github.makewheels.video2022.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -20,10 +19,9 @@ public class WatchController {
      * 增加观看记录
      */
     @GetMapping("addWatchLog")
-    public Result<Void> addWatchLog(
-            HttpServletRequest request, @RequestParam String videoId, @RequestParam String clientId,
-            @RequestParam String sessionId, @RequestParam String videoStatus) {
-        return watchService.addWatchLog(request, clientId, sessionId, videoId, videoStatus);
+    public Result<Void> addWatchLog(HttpServletRequest request, @RequestParam String videoStatus) {
+        Context context = RequestUtil.toDTO(request, Context.class);
+        return watchService.addWatchLog(request, context, videoStatus);
     }
 
     /**
@@ -31,8 +29,9 @@ public class WatchController {
      */
     @GetMapping("getWatchInfo")
     public Result<WatchInfo> getWatchInfo(
-            @RequestParam String watchId, @RequestParam String clientId, @RequestParam String sessionId) {
-        return watchService.getWatchInfo(watchId, clientId, sessionId);
+            HttpServletRequest request, @RequestParam String watchId) {
+        Context context = RequestUtil.toDTO(request, Context.class);
+        return watchService.getWatchInfo(context, watchId);
     }
 
     /**
@@ -40,17 +39,18 @@ public class WatchController {
      */
     @GetMapping("getM3u8Content.m3u8")
     public String getM3u8Content(
-            @RequestParam String videoId, @RequestParam String clientId, @RequestParam String sessionId,
-            @RequestParam String transcodeId, @RequestParam String resolution) {
-        return watchService.getM3u8Content(videoId, clientId, sessionId, transcodeId, resolution);
+            HttpServletRequest request, @RequestParam String transcodeId,
+            @RequestParam String resolution) {
+        Context context = RequestUtil.toDTO(request, Context.class);
+        return watchService.getM3u8Content(context, transcodeId, resolution);
     }
 
     /**
      * 获取自适应m3u8列表
      */
     @GetMapping("getMultivariantPlaylist.m3u8")
-    public String getMultivariantPlaylist(
-            @RequestParam String videoId, @RequestParam String clientId, @RequestParam String sessionId) {
-        return watchService.getMultivariantPlaylist(videoId, clientId, sessionId);
+    public String getMultivariantPlaylist(HttpServletRequest request) {
+        Context context = RequestUtil.toDTO(request, Context.class);
+        return watchService.getMultivariantPlaylist(context);
     }
 }
