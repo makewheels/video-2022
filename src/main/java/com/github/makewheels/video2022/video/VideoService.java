@@ -356,16 +356,6 @@ public class VideoService {
     }
 
     /**
-     * 获取视频信息
-     */
-    public Result<JSONObject> getYoutubeVideoInfo(JSONObject body) {
-        String youtubeUrl = body.getString("youtubeUrl");
-        String youtubeVideoId = youtubeService.getYoutubeVideoIdByUrl(youtubeUrl);
-        JSONObject videoInfo = youtubeService.getVideoInfo(youtubeVideoId);
-        return Result.ok(videoInfo);
-    }
-
-    /**
      * 获取过期视频
      */
     public List<Video> getExpiredVideos(int skip, int limit) {
