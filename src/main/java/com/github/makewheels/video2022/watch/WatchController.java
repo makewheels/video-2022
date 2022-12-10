@@ -23,7 +23,7 @@ public class WatchController {
     public Result<Void> addWatchLog(
             HttpServletRequest request, @RequestParam String videoId, @RequestParam String clientId,
             @RequestParam String sessionId, @RequestParam String videoStatus) {
-        return watchService.addWatchLog(request,clientId, sessionId, videoId, videoStatus);
+        return watchService.addWatchLog(request, clientId, sessionId, videoId, videoStatus);
     }
 
     /**
@@ -48,7 +48,7 @@ public class WatchController {
     /**
      * 获取自适应m3u8列表
      */
-    @GetMapping("getMultivariantPlaylist")
+    @GetMapping("getMultivariantPlaylist.m3u8")
     public String getMultivariantPlaylist(
             @RequestParam String videoId, @RequestParam String clientId, @RequestParam String sessionId) {
         return watchService.getMultivariantPlaylist(videoId, clientId, sessionId);
