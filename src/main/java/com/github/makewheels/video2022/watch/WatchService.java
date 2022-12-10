@@ -69,12 +69,11 @@ public class WatchService {
         log.info("观看记录：videoId = {}, title = {}, {} {} {} {}",
                 videoId, video.getTitle(), ip, province, city, district);
 
-        String markdownText =
-                "# video: " + video.getTitle() + "\n\n" +
-                        "# viewCount: " + video.getWatchCount() + "\n\n" +
-                        "# ip: " + ip + "\n\n" +
-                        "# ipInfo: " + province + " " + city + " " + district + "\n\n" +
-                        "# User-Agent: " + userAgent;
+        String markdownText = "# video: " + video.getTitle() + "\n\n" +
+                "# viewCount: " + video.getWatchCount() + "\n\n" +
+                "# ip: " + ip + "\n\n" +
+                "# ipInfo: " + province + " " + city + " " + district + "\n\n" + "\n\n" +
+                "# User-Agent: " + userAgent;
         DingUtil.sendMarkdown("观看记录", markdownText);
 
         return Result.ok();
