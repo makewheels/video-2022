@@ -163,7 +163,7 @@ public class WatchService {
 
         watchInfo.setVideoStatus(video.getStatus());
         watchInfo.setMultivariantPlaylistUrl(internalBaseUrl
-                + "/watchController/getMultivariantPlaylist&videoId=" + videoId
+                + "/watchController/getMultivariantPlaylist?videoId=" + videoId
                 + "&clientId=" + clientId + "&sessionId=" + sessionId);
 
         //缓存redis，先判断视频状态：只有READY才放入缓存
