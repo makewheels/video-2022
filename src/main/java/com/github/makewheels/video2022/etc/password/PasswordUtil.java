@@ -24,7 +24,11 @@ public class PasswordUtil {
         } else if (env.equals("prod")) {
             path = "/root/keys/video-2022/privateKey.txt";
         }
-        return FileUtil.readUtf8String(path);
+        if (FileUtil.exist(path)) {
+            return FileUtil.readUtf8String(path);
+        } else {
+            return System.getenv("video_2022_privateKey");
+        }
     }
 
     /**
