@@ -212,7 +212,7 @@ public class VideoService {
     public Result<Void> originalFileUploadFinish(String videoId) {
         User user = UserHolder.get();
         //查数据库，找到video
-        Video video = mongoTemplate.findById(videoId, Video.class);
+        Video video = videoRepository.getById(videoId);
 
         //校验文件
         if (video == null) return Result.error(ErrorCode.FAIL);
@@ -241,7 +241,7 @@ public class VideoService {
         User user = UserHolder.get();
         String userId = user.getId();
         String videoId = newVideo.getId();
-        Video oldVideo = mongoTemplate.findById(videoId, Video.class);
+        Video oldVideo = videoRepository.getById(videoId);
         //判断视频是否存在，判断视频是否属于当前用户
         if (oldVideo == null || !StringUtils.equals(userId, oldVideo.getUserId())) {
             return Result.error(ErrorCode.FAIL);
@@ -259,7 +259,7 @@ public class VideoService {
      * 获取视频详情
      */
     public Result<VideoDetail> getVideoDetail(String videoId) {
-        Video video = mongoTemplate.findById(videoId, Video.class);
+        Video video = videoRepository.getById(videoId);
         if (video == null) {
             return Result.error(ErrorCode.FAIL);
         }

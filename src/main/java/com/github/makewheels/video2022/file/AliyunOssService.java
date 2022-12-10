@@ -57,6 +57,9 @@ public class AliyunOssService {
         return getClient().doesObjectExist(bucket, key);
     }
 
+    /**
+     * 获取临时上传凭证
+     */
     public JSONObject getUploadCredentials(String key) {
         DefaultProfile.addEndpoint("cn-beijing", "Sts",
                 "sts.cn-beijing.aliyuncs.com");
