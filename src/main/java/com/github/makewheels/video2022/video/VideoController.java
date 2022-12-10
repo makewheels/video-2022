@@ -100,14 +100,4 @@ public class VideoController {
         return videoService.getVideoList(user.getId(), skip, limit);
     }
 
-    /**
-     * 根据youtube url获取视频信息
-     */
-    @GetMapping("getYoutubeVideoInfo")
-    public Result<JSONObject> getYoutubeVideoInfo(
-            HttpServletRequest request, @RequestParam JSONObject body) {
-        User user = userService.getUserByRequest(request);
-        return videoService.getYoutubeVideoInfo(body);
-    }
-
 }
