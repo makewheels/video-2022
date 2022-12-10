@@ -26,6 +26,7 @@ public class IpService {
     }
 
     public JSONObject getIpWithRedis(String ip) {
+        ip = ip.replace(":", "_");
         //先查Redis，如果有直接返回
         JSONObject jsonObject = redisService.getForJSONObject(RedisKey.ip(ip));
         if (jsonObject != null) {
