@@ -232,7 +232,7 @@ public class WatchService {
                     transcode.getResolution());
 
             stringBuilder.append("#EXT-X-STREAM-INF:BANDWIDTH=").append(transcode.getMaxBitrate())
-                    .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate())
+                    .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate()).append("\n")
                     .append(m3u8Url).append("\n");
         }
         return stringBuilder.toString();
