@@ -49,7 +49,16 @@ public class WatchController {
             HttpServletRequest request, @RequestParam String videoId,
             @RequestParam String clientId, @RequestParam String sessionId,
             @RequestParam String transcodeId, @RequestParam String resolution) {
-        User user = userService.getUserByRequest(request);
-        return watchService.getM3u8Content(user, videoId, clientId, sessionId, transcodeId, resolution);
+        return watchService.getM3u8Content(videoId, clientId, sessionId, transcodeId, resolution);
+    }
+
+    /**
+     * 获取自适应m3u8列表
+     */
+    @GetMapping("getMultivariantPlaylist")
+    public String getMultivariantPlaylist(
+            HttpServletRequest request, @RequestParam String videoId,
+            @RequestParam String clientId, @RequestParam String sessionId) {
+        return watchService.getMultivariantPlaylist(videoId, clientId, sessionId);
     }
 }

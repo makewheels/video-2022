@@ -21,6 +21,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/favicon.ico")
                 .excludePathPatterns("/static/favicon.ico")
                 .excludePathPatterns("/healthCheck")
+                .excludePathPatterns("/error")
 
                 .excludePathPatterns("/login.html")
                 .excludePathPatterns("/user/requestVerificationCode")
