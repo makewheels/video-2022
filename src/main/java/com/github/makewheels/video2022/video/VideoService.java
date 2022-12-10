@@ -6,8 +6,6 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
-import com.github.makewheels.video2022.cover.CoverRepository;
-import com.github.makewheels.video2022.etc.ip.IpService;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
@@ -15,7 +13,7 @@ import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.S3Provider;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
-import com.github.makewheels.video2022.transcode.TranscodeRepository;
+import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.Environment;
 import com.github.makewheels.video2022.utils.PathUtil;
@@ -56,15 +54,9 @@ public class VideoService {
     private TranscodeLauncher transcodeLauncher;
     @Resource
     private CoverLauncher coverLauncher;
-    @Resource
-    private IpService ipService;
 
     @Resource
     private VideoRepository videoRepository;
-    @Resource
-    private CoverRepository coverRepository;
-    @Resource
-    private TranscodeRepository transcodeRepository;
 
     @Value("${internal-base-url}")
     private String internalBaseUrl;
@@ -91,7 +83,8 @@ public class VideoService {
     /**
      * 创建新视频
      */
-    public Result<JSONObject> create(User user, JSONObject body) {
+    public Result<JSONObject> create(JSONObject body) {
+        User user = UserHolder.get();
         String userId = user.getId();
         Video video = new Video();
         String videoType = body.getString("type");
@@ -216,7 +209,8 @@ public class VideoService {
     /**
      * 原始文件上传完成，开始转码
      */
-    public Result<Void> originalFileUploadFinish(User user, String videoId) {
+    public Result<Void> originalFileUploadFinish(String videoId) {
+        User user = UserHolder.get();
         //查数据库，找到video
         Video video = mongoTemplate.findById(videoId, Video.class);
 
@@ -243,7 +237,8 @@ public class VideoService {
     /**
      * 更新视频信息
      */
-    public Result<Void> updateVideo(User user, Video newVideo) {
+    public Result<Void> updateVideo(Video newVideo) {
+        User user = UserHolder.get();
         String userId = user.getId();
         String videoId = newVideo.getId();
         Video oldVideo = mongoTemplate.findById(videoId, Video.class);
@@ -263,7 +258,7 @@ public class VideoService {
     /**
      * 获取视频详情
      */
-    public Result<VideoDetail> getVideoDetail(User user, String videoId) {
+    public Result<VideoDetail> getVideoDetail(String videoId) {
         Video video = mongoTemplate.findById(videoId, Video.class);
         if (video == null) {
             return Result.error(ErrorCode.FAIL);
@@ -276,20 +271,28 @@ public class VideoService {
     }
 
     /**
+     * 分页获取我的视频列表
+     */
+    public Result<List<VideoSimpleInfoVO>> getMyVideoList(int skip, int limit) {
+        String userId = UserHolder.get().getId();
+        return Result.ok(getVideoList(userId, skip, limit));
+    }
+
+    /**
      * 分页获取指定userId视频列表
      */
-    public Result<List<VideoSimpleInfoVO>> getVideoList(String userId, int skip, int limit) {
+    private List<VideoSimpleInfoVO> getVideoList(String userId, int skip, int limit) {
         List<Video> videos = videoRepository.getVideosByUserId(userId, skip, limit);
 
         List<VideoSimpleInfoVO> itemList = new ArrayList<>(videos.size());
-        videos.forEach(video -> {
+        for (Video video : videos) {
             VideoSimpleInfoVO item = new VideoSimpleInfoVO();
             BeanUtils.copyProperties(video, item);
             item.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
             item.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
             itemList.add(item);
-        });
-        return Result.ok(itemList);
+        }
+        return itemList;
     }
 
     /**
