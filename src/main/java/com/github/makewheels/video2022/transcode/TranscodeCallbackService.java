@@ -163,9 +163,11 @@ public class TranscodeCallbackService {
         saveS3Files(video, transcode);
 
         //如果视频已就绪
+        String title = video.getTitle();
         if (video.getStatus().equals(VideoStatus.READY)) {
+            log.info("视频已就绪, videoId = {}, title = {}", videoId, title);
             //通知钉钉
-            DingUtil.sendMarkdown("视频就绪", video.getTitle() + "\n\n" + videoId);
+            DingUtil.sendMarkdown("视频就绪", title + "\n\n" + videoId);
         }
     }
 

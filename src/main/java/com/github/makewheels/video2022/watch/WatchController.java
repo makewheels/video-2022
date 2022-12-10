@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022.watch;
 
 import com.github.makewheels.video2022.etc.response.Result;
-import com.github.makewheels.video2022.user.UserService;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,8 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 public class WatchController {
     @Resource
     private WatchService watchService;
-    @Resource
-    private UserService userService;
 
     /**
      * 增加观看记录

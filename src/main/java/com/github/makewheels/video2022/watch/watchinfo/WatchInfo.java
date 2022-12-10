@@ -9,5 +9,6 @@ public class WatchInfo {
     private String videoId;
     private String coverUrl;
     private List<PlayUrl> playUrlList;
+    private String multivariantPlaylistUrl;
     private String videoStatus;
 }
