@@ -7,7 +7,7 @@
           content="width=device-width, height=device-height, initial-scale=1,
            maximum-scale=1, minimum-scale=1, user-scalable=no"/>
 
-    <title id="title">播放页</title>
+    <title id="htmlTitle">播放页</title>
 
     <!--axios-->
     <script src="https://production-bucket.oss-cn-beijing.aliyuncs.com/dist/axios/axios-0.26.1.min.js"></script>
@@ -87,7 +87,6 @@
     function playByM3u8UrlAndTime(m3u8Url, time) {
         currentUrl = m3u8Url;
 
-        console.log(currentUrl)
         //阿里云播放器
         player = new Aliplayer({
                 "id": "player-con",
@@ -113,7 +112,6 @@
     function loadVideo() {
         watchId = getUrlVariable("v");
         //获取播放地址
-        // axios.get('/watchController/getWatchInfo?watchId=' + watchId
         axios.get('/watchController/getWatchInfo?watchId=' + watchId
             + '&clientId=' + localStorage.clientId
             + '&sessionId=' + sessionStorage.sessionId)
@@ -208,8 +206,8 @@
         axios.get('/video/getVideoDetail?videoId=' + videoId)
             .then(function (res) {
                 let data = res.data.data;
-                document.getElementById("title").innerText = data.title;
-                // document.getElementById("div_title").innerText = data.title;
+                // document.getElementById("htmlTitle").innerText = data.title;
+                document.getElementById("div_title").innerText = data.title;
                 document.getElementById("watchCount").innerText = "观看次数：" + data.watchCount;
                 document.getElementById("description").innerText = data.description;
 
