@@ -58,7 +58,8 @@ public class AliyunOssService {
     }
 
     public JSONObject getUploadCredentials(String key) {
-        DefaultProfile.addEndpoint("cn-beijing", "Sts", "sts.cn-beijing.aliyuncs.com");
+        DefaultProfile.addEndpoint("cn-beijing", "Sts",
+                "sts.cn-beijing.aliyuncs.com");
         IClientProfile profile = DefaultProfile.getProfile("cn-beijing", accessKeyId, secretKey);
         DefaultAcsClient client = new DefaultAcsClient(profile);
         AssumeRoleRequest request = new AssumeRoleRequest();
@@ -77,11 +78,7 @@ public class AliyunOssService {
         JSONObject credentials = new JSONObject();
         credentials.put("bucket", bucket);
         credentials.put("key", key);
-//        if (endpoint.startsWith("http")) {
         credentials.put("endpoint", endpoint);
-//        } else {
-//            credentials.put("endpoint", "https://" + endpoint);
-//        }
         if (response == null) return null;
         AssumeRoleResponse.Credentials responseCredentials = response.getCredentials();
         credentials.put("accessKeyId", responseCredentials.getAccessKeyId());
@@ -100,7 +97,9 @@ public class AliyunOssService {
         String nextContinuationToken = null;
         ListObjectsV2Result result;
         do {
-            ListObjectsV2Request request = new ListObjectsV2Request(bucket).withMaxKeys(1000);
+            ListObjectsV2Request request = new ListObjectsV2Request();
+            request.setBucketName(bucket);
+            request.withMaxKeys(1000);
             request.setContinuationToken(nextContinuationToken);
             request.setPrefix(prefix);
             result = getClient().listObjectsV2(request);

@@ -41,7 +41,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!--Spring Cloud 这个需要指定版本，springboot启动会校验版本兼容性-->
+        <!--Spring Cloud 需要指定版本，springboot启动会校验版本兼容性-->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-dependencies</artifactId>

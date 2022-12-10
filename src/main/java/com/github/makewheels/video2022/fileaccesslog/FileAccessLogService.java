@@ -24,6 +24,9 @@ public class FileAccessLogService {
     @Resource
     private TranscodeRepository transcodeRepository;
 
+    /**
+     * 保存文件访问记录
+     */
     public void saveAccessLog(
             HttpServletRequest request, String videoId, String clientId, String sessionId,
             String resolution, String fileId) {
