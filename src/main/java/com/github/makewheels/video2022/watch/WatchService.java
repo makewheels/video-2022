@@ -11,7 +11,6 @@ import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
-import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.DingUtil;
 import com.github.makewheels.video2022.video.VideoRedisService;
 import com.github.makewheels.video2022.video.VideoRepository;
@@ -109,9 +108,22 @@ public class WatchService {
     }
 
     /**
+     * 返回的这个url，能获取m3u8内容
+     */
+    private String getM3u8Url(String videoId, String clientId, String sessionId, String transcodeId,
+                              String resolution) {
+        return internalBaseUrl + "/watchController/getM3u8Content.m3u8?"
+                + "videoId=" + videoId
+                + "&clientId=" + clientId
+                + "&sessionId=" + sessionId
+                + "&transcodeId=" + transcodeId
+                + "&resolution=" + resolution;
+    }
+
+    /**
      * 获取播放信息
      */
-    public Result<WatchInfo> getWatchInfo(User user, String watchId, String clientId, String sessionId) {
+    public Result<WatchInfo> getWatchInfo(String watchId, String clientId, String sessionId) {
         WatchInfo watchInfo = videoRedisService.getWatchInfo(watchId);
         //如果已经存在缓存，直接返回
         if (watchInfo != null) {
@@ -143,13 +155,8 @@ public class WatchService {
             String resolution = transcode.getResolution();
             playUrl.setResolution(resolution);
             //改成，调用我自己的getM3u8Content接口，获取m3u8内容
-            playUrl.setUrl(internalBaseUrl + "/watchController/getM3u8Content.m3u8?"
-                    + "videoId=" + videoId
-                    + "&clientId=" + clientId
-                    + "&sessionId=" + sessionId
-                    + "&transcodeId=" + transcode.getId()
-                    + "&resolution=" + resolution
-            );
+            String m3u8Url = getM3u8Url(videoId, clientId, sessionId, transcode.getId(), resolution);
+            playUrl.setUrl(m3u8Url);
 
             playUrlList.add(playUrl);
         }
@@ -163,7 +170,12 @@ public class WatchService {
         return Result.ok(watchInfo);
     }
 
-    private String getM3u8ContentByTranscode(Transcode transcode, String clientId, String sessionId) {
+    /**
+     * 根据转码对象获取m3u8内容，返回String
+     */
+    public String getM3u8Content(String videoId, String clientId, String sessionId,
+                                 String transcodeId, String resolution) {
+        Transcode transcode = transcodeRepository.getById(transcodeId);
         //找到transcode对应的tsFiles
         List<File> files = fileRepository.getByIds(transcode.getTsFileIds());
         Map<String, File> fileMap = files.stream().collect(
@@ -190,17 +202,7 @@ public class WatchService {
                     + "&sign=" + IdUtil.simpleUUID();
             lines.set(i, url);
         }
-
         return StringUtils.join(lines, "\n");
-    }
-
-    /**
-     * 根据转码对象获取m3u8内容，返回String
-     */
-    public String getM3u8Content(String videoId, String clientId, String sessionId,
-                                 String transcodeId, String resolution) {
-        Transcode transcode = transcodeRepository.getById(transcodeId);
-        return getM3u8ContentByTranscode(transcode, clientId, sessionId);
     }
 
     /**
@@ -226,10 +228,12 @@ public class WatchService {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("#EXTM3U\n");
         for (Transcode transcode : transcodeList) {
+            String m3u8Url = getM3u8Url(videoId, clientId, sessionId, transcode.getId(),
+                    transcode.getResolution());
+
             stringBuilder.append("#EXT-X-STREAM-INF:BANDWIDTH=").append(transcode.getMaxBitrate())
                     .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate())
-                    .append(getM3u8ContentByTranscode(transcode, clientId, sessionId))
-                    .append("\n");
+                    .append(m3u8Url).append("\n");
         }
         return stringBuilder.toString();
     }

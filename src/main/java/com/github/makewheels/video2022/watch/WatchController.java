@@ -2,7 +2,6 @@ package com.github.makewheels.video2022.watch;
 
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.user.UserService;
-import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +26,7 @@ public class WatchController {
     public Result<Void> addWatchLog(
             HttpServletRequest request, @RequestParam String videoId, @RequestParam String clientId,
             @RequestParam String sessionId, @RequestParam String videoStatus) {
-        return watchService.addWatchLog(request, clientId, sessionId, videoId, videoStatus);
+        return watchService.addWatchLog(request,clientId, sessionId, videoId, videoStatus);
     }
 
     /**
@@ -35,10 +34,8 @@ public class WatchController {
      */
     @GetMapping("getWatchInfo")
     public Result<WatchInfo> getWatchInfo(
-            HttpServletRequest request, @RequestParam String watchId,
-            @RequestParam String clientId, @RequestParam String sessionId) {
-        User user = userService.getUserByRequest(request);
-        return watchService.getWatchInfo(user, watchId, clientId, sessionId);
+            @RequestParam String watchId, @RequestParam String clientId, @RequestParam String sessionId) {
+        return watchService.getWatchInfo(watchId, clientId, sessionId);
     }
 
     /**
@@ -46,8 +43,7 @@ public class WatchController {
      */
     @GetMapping("getM3u8Content.m3u8")
     public String getM3u8Content(
-            HttpServletRequest request, @RequestParam String videoId,
-            @RequestParam String clientId, @RequestParam String sessionId,
+            @RequestParam String videoId, @RequestParam String clientId, @RequestParam String sessionId,
             @RequestParam String transcodeId, @RequestParam String resolution) {
         return watchService.getM3u8Content(videoId, clientId, sessionId, transcodeId, resolution);
     }
@@ -57,8 +53,7 @@ public class WatchController {
      */
     @GetMapping("getMultivariantPlaylist")
     public String getMultivariantPlaylist(
-            HttpServletRequest request, @RequestParam String videoId,
-            @RequestParam String clientId, @RequestParam String sessionId) {
+            @RequestParam String videoId, @RequestParam String clientId, @RequestParam String sessionId) {
         return watchService.getMultivariantPlaylist(videoId, clientId, sessionId);
     }
 }
