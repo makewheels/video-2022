@@ -157,11 +157,14 @@ public class WatchService {
             //改成，调用我自己的getM3u8Content接口，获取m3u8内容
             String m3u8Url = getM3u8Url(videoId, clientId, sessionId, transcode.getId(), resolution);
             playUrl.setUrl(m3u8Url);
-
             playUrlList.add(playUrl);
         }
         watchInfo.setPlayUrlList(playUrlList);
+
         watchInfo.setVideoStatus(video.getStatus());
+        watchInfo.setMultivariantPlaylistUrl(internalBaseUrl
+                + "/watchController/getMultivariantPlaylist&videoId=" + videoId
+                + "&clientId=" + clientId + "&sessionId=" + sessionId);
 
         //缓存redis，先判断视频状态：只有READY才放入缓存
         if (video.isReady()) {
