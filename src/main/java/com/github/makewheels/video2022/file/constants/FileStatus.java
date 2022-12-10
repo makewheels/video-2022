@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.file;
+package com.github.makewheels.video2022.file.constants;
 
 public class FileStatus {
     //数据库已创建

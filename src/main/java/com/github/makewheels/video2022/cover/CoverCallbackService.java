@@ -7,6 +7,7 @@ import com.aliyun.oss.model.OSSObject;
 import com.github.makewheels.video2022.file.*;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.video.bean.Video;
 import lombok.extern.slf4j.Slf4j;

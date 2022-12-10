@@ -12,6 +12,8 @@ import com.github.makewheels.video2022.etc.ip.IpService;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.*;
+import com.github.makewheels.video2022.file.constants.FileStatus;
+import com.github.makewheels.video2022.file.constants.S3Provider;
 import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;

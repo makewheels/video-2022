@@ -3,6 +3,8 @@ package com.github.makewheels.video2022.file;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.ObjectMetadata;
+import com.github.makewheels.video2022.file.constants.FileStatus;
+import com.github.makewheels.video2022.file.constants.S3Provider;
 import lombok.Data;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.data.annotation.Id;
