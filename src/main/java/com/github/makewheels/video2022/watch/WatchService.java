@@ -2,7 +2,10 @@ package com.github.makewheels.video2022.watch;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.github.makewheels.video2022.cover.Cover;
+import com.github.makewheels.video2022.cover.CoverRepository;
 import com.github.makewheels.video2022.etc.ip.IpService;
+import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileRepository;
@@ -10,9 +13,12 @@ import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.DingUtil;
+import com.github.makewheels.video2022.video.VideoRedisService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
+import com.github.makewheels.video2022.watch.watchinfo.PlayUrl;
+import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,10 +27,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -43,6 +46,10 @@ public class WatchService {
     private TranscodeRepository transcodeRepository;
     @Resource
     private FileRepository fileRepository;
+    @Resource
+    private CoverRepository coverRepository;
+    @Resource
+    private VideoRedisService videoRedisService;
 
     @Value("${internal-base-url}")
     private String internalBaseUrl;
@@ -97,6 +104,61 @@ public class WatchService {
         DingUtil.sendMarkdown("观看记录", markdownText);
 
         return Result.ok();
+    }
+
+    /**
+     * 获取播放信息
+     */
+    public Result<WatchInfo> getWatchInfo(User user, String watchId, String clientId, String sessionId) {
+        WatchInfo watchInfo = videoRedisService.getWatchInfo(watchId);
+        //如果已经存在缓存，直接返回
+        if (watchInfo != null) {
+            return Result.ok(watchInfo);
+        }
+        //如果没有缓存，查数据库，缓存，返回
+        Video video = videoRepository.getByWatchId(watchId);
+        if (video == null) {
+            log.error("查不到这个video, watchId = " + watchId);
+            return Result.error(ErrorCode.FAIL);
+        }
+        String videoId = video.getId();
+        watchInfo = new WatchInfo();
+        watchInfo.setVideoId(videoId);
+        //通过videoId查找封面
+        Cover cover = coverRepository.getByVideoId(videoId);
+        if (cover != null) {
+            watchInfo.setCoverUrl(cover.getAccessUrl());
+        }
+
+        //拿m3u8播放地址
+        List<Transcode> transcodeList;
+        List<String> transcodeIds = video.getTranscodeIds();
+        transcodeList = transcodeRepository.getByIds(transcodeIds);
+
+        List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
+        for (Transcode transcode : transcodeList) {
+            PlayUrl playUrl = new PlayUrl();
+            String resolution = transcode.getResolution();
+            playUrl.setResolution(resolution);
+            //改成，调用我自己的getM3u8Content接口，获取m3u8内容
+            playUrl.setUrl(internalBaseUrl + "/watchController/getM3u8Content.m3u8?"
+                    + "videoId=" + videoId
+                    + "&clientId=" + clientId
+                    + "&sessionId=" + sessionId
+                    + "&transcodeId=" + transcode.getId()
+                    + "&resolution=" + resolution
+            );
+
+            playUrlList.add(playUrl);
+        }
+        watchInfo.setPlayUrlList(playUrlList);
+        watchInfo.setVideoStatus(video.getStatus());
+
+        //缓存redis，先判断视频状态：只有READY才放入缓存
+        if (video.isReady()) {
+//            videoRedisService.setWatchInfo(watchId, watchInfo);
+        }
+        return Result.ok(watchInfo);
     }
 
     /**

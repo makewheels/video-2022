@@ -114,7 +114,7 @@
     function loadVideo() {
         watchId = getUrlVariable("v");
         //获取播放地址
-        axios.get('/video/getWatchInfo?watchId=' + watchId
+        axios.get('/watchController/getWatchInfo?watchId=' + watchId
             + '&clientId=' + localStorage.clientId
             + '&sessionId=' + sessionStorage.sessionId)
             .then(function (res) {
