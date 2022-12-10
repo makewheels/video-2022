@@ -2,15 +2,11 @@ package com.github.makewheels.video2022.file;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.aliyun.oss.model.CannedAccessControlList;
-import com.aliyun.oss.model.OSSObject;
-import com.aliyun.oss.model.OSSObjectSummary;
-import com.aliyun.oss.model.PutObjectResult;
+import com.aliyun.oss.model.*;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
-import com.github.makewheels.video2022.file.constants.S3Provider;
 import com.github.makewheels.video2022.fileaccesslog.FileAccessLogService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.constants.VideoType;
@@ -77,17 +73,6 @@ public class FileService {
     }
 
     /**
-     * 根据provider获取url
-     */
-    public String getAccessUrl(File file) {
-        String provider = file.getProvider();
-        if (provider.equals(S3Provider.ALIYUN_OSS)) {
-            return aliyunOssAccessBaseUrl + file.getKey();
-        }
-        return null;
-    }
-
-    /**
      * 获取上传凭证
      */
     public Result<JSONObject> getUploadCredentials(User user, String fileId) {
@@ -99,10 +84,7 @@ public class FileService {
         String key = file.getKey();
         //根据provider，获取上传凭证
         String provider = file.getProvider();
-        JSONObject credentials = null;
-        if (provider.equals(S3Provider.ALIYUN_OSS)) {
-            credentials = aliyunOssService.getUploadCredentials(key);
-        }
+        JSONObject credentials = aliyunOssService.getUploadCredentials(key);
         if (credentials == null) return Result.error(ErrorCode.FAIL);
         credentials.put("provider", provider);
         log.info("生成上传凭证，fileId = " + fileId + " " + JSON.toJSONString(credentials));
@@ -121,12 +103,10 @@ public class FileService {
         log.info("处理文件上传完成，fileId = " + fileId + ", key = " + key);
 
         //判断provider
-        String provider = file.getProvider();
-        if (provider.equals(S3Provider.ALIYUN_OSS)) {
-            OSSObject object = aliyunOssService.getObject(key);
-            file.setSize(object.getObjectMetadata().getContentLength());
-            file.setEtag(object.getObjectMetadata().getETag());
-        }
+        OSSObject object = aliyunOssService.getObject(key);
+        ObjectMetadata objectMetadata = object.getObjectMetadata();
+        file.setSize(objectMetadata.getContentLength());
+        file.setEtag(objectMetadata.getETag());
 
         file.setUploadTime(new Date());
         file.setStatus(FileStatus.READY);
@@ -166,6 +146,8 @@ public class FileService {
      * 设置对象权限
      */
     public void setObjectAcl(String key, CannedAccessControlList cannedAccessControlList) {
+        log.info("阿里云OSS设置对象权限, key = {}, cannedAccessControlList = {}",
+                key, cannedAccessControlList);
         aliyunOssService.setObjectAcl(key, cannedAccessControlList);
     }
 
@@ -173,7 +155,9 @@ public class FileService {
      * 上传文件
      */
     public PutObjectResult putObject(String key, InputStream inputStream) {
-        return aliyunOssService.putObject(key, inputStream);
+        PutObjectResult putObjectResult = aliyunOssService.putObject(key, inputStream);
+        log.info("阿里云OSS上传文件: {}", JSON.toJSONString(putObjectResult));
+        return putObjectResult;
     }
 
     /**
@@ -194,7 +178,7 @@ public class FileService {
         try {
             response.sendRedirect(url);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
         return Result.ok();
     }

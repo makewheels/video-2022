@@ -273,7 +273,7 @@
 
     //增加观看记录
     function addWatchHistory() {
-        axios.get('/video/addWatchLog?videoId=' + videoId
+        axios.get('/watchController/addWatchLog?videoId=' + videoId
             + '&clientId=' + localStorage.clientId
             + '&sessionId=' + sessionStorage.sessionId
             + '&videoStatus=' + videoStatus)

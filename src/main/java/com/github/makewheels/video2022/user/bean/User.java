@@ -15,6 +15,9 @@ public class User {
 
     @Indexed
     private String phone;
+
+    private String registerChannel;
+
     @Indexed
     private Date createTime;
 

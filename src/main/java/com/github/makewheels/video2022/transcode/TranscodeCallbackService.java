@@ -231,7 +231,7 @@ public class TranscodeCallbackService {
      *
      * @param filesize   文件大小
      * @param timeLength 视频时长
-     * @return
+     * @return bits per second 视频的一秒时长，有多少位，不是kbps，也不是bytes
      */
     private int getBitrate(long filesize, BigDecimal timeLength) {
         BigDecimal bitrate = new BigDecimal(filesize * 8)

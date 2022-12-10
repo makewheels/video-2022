@@ -19,6 +19,12 @@ public class IpService {
     @Resource
     private RedisService redisService;
 
+    private JSONObject getIpInfoFromApi(String ip) {
+        String json = HttpUtil.createGet("https://ips.market.alicloudapi.com/iplocaltion?ip=" + ip)
+                .header("Authorization", "APPCODE " + appCode).execute().body();
+        return JSON.parseObject(json);
+    }
+
     public JSONObject getIpWithRedis(String ip) {
         //先查Redis，如果有直接返回
         JSONObject jsonObject = redisService.getForJSONObject(RedisKey.ip(ip));
@@ -27,10 +33,9 @@ public class IpService {
         }
 
         //如果Redis没有，调阿里云接口
-        String json = HttpUtil.createGet("https://ips.market.alicloudapi.com/iplocaltion?ip=" + ip)
-                .header("Authorization", "APPCODE " + appCode).execute().body();
-        jsonObject = JSON.parseObject(json);
-        redisService.set(RedisKey.ip(ip), json, RedisTime.THREE_HOURS);
+        JSONObject ipInfoFromApi = getIpInfoFromApi(ip);
+
+        redisService.set(RedisKey.ip(ip), ipInfoFromApi.toJSONString(), RedisTime.SIX_HOURS);
         return jsonObject;
     }
 

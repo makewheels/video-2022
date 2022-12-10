@@ -6,7 +6,7 @@ import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.UserService;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.bean.VideoDetail;
-import com.github.makewheels.video2022.video.bean.VideoSimpleInfo;
+import com.github.makewheels.video2022.video.bean.VideoSimpleInfoVO;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -85,7 +85,7 @@ public class VideoController {
      * @return
      */
     @GetMapping("getVideoListByUserId")
-    public Result<List<VideoSimpleInfo>> getVideoList(
+    public Result<List<VideoSimpleInfoVO>> getVideoList(
             @RequestParam String userId, @RequestParam int skip, @RequestParam int limit) {
         return videoService.getVideoList(userId, skip, limit);
     }
@@ -94,26 +94,10 @@ public class VideoController {
      * 分页获取我的视频
      */
     @GetMapping("getMyVideoList")
-    public Result<List<VideoSimpleInfo>> getMyVideoList(
+    public Result<List<VideoSimpleInfoVO>> getMyVideoList(
             HttpServletRequest request, @RequestParam int skip, @RequestParam int limit) {
         User user = userService.getUserByRequest(request);
         return videoService.getVideoList(user.getId(), skip, limit);
-    }
-
-    /**
-     * 增加观看记录
-     *
-     * @param request
-     * @param videoId
-     * @param clientId 前端先向用户微服务获取clientId，再调此接口
-     * @return
-     */
-    @GetMapping("addWatchLog")
-    public Result<Void> addWatchLog(
-            HttpServletRequest request, @RequestParam String videoId, @RequestParam String clientId,
-            @RequestParam String sessionId, @RequestParam String videoStatus) {
-        User user = userService.getUserByRequest(request);
-        return videoService.addWatchLog(request, user, clientId, sessionId, videoId, videoStatus);
     }
 
     /**
