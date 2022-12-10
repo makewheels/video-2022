@@ -113,11 +113,11 @@ public class WatchService {
     private String getM3u8Url(String videoId, String clientId, String sessionId, String transcodeId,
                               String resolution) {
         return internalBaseUrl + "/watchController/getM3u8Content.m3u8?"
-                + "videoId=" + videoId
+                + "resolution=" + resolution
+                + "&videoId=" + videoId
                 + "&clientId=" + clientId
                 + "&sessionId=" + sessionId
-                + "&transcodeId=" + transcodeId
-                + "&resolution=" + resolution;
+                + "&transcodeId=" + transcodeId;
     }
 
     /**
@@ -163,9 +163,8 @@ public class WatchService {
 
         watchInfo.setVideoStatus(video.getStatus());
         watchInfo.setMultivariantPlaylistUrl(internalBaseUrl
-                + "/watchController/getMultivariantPlaylist?videoId=" + videoId
+                + "/watchController/getMultivariantPlaylist.m3u8?videoId=" + videoId
                 + "&clientId=" + clientId + "&sessionId=" + sessionId);
-
         //缓存redis，先判断视频状态：只有READY才放入缓存
         if (video.isReady()) {
 //            videoRedisService.setWatchInfo(watchId, watchInfo);
@@ -191,14 +190,15 @@ public class WatchService {
         //拆解m3u8Content
         List<String> lines = Arrays.asList(m3u8Content.split("\n"));
         for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
-            if (StringUtils.startsWith(line, "#")) continue;
-            File file = fileMap.get(line);
+            String filename = lines.get(i);
+            if (StringUtils.startsWith(filename, "#")) continue;
+            File file = fileMap.get(filename);
             String url = internalBaseUrl + "/file/access?"
-                    + "videoId=" + transcode.getVideoId()
+                    + "resolution=" + transcode.getResolution()
+                    + "&tsIndex=" + fileMap.get(filename).getTsIndex()
+                    + "&videoId=" + transcode.getVideoId()
                     + "&clientId=" + clientId
                     + "&sessionId=" + sessionId
-                    + "&resolution=" + transcode.getResolution()
                     + "&fileId=" + file.getId()
                     + "&timestamp=" + System.currentTimeMillis()
                     + "&nonce=" + IdUtil.nanoId()
@@ -234,8 +234,10 @@ public class WatchService {
             String m3u8Url = getM3u8Url(videoId, clientId, sessionId, transcode.getId(),
                     transcode.getResolution());
 
-            stringBuilder.append("#EXT-X-STREAM-INF:BANDWIDTH=").append(transcode.getMaxBitrate())
-                    .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate()).append("\n")
+            stringBuilder.append("#EXT-X-STREAM-INF:BANDWIDTH=")
+                    .append(transcode.getMaxBitrate())
+                    .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate())
+                    .append("\n")
                     .append(m3u8Url).append("\n");
         }
         return stringBuilder.toString();
