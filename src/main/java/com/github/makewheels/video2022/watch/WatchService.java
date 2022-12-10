@@ -38,6 +38,7 @@ public class WatchService {
     private IpService ipService;
     @Resource
     private MongoTemplate mongoTemplate;
+
     @Resource
     private WatchRepository watchRepository;
     @Resource
@@ -48,6 +49,7 @@ public class WatchService {
     private FileRepository fileRepository;
     @Resource
     private CoverRepository coverRepository;
+
     @Resource
     private VideoRedisService videoRedisService;
 
@@ -161,14 +163,7 @@ public class WatchService {
         return Result.ok(watchInfo);
     }
 
-    /**
-     * 根据转码对象获取m3u8内容，返回String
-     */
-    public String getM3u8Content(
-            User user, String videoId, String clientId, String sessionId,
-            String transcodeId, String resolution) {
-
-        Transcode transcode = transcodeRepository.getById(transcodeId);
+    private String getM3u8ContentByTranscode(Transcode transcode, String clientId, String sessionId) {
         //找到transcode对应的tsFiles
         List<File> files = fileRepository.getByIds(transcode.getTsFileIds());
         Map<String, File> fileMap = files.stream().collect(
@@ -197,5 +192,45 @@ public class WatchService {
         }
 
         return StringUtils.join(lines, "\n");
+    }
+
+    /**
+     * 根据转码对象获取m3u8内容，返回String
+     */
+    public String getM3u8Content(String videoId, String clientId, String sessionId,
+                                 String transcodeId, String resolution) {
+        Transcode transcode = transcodeRepository.getById(transcodeId);
+        return getM3u8ContentByTranscode(transcode, clientId, sessionId);
+    }
+
+    /**
+     * 获取自适应m3u8列表
+     * https://developer.apple.com/documentation/http_live_streaming
+     * /example_playlists_for_http_live_streaming/creating_a_multivariant_playlist
+     * <p>
+     * 例子：
+     * #EXTM3U
+     * <p>
+     * #EXT-X-STREAM-INF:BANDWIDTH=150000,RESOLUTION=416x234,CODECS="avc1.42e00a,mp4a.40.2"
+     * http://example.com/low/index.m3u8
+     * <p>
+     * #EXT-X-STREAM-INF:BANDWIDTH=240000,RESOLUTION=416x234,CODECS="avc1.42e00a,mp4a.40.2"
+     * http://example.com/lo_mid/index.m3u8
+     * <p>
+     * #EXT-X-STREAM-INF:BANDWIDTH=440000,RESOLUTION=416x234,CODECS="avc1.42e00a,mp4a.40.2"
+     * http://example.com/hi_mid/index.m3u8
+     */
+    public String getMultivariantPlaylist(String videoId, String clientId, String sessionId) {
+        Video video = videoRepository.getById(videoId);
+        List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("#EXTM3U\n");
+        for (Transcode transcode : transcodeList) {
+            stringBuilder.append("#EXT-X-STREAM-INF:BANDWIDTH=").append(transcode.getMaxBitrate())
+                    .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate())
+                    .append(getM3u8ContentByTranscode(transcode, clientId, sessionId))
+                    .append("\n");
+        }
+        return stringBuilder.toString();
     }
 }
