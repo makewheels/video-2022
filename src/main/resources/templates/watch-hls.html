@@ -123,6 +123,8 @@
                 loadVideoInfo(videoId);
                 //增加观看记录
                 addWatchHistory();
+                //给播放器加监听
+                addPlayerListeners();
             })
     }
 
@@ -279,6 +281,13 @@
             + '&videoStatus=' + videoStatus)
             .then(function (res) {
             });
+    }
+
+    //增加监听事件
+    function addPlayerListeners(){
+        // player.on("playing",function (res){
+        //     console.log(res);
+        // });
     }
 
     //程序从这里开始

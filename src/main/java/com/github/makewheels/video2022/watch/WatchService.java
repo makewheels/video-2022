@@ -2,6 +2,7 @@ package com.github.makewheels.video2022.watch;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.github.makewheels.video2022.context.Context;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
 import com.github.makewheels.video2022.etc.ip.IpService;
@@ -16,7 +17,6 @@ import com.github.makewheels.video2022.video.VideoRedisService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
-import com.github.makewheels.video2022.watch.watchinfo.PlayUrl;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +26,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,9 +61,11 @@ public class WatchService {
     /**
      * 增加观看记录
      */
-    public Result<Void> addWatchLog(
-            HttpServletRequest request, String clientId, String sessionId,
-            String videoId, String videoStatus) {
+    public Result<Void> addWatchLog(HttpServletRequest request, Context context, String videoStatus) {
+        String videoId = context.getVideoId();
+        String clientId = context.getClientId();
+        String sessionId = context.getSessionId();
+
         //观看记录根据videoId和sessionId判断是否已存在观看记录，如果已存在则跳过
         if (watchRepository.isWatchLogExist(videoId, sessionId, videoStatus)) {
             return Result.ok();
@@ -123,7 +128,7 @@ public class WatchService {
     /**
      * 获取播放信息
      */
-    public Result<WatchInfo> getWatchInfo(String watchId, String clientId, String sessionId) {
+    public Result<WatchInfo> getWatchInfo(Context context, String watchId) {
         WatchInfo watchInfo = videoRedisService.getWatchInfo(watchId);
         //如果已经存在缓存，直接返回
         if (watchInfo != null) {
@@ -145,26 +150,27 @@ public class WatchService {
         }
 
         //拿m3u8播放地址
-        List<Transcode> transcodeList;
         List<String> transcodeIds = video.getTranscodeIds();
-        transcodeList = transcodeRepository.getByIds(transcodeIds);
+        List<Transcode> transcodeList = transcodeRepository.getByIds(transcodeIds);
 
-        List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
-        for (Transcode transcode : transcodeList) {
-            PlayUrl playUrl = new PlayUrl();
-            String resolution = transcode.getResolution();
-            playUrl.setResolution(resolution);
-            //改成，调用我自己的getM3u8Content接口，获取m3u8内容
-            String m3u8Url = getM3u8Url(videoId, clientId, sessionId, transcode.getId(), resolution);
-            playUrl.setUrl(m3u8Url);
-            playUrlList.add(playUrl);
-        }
-        watchInfo.setPlayUrlList(playUrlList);
+//        List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
+//        for (Transcode transcode : transcodeList) {
+//            PlayUrl playUrl = new PlayUrl();
+//            String resolution = transcode.getResolution();
+//            playUrl.setResolution(resolution);
+//            // 改成，调用我自己的getM3u8Content接口，获取m3u8内容
+//            String m3u8Url = getM3u8Url(videoId, clientId, sessionId, transcode.getId(), resolution);
+//            playUrl.setUrl(m3u8Url);
+//            playUrlList.add(playUrl);
+//    }
+//        watchInfo.setPlayUrlList(playUrlList);
 
         watchInfo.setVideoStatus(video.getStatus());
+
+        //自适应m3u8地址
         watchInfo.setMultivariantPlaylistUrl(internalBaseUrl
                 + "/watchController/getMultivariantPlaylist.m3u8?videoId=" + videoId
-                + "&clientId=" + clientId + "&sessionId=" + sessionId);
+                + "&clientId=" + context.getClientId() + "&sessionId=" + context.getSessionId());
         //缓存redis，先判断视频状态：只有READY才放入缓存
         if (video.isReady()) {
 //            videoRedisService.setWatchInfo(watchId, watchInfo);
@@ -175,8 +181,7 @@ public class WatchService {
     /**
      * 根据转码对象获取m3u8内容，返回String
      */
-    public String getM3u8Content(String videoId, String clientId, String sessionId,
-                                 String transcodeId, String resolution) {
+    public String getM3u8Content(Context context, String transcodeId, String resolution) {
         Transcode transcode = transcodeRepository.getById(transcodeId);
         //找到transcode对应的tsFiles
         List<File> files = fileRepository.getByIds(transcode.getTsFileIds());
@@ -196,9 +201,9 @@ public class WatchService {
             String url = internalBaseUrl + "/file/access?"
                     + "resolution=" + transcode.getResolution()
                     + "&tsIndex=" + fileMap.get(filename).getTsIndex()
-                    + "&videoId=" + transcode.getVideoId()
-                    + "&clientId=" + clientId
-                    + "&sessionId=" + sessionId
+                    + "&videoId=" + context.getVideoId()
+                    + "&clientId=" + context.getClientId()
+                    + "&sessionId=" + context.getSessionId()
                     + "&fileId=" + file.getId()
                     + "&timestamp=" + System.currentTimeMillis()
                     + "&nonce=" + IdUtil.nanoId()
@@ -225,7 +230,11 @@ public class WatchService {
      * #EXT-X-STREAM-INF:BANDWIDTH=440000,RESOLUTION=416x234,CODECS="avc1.42e00a,mp4a.40.2"
      * http://example.com/hi_mid/index.m3u8
      */
-    public String getMultivariantPlaylist(String videoId, String clientId, String sessionId) {
+    public String getMultivariantPlaylist(Context context) {
+        String videoId = context.getVideoId();
+        String clientId = context.getClientId();
+        String sessionId = context.getSessionId();
+
         Video video = videoRepository.getById(videoId);
         List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
         StringBuilder stringBuilder = new StringBuilder();
