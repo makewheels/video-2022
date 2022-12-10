@@ -11,4 +11,7 @@ RSA密码加密计划
 加入自适应码率
 
 ## 2022年12月10日23:03:12
-RequestUtil to DTO改造
+RequestUtil to DTO改造方案
+
+## 2022年12月10日23:34:23
+接入UserHolder，取消request获取user对象

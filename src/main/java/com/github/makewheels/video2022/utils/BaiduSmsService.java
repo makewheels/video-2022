@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.user;
+package com.github.makewheels.video2022.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.baidubce.auth.DefaultBceCredentials;

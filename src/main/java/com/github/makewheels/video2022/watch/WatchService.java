@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.context.Context;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
-import com.github.makewheels.video2022.etc.ip.IpService;
+import com.github.makewheels.video2022.utils.IpService;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
