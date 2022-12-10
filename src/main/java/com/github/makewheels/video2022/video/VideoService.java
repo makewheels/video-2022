@@ -5,7 +5,6 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.cover.CoverRepository;
 import com.github.makewheels.video2022.etc.ip.IpService;
@@ -15,7 +14,6 @@ import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.S3Provider;
-import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.user.bean.User;
@@ -26,8 +24,6 @@ import com.github.makewheels.video2022.video.bean.VideoDetail;
 import com.github.makewheels.video2022.video.bean.VideoSimpleInfoVO;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
-import com.github.makewheels.video2022.watch.watchinfo.PlayUrl;
-import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -79,9 +75,6 @@ public class VideoService {
     private String environment;
 
     private String getWatchId() {
-//        String json = HttpUtil.get("https://service-d5xe9zbh-1253319037.bj.apigw.tencentcs.com/release/");
-//        JSONObject jsonObject = JSONObject.parseObject(json);
-//        return jsonObject.getJSONObject("data").getString("prettyId");
         return IdUtil.getSnowflakeNextIdStr();
     }
 
@@ -103,6 +96,8 @@ public class VideoService {
         Video video = new Video();
         String videoType = body.getString("type");
         video.setType(videoType);
+
+        //YouTube
         if (videoType.equals(VideoType.YOUTUBE)) {
             String youtubeUrl = body.getString("youtubeUrl");
             video.setYoutubeUrl(youtubeUrl);
@@ -200,12 +195,14 @@ public class VideoService {
         new Thread(() -> coverLauncher.createCover(user, video)).start();
 
         //更新youtube publish time
-        JSONObject publishedAt = youtubeVideoInfo.getJSONObject("snippet").getJSONObject("publishedAt");
+        JSONObject publishedAt = youtubeVideoInfo.getJSONObject("snippet")
+                .getJSONObject("publishedAt");
         int timeZoneShift = publishedAt.getInteger("timeZoneShift");
         long value = publishedAt.getLong("value");
         ZoneId zoneId = ZoneId.of("UTC+" + timeZoneShift);
         Instant instant = ZonedDateTime.ofInstant(Instant.ofEpochMilli(value), zoneId).toInstant();
-        Date youtubePublishTime = Date.from(ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).toInstant());
+        Date youtubePublishTime = Date.from(
+                ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).toInstant());
         video.setYoutubePublishTime(youtubePublishTime);
 
         JSONObject snippet = youtubeVideoInfo.getJSONObject("snippet");
@@ -261,66 +258,6 @@ public class VideoService {
         log.info("更新视频信息：videoId = {}, title = {}, description = {}",
                 videoId, oldVideo.getTitle(), oldVideo.getDescription());
         return Result.ok();
-    }
-
-    /**
-     * 获取播放信息
-     */
-    public Result<WatchInfo> getWatchInfo(User user, String watchId, String clientId, String sessionId) {
-        WatchInfo watchInfo = videoRedisService.getWatchInfo(watchId);
-        //如果已经存在缓存，直接返回
-        if (watchInfo != null) {
-            return Result.ok(watchInfo);
-        }
-        //如果没有缓存，查数据库，缓存，返回
-        Video video = videoRepository.getByWatchId(watchId);
-        if (video == null) {
-            log.error("查不到这个video, watchId = " + watchId);
-            return Result.error(ErrorCode.FAIL);
-        }
-        String videoId = video.getId();
-        watchInfo = new WatchInfo();
-        watchInfo.setVideoId(videoId);
-        //通过videoId查找封面
-        Cover cover = coverRepository.getByVideoId(videoId);
-        if (cover != null) {
-            watchInfo.setCoverUrl(cover.getAccessUrl());
-        }
-
-        //拿m3u8播放地址
-        List<Transcode> transcodeList;
-        List<String> transcodeIds = video.getTranscodeIds();
-        transcodeList = transcodeRepository.getByIds(transcodeIds);
-
-        //排序，transcodeList里，1080p分辨率放前面
-//        if (transcodeList.size() >= 2 && transcodeList.get(0).getResolution().equals(Resolution.R_720P)) {
-//            Collections.reverse(transcodeList);
-//        }
-
-        List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
-        for (Transcode transcode : transcodeList) {
-            PlayUrl playUrl = new PlayUrl();
-            String resolution = transcode.getResolution();
-            playUrl.setResolution(resolution);
-            //改成，调用我自己的getM3u8Content接口，获取m3u8内容
-            playUrl.setUrl(internalBaseUrl + "/watchController/getM3u8Content.m3u8?"
-                    + "videoId=" + videoId
-                    + "&clientId=" + clientId
-                    + "&sessionId=" + sessionId
-                    + "&transcodeId=" + transcode.getId()
-                    + "&resolution=" + resolution
-            );
-
-            playUrlList.add(playUrl);
-        }
-        watchInfo.setPlayUrlList(playUrlList);
-        watchInfo.setVideoStatus(video.getStatus());
-
-        //缓存redis，先判断视频状态：只有READY才放入缓存
-        if (video.isReady()) {
-//            videoRedisService.setWatchInfo(watchId, watchInfo);
-        }
-        return Result.ok(watchInfo);
     }
 
     /**

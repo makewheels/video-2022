@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.watch;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.user.UserService;
 import com.github.makewheels.video2022.user.bean.User;
+import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,6 +28,17 @@ public class WatchController {
             HttpServletRequest request, @RequestParam String videoId, @RequestParam String clientId,
             @RequestParam String sessionId, @RequestParam String videoStatus) {
         return watchService.addWatchLog(request, clientId, sessionId, videoId, videoStatus);
+    }
+
+    /**
+     * 获取播放信息
+     */
+    @GetMapping("getWatchInfo")
+    public Result<WatchInfo> getWatchInfo(
+            HttpServletRequest request, @RequestParam String watchId,
+            @RequestParam String clientId, @RequestParam String sessionId) {
+        User user = userService.getUserByRequest(request);
+        return watchService.getWatchInfo(user, watchId, clientId, sessionId);
     }
 
     /**
