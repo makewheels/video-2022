@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.comment;
+package com.github.makewheels.video2022.etc.comment;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;

@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.interceptor;
+package com.github.makewheels.video2022.etc.interceptor;
 
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserService;
