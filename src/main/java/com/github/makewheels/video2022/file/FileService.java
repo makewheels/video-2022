@@ -9,11 +9,11 @@ import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.fileaccesslog.FileAccessLogService;
 import com.github.makewheels.video2022.user.bean.User;
+import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -40,18 +40,15 @@ public class FileService {
     @Resource
     private FileAccessLogService fileAccessLogService;
 
-    @Value("${aliyun.oss.accessBaseUrl}")
-    private String aliyunOssAccessBaseUrl;
-
     /**
      * 新建视频时创建文件
      */
-    public File createVideoFile(User user, String provider, JSONObject requestBody) {
+    public File createVideoFile(User user, Video video, JSONObject requestBody) {
         File file = new File();
         file.setType(FileType.ORIGINAL_VIDEO);
         file.setUserId(user.getId());
 
-        file.setProvider(provider);
+        file.setProvider(video.getProvider());
         String videoType = requestBody.getString("type");
         file.setVideoType(videoType);
 

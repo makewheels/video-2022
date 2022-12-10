@@ -1,6 +1,8 @@
 package com.github.makewheels.video2022.watch;
 
 import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.user.UserService;
+import com.github.makewheels.video2022.user.bean.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,19 +16,28 @@ import javax.servlet.http.HttpServletRequest;
 public class WatchController {
     @Resource
     private WatchService watchService;
+    @Resource
+    private UserService userService;
 
     /**
      * 增加观看记录
-     *
-     * @param request
-     * @param videoId
-     * @param clientId 前端先向用户微服务获取clientId，再调此接口
-     * @return
      */
     @GetMapping("addWatchLog")
     public Result<Void> addWatchLog(
             HttpServletRequest request, @RequestParam String videoId, @RequestParam String clientId,
             @RequestParam String sessionId, @RequestParam String videoStatus) {
         return watchService.addWatchLog(request, clientId, sessionId, videoId, videoStatus);
+    }
+
+    /**
+     * 获取m3u8内容，里面是ts列表链接
+     */
+    @GetMapping("getM3u8Content.m3u8")
+    public String getM3u8Content(
+            HttpServletRequest request, @RequestParam String videoId,
+            @RequestParam String clientId, @RequestParam String sessionId,
+            @RequestParam String transcodeId, @RequestParam String resolution) {
+        User user = userService.getUserByRequest(request);
+        return watchService.getM3u8Content(user, videoId, clientId, sessionId, transcodeId, resolution);
     }
 }
