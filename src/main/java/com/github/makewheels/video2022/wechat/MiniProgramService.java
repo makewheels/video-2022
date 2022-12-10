@@ -10,6 +10,7 @@ import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
+import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.VideoRepository;
@@ -79,7 +80,8 @@ public class MiniProgramService {
     /**
      * 创建小程序码图片，上传OSS
      */
-    public Result<JSONObject> getShareQrCodeUrl(User user, String videoId) {
+    public Result<JSONObject> getShareQrCodeUrl(String videoId) {
+        User user = UserHolder.get();
         Video video = videoRepository.getById(videoId);
 
         //创建File对象
@@ -121,7 +123,9 @@ public class MiniProgramService {
      * "errmsg": "code been used, rid: 6380622c-50076416-224b40b0"
      * }
      */
-    public Result<JSONObject> login(User user, String jscode) {
+    public Result<JSONObject> login(String jscode) {
+        User user = UserHolder.get();
+
         JSONObject json = JSON.parseObject(HttpUtil.get("https://api.weixin.qq.com/sns/jscode2session" +
                 "?appid=" + appId + "&secret=" + appSecret + "&js_code=" + jscode));
         String openid = json.getString("openid");

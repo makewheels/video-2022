@@ -2,7 +2,6 @@ package com.github.makewheels.video2022.video;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.etc.response.Result;
-import com.github.makewheels.video2022.user.UserService;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.bean.VideoDetail;
 import com.github.makewheels.video2022.video.bean.VideoSimpleInfoVO;
@@ -16,8 +15,6 @@ import java.util.List;
 @RequestMapping("video")
 @Slf4j
 public class VideoController {
-    @Resource
-    private UserService userService;
     @Resource
     private VideoService videoService;
 
