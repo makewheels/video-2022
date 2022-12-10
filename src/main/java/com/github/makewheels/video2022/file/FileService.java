@@ -156,9 +156,7 @@ public class FileService {
      * 上传文件
      */
     public PutObjectResult putObject(String key, InputStream inputStream) {
-        PutObjectResult putObjectResult = aliyunOssService.putObject(key, inputStream);
-        log.info("阿里云OSS上传文件: {}", JSON.toJSONString(putObjectResult));
-        return putObjectResult;
+        return aliyunOssService.putObject(key, inputStream);
     }
 
     /**
