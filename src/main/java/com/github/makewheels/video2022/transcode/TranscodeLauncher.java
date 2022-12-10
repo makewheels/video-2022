@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.SubmitJobsResponseBody;
 import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
-import com.github.makewheels.video2022.file.S3Provider;
+import com.github.makewheels.video2022.file.constants.S3Provider;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeService;
 import com.github.makewheels.video2022.user.bean.User;

@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.transcode;
 
-import com.github.makewheels.video2022.file.S3Provider;
+import com.github.makewheels.video2022.file.constants.S3Provider;
 
 public class TranscodeProvider {
     public static final String ALIYUN_MPS = "ALIYUN_MPS_TRANSCODE";

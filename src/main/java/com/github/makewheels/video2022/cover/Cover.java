@@ -2,7 +2,7 @@ package com.github.makewheels.video2022.cover;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
-import com.github.makewheels.video2022.file.S3Provider;
+import com.github.makewheels.video2022.file.constants.S3Provider;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
