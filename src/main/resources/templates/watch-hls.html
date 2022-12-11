@@ -25,14 +25,13 @@
 <body>
 
 <div>
-    <!--阿里云播放器-->
     <div class="prism-player" id="player-con"></div>
 
-<!--    <div id="resolutionGroups" style="margin-top: 10px;margin-left: 40px">-->
-<!--        <button id="btn1080" type="button" class="mui-btn mui-btn-primary">1080p</button>-->
-<!--        <button id="btn720" style="margin-left: 35px" type="button" class="mui-btn mui-btn-success">720p</button>-->
-<!--        <span id="currentResolution" style="margin-left: 20px;padding-top:10px;font-size: 25px"></span>-->
-<!--    </div>-->
+    <!--    <div id="resolutionGroups" style="margin-top: 10px;margin-left: 40px">-->
+    <!--        <button id="btn1080" type="button" class="mui-btn mui-btn-primary">1080p</button>-->
+    <!--        <button id="btn720" style="margin-left: 35px" type="button" class="mui-btn mui-btn-success">720p</button>-->
+    <!--        <span id="currentResolution" style="margin-left: 20px;padding-top:10px;font-size: 25px"></span>-->
+    <!--    </div>-->
     <div><span id="errorInfo" style="font-size: 30px"></span></div>
     <div id="div_title" style="font-size: 30px;color: blue;margin-top: 16px;line-height:30px"></div>
     <div id="watchCount" style="font-size: 17px;color: darkcyan;margin-top: 14px"></div>
@@ -124,7 +123,9 @@
                 //增加观看记录
                 addWatchHistory();
                 //给播放器加监听
-                addPlayerListeners();
+                addPlayerEventListeners();
+                //设置发心跳定时器
+                setInterval("sendHeartbeat('TIMER', null)", 2000);
             })
     }
 
@@ -284,10 +285,48 @@
     }
 
     //增加监听事件
-    function addPlayerListeners(){
-        // player.on("playing",function (res){
-        //     console.log(res);
-        // });
+    function addPlayerEventListeners() {
+        player.on("ready",             function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("play",              function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("pause",             function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("canplay",           function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("playing",           function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("ended",             function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("liveStreamStop",    function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("onM3u8Retry",       function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("hideBar",           function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("showBar",           function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("waiting",           function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("timeupdate",        function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("snapshoted",        function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("requestFullScreen", function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("cancelFullScreen",  function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("error",             function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("startSeek",         function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("completeSeek",      function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("resolutionChange",  function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("seiFrame",          function (res) {sendHeartbeat("EVENT", res.type)});
+        player.on("rtsFallback",       function (res) {sendHeartbeat("EVENT", res.type)});
+    }
+
+    //发心跳
+    function sendHeartbeat(type, playerEvent) {
+        axios.post("/heartbeat/add", {
+            videoId: videoId,
+            clientId: localStorage.clientId,
+            sessionId: sessionStorage.sessionId,
+            videoStatus: videoStatus,
+            playerProvider: "ALIYUN_WEB",
+            clientTime: new Date(),
+            type: type,
+            event: playerEvent,
+            playerTime: player.getCurrentTime() * 1000,
+            playerStatus: player.getStatus(),
+            playerVolume: player.getVolume()
+        }, {
+            headers: {"token": localStorage.token}
+        }).then(function (res) {
+        });
     }
 
     //程序从这里开始
