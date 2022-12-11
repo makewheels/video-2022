@@ -167,7 +167,7 @@ public class TranscodeCallbackService {
         if (video.getStatus().equals(VideoStatus.READY)) {
             log.info("视频已就绪, videoId = {}, title = {}", videoId, title);
             //通知钉钉
-            DingUtil.sendMarkdown("视频就绪", title + "\n\n" + videoId);
+            DingUtil.sendMarkdown("视频就绪", "视频就绪" + title + "\n\n" + videoId);
         }
     }
 
@@ -235,7 +235,7 @@ public class TranscodeCallbackService {
      * @param timeLength 视频时长
      * @return bits per second 视频的一秒时长，有多少位，不是kbps，也不是bytes
      */
-    private int getBitrate(long filesize, BigDecimal timeLength) {
+    private int calculateBitrate(long filesize, BigDecimal timeLength) {
         BigDecimal bitrate = new BigDecimal(filesize * 8)
                 .divide(timeLength, RoundingMode.HALF_UP);
         return Integer.parseInt(bitrate.toString());
@@ -278,7 +278,7 @@ public class TranscodeCallbackService {
             tsFile.setObjectInfo(ossFilenameMap.get(filename));
 
             //计算ts码率
-            tsFile.setBitrate(getBitrate(tsFile.getSize(), tsTimeLengthMap.get(filename)));
+            tsFile.setBitrate(calculateBitrate(tsFile.getSize(), tsTimeLengthMap.get(filename)));
 
             tsFiles.add(tsFile);
         }
@@ -293,11 +293,11 @@ public class TranscodeCallbackService {
         //计算transcode平均码率
         long tsTotalSize = tsFiles.stream().mapToLong(File::getSize).sum();
         BigDecimal duration = new BigDecimal(video.getDuration() / 1000);
-        transcode.setAverageBitrate(getBitrate(tsTotalSize, duration));
+        transcode.setAverageBitrate(calculateBitrate(tsTotalSize, duration));
 
         //计算transcode最高码率
-        Integer maxBitrate = tsFiles.stream().max(
-                Comparator.comparing(File::getBitrate)).get().getBitrate();
+        Integer maxBitrate = tsFiles.stream()
+                .max(Comparator.comparing(File::getBitrate)).get().getBitrate();
         transcode.setMaxBitrate(maxBitrate);
 
         mongoTemplate.save(transcode);
