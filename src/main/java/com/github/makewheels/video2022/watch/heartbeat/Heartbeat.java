@@ -15,15 +15,16 @@ public class Heartbeat {
     private String clientId;
     private String sessionId;
     private String viewerId;
+    private String videoStatus;
 
     private String playerProvider;
-
+    private Date clientTime;
     private Date createTime;
 
     private String type;
     private String event;
     private Long playerTime;
-    private String status;
-    private BigDecimal volume;
+    private String playerStatus;
+    private BigDecimal playerVolume;
 
 }
