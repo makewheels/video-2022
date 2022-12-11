@@ -167,7 +167,7 @@ public class TranscodeCallbackService {
         if (video.getStatus().equals(VideoStatus.READY)) {
             log.info("视频已就绪, videoId = {}, title = {}", videoId, title);
             //通知钉钉
-            DingUtil.sendMarkdown("视频就绪", "视频就绪" + title + "\n\n" + videoId);
+            DingUtil.sendMarkdown("视频就绪", "视频就绪\n\n" + title + "\n\n" + videoId);
         }
     }
 
