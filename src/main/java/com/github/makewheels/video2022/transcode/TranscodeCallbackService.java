@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.transcode;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -79,14 +80,13 @@ public class TranscodeCallbackService {
         String jobId = transcode.getJobId();
         long duration = video.getDuration();
         long startTime = System.currentTimeMillis();
+
         //轮询
         for (int i = 0; i < 1000000000; i++) {
-            log.info("i = " + i + " 开始睡觉");
-            try {
-                Thread.sleep(2500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (i % 3 == 0) {
+                log.info("i = " + i + " 开始睡觉");
             }
+            ThreadUtil.sleep(2000);
 
             //如果花了视频的15倍时长都没转完，就跳出
             if ((System.currentTimeMillis() - startTime) > 15L * duration) {
@@ -100,7 +100,12 @@ public class TranscodeCallbackService {
             QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
                     = aliyunMpsService.queryTranscodeJob(jobId).getBody().getJobList().getJob().get(0);
             String jobStatus = job.getState();
-            log.info("阿里云轮询查询job结果: jobStatus = {}, job = {}", jobStatus, JSON.toJSONString(job));
+
+            //只输出部分日志
+            if (i % 3 == 0) {
+                log.info("阿里云轮询查询job结果: jobStatus = {}, job = {}", jobStatus, JSON.toJSONString(job));
+            }
+
             //如果转码已完成，回调
             if (AliyunTranscodeStatus.isFinishedStatus(jobStatus)) {
                 aliyunTranscodeCallback(jobId);
