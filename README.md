@@ -1,23 +1,45 @@
 # 目录
 <!-- TOC -->
 * [目录](#目录)
+* [视频讲解](#视频讲解)
+* [关键逻辑](#关键逻辑)
+  * [转码](#转码)
+    * [谁转？](#谁转)
+    * [回调](#回调)
+    * [冗余加速](#冗余加速)
+  * [播放](#播放)
+    * [自适应码率](#自适应码率)
+    * [cdn？](#cdn)
+    * [统计](#统计)
+    * [前端](#前端)
+    * [小程序](#小程序)
 * [接口文档](#接口文档)
   * [1. 用户](#1-用户)
     * [请求验证码](#请求验证码)
+    * [提交验证码](#提交验证码)
+    * [根据token获取用户](#根据token获取用户)
   * [2. 视频](#2-视频)
     * [创建视频](#创建视频)
     * [获取上传凭证](#获取上传凭证)
-    * [返回示例](#返回示例)
     * [通知文件上传完成](#通知文件上传完成)
   * [3. YouTube](#3-youtube)
       * [新建搬运YouTube视频](#新建搬运youtube视频)
       * [获取YouTube文件拓展名](#获取youtube文件拓展名)
       * [获取YouTube视频信息](#获取youtube视频信息)
   * [4. 播放](#4-播放)
-  * [5. 阿里云 云函数ffmpeg转码](#5-阿里云-云函数ffmpeg转码)
+  * [5. 阿里云 云函数 ffmpeg 转码](#5-阿里云-云函数-ffmpeg-转码)
     * [ffprobe 获取视频信息](#ffprobe-获取视频信息)
     * [发起转码](#发起转码)
   * [6. 统计](#6-统计)
+    * [统计某视频流量消耗](#统计某视频流量消耗)
+* [数据库表结构](#数据库表结构)
+  * [video](#video)
+    * [重要字段](#重要字段)
+    * [通过阿里云获取的视频信息 mediaInfo](#通过阿里云获取的视频信息-mediainfo)
+    * [Java Bean](#java-bean)
+* [其它设计](#其它设计)
+  * [分包](#分包)
+  * [登陆拦截器](#登陆拦截器)
 * [变更日志](#变更日志)
   * [2022年11月27日21:18:08](#2022年11月27日21--18--08)
   * [2022年12月7日23:06:51](#2022年12月7日23--06--51)
@@ -25,18 +47,59 @@
   * [2022年12月10日23:03:12](#2022年12月10日23--03--12)
   * [2022年12月10日23:34:23](#2022年12月10日23--34--23)
   <!-- TOC -->
+# 视频讲解
+
+
+
+
 
 # 关键逻辑
 
+## 上传
+
+
+
+
+
+
+
 ## 转码
 
+### 谁转？
 
+
+
+### 回调
+
+
+
+### 冗余加速
 
 
 
 ## 播放
 
+### 自适应码率
 
+
+
+### cdn？
+
+预热，我试过，慢
+
+### 统计
+
+heartbeat
+
+### 前端
+
+
+
+### 小程序
+
+
+
+### 安卓
 
 
 
@@ -71,6 +134,32 @@ GET /user/submitVerificationCode
 | phone | 手机号 | 15695389361 |
 | code  | 验证码 | 4736        |
 
+验证码正确 返回示例：
+
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "id": "63a1d358388fcc49fa49d393",
+        "phone": "15695389361",
+        "registerChannel": "WEB",
+        "createTime": "2022-12-24T15:23:03.244+00:00",
+        "token": "1605222255652876288"
+    }
+}
+```
+
+| 参数            | 说明                        | 示例值                        |
+| --------------- | --------------------------- | ----------------------------- |
+| id              | userId                      | 63a1d358388fcc49fa49d393      |
+| phone           | 手机号                      | 15695389361                   |
+| registerChannel | 注册渠道：网页 / 微信小程序 | WEB / WECHAT_MINI_PROGRAM     |
+| createTime      | 创建时间                    | 2022-12-24T15:23:03.244+00:00 |
+| token           | 登陆凭证                    | 1605222255652876288           |
+
+验证码错误 返回示例：
+
 ```json
 {
     "code": 1,
@@ -81,23 +170,47 @@ GET /user/submitVerificationCode
 
 
 
-### 根据token获取用户
+
+
+
+
+### 根据 token 获取用户
 
 ```
 GET /user/getUserByToken
 ```
 
-| 参数  | 说明 | 示例值                               |
-| ----- | ---- | ------------------------------------ |
-| token | 令牌 | 54c323bd-5b45-401c-b8ea-5fb31302c424 |
+| 参数  | 说明 | 示例值              |
+| ----- | ---- | ------------------- |
+| token | 令牌 | 1599798488034250752 |
+
+示例返回
+
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "id": "638e1811c29e3b400dcf9b80",
+        "phone": "15695389361",
+        "registerChannel": null,
+        "createTime": "2022-12-05T11:10:56.322+00:00",
+        "token": "1599798488034250752"
+    }
+}
+```
 
 
 
+### 根据 userId 获取用户
 
+```
+GET /user/getUserById?userId=6231de9a5bffa00422da71ce
+```
 
-
-
-
+| 参数   | 说明 | 示例值                   |
+| ------ | ---- | ------------------------ |
+| userId |      | 6231de9a5bffa00422da71ce |
 
 
 
@@ -201,6 +314,8 @@ GET https://youtube.videoplus.top:5030/youtube/getFileExtension?youtubeVideoId=j
 ```
 
 #### 获取YouTube视频信息
+
+后面最终是调用的 Google YouTube 的接口
 
 ```
 GET https://youtube.videoplus.top:5030/youtube/getVideoInfo?youtubeVideoId=j4LtMumQGHc
@@ -368,13 +483,53 @@ GET /statistics/getTrafficConsume?videoId=63a1a40bcc99952a50decc3f
 }
 ```
 
-| 返回字段              | 说明                          | 示例值                   |
+| 参数                  | 说明                          | 示例                     |
 | --------------------- | ----------------------------- | ------------------------ |
 | trafficConsumeString  | 供人类读的流量                | 693.02 MB                |
 | trafficConsumeInBytes | 视频所消耗流量，单位字节bytes | 726685236                |
 | videoId               | 视频id                        | 63a1a40bcc99952a50decc3f |
 
-# 数据库表结构
+## 7. App
+
+### 检查App版本
+
+```
+GET /app/checkUpdate
+```
+
+请求参数
+
+| 参数     | 说明                | 示例    |
+| -------- | ------------------- | ------- |
+| platform | 平台：android / ios | android |
+
+返回
+
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "downloadUrl": "https://baidu.com",
+        "versionInfo": "最新版本信息：alpha内测，2022年4月25日20:41:46",
+        "compareVersion": false,
+        "versionName": "1.0.0",
+        "versionCode": 1,
+        "isForceUpdate": false
+    }
+}
+```
+
+| 参数           | 说明                                                         | 示例                                                         |
+| -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| downloadUrl    | apk包下载地址                                                | http://abcdefg.com/video-2022-prod/packages/andoird/1.0.0-release.apk |
+| versionInfo    | 版本描述信息                                                 |                                                              |
+| compareVersion | 客户端是否把当前版本与最新版本对比，看是否更新，仅用于测试安装覆盖 | false                                                        |
+| versionName    | 版本                                                         | 1.0.0                                                        |
+| versionCode    | 版本号                                                       | 1                                                            |
+| isForceUpdate  | 是否强制更新                                                 | false                                                        |
+
+# MongoDB 关键表结构
 
 ## video
 
@@ -387,7 +542,7 @@ GET /statistics/getTrafficConsume?videoId=63a1a40bcc99952a50decc3f
     "originalFileId":"63954cdfdee0d14ef70074bb",
     "originalFileKey":"videos/638e1b7ccc41ab5499df37bf/63954cdfdee0d14ef70074bc/original/63954cdfdee0d14ef70074bc.mp4",
     "watchCount":1,
-    "duration":"53908",
+    "duration":53908,
     "coverId":"63954cfbdee0d14ef70074c0",
     "coverUrl":"https://video-2022-prod.oss-cn-beijing.aliyuncs.com/videos/638e1b7ccc41ab5499df37bf/63954cdfdee0d14ef70074bc/cover/63954cfbdee0d14ef70074c0.jpg",
     "watchId":"1601779335300788224",
@@ -416,7 +571,14 @@ GET /statistics/getTrafficConsume?videoId=63a1a40bcc99952a50decc3f
 }
 ```
 
-
+| 参数           | 说明               | 示例                     |
+| -------------- | ------------------ | ------------------------ |
+| userId         | 作者id             | 638e1b7ccc41ab5499df37bf |
+| originalFileId | 原生文件id         | 63954cdfdee0d14ef70074bb |
+| watchCount     | 观看次数统计       |                          |
+| duration       | 视频时长，单位毫秒 |                          |
+| coverId        | 封面文件id         |                          |
+| transcodeIds   |                    |                          |
 
 ### 通过阿里云获取的视频信息 mediaInfo
 
@@ -510,7 +672,7 @@ GET /statistics/getTrafficConsume?videoId=63a1a40bcc99952a50decc3f
   }
 ```
 
-### Java Bean
+###  video Java Bean
 
 ```java
 @Data
@@ -583,6 +745,59 @@ public class Video {
 }
 
 ```
+
+# 其它设计
+
+## 分包
+
+
+
+## 登陆拦截器
+
+
+
+## 密码
+
+
+
+## 短连接
+
+## 观看次数
+
+# TODOs
+
+https://shimo.im/docs/Ee32M5wMj1CejeA2/ 《2022.02.23 新点播功能联想 ideas 列表》，可复制链接后用石墨文档 App 打开
+
+## 播放器
+
+- [ ] 网页上传
+
+- [ ] 搬运YouTube
+
+- [ ] 一个好用的前端网页m3u8播放器
+
+- [ ] 截帧封面，截首帧就行
+
+- [ ] 时间跳转t=21
+
+- [ ] 多分辨率选择
+
+- [ ] 播放列表
+
+- [ ] 视频权限，public，unlist，private
+
+- [ ] 多种转码方式，客户端或者云ffmpeg转码，或者云api收费转码，最终汇聚到新建视频函数
+- [ ] 以720甚至480开始播放，根据网络情况自动升1080
+
+
+
+# 如何部署？
+
+RSA
+
+Redis
+
+application.props
 
 
 
