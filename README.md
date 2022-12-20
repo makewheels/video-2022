@@ -24,26 +24,84 @@
   * [2022年12月10日13:33:26](#2022年12月10日13--33--26)
   * [2022年12月10日23:03:12](#2022年12月10日23--03--12)
   * [2022年12月10日23:34:23](#2022年12月10日23--34--23)
-<!-- TOC -->
+  <!-- TOC -->
+
+# 关键逻辑
+
+## 转码
+
+
+
 # 接口文档
+
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/dced8657344813ee3fbc?action=collection%2Fimport)
+
 ## 1. 用户
+
 ### 请求验证码
+
+请求短信验证码，然后后端会在Redis缓存，有过期时间
+
 ```text
-GET /user/requestVerificationCode?phone=13332221511
+GET /user/requestVerificationCode
 ```
 
-|   参数名  |  示例值   | 说明  |
+|   参数  | 说明   | 示例值 |
 |-----|-----|-----|
-|  phone   |  15695389361   | 手机号 |
+|  phone   | 手机号 | 15695389361 |
+
+
+
+![](docs\imgs\user-requestVerificationCode-RDM.jpg)
+
+### 提交验证码
+
+```
+GET /user/submitVerificationCode
+```
+
+| 参数  | 说明   | 示例值      |
+| ----- | ------ | ----------- |
+| phone | 手机号 | 15695389361 |
+| code  | 验证码 | 4736        |
+
+```json
+{
+    "code": 1,
+    "message": "fail",
+    "data": null
+}
+```
+
+
+
+### 根据token获取用户
+
+```
+GET /user/getUserByToken
+```
+
+| 参数  | 说明 | 示例值                               |
+| ----- | ---- | ------------------------------------ |
+| token | 令牌 | 54c323bd-5b45-401c-b8ea-5fb31302c424 |
+
+
+
+
+
+
+
+
+
 
 
 ## 2. 视频
+
 ### 创建视频
 ```text
 POST video/create
 ```
-参数
+请求示例
 ```json
 {
     "originalFilename": "VID_20220319_131135.mp4",
@@ -83,7 +141,7 @@ GET /file/getUploadCredentials?fileId=62617ceca14aee70195f4d33
         "secretKey": "3zdCPTmzEhVq7CMy1kpRjpzhESRPpMD5viNADtB3C3bq",
         "provider": "ALIYUN_OSS",
         "sessionToken": "CAISogJ1q6Ft5B2yfSjIr5bnAPHhgLhU1Zjad0HC1WYPVv5eu7TniDz2IH9LeHVhB+4WsPQ0lW1U6vwdlplpTJtIfkHfdsp36LJe9A7kPYfPtZO74+RcgsyuRWHOVU6rhMSKOLn3FoODI6f9MAicVt6sVAGiJ1uYRFWAHcCjq/wON6Y6PGSRaT5BG60lRG9Lo9MbMn38LOukNgWQ7EPbEEtvvHgX6wo9k9PdpPeR8R3Dllb35/YIroDqWPieYtJrIY10XqXevoU0VNKYjncAtEgWrvcu3PMYp2qXhLzHXQkNuSfhGvHP79hiIDV+YqUHAKNepJD+76Yn5bCPxtqpm0gdZrAID3iFG5rb2szAFaauLc18a7f3NnOIiIjVbIk/RvX84JKDXhqAAWWasFC7Sr+7spVTPdYH09iDguAiZAq7pFhB+Qm0EZsmsh76XfqobuTrr4odGVYbd/9mgT5ly21FdSCnTcajHAGoc2dCRoFq2kBWE/ae4gR7qg/n8qiSZuarkld0LLjod9CmpXBt/9yXmEfzPxN3UVN5YuzEVlvY7wh+hGZ33SX7",
-        "expiration": "2022-12-20T13:16:37Z",
+        "expiration": "2022-12-28T13:16:37Z",
         "key": "videos/638e1811c29e3b400dcf9b80/63a18b79882a4230c02d0a38/original/63a18b79882a4230c02d0a38.mp4"
     }
 }
@@ -122,6 +180,12 @@ POST /video/create
 GET https://youtube.videoplus.top:5030/youtube/getFileExtension?youtubeVideoId=j4LtMumQGHc
 ```
 
+传参
+
+| 参数           | 说明            | 示例值      |
+| -------------- | --------------- | ----------- |
+| youtubeVideoId | YouTube的视频id | j4LtMumQGHc |
+
 示例返回：
 
 ```json
@@ -135,6 +199,12 @@ GET https://youtube.videoplus.top:5030/youtube/getFileExtension?youtubeVideoId=j
 ```
 GET https://youtube.videoplus.top:5030/youtube/getVideoInfo?youtubeVideoId=j4LtMumQGHc
 ```
+
+传参
+
+| 参数           | 说明            | 示例值      |
+| -------------- | --------------- | ----------- |
+| youtubeVideoId | YouTube的视频id | j4LtMumQGHc |
 
 示例返回
 
@@ -228,7 +298,10 @@ GET https://youtube.videoplus.top:5030/youtube/getVideoInfo?youtubeVideoId=j4LtM
 
 ## 4. 播放
 
-## 5. 阿里云 云函数ffmpeg转码
+
+
+## 5. 阿里云 云函数 ffmpeg 转码
+
 ### ffprobe 获取视频信息
 ```text
 POST https://ffprobe-video-transcode-gysmioluyt.cn-beijing.fcapp.run
@@ -249,23 +322,263 @@ POST https://transcoe-master-video-transcode-pqrshwejna.cn-beijing.fcapp.run
 ```
 ```json
 {
-    "bucket": "test-beijing-bucket",
-    "endpoint": "oss-cn-beijing-internal.aliyuncs.com",
-    "inputKey": "youtube-wedding/wedd.webm",
-    "outputDir": "youtube-wedding/hls",
-    "videoId": "videoIdGcyPQYa1z5VMAFXQKFUd",
-    "transcodeId": "transId",
-    "jobId": "jobIdpgKq0eEE",
-    "resolution": "keep",
-    "width": 1920,
-    "height": 1080,
-    "videoCodec": "h264",
-    "audioCodec": "aac",
-    "quality": "keep",
-    "callbackUrl": "https://www.baidu.com/"
+    "outputDir":"videos/62511690c3afe0646f9c670b/62626cff1fb6c600b2a7f14d/transcode/720p",
+    "videoId":"62626cff1fb6c600b2a7f14d",
+    "audioCodec":"aac",
+    "resolution":"720p",
+    "quality":"keep",
+    "bucket":"video-2022-prod",
+    "jobId":"829bb555d5b14123ad3cf129519701de",
+    "endpoint":"oss-cn-beijing-internal.aliyuncs.com",
+    "width":1280,
+    "callbackUrl":"https://videoplus.top/transcode/aliyunCloudFunctionTranscodeCallback",
+    "inputKey":"videos/62511690c3afe0646f9c670b/62626cff1fb6c600b2a7f14d/original/62626cff1fb6c600b2a7f14d.yv",
+    "transcodeId":"62626d7e1fb6c600b2a7f14e",
+    "height":720,
+    "videoCodec":"h264"
 }
 ```
 ## 6. 统计
+
+### 统计某视频流量消耗
+
+观众观看视频，所消耗流量
+
+```
+GET /statistics/getTrafficConsume?videoId=63a1a40bcc99952a50decc3f
+```
+
+返回示例
+
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "trafficConsumeString": "693.02 MB",
+        "videoId": "63a1a40bcc99952a50decc3f",
+        "trafficConsumeInBytes": 726685236
+    }
+}
+```
+
+| 返回字段              | 说明                          | 示例值                   |
+| --------------------- | ----------------------------- | ------------------------ |
+| trafficConsumeString  | 供人类读的流量                | 693.02 MB                |
+| trafficConsumeInBytes | 视频所消耗流量，单位字节bytes | 726685236                |
+| videoId               | 视频id                        | 63a1a40bcc99952a50decc3f |
+
+# 数据库表结构
+
+## video
+
+### 重要字段
+
+```json
+{
+    "_id":"63954cdfdee0d14ef70074bc",
+    "userId":"638e1b7ccc41ab5499df37bf",
+    "originalFileId":"63954cdfdee0d14ef70074bb",
+    "originalFileKey":"videos/638e1b7ccc41ab5499df37bf/63954cdfdee0d14ef70074bc/original/63954cdfdee0d14ef70074bc.mp4",
+    "watchCount":1,
+    "duration":"53908",
+    "coverId":"63954cfbdee0d14ef70074c0",
+    "coverUrl":"https://video-2022-prod.oss-cn-beijing.aliyuncs.com/videos/638e1b7ccc41ab5499df37bf/63954cdfdee0d14ef70074bc/cover/63954cfbdee0d14ef70074c0.jpg",
+    "watchId":"1601779335300788224",
+    "watchUrl":"https://videoplus.top/watch?v=1601779335300788224",
+    "shortUrl":"https://a4.fit/6356",
+    "title":"农夫山泉价格",
+    "description":"",
+    "width":1920,
+    "height":1080,
+    "videoCodec":"h264",
+    "audioCodec":"aac",
+    "bitrate":15508,
+    "type":"USER_UPLOAD",
+    "provider":"ALIYUN_OSS",
+    "status":"READY",
+    "createTime":"2022-12-11T03:22:07.824Z",
+    "updateTime":"2022-12-11T03:23:07.020Z",
+    "expireTime":"2023-01-10T03:22:07.824Z",
+    "isPermanent":false,
+    "isOriginalFileDeleted":false,
+    "isTranscodeFilesDeleted":false,
+    "transcodeIds":[
+        "63954cfbdee0d14ef70074c3",
+        "63954cfcdee0d14ef70074c4"
+    ]
+}
+```
+
+
+
+### 通过阿里云获取的视频信息 mediaInfo
+
+```json
+"mediaInfo": {
+    "async": false,
+    "input": {
+      "bucket": "video-2022-prod",
+      "location": "oss-cn-beijing",
+      "object": "videos/638e1b7ccc41ab5499df37bf/63954cdfdee0d14ef70074bc/original/63954cdfdee0d14ef70074bc.mp4"
+    },
+    "jobId": "794c2269c2af4f1abe79d10c57a9fbd0",
+    "creationTime": "2022-12-11T03:22:35Z",
+    "state": "Success",
+    "properties": {
+      "duration": "53.908500",
+      "fileSize": "104502461",
+      "streams": {
+        "audioStreamList": {
+          "audioStream": [
+            {
+              "channelLayout": "stereo",
+              "codecTagString": "mp4a",
+              "index": "1",
+              "bitrate": "96.001",
+              "timebase": "1/48000",
+              "codecTimeBase": "1/48000",
+              "codecTag": "0x6134706d",
+              "duration": "53.908500",
+              "channels": "2",
+              "sampleFmt": "fltp",
+              "codecLongName": "AAC (Advanced Audio Coding)",
+              "startTime": "0.000000",
+              "codecName": "aac",
+              "lang": "eng",
+              "samplerate": "48000"
+            }
+          ]
+        },
+        "videoStreamList": {
+          "videoStream": [
+            {
+              "avgFPS": "59.337578",
+              "hasBFrames": "1",
+              "colorRange": "pc",
+              "bitrate": "15375.053",
+              "codecTimeBase": "968897/114984000",
+              "duration": "53.827611",
+              "dar": "0:1",
+              "networkCost": {},
+              "startTime": "0.000000",
+              "colorTransfer": "smpte170m",
+              "lang": "eng",
+              "height": "1080",
+              "level": "40",
+              "sar": "0:1",
+              "profile": "High",
+              "codecTagString": "avc1",
+              "fps": "60.0",
+              "index": "0",
+              "timebase": "1/90000",
+              "codecTag": "0x31637661",
+              "pixFmt": "yuvj420p",
+              "codecLongName": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "width": "1920",
+              "colorPrimaries": "bt470bg",
+              "codecName": "h264"
+            }
+          ]
+        },
+        "subtitleStreamList": {
+          "subtitleStream": []
+        }
+      },
+      "format": {
+        "duration": "53.908500",
+        "numPrograms": "0",
+        "size": "104502461",
+        "formatName": "mov,mp4,m4a,3gp,3g2,mj2",
+        "bitrate": "15508.123",
+        "startTime": "0.000000",
+        "formatLongName": "QuickTime / MOV",
+        "numStreams": "2"
+      },
+      "fps": "60.0",
+      "width": "1920",
+      "bitrate": "15508.123",
+      "fileFormat": "QuickTime / MOV",
+      "height": "1080"
+    }
+  }
+```
+
+### Java Bean
+
+```java
+@Data
+@Document
+public class Video {
+    @Id
+    private String id;
+
+    @Indexed
+    private String userId;
+    @Indexed
+    private String originalFileId;
+    private String originalFileKey;
+
+    private Integer watchCount;
+    private Long duration;      //视频时长，单位毫秒
+    private String coverId;
+    private String coverUrl;
+
+    @Indexed
+    private String watchId;
+    private String watchUrl;
+    private String shortUrl;
+    private String title;
+    private String description;
+
+    private Integer width;
+    private Integer height;
+    private String videoCodec;
+    private String audioCodec;
+    private Integer bitrate;
+
+    @Indexed
+    private String type;
+    @Indexed
+    private String provider;    //它就是对象存储提供商，和file是一对一关系
+
+    @Indexed
+    private String youtubeVideoId;
+    private String youtubeUrl;
+    private JSONObject youtubeVideoInfo;
+    private Date youtubePublishTime;
+
+    @Indexed
+    private String status;
+    @Indexed
+    private Date createTime;
+    @Indexed
+    private Date updateTime;
+
+    @Indexed
+    private Date expireTime;
+    @Indexed
+    private Boolean isPermanent;                //是否是永久视频
+    private Boolean isOriginalFileDeleted;      //源视频是否已删除
+    private Boolean isTranscodeFilesDeleted;    //ts转码文件是否已删除
+    private Date deleteTime;                    //什么时候删的
+
+    private JSONObject mediaInfo;
+
+    private List<String> transcodeIds;
+
+    public boolean isYoutube() {
+        return StringUtils.equals(type, VideoType.YOUTUBE);
+    }
+
+    public boolean isReady() {
+        return StringUtils.equals(status, VideoStatus.READY);
+    }
+}
+
+```
+
+
 
 # 变更日志
 ## 2022年11月27日21:18:08
