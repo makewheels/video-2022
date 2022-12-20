@@ -1,5 +1,19 @@
 # 接口文档
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/dced8657344813ee3fbc?action=collection%2Fimport)
+
+## 视频
+### 创建视频
+```text
+POST video/create
+```
+
+```json
+{
+    "originalFilename": "VID_20220319_131135.mp4",
+    "type": "USER_UPLOAD"
+}
+```
+
 # 变更日志
 ## 2022年11月27日21:18:08
 
