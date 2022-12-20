@@ -32,6 +32,14 @@
 
 
 
+
+
+## 播放
+
+
+
+
+
 # 接口文档
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/dced8657344813ee3fbc?action=collection%2Fimport)
@@ -50,9 +58,7 @@ GET /user/requestVerificationCode
 |-----|-----|-----|
 |  phone   | 手机号 | 15695389361 |
 
-
-
-![](docs\imgs\user-requestVerificationCode-RDM.jpg)
+![](docs/imgs/user-requestVerificationCode-RDM.jpg)
 
 ### 提交验证码
 
@@ -128,7 +134,7 @@ POST video/create
 GET /file/getUploadCredentials?fileId=62617ceca14aee70195f4d33
 ```
 
-### 返回示例
+返回示例
 
 ```json
 {
