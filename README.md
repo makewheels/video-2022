@@ -168,12 +168,6 @@ GET /user/submitVerificationCode
 }
 ```
 
-
-
-
-
-
-
 ### 根据 token 获取用户
 
 ```
@@ -193,32 +187,88 @@ GET /user/getUserByToken
     "data": {
         "id": "638e1811c29e3b400dcf9b80",
         "phone": "15695389361",
-        "registerChannel": null,
+        "registerChannel": "WEB",
         "createTime": "2022-12-05T11:10:56.322+00:00",
         "token": "1599798488034250752"
     }
 }
 ```
 
-
-
 ### 根据 userId 获取用户
 
 ```
-GET /user/getUserById?userId=6231de9a5bffa00422da71ce
+GET /user/getUserById
 ```
 
 | 参数   | 说明 | 示例值                   |
 | ------ | ---- | ------------------------ |
-| userId |      | 6231de9a5bffa00422da71ce |
+| userId |      | 638e1811c29e3b400dcf9b80 |
 
+返回
 
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "id": "638e1811c29e3b400dcf9b80",
+        "phone": "53845328866",
+        "registerChannel": "WEB",
+        "createTime": "2022-12-05T16:10:56.322+00:00",
+        "token": null
+    }
+}
+```
+
+### 请求clientId
+
+用户不需要登陆就可以看视频，client和session id用于追求未登录用户
+
+前端播放器，在打开网页时，第一件事，先检查这两个id，如果没有，请求后端，后端会在数据库新建保存，
+
+然后前端会把clientId保存在localStorage，把sessionId保存在sessionStorage，下次请求带上
+
+```
+GET /client/requestClientId
+```
+
+返回
+
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "clientId": "63a1da9a7b31fd0978672504"
+    }
+}
+```
+
+### 请求sessionId
+
+区分观看次数，就是靠sessionId
+
+```
+GET /session/requestSessionId
+```
+
+返回
+
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "sessionId": "63a1db2b7b31fd0978672505"
+    }
+}
+```
 
 ## 2. 视频
 
 ### 创建视频
 ```text
-POST video/create
+POST /video/create
 ```
 请求示例
 ```json
@@ -227,25 +277,47 @@ POST video/create
     "type": "USER_UPLOAD"
 }
 ```
+| 参数             | 说明                                         | 示例                    |
+| ---------------- | -------------------------------------------- | ----------------------- |
+| originalFilename | 原始文件名，主要用于：上传对象存储的文件后缀 | VID_20220319_131135.mp4 |
+| type             | 类型：用户上传 / YouTube                     | USER_UPLOAD / YOUTUBE   |
+
 返回示例
+
 ```json
 {
     "code": 0,
     "message": "success",
     "data": {
-        "watchId": "1605133235216236544",
-        "shortUrl": null,
+        "watchId": "1601779335300788224",
+        "shortUrl": "https://a4.fit/6356",
         "videoId": "63a1806f882a4230c02d0a36",
-        "watchUrl": "http://localhost:5022/watch?v=1605133235216236544",
+        "watchUrl": "https://videoplus.top/watch?v=1601779335300788224",
         "fileId": "63a1806f882a4230c02d0a35"
     }
 }
 ```
 
+| 参数     | 说明                           | 示例                                              |
+| -------- | ------------------------------ | ------------------------------------------------- |
+| fileId   | 文件id，接下来用于上传对象存储 | 63a1806f882a4230c02d0a35                          |
+| watchUrl | 观看地址                       | https://videoplus.top/watch?v=1601779335300788224 |
+| shortUrl | 短连接                         | https://a4.fit/6356                               |
+| videoId  | 视频id                         | 63a1806f882a4230c02d0a36                          |
+
 ### 获取上传凭证
+
+通过阿里云对象存储STS接口，赋予临时accessKey
+
 ```text
-GET /file/getUploadCredentials?fileId=62617ceca14aee70195f4d33
+GET /file/getUploadCredentials
 ```
+
+请求
+
+| 参数   | 说明   | 示例                     |
+| ------ | ------ | ------------------------ |
+| fileId | 文件id | 63a1806f882a4230c02d0a35 |
 
 返回示例
 
@@ -266,7 +338,16 @@ GET /file/getUploadCredentials?fileId=62617ceca14aee70195f4d33
 }
 ```
 
-
+| 参数         | 说明                                        | 示例                                               |
+| ------------ | ------------------------------------------- | -------------------------------------------------- |
+| bucket       | 存储桶                                      | 63a1806f882a4230c02d0a35                           |
+| accessKeyId  |                                             | STS.NURKKUmgubZ1ugs1fZZqrTqLj                      |
+| secretKey    |                                             | 3zdCPTmzEhVq7CMy1kpRjpzhESRPpMD5viNADtB3C3bq       |
+| endpoint     | 对象存储公网地址                            | oss-cn-beijing.aliyuncs.com                        |
+| provider     | 供应商，之前用过百度云，现在只有阿里云OSS了 | ALIYUN_OSS                                         |
+| sessionToken | STS需要的                                   | CAISogJ1q6Ft5B2yfSjIr5bnAPHh......                 |
+| expiration   | 过期时间                                    | 2022-12-28T13:16:37Z                               |
+| key          | 上传对象存储路径：用户id+视频id             | videos/638cf9b80/63a02d0a38/original/63a1d0a38.mp4 |
 
 ### 通知文件上传完成
 
@@ -419,7 +500,111 @@ GET https://youtube.videoplus.top:5030/youtube/getVideoInfo?youtubeVideoId=j4LtM
 
 ## 4. 播放
 
+#### 获取播放信息
 
+```
+GET /video/getWatchInfo?watchId=1509176752561631232
+```
+
+
+
+返回
+
+```json
+{
+    "code":0,
+    "message":"success",
+    "data":{
+        "id":"63954cdfdee0d14ef70074bc",
+        "userId":"638e1b7ccc41ab5499df37bf",
+        "watchCount":2,
+        "duration":53908,
+        "coverUrl":"https://video-2022-prod.oss-cn-beijing.aliyuncs.com/videos/638e1b7ccc41ab5499df37bf/63954cdfdee0d14ef70074bc/cover/63954cfbdee0d14ef70074c0.jpg",
+        "watchId":"1601779335300788224",
+        "watchUrl":"https://videoplus.top/watch?v=1601779335300788224",
+        "shortUrl":"https://a4.fit/6356",
+        "title":"农夫山泉价格",
+        "description":"",
+        "type":"USER_UPLOAD",
+        "youtubeVideoId":null,
+        "youtubeUrl":null,
+        "youtubePublishTime":null,
+        "status":"READY",
+        "createTime":"2022-12-11T03:22:07.824+00:00",
+        "createTimeString":"2022-12-11 11:22:07",
+        "youtubePublishTimeString":null
+    }
+}
+```
+
+#### 获取m3u8自适应播放内容
+
+```
+GET /watchController/getMultivariantPlaylist.m3u8?videoId=63954cdfdee0d14ef70074bc&clientId=638e1d969cae0b13419384e9&sessionId=63a1ddc7752d1b03473363a5
+```
+
+返回
+
+```
+#EXTM3U
+
+#EXT-X-STREAM-INF:BANDWIDTH=7032284,AVERAGE-BANDWIDTH=4064092
+https://videoplus.top/watchController/getM3u8Content.m3u8?resolution=720p&videoId=63954cdfdee0d14ef70074bc&clientId=638e1d969cae0b13419384e9&sessionId=63a1ddc7752d1b03473363a5&transcodeId=63954cfbdee0d14ef70074c3
+
+#EXT-X-STREAM-INF:BANDWIDTH=18344529,AVERAGE-BANDWIDTH=11883132
+https://videoplus.top/watchController/getM3u8Content.m3u8?resolution=1080p&videoId=63954cdfdee0d14ef70074bc&clientId=638e1d969cae0b13419384e9&sessionId=63a1ddc7752d1b03473363a5&transcodeId=63954cfcdee0d14ef70074c4
+```
+
+#### 获取m3u8内容
+
+```
+GET /watchController/getM3u8Content.m3u8?resolution=720p&videoId=63954cdfdee0d14ef70074bc&clientId=638e1d969cae0b13419384e9&sessionId=63a1ddc7752d1b03473363a5&transcodeId=63954cfbdee0d14ef70074c3
+```
+
+返回
+
+```
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-ALLOW-CACHE:YES
+#EXT-X-TARGETDURATION:2
+#EXT-X-MEDIA-SEQUENCE:0
+#EXTINF:1.983333,
+https://videoplus.top/file/access?resolution=720p&tsIndex=0&videoId=63954cdfdee0d14ef70074bc&clientId=638e1d969cae0b13419384e9&sessionId=63a1ddc7752d1b03473363a5&fileId=63954d0edee0d14ef70074e3&timestamp=1671552458573&nonce=CH3XxwVS5vhZVIh-rE-um&sign=153ab2e06d7b47a9baaa8561416a5720
+#EXTINF:1.983333,
+https://videoplus.top/file/access?resolution=720p&tsIndex=1&videoId=63954cdfdee0d14ef70074bc&clientId=638e1d969cae0b13419384e9&sessionId=63a1ddc7752d1b03473363a5&fileId=63954d0edee0d14ef70074e4&timestamp=1671552458573&nonce=4ICGuuh5Cs_jtTwqR-v-w&sign=c225c76a7b5d4615bd2815ca4fc08b1f
+#EXTINF:1.983333,
+https://videoplus.top/file/access?resolution=720p&tsIndex=2&videoId=63954cdfdee0d14ef70074bc&clientId=638e1d969cae0b13419384e9&sessionId=63a1ddc7752d1b03473363a5&fileId=63954d0edee0d14ef70074e5&timestamp=1671552458573&nonce=0iBJ1HC-d7v_uQqyc8w6a&sign=2fba1143590744b89c7c723169227288
+#EXTINF:1.983333,
+https://videoplus.top/file/access?resolution=720p&tsIndex=3&videoId=63954cdfdee0d14ef70074bc&clientId=638e1d969cae0b13419384e9&sessionId=63a1ddc7752d1b03473363a5&fileId=63954d0edee0d14ef70074e6&timestamp=1671552458574&nonce=_21VWJ2v4ecalnOZZ6Syk&sign=062830eb0de44196b36f77b36d2fc759
+#EXTINF:1.983333,
+https://videoplus.top/file/access?resolution=720p&tsIndex=4&videoId=63954cdfdee0d14ef70074bc&clientId=638e1d969cae0b13419384e9&sessionId=63a1ddc7752d1b03473363a5&fileId=63954d0edee0d14ef70074e7&timestamp=1671552458574&nonce=QVGtfA1oko99WdLkOM7gj&sign=616d468400954b5a9de8da6e596b5c0f
+#EXT-X-ENDLIST
+```
+
+#### 心跳
+
+```
+POST /heartbeat/add
+```
+
+payload
+
+```json
+{
+    "videoId":"63954cdfdee0d14ef70074bc",
+    "clientId":"638e1d969cae0b13419384e9",
+    "sessionId":"63a1ddc7752d1b03473363a5",
+    "videoStatus":"READY",
+    "playerProvider":"ALIYUN_WEB",
+    "clientTime":"2022-12-20T16:11:47.181Z",
+    "type":"TIMER",
+    "event":null,
+    "playerTime":820.37,
+    "playerStatus":"pause",
+    "playerVolume":1
+}
+```
 
 ## 5. 阿里云 云函数 ffmpeg 转码
 
