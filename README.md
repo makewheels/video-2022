@@ -1006,7 +1006,7 @@ application.props
 
 # Java8 Stream API Examples
 
-## 过滤 filter
+## 1. 过滤 filter
 
 **代码**
 
@@ -1063,7 +1063,7 @@ Arrays.stream(m3u8Content.split("\n"))
 
 
 
-## 统计数量 count
+## 2. 统计数量 count
 
 **代码**
 
@@ -1084,9 +1084,9 @@ long completeCount = transcodeList.stream().filter(Transcode::isFinishStatus).co
 
 **视频状态：**
 
-**已创建**，源视频，用户正在上传
+**已创建**，用户正在上传源视频
 
-发起转码之后，状态为：**转码中**
+源文件上传完成，发起转码之后，状态为：**转码中**
 
 转码分为1080p，720p，多个分辨率，部分转码完成的状态就是：**正在转码，部分完成**
 
@@ -1149,7 +1149,7 @@ public class VideoStatus {
 
 
 
-## list 转 map
+## 3. list 转 map
 
 **代码**
 
@@ -1247,7 +1247,7 @@ key是OSS的key，value还是之前的对象
 
 
 
-## 从list中摘出某字段列表
+## 4. 从list中摘出某字段列表
 
 **代码**
 
@@ -1395,7 +1395,7 @@ transcode.setTsFileIds(tsFiles.stream().map(File::getId).collect(Collectors.toLi
 
 
 
-## 求和 sum
+## 5. 求和 sum
 
 **代码**
 
@@ -1410,9 +1410,9 @@ transcode.setAverageBitrate(calculateBitrate(tsTotalSize, duration));
 
 在自适应码率的HLS里，需要给定带宽所需要的最大码率和平均码率
 
-最大码率计算方法：所有ts文件大小求和，再除以 视频总时长
+最大码率计算方法：遍历所有ts文件大小，求最大值
 
-计算平均码率
+计算平均码率：所有ts文件大小求和，再除以 视频总时长
 
 
 
@@ -1450,7 +1450,15 @@ BANDWIDTH
 
 
 
-## 最大值 max
+**划重点：**
+
+```java
+.mapToLong(File::getSize).sum();
+```
+
+
+
+## 6. 最大值 max
 
 场景跟上一个一样，自适应码率
 
