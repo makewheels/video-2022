@@ -1031,6 +1031,9 @@ application.props
 
 # Java8 Stream API Examples
 
+## 视频讲解
+https://www.bilibili.com/video/BV1M44y1f7AD/
+
 ## 1. 过滤 filter
 
 **代码**
@@ -1449,7 +1452,7 @@ https://developer.apple.com/documentation/http_live_streaming/example_playlists_
 
 **Apple 的多码率自适应官方例子：**
 
-```json
+```text
 #EXTM3U
 #EXT-X-STREAM-INF:BANDWIDTH=150000,RESOLUTION=416x234,CODECS="avc1.42e00a,mp4a.40.2"
 http://example.com/low/index.m3u8
