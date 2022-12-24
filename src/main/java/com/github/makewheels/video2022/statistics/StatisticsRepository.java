@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 @Repository
 public class StatisticsRepository {
@@ -33,6 +34,23 @@ public class StatisticsRepository {
     public long getTrafficConsume(String videoId) {
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("videoId").is(videoId)),
+                Aggregation.group("id").sum("size").as("sum")
+        );
+        AggregationResults<JSONObject> result = mongoTemplate.aggregate(
+                aggregation, "fileAccessLog", JSONObject.class);
+        return result.getMappedResults().get(0).getLong("sum");
+    }
+
+    /**
+     * 获取时间范围的流量消耗
+     */
+    public long getTrafficConsumeByTimeRange(String videoId, Date start, Date end) {
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(
+                        Criteria.where("videoId").is(videoId)
+                                .and("createTime").gte(start)
+                                .and("createTime").lt(end)
+                ),
                 Aggregation.group("id").sum("size").as("sum")
         );
         AggregationResults<JSONObject> result = mongoTemplate.aggregate(
