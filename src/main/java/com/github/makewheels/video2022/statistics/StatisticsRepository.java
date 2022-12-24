@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
-import java.util.Date;
+import java.util.List;
 
 @Repository
 public class StatisticsRepository {
@@ -43,13 +43,35 @@ public class StatisticsRepository {
 
     /**
      * 获取时间范围的流量消耗
+     *
+     * db.fileAccessLog.aggregate(
+     * [
+     *     {
+     *         $project:{
+     *             hour:{$hour:"$createTime"},
+     *             videoId:1,
+     *             size:1
+     *         }
+     *     },
+     *     {
+     *         $match: {
+     *             $and:[
+     *                 {videoId: "63a69d6f1c50bd587d342ccc"},
+     *                 {hour:{"$in":[0,1,2,3,4,5,6,7,8]}}
+     *             ]
+     *         }
+     *     },
+     *     {
+     *         $group: { _id: null, sum: { $sum: "$size"}}
+     *     }
+     * ]);
      */
-    public long getTrafficConsumeByTimeRange(String videoId, Date start, Date end) {
+    public long getTrafficConsumeByTimeRange(String videoId, List<Integer> hours) {
         Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.project("hour", "videoId", "size"),
                 Aggregation.match(
                         Criteria.where("videoId").is(videoId)
-                                .and("createTime").gte(start)
-                                .and("createTime").lt(end)
+                                .and("hour").in(hours)
                 ),
                 Aggregation.group("id").sum("size").as("sum")
         );
