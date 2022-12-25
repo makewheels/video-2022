@@ -16,7 +16,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(getLoginInterceptor())
-                .addPathPatterns("/**")
+//                .addPathPatterns("/**")
                 .excludePathPatterns("/app/checkUpdate")
                 .excludePathPatterns("/favicon.ico")
                 .excludePathPatterns("/static/favicon.ico")
