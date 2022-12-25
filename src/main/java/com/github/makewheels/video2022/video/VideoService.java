@@ -302,4 +302,15 @@ public class VideoService {
         return videoRepository.getExpiredVideos(skip, limit);
     }
 
+    /**
+     * 获取原始文件下载地址
+     */
+    public Result<JSONObject> getOriginalFileDownloadUrl(String videoId) {
+        Video video = videoRepository.getById(videoId);
+        String originalFileKey = video.getOriginalFileKey();
+        String url = fileService.generatePresignedUrl(originalFileKey, Duration.ofHours(2));
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("url", url);
+        return Result.ok(jsonObject);
+    }
 }

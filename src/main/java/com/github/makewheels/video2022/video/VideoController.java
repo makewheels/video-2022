@@ -58,4 +58,11 @@ public class VideoController {
         return videoService.getMyVideoList(skip, limit);
     }
 
+    /**
+     * 获取原始文件下载地址
+     */
+    @GetMapping("getOriginalFileDownloadUrl")
+    public Result<JSONObject> getMyVideoList(@RequestParam String videoId) {
+        return videoService.getOriginalFileDownloadUrl(videoId);
+    }
 }
