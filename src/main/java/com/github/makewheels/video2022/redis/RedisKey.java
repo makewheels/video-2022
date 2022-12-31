@@ -25,4 +25,5 @@ public class RedisKey {
     public static String userId(String userId) {
         return USER + ":userId:" + userId;
     }
+
 }

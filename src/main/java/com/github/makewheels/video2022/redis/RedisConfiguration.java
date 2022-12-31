@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.etc.configuration;
+package com.github.makewheels.video2022.redis;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -15,7 +15,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfiguration extends CachingConfigurerSupport {
-
     @Bean(name = "redisTemplate")
     public RedisTemplate<String, Object> redisTemplate(
             RedisConnectionFactory redisConnectionFactory) {
