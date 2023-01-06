@@ -15,7 +15,7 @@ import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
-import com.github.makewheels.video2022.utils.DingUtil;
+import com.github.makewheels.video2022.utils.DingService;
 import com.github.makewheels.video2022.utils.M3u8Util;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;
@@ -52,6 +52,8 @@ public class TranscodeCallbackService {
     private FileService fileService;
     @Resource
     private VideoRepository videoRepository;
+    @Resource
+    private DingService dingService;
 
     /**
      * 阿里云 云函数转码完成回调
@@ -172,7 +174,7 @@ public class TranscodeCallbackService {
         if (video.getStatus().equals(VideoStatus.READY)) {
             log.info("视频已就绪, videoId = {}, title = {}", videoId, title);
             //通知钉钉
-            DingUtil.sendMarkdown("视频就绪", "视频就绪\n\n" + title + "\n\n" + videoId);
+            dingService.sendMarkdown("视频就绪", "视频就绪\n\n" + title + "\n\n" + videoId);
         }
     }
 
