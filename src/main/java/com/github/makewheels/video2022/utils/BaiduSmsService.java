@@ -34,10 +34,6 @@ public class BaiduSmsService {
 
     /**
      * 发送验证码短信
-     *
-     * @param phone
-     * @param contentVar
-     * @return
      */
     public SendMessageV3Response sendVerificationCode(String phone, Map<String, String> contentVar) {
         SendMessageV3Request request = new SendMessageV3Request();
@@ -45,9 +41,10 @@ public class BaiduSmsService {
         request.setSignatureId("sms-sign-QeEHQe10478");
         request.setTemplate("sms-tmpl-HNbGLw26882");
         request.setContentVar(contentVar);
-        SendMessageV3Response sendMessageV3Response = getClient().sendMessage(request);
-        log.info(JSON.toJSONString(sendMessageV3Response));
-        return sendMessageV3Response;
+        log.info("百度发短信 request：{}", JSON.toJSONString(request));
+        SendMessageV3Response response = getClient().sendMessage(request);
+        log.info("百度发短信 response：{}", JSON.toJSONString(response));
+        return response;
     }
 
 }

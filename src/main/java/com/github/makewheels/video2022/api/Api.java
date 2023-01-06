@@ -11,12 +11,14 @@ import java.util.Date;
 @Data
 public class Api {
     private String type;            //类型，比如：钉钉，阿里云 mps api
-    private String code;            //第三方返回的状态码
+    private String code;            //第三方返回的状态码，统一转为String类型
     private String message;         //第三方返回的错误码
     private Boolean isSuccess;      //是否调用成功
     private JSONObject request;
     private JSONObject response;    //原始返回的json
 
-    private Date createTime;
+    private Date startTime;
+    private Date endTime;
+    private Long cost;
 
 }

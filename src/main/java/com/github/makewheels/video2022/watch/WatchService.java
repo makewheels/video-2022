@@ -12,7 +12,7 @@ import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
-import com.github.makewheels.video2022.utils.DingUtil;
+import com.github.makewheels.video2022.utils.DingService;
 import com.github.makewheels.video2022.video.VideoRedisService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;
@@ -54,6 +54,8 @@ public class WatchService {
 
     @Resource
     private VideoRedisService videoRedisService;
+    @Resource
+    private DingService dingService;
 
     @Value("${internal-base-url}")
     private String internalBaseUrl;
@@ -107,7 +109,7 @@ public class WatchService {
                 "# ip: " + ip + "\n\n" +
                 "# ipInfo: " + province + " " + city + " " + district + "\n\n" + "\n\n" +
                 "# User-Agent: " + userAgent;
-        DingUtil.sendMarkdown("观看记录", markdownText);
+        dingService.sendMarkdown("观看记录", markdownText);
 
         return Result.ok();
     }
