@@ -18,5 +18,9 @@ public class StartupLog {
 
     private Date createTime;
 
-    private JSONObject systemInfo;
+    private JSONObject jvmInfo;
+    private JSONObject hostInfo;
+    private JSONObject osInfo;
+    private JSONObject runtimeInfo;
+    private JSONObject userInfo;
 }
