@@ -18,7 +18,7 @@ public class HeartbeatService {
     private MongoTemplate mongoTemplate;
 
     public Result<Void> add(Heartbeat heartbeat) {
-        log.info(JSON.toJSONString(heartbeat));
+        log.debug("heartbeat: {}", JSON.toJSONString(heartbeat));
 
         User user = UserHolder.get();
         if (user != null) {
