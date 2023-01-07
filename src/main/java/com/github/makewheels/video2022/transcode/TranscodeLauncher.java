@@ -46,15 +46,22 @@ public class TranscodeLauncher {
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
 
+    private boolean isResolutionOverThan480p(int width, int height) {
+        return width * height > 854 * 480;
+    }
+
     private boolean isResolutionOverThan720p(int width, int height) {
         return width * height > 1280 * 720;
     }
 
     private boolean isResolutionOverThanTarget(int width, int height, String resolution) {
-        if (resolution.equals(Resolution.R_720P)) {
-            return width * height > 1280 * 720;
-        } else if (resolution.equals(Resolution.R_1080P)) {
-            return width * height > 1920 * 1080;
+        switch (resolution) {
+            case Resolution.R_480P:
+                return width * height > 854 * 480;
+            case Resolution.R_720P:
+                return width * height > 1280 * 720;
+            case Resolution.R_1080P:
+                return width * height > 1920 * 1080;
         }
         return false;
     }
@@ -81,30 +88,26 @@ public class TranscodeLauncher {
         transcode.setStatus(VideoStatus.CREATED);
 
         //这里问题来了：如何决定用谁转码？
-        //如果不是h264，用阿里云。暂不考虑音频编码，仅音频不是aac也是我来转
+        //如果不是h264，用阿里云
         //如果是h264，源视频分辨率和目标分辨率不一致，用阿里云
+        //如果源片码率太高，用阿里云压缩码率
         //其它情况用自建的阿里云 云函数
-        String transcodeProvider;
+        String transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
         if (!VideoCodec.isH264(video.getVideoCodec())) {
             log.info("决定用谁转码：源视频不是h264，用阿里云MPS转码, videoId = " + videoId);
-            transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
-            //关于源视频和转码模板分辨率是否一致，我这样判断：
-            //源片分辨率面积小于目标，就一致。大于目标，就不一致
-            //说白了就是，往小了转就要编解码，往大了转（当然没这种情况）就源片，所以我云函数不改分辨率，正好
         } else if (isResolutionOverThanTarget(width, height, resolution)) {
+            //判断源视频和转码模板分辨率是否一致
             log.info("决定用谁转码：分辨率OverThanTarget，用阿里云MPS转码, videoId = " + videoId);
-            transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
-
-            //如果码率超标，用阿里云压缩码率
         } else if (video.getBitrate() > 13000) {
+            //如果源片码率太高，用阿里云压缩码率
             log.info("决定用谁转码：码率超标，用阿里云MPS转码, videoId = " + videoId);
-            transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
         } else {
             //其它情况用阿里云 云函数
             transcodeProvider = TranscodeProvider.ALIYUN_CLOUD_FUNCTION;
         }
-        log.info("transcodeProvider = {}, videoId = {}", transcodeProvider, videoId);
+        log.info("最终决定用谁转码：transcodeProvider = {}, videoId = {}", transcodeProvider, videoId);
         transcode.setProvider(transcodeProvider);
+
         mongoTemplate.save(transcode);
         String transcodeId = transcode.getId();
 
@@ -199,10 +202,16 @@ public class TranscodeLauncher {
         video.setUpdateTime(new Date());
         mongoTemplate.save(video);
 
-        //开始转码，首先一定会发起720p的转码
-        transcodeSingleResolution(user, video, Resolution.R_720P);
+        //开始发起转码
+        //480p
+        transcodeSingleResolution(user, video, Resolution.R_480P);
 
-        //如果宽高大于1280*720，再次发起1080p转码
+        //720p
+        if (isResolutionOverThan480p(video.getWidth(), video.getHeight())) {
+            transcodeSingleResolution(user, video, Resolution.R_720P);
+        }
+
+        //1080p
         if (isResolutionOverThan720p(video.getWidth(), video.getHeight())) {
             transcodeSingleResolution(user, video, Resolution.R_1080P);
         }
