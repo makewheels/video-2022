@@ -202,7 +202,7 @@ public class TranscodeLauncher {
         video.setUpdateTime(new Date());
         mongoTemplate.save(video);
 
-        //开始发起转码
+        //发起转码
         //480p
         transcodeSingleResolution(user, video, Resolution.R_480P);
 

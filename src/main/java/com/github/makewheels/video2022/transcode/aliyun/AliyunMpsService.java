@@ -105,10 +105,13 @@ public class AliyunMpsService {
      * 创建转码任务
      */
     public SubmitJobsResponse submitTranscodeJobByResolution(String sourceKey, String targetKey, String resolution) {
-        if (resolution.equals(Resolution.R_1080P)) {
-            return runSubmitTranscodeJob(sourceKey, targetKey, "438e72fb70d04b89bf2b37b2769cf1ec");
-        } else if (resolution.equals(Resolution.R_720P)) {
-            return runSubmitTranscodeJob(sourceKey, targetKey, "f96c8ccf81c44f079d285e13c1a1a104");
+        switch (resolution) {
+            case Resolution.R_480P:
+                return runSubmitTranscodeJob(sourceKey, targetKey, "6db7941bf7ec43c4a4ecc7f67d87ace6");
+            case Resolution.R_720P:
+                return runSubmitTranscodeJob(sourceKey, targetKey, "f96c8ccf81c44f079d285e13c1a1a104");
+            case Resolution.R_1080P:
+                return runSubmitTranscodeJob(sourceKey, targetKey, "438e72fb70d04b89bf2b37b2769cf1ec");
         }
         return null;
     }
