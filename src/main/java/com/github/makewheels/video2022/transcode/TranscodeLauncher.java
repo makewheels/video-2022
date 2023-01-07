@@ -9,6 +9,7 @@ import com.github.makewheels.video2022.file.constants.S3Provider;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeService;
 import com.github.makewheels.video2022.user.bean.User;
+import com.github.makewheels.video2022.utils.Environment;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.AudioCodec;
@@ -45,6 +46,8 @@ public class TranscodeLauncher {
     private String externalBaseUrl;
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
+    @Value("${spring.profile.active}")
+    private String environment;
 
     private boolean isResolutionOverThan480p(int width, int height) {
         return width * height > 854 * 480;
@@ -103,7 +106,10 @@ public class TranscodeLauncher {
             log.info("决定用谁转码：码率超标，用阿里云MPS转码, videoId = " + videoId);
         } else {
             //其它情况用阿里云 云函数
-            transcodeProvider = TranscodeProvider.ALIYUN_CLOUD_FUNCTION;
+            //本地环境都用阿里云mps转码，不用回调。生产环境才用云函数
+            if (environment.equals(Environment.PRODUCTION)) {
+                transcodeProvider = TranscodeProvider.ALIYUN_CLOUD_FUNCTION;
+            }
         }
         log.info("最终决定用谁转码：transcodeProvider = {}, videoId = {}", transcodeProvider, videoId);
         transcode.setProvider(transcodeProvider);
