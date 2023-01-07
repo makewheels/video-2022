@@ -136,7 +136,7 @@ public class TranscodeCallbackService {
                 transcodeResultJson = JSON.toJSONString(job);
                 break;
             }
-            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
+            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION_CPU:
                 jobStatus = "FINISHED";
                 transcode.setFinishTime(new Date());
                 break;
