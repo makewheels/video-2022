@@ -92,7 +92,7 @@ public class TranscodeLauncher {
         //如果是h264，源视频分辨率和目标分辨率不一致，用阿里云
         //如果源片码率太高，用阿里云压缩码率
         //其它情况用自建的阿里云 云函数
-        String transcodeProvider = TranscodeProvider.getByS3Provider(s3Provider);
+        String transcodeProvider = TranscodeProvider.ALIYUN_MPS;
         if (!VideoCodec.isH264(video.getVideoCodec())) {
             log.info("决定用谁转码：源视频不是h264，用阿里云MPS转码, videoId = " + videoId);
         } else if (isResolutionOverThanTarget(width, height, resolution)) {
