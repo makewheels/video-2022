@@ -210,7 +210,7 @@ public class TranscodeLauncher {
 
         //发起转码
         //480p
-        transcodeSingleResolution(user, video, Resolution.R_480P);
+//        transcodeSingleResolution(user, video, Resolution.R_480P);
 
         //720p
         if (isResolutionOverThan480p(video.getWidth(), video.getHeight())) {
