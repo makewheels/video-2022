@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022.video;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -11,6 +10,7 @@ import com.github.makewheels.video2022.exception.VideoException;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
+import com.github.makewheels.video2022.id.IdService;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.user.UserHolder;
@@ -42,6 +42,11 @@ import java.util.List;
 @Service
 @Slf4j
 public class VideoService {
+    @Value("${internal-base-url}")
+    private String internalBaseUrl;
+    @Value("${short-url-service}")
+    private String shortUrlService;
+
     @Resource
     private MongoTemplate mongoTemplate;
 
@@ -58,18 +63,12 @@ public class VideoService {
     private VideoRepository videoRepository;
     @Resource
     private CacheService cacheService;
+    @Resource
+    private IdService idService;
 
-    @Value("${internal-base-url}")
-    private String internalBaseUrl;
-    @Value("${short-url-service}")
-    private String shortUrlService;
 
     @Value("${spring.profile.active}")
     private String environment;
-
-    private String getWatchId() {
-        return IdUtil.getSnowflakeNextIdStr();
-    }
 
     private String getShortUrl(String fullUrl) {
         JSONObject body = new JSONObject();
@@ -110,7 +109,7 @@ public class VideoService {
         video.setWatchCount(0);
         video.setOriginalFileId(fileId);
         video.setUserId(userId);
-        String watchId = getWatchId();
+        String watchId = idService.nextId();
         video.setWatchId(watchId);
         String watchUrl = internalBaseUrl + "/watch?v=" + watchId;
         video.setWatchUrl(watchUrl);
