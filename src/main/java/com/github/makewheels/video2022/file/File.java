@@ -70,11 +70,11 @@ public class File {
     @Indexed
     private Boolean isDeleted;
 
-    public void init() {
-        createTime = new Date();
-        isDeleted = false;
-        status = FileStatus.CREATED;
-        provider = S3Provider.ALIYUN_OSS;
+    public File() {
+        this.createTime = new Date();
+        this.isDeleted = false;
+        this.status = FileStatus.CREATED;
+        this.provider = S3Provider.ALIYUN_OSS;
     }
 
     public void setObjectInfo(OSSObject object) {
