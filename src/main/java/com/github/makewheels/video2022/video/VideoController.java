@@ -41,7 +41,8 @@ public class VideoController {
      */
     @PostMapping("updateInfo")
     public Result<Void> updateInfo(@RequestBody Video updateVideo) {
-        return videoService.updateVideo(updateVideo);
+        videoService.updateVideo(updateVideo);
+        return Result.ok();
     }
 
     /**
