@@ -58,7 +58,6 @@ public class CoverLauncher {
 
         //创建file和cover对象
         File file = new File();
-        file.init();
         file.setStatus(FileStatus.CREATED);
         file.setUserId(userId);
         file.setVideoId(videoId);

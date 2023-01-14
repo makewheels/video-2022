@@ -214,8 +214,6 @@ public class TranscodeCallbackService {
         String m3u8Key = transcode.getM3u8Key();
 
         File m3u8File = new File();
-        m3u8File.init();
-
         m3u8File.setStatus(FileStatus.READY);
         m3u8File.setKey(m3u8Key);
         m3u8File.setType(FileType.TRANSCODE_M3U8);
@@ -272,7 +270,6 @@ public class TranscodeCallbackService {
         for (int i = 0; i < filenames.size(); i++) {
             String filename = filenames.get(i);
             File tsFile = new File();
-            tsFile.init();
             tsFile.setStatus(FileStatus.READY);
 
             tsFile.setType(FileType.TRANSCODE_TS);

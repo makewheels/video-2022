@@ -86,7 +86,6 @@ public class MiniProgramService {
 
         //创建File对象
         File file = new File();
-        file.init();
         file.setStatus(FileStatus.CREATED);
         file.setType(FileType.QR_CODE);
         file.setVideoType(video.getType());
