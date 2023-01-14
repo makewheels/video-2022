@@ -243,22 +243,27 @@ public class VideoService {
     /**
      * 更新视频信息
      */
-    public Result<Void> updateVideo(Video newVideo) {
+    public void updateVideo(Video newVideo) {
         User user = UserHolder.get();
         String userId = user.getId();
         String videoId = newVideo.getId();
         Video oldVideo = videoRepository.getById(videoId);
-        //判断视频是否存在，判断视频是否属于当前用户
-        if (oldVideo == null || !StringUtils.equals(userId, oldVideo.getUserId())) {
-            return Result.error(ErrorCode.FAIL);
+        //判断视频是否存在
+        if (oldVideo == null) {
+            throw new VideoException(ErrorCode.VIDEO_NOT_EXIST);
         }
+        //判断视频是否属于当前用户
+        if (!StringUtils.equals(userId, oldVideo.getUserId())) {
+            throw new VideoException(ErrorCode.FAIL);
+        }
+
         oldVideo.setTitle(newVideo.getTitle());
         oldVideo.setDescription(newVideo.getDescription());
         oldVideo.setUpdateTime(new Date());
         mongoTemplate.save(oldVideo);
+
         log.info("更新视频信息：videoId = {}, title = {}, description = {}",
                 videoId, oldVideo.getTitle(), oldVideo.getDescription());
-        return Result.ok();
     }
 
     /**
