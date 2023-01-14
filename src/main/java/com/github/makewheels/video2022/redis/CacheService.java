@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.redis;
 
+import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.transcode.Transcode;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.Video;
@@ -20,11 +21,34 @@ public class CacheService {
     private RedisService redisService;
 
     /**
+     * 获取redis的key
+     */
+    private <T> String getRedisKey(Class<T> clazz, String id) {
+        if (clazz.equals(Video.class)) {
+            return RedisKey.videoCache(id);
+        } else if (clazz.equals(Transcode.class)) {
+            return RedisKey.userCache(id);
+        } else if (clazz.equals(User.class)) {
+            return RedisKey.transcodeCache(id);
+        }
+        return null;
+    }
+
+    /**
      * 通用获取指定class对象方法
      */
     private <T> T getByClass(Class<T> clazz, String id) {
-        //先从redis获取
-        return mongoTemplate.findById(id, clazz);
+        //先从redis获取key
+        String redisKey = getRedisKey(clazz, id);
+        String json = redisService.getForString(redisKey);
+        T instance = JSON.parseObject(json, clazz);
+
+        //如果redis没获取到，从mongo查出来，缓存到redis
+        if (instance == null) {
+            instance = mongoTemplate.findById(id, clazz);
+            redisService.set(redisKey, JSON.toJSONString(instance), RedisTime.SIX_HOURS);
+        }
+        return instance;
     }
 
     public Video getVideo(String id) {
