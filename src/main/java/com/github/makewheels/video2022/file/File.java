@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.file;
 
+import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.ObjectMetadata;
@@ -75,6 +76,11 @@ public class File {
         this.isDeleted = false;
         this.status = FileStatus.CREATED;
         this.provider = S3Provider.ALIYUN_OSS;
+    }
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
     }
 
     public void setObjectInfo(OSSObject object) {

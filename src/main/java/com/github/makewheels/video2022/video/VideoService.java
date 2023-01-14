@@ -11,7 +11,6 @@ import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
-import com.github.makewheels.video2022.file.constants.S3Provider;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
@@ -96,7 +95,6 @@ public class VideoService {
             video.setYoutubeUrl(youtubeUrl);
             video.setYoutubeVideoId(youtubeService.getYoutubeVideoIdByUrl(youtubeUrl));
         }
-        video.setProvider(S3Provider.ALIYUN_OSS);
 
         //创建 video file
         File videoFile = fileService.createVideoFile(user, video, body);
@@ -117,9 +115,6 @@ public class VideoService {
         } else {
             video.setShortUrl(watchUrl);
         }
-        video.setStatus(VideoStatus.CREATED);
-        video.setCreateTime(new Date());
-        video.setUpdateTime(new Date());
 
         //视频过期时间
         long expireTimeInMillis = Duration.ofDays(30).toMillis();
