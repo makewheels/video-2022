@@ -2,8 +2,8 @@ package com.github.makewheels.video2022.fileaccesslog;
 
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileRepository;
+import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.Transcode;
-import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ public class FileAccessLogService {
     @Resource
     private FileRepository fileRepository;
     @Resource
-    private TranscodeRepository transcodeRepository;
+    private CacheService cacheService;
 
     /**
      * 保存文件访问记录
@@ -28,7 +28,7 @@ public class FileAccessLogService {
             HttpServletRequest request, String videoId, String clientId, String sessionId,
             String resolution, String fileId) {
         File file = fileRepository.getById(fileId);
-        Transcode transcode = transcodeRepository.getById(file.getTranscodeId());
+        Transcode transcode = cacheService.getTranscode(file.getTranscodeId());
 
         FileAccessLog log = new FileAccessLog();
         BeanUtils.copyProperties(file, log);

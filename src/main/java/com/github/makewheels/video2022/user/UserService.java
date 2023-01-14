@@ -4,8 +4,8 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
-import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.exception.VideoException;
+import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.bean.VerificationCode;
 import com.github.makewheels.video2022.utils.BaiduSmsService;
@@ -32,6 +32,8 @@ public class UserService {
     private MongoTemplate mongoTemplate;
     @Resource
     private UserRepository userRepository;
+    @Resource
+    private CacheService cacheService;
 
     public User getUserByToken(String token) {
         //先看redis有没有
@@ -120,7 +122,7 @@ public class UserService {
     }
 
     public User getUserById(String userId) {
-        User user = mongoTemplate.findById(userId, User.class);
+        User user = cacheService.getUser(userId);
         if (user != null) {
             user.setToken(null);
         }
