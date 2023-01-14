@@ -23,11 +23,8 @@ public class VideoController {
      * 预创建视频，主要是指定上传路径
      */
     @PostMapping("create")
-    public Result<JSONObject> create(@RequestBody JSONObject body) {
-        CreateVideoDTO createVideoDTO = new CreateVideoDTO();
-        createVideoDTO.setVideoType(body.getString("type"));
-        createVideoDTO.setOriginalFilename(body.getString("youtubeUrl"));
-        return videoService.create(body);
+    public Result<JSONObject> create(@RequestBody CreateVideoDTO createVideoDTO) {
+        return videoService.create(createVideoDTO);
     }
 
     /**
