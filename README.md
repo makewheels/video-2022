@@ -1524,3 +1524,6 @@ RequestUtil to DTO改造方案
 
 ## 2022年12月10日23:34:23
 接入UserHolder，取消request获取user对象
+
+## 2023年1月15日10:10:19
+引入GlobalExceptionHandler，自定义异常VideoException，service抛异常
