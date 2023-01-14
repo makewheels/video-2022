@@ -48,7 +48,7 @@ public class VideoController {
      */
     @GetMapping("getVideoDetail")
     public Result<VideoDetailVO> getVideoDetail(@RequestParam String videoId) {
-        return videoService.getVideoDetail(videoId);
+        return Result.ok(videoService.getVideoDetail(videoId));
     }
 
     /**

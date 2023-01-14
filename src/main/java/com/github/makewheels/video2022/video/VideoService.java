@@ -6,6 +6,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
+import com.github.makewheels.video2022.exception.VideoException;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
@@ -262,16 +263,16 @@ public class VideoService {
     /**
      * 获取视频详情
      */
-    public Result<VideoDetailVO> getVideoDetail(String videoId) {
+    public VideoDetailVO getVideoDetail(String videoId) {
         Video video = cacheService.getVideo(videoId);
         if (video == null) {
-            return Result.error(ErrorCode.FAIL);
+            throw new VideoException(ErrorCode.VIDEO_NOT_EXIST);
         }
         VideoDetailVO videoDetailVO = new VideoDetailVO();
         BeanUtils.copyProperties(video, videoDetailVO);
         videoDetailVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
         videoDetailVO.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
-        return Result.ok(videoDetailVO);
+        return videoDetailVO;
     }
 
     /**
