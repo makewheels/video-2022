@@ -1,9 +1,7 @@
 package com.github.makewheels.video2022.cover;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.annotation.JSONField;
-import com.github.makewheels.video2022.file.constants.S3Provider;
-import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -45,14 +43,12 @@ public class Cover {
 
     private JSONObject result;
 
-    /**
-     * 根据对应的provider判断是否是已结束状态
-     */
-    @JSONField(serialize = false)
-    public boolean isFinishStatus() {
-        if (provider.equals(S3Provider.ALIYUN_OSS)) {
-            return AliyunTranscodeStatus.isFinishedStatus(status);
-        }
-        return true;
+    public Cover() {
+        this.createTime = new Date();
+    }
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
     }
 }

@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.etc.startup;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -23,4 +24,9 @@ public class StartupLog {
     private JSONObject osInfo;
     private JSONObject runtimeInfo;
     private JSONObject userInfo;
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
+    }
 }

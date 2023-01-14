@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.transcode;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeStatus;
@@ -49,6 +50,11 @@ public class Transcode {
     private String m3u8Content;
 
     private List<String> tsFileIds;
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
+    }
 
     /**
      * 根据对应的provider判断是否是已结束状态

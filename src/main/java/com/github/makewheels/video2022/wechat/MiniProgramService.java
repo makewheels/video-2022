@@ -8,7 +8,6 @@ import com.aliyun.oss.model.OSSObject;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
-import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
@@ -86,7 +85,6 @@ public class MiniProgramService {
 
         //创建File对象
         File file = new File();
-        file.setStatus(FileStatus.CREATED);
         file.setType(FileType.QR_CODE);
         file.setVideoType(video.getType());
         file.setVideoId(videoId);

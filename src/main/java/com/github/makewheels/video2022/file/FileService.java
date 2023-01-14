@@ -64,9 +64,6 @@ public class FileService {
             file.setExtension("webm");
         }
 
-        file.setStatus(FileStatus.CREATED);
-        file.setIsDeleted(false);
-        file.setCreateTime(new Date());
         mongoTemplate.save(file);
         return file;
     }
