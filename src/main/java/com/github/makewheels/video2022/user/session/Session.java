@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.user.session;
 
+import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -19,4 +20,8 @@ public class Session {
     private String userAgent;
     private String ip;
 
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
+    }
 }

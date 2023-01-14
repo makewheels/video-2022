@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.watch.heartbeat;
 
+import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 
@@ -27,4 +28,8 @@ public class Heartbeat {
     private String playerStatus;
     private BigDecimal playerVolume;
 
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
+    }
 }
