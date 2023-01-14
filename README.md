@@ -1527,3 +1527,6 @@ RequestUtil to DTO改造方案
 
 ## 2023年1月15日10:10:19
 引入GlobalExceptionHandler，自定义异常VideoException，service抛异常
+
+## 2023年1月15日11:10:19
+引入cacheService，解决循环依赖
