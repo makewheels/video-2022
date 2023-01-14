@@ -214,7 +214,7 @@ public class VideoService {
     public void originalFileUploadFinish(String videoId) {
         User user = UserHolder.get();
         //查数据库，找到video
-        Video video = videoRepository.getById(videoId);
+        Video video = cacheService.getVideo(videoId);
 
         //校验
         if (video == null) throw new VideoException(ErrorCode.VIDEO_NOT_EXIST);
@@ -244,7 +244,7 @@ public class VideoService {
         User user = UserHolder.get();
         String userId = user.getId();
         String videoId = newVideo.getId();
-        Video oldVideo = videoRepository.getById(videoId);
+        Video oldVideo = cacheService.getVideo(videoId);
         //判断视频是否存在
         if (oldVideo == null) {
             throw new VideoException(ErrorCode.VIDEO_NOT_EXIST);
@@ -314,7 +314,7 @@ public class VideoService {
      * 获取原始文件下载地址
      */
     public String getOriginalFileDownloadUrl(String videoId) {
-        Video video = videoRepository.getById(videoId);
+        Video video = cacheService.getVideo(videoId);
         String originalFileKey = video.getOriginalFileKey();
         return fileService.generatePresignedUrl(originalFileKey, Duration.ofHours(2));
     }

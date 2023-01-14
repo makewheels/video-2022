@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.context.Context;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
+import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.utils.IpService;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
@@ -55,6 +56,8 @@ public class WatchService {
     @Resource
     private VideoRedisService videoRedisService;
     @Resource
+    private CacheService cacheService;
+    @Resource
     private DingService dingService;
 
     @Value("${internal-base-url}")
@@ -95,7 +98,7 @@ public class WatchService {
             videoRepository.addWatchCount(videoId);
         }
 
-        Video video = videoRepository.getById(videoId);
+        Video video = cacheService.getVideo(videoId);
 
         //推送钉钉
         String province = ipResult.getString("province");
@@ -237,7 +240,7 @@ public class WatchService {
         String clientId = context.getClientId();
         String sessionId = context.getSessionId();
 
-        Video video = videoRepository.getById(videoId);
+        Video video = cacheService.getVideo(videoId);
         List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("#EXTM3U\n");
