@@ -12,11 +12,11 @@ import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
+import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.utils.DingService;
 import com.github.makewheels.video2022.utils.M3u8Util;
-import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +50,7 @@ public class TranscodeCallbackService {
     @Resource
     private FileService fileService;
     @Resource
-    private VideoRepository videoRepository;
+    private CacheService cacheService;
     @Resource
     private DingService dingService;
 
@@ -155,7 +155,8 @@ public class TranscodeCallbackService {
      */
     public void onTranscodeFinish(Transcode transcode) {
         String videoId = transcode.getVideoId();
-        Video video = videoRepository.getById(videoId);
+        Video video = cacheService.getVideo(videoId);
+
         if (video == null) return;
 
         //更新video状态

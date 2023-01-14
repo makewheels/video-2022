@@ -17,10 +17,6 @@ public class VideoRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    public Video getById(String videoId) {
-        return mongoTemplate.findById(videoId, Video.class);
-    }
-
     public Video getByWatchId(String watchId) {
         return mongoTemplate.findOne(Query.query(Criteria.where("watchId").is(watchId)), Video.class);
     }
