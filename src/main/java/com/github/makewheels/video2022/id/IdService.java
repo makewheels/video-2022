@@ -41,10 +41,10 @@ public class IdService {
         if (redisIncreaseId == null) {
             redisIncreaseId = 0L;
         }
-        String increaseId = new DecimalFormat("0000").format(redisIncreaseId);
+        String increaseId = new DecimalFormat("00").format(redisIncreaseId);
 
         //生成随机数结尾
-        String random = RandomUtil.randomNumbers(4);
+        String random = RandomUtil.randomNumbers(2);
 
         //拼接返回
         long decimal = Long.parseLong(timestamp + increaseId + random);
