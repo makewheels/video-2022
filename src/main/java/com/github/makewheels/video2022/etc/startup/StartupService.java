@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.startup;
+package com.github.makewheels.video2022.etc.startup;
 
 import cn.hutool.system.SystemUtil;
 import com.alibaba.fastjson.JSON;
