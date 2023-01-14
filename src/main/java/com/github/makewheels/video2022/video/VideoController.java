@@ -24,7 +24,8 @@ public class VideoController {
      */
     @PostMapping("create")
     public Result<JSONObject> create(@RequestBody CreateVideoDTO createVideoDTO) {
-        return videoService.create(createVideoDTO);
+        JSONObject response = videoService.create(createVideoDTO);
+        return Result.ok(response);
     }
 
     /**
@@ -50,7 +51,8 @@ public class VideoController {
      */
     @GetMapping("getVideoDetail")
     public Result<VideoDetailVO> getVideoDetail(@RequestParam String videoId) {
-        return Result.ok(videoService.getVideoDetail(videoId));
+        VideoDetailVO videoDetail = videoService.getVideoDetail(videoId);
+        return Result.ok(videoDetail);
     }
 
     /**
@@ -58,7 +60,8 @@ public class VideoController {
      */
     @GetMapping("getMyVideoList")
     public Result<List<VideoSimpleVO>> getMyVideoList(@RequestParam int skip, @RequestParam int limit) {
-        return videoService.getMyVideoList(skip, limit);
+        List<VideoSimpleVO> videoList = videoService.getMyVideoList(skip, limit);
+        return Result.ok(videoList);
     }
 
     /**
@@ -66,6 +69,9 @@ public class VideoController {
      */
     @GetMapping("getOriginalFileDownloadUrl")
     public Result<JSONObject> getMyVideoList(@RequestParam String videoId) {
-        return videoService.getOriginalFileDownloadUrl(videoId);
+        String url = videoService.getOriginalFileDownloadUrl(videoId);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("url", url);
+        return Result.ok(jsonObject);
     }
 }

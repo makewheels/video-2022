@@ -3,7 +3,10 @@ package com.github.makewheels.video2022.user;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.user.bean.User;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 
@@ -15,12 +18,14 @@ public class UserController {
 
     @GetMapping("requestVerificationCode")
     public Result<Void> requestVerificationCode(@RequestParam String phone) {
-        return userService.requestVerificationCode(phone);
+        userService.requestVerificationCode(phone);
+        return Result.ok();
     }
 
     @GetMapping("submitVerificationCode")
     public Result<User> submitVerificationCode(@RequestParam String phone, @RequestParam String code) {
-        return userService.submitVerificationCode(phone, code);
+        User user = userService.submitVerificationCode(phone, code);
+        return Result.ok(user);
     }
 
     @GetMapping("getUserByToken")
@@ -35,7 +40,8 @@ public class UserController {
 
     @GetMapping("getUserById")
     public Result<User> getUserById(@RequestParam String userId) {
-        return userService.getUserById(userId);
+        User user = userService.getUserById(userId);
+        return Result.ok(user);
     }
 
 }

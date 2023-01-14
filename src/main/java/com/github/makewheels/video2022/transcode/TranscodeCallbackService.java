@@ -8,7 +8,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QueryJobListResponseBody;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
-import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
@@ -58,12 +57,11 @@ public class TranscodeCallbackService {
     /**
      * 阿里云 云函数转码完成回调
      */
-    public Result<Void> aliyunCloudFunctionTranscodeCallback(JSONObject body) {
+    public void aliyunCloudFunctionTranscodeCallback(JSONObject body) {
         String jobId = body.getString("jobId");
         log.info("开始处理 阿里云 云函数转码完成回调：jobId = " + jobId);
         Transcode transcode = transcodeRepository.getByJobId(jobId);
         handleTranscodeCallback(transcode);
-        return Result.ok();
     }
 
     /**

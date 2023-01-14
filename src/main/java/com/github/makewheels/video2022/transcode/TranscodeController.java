@@ -23,6 +23,7 @@ public class TranscodeController {
     @PostMapping("aliyunCloudFunctionTranscodeCallback")
     public Result<Void> aliyunCloudFunctionTranscodeCallback(@RequestBody JSONObject body) {
         log.info("收到阿里云 云函数转码回调：" + body.toJSONString());
-        return transcodeCallbackService.aliyunCloudFunctionTranscodeCallback(body);
+        transcodeCallbackService.aliyunCloudFunctionTranscodeCallback(body);
+        return Result.ok();
     }
 }
