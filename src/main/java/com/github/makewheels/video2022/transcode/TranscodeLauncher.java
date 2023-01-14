@@ -96,7 +96,7 @@ public class TranscodeLauncher {
         //如果源片码率太高，用阿里云压缩码率
         //其它情况用自建的阿里云 云函数
         String transcodeProvider = TranscodeProvider.ALIYUN_MPS;
-        if (!VideoCodec.isH264(video.getVideoCodec())) {
+        if (!video.getVideoCodec().equals(VideoCodec.H264)) {
             log.info("决定用谁转码：源视频不是h264，用阿里云MPS转码, videoId = " + videoId);
         } else if (isResolutionOverThanTarget(width, height, resolution)) {
             //判断源视频和转码模板分辨率是否一致
