@@ -17,7 +17,7 @@ import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.Environment;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
-import com.github.makewheels.video2022.video.bean.VideoDetail;
+import com.github.makewheels.video2022.video.bean.VideoDetailVO;
 import com.github.makewheels.video2022.video.bean.VideoSimpleInfoVO;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
@@ -108,12 +108,13 @@ public class VideoService {
         video.setWatchId(watchId);
         String watchUrl = internalBaseUrl + "/watch?v=" + watchId;
         video.setWatchUrl(watchUrl);
-        String shortUrl = null;
+
+        //本地开发环境shortUrl就是watchUrl
+        video.setShortUrl(watchUrl);
+
         if (environment.equals(Environment.PRODUCTION)) {
-            shortUrl = getShortUrl(watchUrl);
+            String shortUrl = getShortUrl(watchUrl);
             video.setShortUrl(shortUrl);
-        } else {
-            video.setShortUrl(watchUrl);
         }
 
         //视频过期时间
@@ -150,7 +151,7 @@ public class VideoService {
         response.put("videoId", videoId);
         response.put("watchId", watchId);
         response.put("watchUrl", watchUrl);
-        response.put("shortUrl", shortUrl);
+        response.put("shortUrl", video.getShortUrl());
         return Result.ok(response);
     }
 
@@ -253,16 +254,16 @@ public class VideoService {
     /**
      * 获取视频详情
      */
-    public Result<VideoDetail> getVideoDetail(String videoId) {
+    public Result<VideoDetailVO> getVideoDetail(String videoId) {
         Video video = videoRepository.getById(videoId);
         if (video == null) {
             return Result.error(ErrorCode.FAIL);
         }
-        VideoDetail videoDetail = new VideoDetail();
-        BeanUtils.copyProperties(video, videoDetail);
-        videoDetail.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-        videoDetail.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
-        return Result.ok(videoDetail);
+        VideoDetailVO videoDetailVO = new VideoDetailVO();
+        BeanUtils.copyProperties(video, videoDetailVO);
+        videoDetailVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
+        videoDetailVO.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
+        return Result.ok(videoDetailVO);
     }
 
     /**
