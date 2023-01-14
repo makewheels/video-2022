@@ -16,6 +16,7 @@ import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.Environment;
 import com.github.makewheels.video2022.utils.PathUtil;
+import com.github.makewheels.video2022.video.bean.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.bean.VideoDetailVO;
 import com.github.makewheels.video2022.video.bean.VideoSimpleInfoVO;
@@ -82,22 +83,22 @@ public class VideoService {
     /**
      * 创建新视频
      */
-    public Result<JSONObject> create(JSONObject body) {
+    public Result<JSONObject> create(CreateVideoDTO createVideoDTO) {
         User user = UserHolder.get();
         String userId = user.getId();
         Video video = new Video();
-        String videoType = body.getString("type");
+        String videoType = createVideoDTO.getVideoType();
         video.setType(videoType);
 
         //YouTube
         if (videoType.equals(VideoType.YOUTUBE)) {
-            String youtubeUrl = body.getString("youtubeUrl");
+            String youtubeUrl = createVideoDTO.getYoutubeUrl();
             video.setYoutubeUrl(youtubeUrl);
             video.setYoutubeVideoId(youtubeService.getYoutubeVideoIdByUrl(youtubeUrl));
         }
 
         //创建 video file
-        File videoFile = fileService.createVideoFile(user, video, body);
+        File videoFile = fileService.createVideoFile(createVideoDTO);
 
         String fileId = videoFile.getId();
         //创建 video

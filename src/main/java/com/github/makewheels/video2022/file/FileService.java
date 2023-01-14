@@ -11,7 +11,7 @@ import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.fileaccesslog.FileAccessLogService;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
-import com.github.makewheels.video2022.video.bean.Video;
+import com.github.makewheels.video2022.video.bean.CreateVideoDTO;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -45,18 +45,18 @@ public class FileService {
     /**
      * 新建视频时创建文件
      */
-    public File createVideoFile(User user, Video video, JSONObject requestBody) {
+    public File createVideoFile(CreateVideoDTO createVideoDTO) {
         File file = new File();
         file.setType(FileType.ORIGINAL_VIDEO);
-        file.setUserId(user.getId());
+        file.setUserId(createVideoDTO.getUser().getId());
 
-        file.setProvider(video.getProvider());
-        String videoType = requestBody.getString("type");
+        file.setProvider(createVideoDTO.getVideo().getProvider());
+        String videoType = createVideoDTO.getVideoType();
         file.setVideoType(videoType);
 
         //原始文件名和后缀
         if (videoType.equals(VideoType.USER_UPLOAD)) {
-            String originalFilename = requestBody.getString("originalFilename");
+            String originalFilename = createVideoDTO.getOriginalFilename();
             file.setOriginalFilename(originalFilename);
             file.setExtension(FilenameUtils.getExtension(originalFilename).toLowerCase());
         } else if (videoType.equals(VideoType.YOUTUBE)) {
