@@ -87,7 +87,12 @@ public class AliyunMpsService {
         output.put("OutputLocation", "oss-cn-beijing");
         JSONArray outputs = new JSONArray();
         outputs.add(output);
-        SubmitJobsRequest request = new SubmitJobsRequest().setInput(getInput(from)).setOutputs(outputs.toJSONString()).setOutputBucket(bucket).setOutputLocation("oss-cn-beijing").setPipelineId("6c126c07a9b34a85b7093e7bfa9c3ad9");
+        SubmitJobsRequest request = new SubmitJobsRequest();
+        request.setInput(getInput(from));
+        request.setOutputs(outputs.toJSONString());
+        request.setOutputBucket(bucket);
+        request.setOutputLocation("oss-cn-beijing");
+        request.setPipelineId("6c126c07a9b34a85b7093e7bfa9c3ad9");
         log.info("阿里云转码任务: from = " + from);
         log.info("阿里云转码任务: to = " + to);
         log.info("阿里云转码任务: SubmitJobsRequest = " + JSON.toJSONString(request));
@@ -104,14 +109,18 @@ public class AliyunMpsService {
     /**
      * 创建转码任务
      */
-    public SubmitJobsResponse submitTranscodeJobByResolution(String sourceKey, String targetKey, String resolution) {
+    public SubmitJobsResponse submitTranscodeJobByResolution(
+            String sourceKey, String targetKey, String resolution) {
         switch (resolution) {
             case Resolution.R_480P:
-                return runSubmitTranscodeJob(sourceKey, targetKey, "6db7941bf7ec43c4a4ecc7f67d87ace6");
+                return runSubmitTranscodeJob(sourceKey, targetKey,
+                        "6db7941bf7ec43c4a4ecc7f67d87ace6");
             case Resolution.R_720P:
-                return runSubmitTranscodeJob(sourceKey, targetKey, "f96c8ccf81c44f079d285e13c1a1a104");
+                return runSubmitTranscodeJob(sourceKey, targetKey,
+                        "f96c8ccf81c44f079d285e13c1a1a104");
             case Resolution.R_1080P:
-                return runSubmitTranscodeJob(sourceKey, targetKey, "438e72fb70d04b89bf2b37b2769cf1ec");
+                return runSubmitTranscodeJob(sourceKey, targetKey,
+                        "438e72fb70d04b89bf2b37b2769cf1ec");
         }
         return null;
     }
@@ -178,7 +187,8 @@ public class AliyunMpsService {
     /**
      * 简单查一个job
      */
-    public QuerySnapshotJobListResponseBody.QuerySnapshotJobListResponseBodySnapshotJobListSnapshotJob simpleQueryOneJob(String jobId) {
+    public QuerySnapshotJobListResponseBody.QuerySnapshotJobListResponseBodySnapshotJobListSnapshotJob
+    simpleQueryOneJob(String jobId) {
         return querySnapshotJob(jobId).getBody().getSnapshotJobList().getSnapshotJob().get(0);
     }
 
