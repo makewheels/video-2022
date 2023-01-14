@@ -5,6 +5,7 @@ public class RedisKey {
 
     private static final String USER = ROOT + ":user";
     private static final String VIDEO = ROOT + ":video";
+    private static final String TRANSCODE = ROOT + ":transcode";
 
     public static String watchInfo(String watchId) {
         return VIDEO + ":watchInfo:" + watchId;
@@ -22,8 +23,16 @@ public class RedisKey {
         return USER + ":token:" + token;
     }
 
-    public static String userId(String userId) {
-        return USER + ":userId:" + userId;
+
+    public static String userCache(String id) {
+        return USER + ":id:" + id;
     }
 
+    public static String videoCache(String id) {
+        return VIDEO + ":id:" + id;
+    }
+
+    public static String transcodeCache(String id) {
+        return TRANSCODE + ":id:" + id;
+    }
 }

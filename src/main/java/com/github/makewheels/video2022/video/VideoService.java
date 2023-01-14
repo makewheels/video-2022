@@ -11,6 +11,7 @@ import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
+import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
@@ -19,7 +20,7 @@ import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.Video;
 import com.github.makewheels.video2022.video.bean.VideoDetailVO;
-import com.github.makewheels.video2022.video.bean.VideoSimpleInfoVO;
+import com.github.makewheels.video2022.video.bean.VideoSimpleVO;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +58,8 @@ public class VideoService {
 
     @Resource
     private VideoRepository videoRepository;
+    @Resource
+    private CacheService cacheService;
 
     @Value("${internal-base-url}")
     private String internalBaseUrl;
@@ -260,7 +263,7 @@ public class VideoService {
      * 获取视频详情
      */
     public Result<VideoDetailVO> getVideoDetail(String videoId) {
-        Video video = videoRepository.getById(videoId);
+        Video video = cacheService.getVideo(videoId);
         if (video == null) {
             return Result.error(ErrorCode.FAIL);
         }
@@ -274,7 +277,7 @@ public class VideoService {
     /**
      * 分页获取我的视频列表
      */
-    public Result<List<VideoSimpleInfoVO>> getMyVideoList(int skip, int limit) {
+    public Result<List<VideoSimpleVO>> getMyVideoList(int skip, int limit) {
         String userId = UserHolder.get().getId();
         return Result.ok(getVideoList(userId, skip, limit));
     }
@@ -282,12 +285,12 @@ public class VideoService {
     /**
      * 分页获取指定userId视频列表
      */
-    private List<VideoSimpleInfoVO> getVideoList(String userId, int skip, int limit) {
+    private List<VideoSimpleVO> getVideoList(String userId, int skip, int limit) {
         List<Video> videos = videoRepository.getVideosByUserId(userId, skip, limit);
 
-        List<VideoSimpleInfoVO> itemList = new ArrayList<>(videos.size());
+        List<VideoSimpleVO> itemList = new ArrayList<>(videos.size());
         for (Video video : videos) {
-            VideoSimpleInfoVO item = new VideoSimpleInfoVO();
+            VideoSimpleVO item = new VideoSimpleVO();
             BeanUtils.copyProperties(video, item);
             item.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
             item.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));

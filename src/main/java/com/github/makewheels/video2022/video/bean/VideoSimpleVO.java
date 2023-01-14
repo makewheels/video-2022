@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class VideoSimpleInfoVO {
+public class VideoSimpleVO {
     private String id;
 
     private String userId;
