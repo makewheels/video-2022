@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.exception.VideoException;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.bean.VerificationCode;
 import com.github.makewheels.video2022.utils.BaiduSmsService;
@@ -66,13 +67,13 @@ public class UserService {
         return getUserByToken(token);
     }
 
-    public Result<Void> requestVerificationCode(@RequestParam String phone) {
+    public void requestVerificationCode(@RequestParam String phone) {
         //如果redis里已经有了，直接返回
         VerificationCode verificationCode = userRedisService.getVerificationCode(phone);
         if (verificationCode != null) {
             log.info("Redis已有，手机：{}，验证码：{}", verificationCode.getPhone(),
                     verificationCode.getCode());
-            return Result.ok();
+            return;
         }
 
         //如果redis里没有，发验证码，放redis里，返回
@@ -83,17 +84,16 @@ public class UserService {
 //        smsService.sendVerificationCode(phone, contentVar);
 
         userRedisService.setVerificationCode(phone, code);
-        return Result.ok();
     }
 
-    public Result<User> submitVerificationCode(@RequestParam String phone, @RequestParam String code) {
+    public User submitVerificationCode(@RequestParam String phone, @RequestParam String code) {
         VerificationCode verificationCode = userRedisService.getVerificationCode(phone);
         if (verificationCode == null) {
-            return Result.error(ErrorCode.FAIL);
+            throw new VideoException(ErrorCode.FAIL);
         }
         //验证码校验失败
         if (!verificationCode.getCode().equals(code) && !code.equals("111")) {
-            return Result.error(ErrorCode.PHONE_VERIFICATION_CODE_WRONG);
+            throw new VideoException(ErrorCode.PHONE_VERIFICATION_CODE_WRONG);
         }
         //验证码校验成功
         //干掉Redis
@@ -116,15 +116,15 @@ public class UserService {
         //登陆信息存入redis
         userRedisService.setUserByToken(user);
         log.info(JSON.toJSONString(user));
-        return Result.ok(user);
+        return user;
     }
 
-    public Result<User> getUserById(String userId) {
+    public User getUserById(String userId) {
         User user = mongoTemplate.findById(userId, User.class);
         if (user != null) {
             user.setToken(null);
         }
-        return Result.ok(user);
+        return user;
     }
 
 }

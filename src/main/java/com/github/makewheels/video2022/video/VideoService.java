@@ -6,9 +6,8 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
-import com.github.makewheels.video2022.exception.VideoException;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
-import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.exception.VideoException;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
@@ -46,8 +45,6 @@ public class VideoService {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    @Resource
-    private VideoRedisService videoRedisService;
     @Resource
     private YoutubeService youtubeService;
     @Resource
@@ -87,7 +84,7 @@ public class VideoService {
     /**
      * 创建新视频
      */
-    public Result<JSONObject> create(CreateVideoDTO createVideoDTO) {
+    public JSONObject create(CreateVideoDTO createVideoDTO) {
         User user = UserHolder.get();
         createVideoDTO.setUser(user);
         String userId = user.getId();
@@ -161,7 +158,7 @@ public class VideoService {
         response.put("watchId", watchId);
         response.put("watchUrl", watchUrl);
         response.put("shortUrl", video.getShortUrl());
-        return Result.ok(response);
+        return response;
     }
 
     /**
@@ -284,9 +281,9 @@ public class VideoService {
     /**
      * 分页获取我的视频列表
      */
-    public Result<List<VideoSimpleVO>> getMyVideoList(int skip, int limit) {
+    public List<VideoSimpleVO> getMyVideoList(int skip, int limit) {
         String userId = UserHolder.get().getId();
-        return Result.ok(getVideoList(userId, skip, limit));
+        return getVideoList(userId, skip, limit);
     }
 
     /**
@@ -316,12 +313,9 @@ public class VideoService {
     /**
      * 获取原始文件下载地址
      */
-    public Result<JSONObject> getOriginalFileDownloadUrl(String videoId) {
+    public String getOriginalFileDownloadUrl(String videoId) {
         Video video = videoRepository.getById(videoId);
         String originalFileKey = video.getOriginalFileKey();
-        String url = fileService.generatePresignedUrl(originalFileKey, Duration.ofHours(2));
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("url", url);
-        return Result.ok(jsonObject);
+        return fileService.generatePresignedUrl(originalFileKey, Duration.ofHours(2));
     }
 }
