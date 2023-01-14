@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.video.bean;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.makewheels.video2022.file.constants.S3Provider;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.Data;
@@ -71,6 +72,14 @@ public class Video {
     private JSONObject mediaInfo;
 
     private List<String> transcodeIds;
+
+    public Video() {
+        this.createTime = new Date();
+        this.updateTime = new Date();
+        this.setStatus(VideoStatus.CREATED);
+        this.setProvider(S3Provider.ALIYUN_OSS);
+
+    }
 
     public boolean isYoutube() {
         return StringUtils.equals(type, VideoType.YOUTUBE);
