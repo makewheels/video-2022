@@ -214,16 +214,18 @@ public class VideoService {
     /**
      * 原始文件上传完成，开始转码
      */
-    public Result<Void> originalFileUploadFinish(String videoId) {
+    public void originalFileUploadFinish(String videoId) {
         User user = UserHolder.get();
         //查数据库，找到video
         Video video = videoRepository.getById(videoId);
 
-        //校验文件
-        if (video == null) return Result.error(ErrorCode.FAIL);
+        //校验
+        if (video == null) throw new VideoException(ErrorCode.VIDEO_NOT_EXIST);
+
         File file = mongoTemplate.findById(video.getOriginalFileId(), File.class);
-        if (file == null) return Result.error(ErrorCode.FAIL);
-        if (!file.getStatus().equals(FileStatus.READY)) return Result.error(ErrorCode.FAIL);
+        if (file == null) throw new VideoException(ErrorCode.FILE_NOT_EXIST);
+
+        if (!file.getStatus().equals(FileStatus.READY)) throw new VideoException(ErrorCode.FILE_NOT_READY);
 
         //更新视频为正在转码状态
         video.setStatus(VideoStatus.TRANSCODING);
@@ -236,7 +238,6 @@ public class VideoService {
         if (!video.isYoutube()) {
             new Thread(() -> coverLauncher.createCover(user, video)).start();
         }
-        return Result.ok();
     }
 
     /**

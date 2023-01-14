@@ -9,6 +9,9 @@ public enum ErrorCode {
 
     VIDEO_NOT_EXIST(2000, "视频不存在"),
 
+    FILE_NOT_EXIST(3000, "文件不存在"),
+    FILE_NOT_READY(3001, "文件未就绪"),
+
     ;
 
     private final int code;

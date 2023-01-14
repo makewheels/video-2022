@@ -32,7 +32,8 @@ public class VideoController {
      */
     @GetMapping("originalFileUploadFinish")
     public Result<Void> originalFileUploadFinish(@RequestParam String videoId) {
-        return videoService.originalFileUploadFinish(videoId);
+        videoService.originalFileUploadFinish(videoId);
+        return Result.ok();
     }
 
     /**
