@@ -46,7 +46,9 @@ public class CacheService {
         //如果redis没获取到，从mongo查出来，缓存到redis
         if (instance == null) {
             instance = mongoTemplate.findById(id, clazz);
-            redisService.set(redisKey, JSON.toJSONString(instance), RedisTime.SIX_HOURS);
+            if (instance != null) {
+                redisService.set(redisKey, JSON.toJSONString(instance), RedisTime.SIX_HOURS);
+            }
         }
         return instance;
     }
