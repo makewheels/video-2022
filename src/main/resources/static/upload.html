@@ -5,7 +5,6 @@
     <title>上传视频-阿里云</title>
 
     <script src="https://production-bucket.oss-cn-beijing.aliyuncs.com/dist/axios/axios-0.26.1.min.js"></script>
-<!--    <script src="https://lib.baomitu.com/async/3.2.3/async.min.js"></script>-->
 
     <!--阿里云oss-->
     <script src="https://gosspublic.alicdn.com/aliyun-oss-sdk-6.17.0.min.js"></script>
@@ -91,11 +90,11 @@
     let watchId;
 
     //创建视频
-    function createVideo(originalFilename, size, type) {
+    function createVideo(originalFilename, size, videoType) {
         axios.post("/video/create", {
             originalFilename: originalFilename,
             size: size,
-            type: type
+            videoType: videoType
         }, {
             headers: {"token": localStorage.token}
         }).then(function (res) {
