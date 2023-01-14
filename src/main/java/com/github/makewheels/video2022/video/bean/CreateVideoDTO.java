@@ -9,6 +9,7 @@ public class CreateVideoDTO {
     private String videoType;
     private String originalFilename;
     private String youtubeUrl;
+    private Long size;
 
     private User user;
     private Video video;

@@ -85,8 +85,12 @@ public class VideoService {
      */
     public Result<JSONObject> create(CreateVideoDTO createVideoDTO) {
         User user = UserHolder.get();
+        createVideoDTO.setUser(user);
         String userId = user.getId();
+
         Video video = new Video();
+        createVideoDTO.setVideo(video);
+
         String videoType = createVideoDTO.getVideoType();
         video.setType(videoType);
 
