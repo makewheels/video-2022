@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeStatus;
+import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
@@ -50,6 +51,11 @@ public class Transcode {
     private String m3u8Content;
 
     private List<String> tsFileIds;
+
+    public Transcode() {
+        this.createTime = new Date();
+        this.status = VideoStatus.CREATED;
+    }
 
     @Override
     public String toString() {

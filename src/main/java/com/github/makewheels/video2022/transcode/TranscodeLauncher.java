@@ -86,24 +86,22 @@ public class TranscodeLauncher {
         transcode.setVideoId(videoId);
         transcode.setResolution(resolution);
         transcode.setSourceKey(sourceKey);
-        transcode.setCreateTime(new Date());
-        //已创建状态，反正后面马上就要再次请求更新状态，所以这里就先保存CREATED
-        transcode.setStatus(VideoStatus.CREATED);
 
-        //这里问题来了：如何决定用谁转码？
-        //如果不是h264，用阿里云
-        //如果是h264，源视频分辨率和目标分辨率不一致，用阿里云
-        //如果源片码率太高，用阿里云压缩码率
-        //其它情况用自建的阿里云 云函数
+        //用谁转码？
         String transcodeProvider = TranscodeProvider.ALIYUN_MPS;
         if (!video.getVideoCodec().equals(VideoCodec.H264)) {
+            //如果不是h264，用阿里云
             log.info("决定用谁转码：源视频不是h264，用阿里云MPS转码, videoId = " + videoId);
+
         } else if (isResolutionOverThanTarget(width, height, resolution)) {
+            //如果是h264，源视频分辨率和目标分辨率不一致，用阿里云
             //判断源视频和转码模板分辨率是否一致
             log.info("决定用谁转码：分辨率OverThanTarget，用阿里云MPS转码, videoId = " + videoId);
+
         } else if (video.getBitrate() > 13000) {
             //如果源片码率太高，用阿里云压缩码率
             log.info("决定用谁转码：码率超标，用阿里云MPS转码, videoId = " + videoId);
+
         } else {
             //其它情况用阿里云 云函数
             //本地环境都用阿里云mps转码，不用回调。生产环境才用云函数
@@ -150,7 +148,7 @@ public class TranscodeLauncher {
                 break;
             }
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION_CPU:
-                jobId = IdUtil.simpleUUID();
+                jobId = IdUtil.getSnowflakeNextIdStr();
                 String callbackUrl = externalBaseUrl + "/transcode/aliyunCloudFunctionTranscodeCallback";
                 cloudFunctionTranscodeService.transcode(
                         sourceKey, m3u8Key.substring(0, m3u8Key.lastIndexOf("/")),
@@ -172,36 +170,39 @@ public class TranscodeLauncher {
     }
 
     /**
+     * 加载媒体信息mediaInfo
+     */
+    private void loadVideoMediaInfo(Video video) {
+        String videoId = video.getId();
+        String sourceKey = video.getOriginalFileKey();
+
+        log.info("通过阿里云MPS获取视频信息，videoId = {}, title = {}", videoId, video.getTitle());
+        //获取视频媒体信息，确定只用阿里云mps，不用其它供应商
+        SubmitMediaInfoJobResponseBody body = aliyunMpsService.getMediaInfo(sourceKey).getBody();
+        SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJob job
+                = body.getMediaInfoJob();
+        log.info("阿里云MPS获取视频，jobId ={}，信息返回：{}", job.getJobId(), JSON.toJSONString(job));
+
+        //设置mediaInfo
+        video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(job)));
+        SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties properties
+                = job.getProperties();
+        video.setDuration((long) (Double.parseDouble(properties.getDuration()) * 1000));
+        video.setHeight(Integer.parseInt(properties.getHeight()));
+        video.setWidth(Integer.parseInt(properties.getWidth()));
+        video.setBitrate((int) Double.parseDouble(properties.getBitrate()));
+        SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreams
+                streams = properties.getStreams();
+        video.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
+        video.setAudioCodec(streams.getAudioStreamList().getAudioStream().get(0).getCodecName());
+    }
+
+    /**
      * 开始发起对单个视频的转码
      */
     public void transcodeVideo(User user, Video video) {
-        String videoId = video.getId();
-
-        String sourceKey = video.getOriginalFileKey();
-        String videoProvider = video.getProvider();
-
-        //获取视频meta信息
-        if (videoProvider.equals(S3Provider.ALIYUN_OSS)) {
-            log.info("视频源文件上传完成，通过阿里云获取视频信息，videoId = " + videoId);
-            SubmitMediaInfoJobResponseBody body = aliyunMpsService.getMediaInfo(sourceKey).getBody();
-            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJob job
-                    = body.getMediaInfoJob();
-            log.info("阿里云获取视频信息返回：" + JSON.toJSONString(job));
-            //给video保存媒体信息到数据库
-            video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(job)));
-            String jobId = job.getJobId();
-            log.info("获取视频信息 jobId = " + jobId);
-            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties properties
-                    = job.getProperties();
-            video.setDuration((long) (Double.parseDouble(properties.getDuration()) * 1000));
-            video.setHeight(Integer.parseInt(properties.getHeight()));
-            video.setWidth(Integer.parseInt(properties.getWidth()));
-            video.setBitrate((int) Double.parseDouble(properties.getBitrate()));
-            SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreams
-                    streams = properties.getStreams();
-            video.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
-            video.setAudioCodec(streams.getAudioStreamList().getAudioStream().get(0).getCodecName());
-        }
+        //加载媒体信息mediaInfo
+        loadVideoMediaInfo(video);
 
         //更新数据库video状态
         video.setStatus(VideoStatus.TRANSCODING);
