@@ -2,6 +2,9 @@ package com.github.makewheels.video2022.transcode;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
+import com.github.makewheels.video2022.transcode.factory.TranscodeFactory;
+import com.github.makewheels.video2022.transcode.factory.TranscodeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +19,8 @@ import javax.annotation.Resource;
 public class TranscodeController {
     @Resource
     private TranscodeCallbackService transcodeCallbackService;
+    @Resource
+    private TranscodeFactory transcodeFactory;
 
     /**
      * 阿里云 云函数转码完成回调
@@ -23,7 +28,10 @@ public class TranscodeController {
     @PostMapping("aliyunCloudFunctionTranscodeCallback")
     public Result<Void> aliyunCloudFunctionTranscodeCallback(@RequestBody JSONObject body) {
         log.info("收到阿里云 云函数转码回调：" + body.toJSONString());
-        transcodeCallbackService.aliyunCloudFunctionTranscodeCallback(body);
+        String jobId = body.getString("jobId");
+        TranscodeService transcodeService
+                = transcodeFactory.getService(TranscodeProvider.ALIYUN_CLOUD_FUNCTION);
+        transcodeService.callback(jobId);
         return Result.ok();
     }
 }

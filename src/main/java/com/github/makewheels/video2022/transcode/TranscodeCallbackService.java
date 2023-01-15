@@ -1,11 +1,7 @@
 package com.github.makewheels.video2022.transcode;
 
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.aliyun.mts20140618.models.QueryJobListResponseBody;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.file.File;
@@ -13,10 +9,7 @@ import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.redis.CacheService;
-import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
-import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
-import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
 import com.github.makewheels.video2022.utils.DingService;
 import com.github.makewheels.video2022.utils.M3u8Util;
 import com.github.makewheels.video2022.video.bean.Video;
@@ -31,7 +24,10 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -45,112 +41,12 @@ public class TranscodeCallbackService {
     private MongoTemplate mongoTemplate;
     @Resource
     private TranscodeRepository transcodeRepository;
-
-    @Resource
-    private AliyunMpsService aliyunMpsService;
-
     @Resource
     private FileService fileService;
     @Resource
     private CacheService cacheService;
     @Resource
     private DingService dingService;
-
-    /**
-     * 阿里云 云函数转码完成回调
-     */
-    public void aliyunCloudFunctionTranscodeCallback(JSONObject body) {
-        String jobId = body.getString("jobId");
-        log.info("开始处理 阿里云 云函数转码完成回调：jobId = " + jobId);
-        Transcode transcode = transcodeRepository.getByJobId(jobId);
-        handleTranscodeCallback(transcode);
-    }
-
-    /**
-     * 处理阿里云视频转码回调
-     */
-    public void aliyunTranscodeCallback(String jobId) {
-        log.info("阿里云MPS转码回调开始：jobId = " + jobId);
-        Transcode transcode = transcodeRepository.getByJobId(jobId);
-        handleTranscodeCallback(transcode);
-    }
-
-    /**
-     * 因为阿里云的http回调收费，两块钱一个topic，那就一直不停的迭代查询job状态
-     */
-    public void iterateQueryAliyunTranscodeJob(Video video, Transcode transcode) {
-        String jobId = transcode.getJobId();
-        long duration = video.getDuration();
-        long startTime = System.currentTimeMillis();
-
-        //轮询
-        for (int i = 0; i < 1000000000; i++) {
-            if (i % 3 == 0) {
-                log.info("i = " + i + " 开始睡觉");
-            }
-            ThreadUtil.sleep(2000);
-
-            //如果花了视频的15倍时长都没转完，就跳出
-            if ((System.currentTimeMillis() - startTime) > 15L * duration) {
-                log.error("花了视频的15倍时长都没转完，来人看看这是啥 jobId = {}, video = {}",
-                        jobId, JSON.toJSONString(video));
-                log.error("transcode = " + JSON.toJSONString(transcode));
-                break;
-            }
-
-            //查询任务
-            QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
-                    = aliyunMpsService.queryTranscodeJob(jobId).getBody().getJobList().getJob().get(0);
-            String jobStatus = job.getState();
-
-            //只输出部分日志
-            if (i % 3 == 0) {
-                log.info("阿里云轮询查询job结果: jobStatus = {}, job = {}", jobStatus, JSON.toJSONString(job));
-            }
-
-            //如果转码已完成，回调
-            if (AliyunTranscodeStatus.isFinishedStatus(jobStatus)) {
-                aliyunTranscodeCallback(jobId);
-                break;
-            }
-        }
-    }
-
-    /**
-     * 处理transcode回调，根据jobId查询百度或阿里接口获取转码情况
-     * 这个处理是通用的，同时兼容百度和阿里，
-     * 前面不管是那个服务商，只需根据jobId从数据库查出transcode对象传入即可
-     */
-    private void handleTranscodeCallback(Transcode transcode) {
-        String jobId = transcode.getJobId();
-        String jobStatus = null;
-        String transcodeResultJson = null;
-
-        //向对应的云服务商查询转码任务
-        switch (transcode.getProvider()) {
-            case TranscodeProvider.ALIYUN_MPS: {
-                QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
-                        = aliyunMpsService.queryTranscodeJob(jobId).getBody().getJobList().getJob().get(0);
-                jobStatus = job.getState();
-                transcode.setFinishTime(DateUtil.parseUTC(job.getFinishTime()));
-                transcodeResultJson = JSON.toJSONString(job);
-                break;
-            }
-            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
-                jobStatus = "FINISHED";
-                transcode.setFinishTime(new Date());
-                break;
-        }
-
-        //更新转码状态到数据库
-        if (!StringUtils.equals(jobStatus, transcode.getStatus())) {
-            transcode.setStatus(jobStatus);
-            transcode.setResult(JSONObject.parseObject(transcodeResultJson));
-            mongoTemplate.save(transcode);
-            //通知视频转码完成
-            onTranscodeFinish(transcode);
-        }
-    }
 
     /**
      * 当有一个转码job完成时回调
@@ -200,11 +96,10 @@ public class TranscodeCallbackService {
             videoStatus = VideoStatus.TRANSCODING;
         }
 
-        //更新videoStatus到数据库
+        //更新videoStatus
         if (!StringUtils.equals(videoStatus, video.getStatus())) {
             video.setStatus(videoStatus);
-            video.setUpdateTime(new Date());
-            mongoTemplate.save(video);
+            cacheService.updateVideo(video);
         }
     }
 

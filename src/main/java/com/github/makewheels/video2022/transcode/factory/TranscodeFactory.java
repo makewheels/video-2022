@@ -30,7 +30,7 @@ public class TranscodeFactory {
     /**
      * 获取具体实现类
      */
-    public TranscodeService getTranscodeService(String provider) {
+    public TranscodeService getService(String provider) {
         switch (provider) {
             case TranscodeProvider.ALIYUN_MPS:
                 return map.get(getClassName(AliyunMpsTranscodeImpl.class));

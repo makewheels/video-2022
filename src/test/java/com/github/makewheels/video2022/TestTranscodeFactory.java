@@ -13,6 +13,6 @@ public class TestTranscodeFactory {
 
     @Test
     public void test() {
-        transcodeFactory.getTranscodeService("af");
+        transcodeFactory.getService("af");
     }
 }

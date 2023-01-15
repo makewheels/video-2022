@@ -1,22 +1,20 @@
 package com.github.makewheels.video2022.transcode;
 
-import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.aliyun.mts20140618.models.SubmitJobsResponseBody;
 import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
+import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
-import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeService;
 import com.github.makewheels.video2022.transcode.contants.Resolution;
 import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
+import com.github.makewheels.video2022.transcode.factory.TranscodeFactory;
+import com.github.makewheels.video2022.transcode.factory.TranscodeService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.Environment;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
-import com.github.makewheels.video2022.video.constants.AudioCodec;
 import com.github.makewheels.video2022.video.constants.VideoCodec;
-import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -33,23 +31,23 @@ import java.util.List;
 @Service
 @Slf4j
 public class TranscodeLauncher {
-    @Resource
-    private MongoTemplate mongoTemplate;
-
-    @Resource
-    private TranscodeCallbackService transcodeCallbackService;
-
-    @Resource
-    private AliyunMpsService aliyunMpsService;
-    @Resource
-    private CloudFunctionTranscodeService cloudFunctionTranscodeService;
-
     @Value("${external-base-url}")
     private String externalBaseUrl;
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
     @Value("${spring.profile.active}")
     private String environment;
+
+    @Resource
+    private MongoTemplate mongoTemplate;
+    @Resource
+    private AliyunMpsService aliyunMpsService;
+    @Resource
+    private TranscodeCallbackService transcodeCallbackService;
+    @Resource
+    private TranscodeFactory transcodeFactory;
+    @Resource
+    private CacheService cacheService;
 
     private boolean isResolutionOverThanTarget(int width, int height, String resolution) {
         switch (resolution) {
@@ -132,9 +130,6 @@ public class TranscodeLauncher {
      */
     private void transcodeSingleResolution(User user, Video video, String targetResolution) {
         String videoId = video.getId();
-        String sourceKey = video.getOriginalFileKey();
-        int width = video.getWidth();
-        int height = video.getHeight();
 
         //创建新transcode对象
         Transcode transcode = createTranscode(user, video, targetResolution);
@@ -146,47 +141,16 @@ public class TranscodeLauncher {
         transcodeIds.add(transcodeId);
         video.setTranscodeIds(transcodeIds);
 
-        video.setUpdateTime(new Date());
-        mongoTemplate.save(video);
+        cacheService.updateVideo(video);
 
         //发起转码
         String transcodeProvider = transcode.getProvider();
-        String m3u8Key = transcode.getM3u8Key();
         log.info("发起 " + targetResolution + " 转码：videoId = " + videoId + ", transcodeProvider = "
                 + transcodeProvider);
-        String jobId = null;
-        String jobStatus = null;
-        switch (transcodeProvider) {
-            case TranscodeProvider.ALIYUN_MPS: {
-                SubmitJobsResponseBody.SubmitJobsResponseBodyJobResultListJobResultJob job
-                        = aliyunMpsService.submitTranscodeJobByResolution(
-                                sourceKey, m3u8Key, targetResolution)
-                        .getBody().getJobResultList().getJobResult().get(0).getJob();
-                jobId = job.getJobId();
-                log.info("发起阿里云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
-                jobStatus = job.getState();
-                break;
-            }
-            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
-                jobId = IdUtil.getSnowflakeNextIdStr();
-                String callbackUrl = externalBaseUrl + "/transcode/aliyunCloudFunctionTranscodeCallback";
-                cloudFunctionTranscodeService.transcode(
-                        sourceKey, m3u8Key.substring(0, m3u8Key.lastIndexOf("/")),
-                        videoId, transcodeId, jobId, targetResolution, width, height,
-                        VideoCodec.H264, AudioCodec.AAC, "keep", callbackUrl);
-                jobStatus = VideoStatus.TRANSCODING;
-                break;
-        }
-        //保存jobId，更新jobStatus
-        transcode.setJobId(jobId);
-        transcode.setStatus(jobStatus);
-        mongoTemplate.save(transcode);
 
-        //异步轮询查询阿里云转码状态，并回调
-        if (transcodeProvider.equals(TranscodeProvider.ALIYUN_MPS)) {
-            new Thread(() -> transcodeCallbackService.iterateQueryAliyunTranscodeJob(
-                    video, transcode)).start();
-        }
+        //根据供应商，发起对应转码
+        TranscodeService transcodeService = transcodeFactory.getService(transcodeProvider);
+        transcodeService.transcode(video, transcode);
     }
 
     /**
@@ -231,8 +195,6 @@ public class TranscodeLauncher {
         //发起转码
         Integer width = video.getWidth();
         Integer height = video.getHeight();
-        //480p
-//        transcodeSingleResolution(user, video, Resolution.R_480P);
 
         //720p
         if (width * height > 854 * 480) {
