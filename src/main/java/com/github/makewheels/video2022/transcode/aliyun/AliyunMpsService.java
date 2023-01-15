@@ -93,9 +93,9 @@ public class AliyunMpsService {
         request.setOutputBucket(bucket);
         request.setOutputLocation("oss-cn-beijing");
         request.setPipelineId("6c126c07a9b34a85b7093e7bfa9c3ad9");
-        log.info("阿里云转码任务: from = " + from);
-        log.info("阿里云转码任务: to = " + to);
-        log.info("阿里云转码任务: SubmitJobsRequest = " + JSON.toJSONString(request));
+        log.info("阿里云MPS转码任务: from = " + from);
+        log.info("阿里云MPS转码任务: to = " + to);
+        log.info("阿里云MPS转码任务: SubmitJobsRequest = " + JSON.toJSONString(request));
         SubmitJobsResponse response = null;
         try {
             response = getClient().submitJobs(request);

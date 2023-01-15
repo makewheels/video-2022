@@ -215,7 +215,7 @@ public class TranscodeLauncher {
     }
 
     /**
-     * 开始发起对单个视频的转码
+     * 开始转码
      */
     public void transcodeVideo(User user, Video video) {
         //加载媒体信息mediaInfo
