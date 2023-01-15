@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.transcode.factory;
 
 import com.github.makewheels.video2022.transcode.bean.Transcode;
+import com.github.makewheels.video2022.video.bean.Video;
 import org.springframework.stereotype.Service;
 
 /**
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public interface TranscodeService {
-    void transcode(Transcode transcode);
-    void handleCallback(Transcode transcode);
+    Transcode transcode(Video video, Transcode transcode);
+
+    void callback(String jobId);
 }

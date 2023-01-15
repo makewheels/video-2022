@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * 通用缓存类，为解决循环依赖而生
@@ -46,6 +47,7 @@ public class CacheService {
         //如果redis没获取到，从mongo查出来，缓存到redis
         if (instance == null) {
             instance = mongoTemplate.findById(id, clazz);
+            //如果从数据库里查到了，缓存到redis
             if (instance != null) {
                 redisService.set(redisKey, JSON.toJSONString(instance), RedisTime.SIX_HOURS);
             }
@@ -65,4 +67,29 @@ public class CacheService {
         return getByClass(Transcode.class, id);
     }
 
+    public void updateVideo(Video video) {
+        String id = video.getId();
+        if (id == null) return;
+
+        video.setUpdateTime(new Date());
+
+        String redisKey = getRedisKey(Video.class, id);
+        redisService.del(redisKey);
+
+        mongoTemplate.save(video);
+    }
+
+    public void updateUser(User user) {
+        String id = user.getId();
+        if (id == null) return;
+        String redisKey = getRedisKey(User.class, id);
+        redisService.del(redisKey);
+        mongoTemplate.save(user);
+    }
+
+    public void updateTranscode(Transcode transcode) {
+        String redisKey = getRedisKey(Transcode.class, transcode.getId());
+        redisService.del(redisKey);
+        mongoTemplate.save(transcode);
+    }
 }
