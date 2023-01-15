@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.redis;
 
 import com.alibaba.fastjson.JSON;
-import com.github.makewheels.video2022.transcode.Transcode;
+import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.Video;
 import org.springframework.data.mongodb.core.MongoTemplate;

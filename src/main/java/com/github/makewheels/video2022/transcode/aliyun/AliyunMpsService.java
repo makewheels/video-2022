@@ -7,7 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.Client;
 import com.aliyun.mts20140618.models.*;
 import com.aliyun.teaopenapi.models.Config;
-import com.github.makewheels.video2022.transcode.Resolution;
+import com.github.makewheels.video2022.transcode.contants.Resolution;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

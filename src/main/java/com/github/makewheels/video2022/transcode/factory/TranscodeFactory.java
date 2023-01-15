@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.transcode.factory;
 
-import com.github.makewheels.video2022.transcode.TranscodeProvider;
+import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

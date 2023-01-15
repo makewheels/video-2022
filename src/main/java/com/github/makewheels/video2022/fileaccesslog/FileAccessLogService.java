@@ -3,7 +3,7 @@ package com.github.makewheels.video2022.fileaccesslog;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.redis.CacheService;
-import com.github.makewheels.video2022.transcode.Transcode;
+import com.github.makewheels.video2022.transcode.bean.Transcode;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;

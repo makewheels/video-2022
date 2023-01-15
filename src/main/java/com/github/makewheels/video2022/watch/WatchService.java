@@ -11,7 +11,7 @@ import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileRepository;
-import com.github.makewheels.video2022.transcode.Transcode;
+import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.utils.DingService;
 import com.github.makewheels.video2022.video.VideoRedisService;

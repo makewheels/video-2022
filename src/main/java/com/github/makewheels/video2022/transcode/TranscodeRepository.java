@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.transcode;
 
+import com.github.makewheels.video2022.transcode.bean.Transcode;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -15,10 +16,6 @@ public class TranscodeRepository {
 
     public List<Transcode> getByIds(List<String> ids) {
         return mongoTemplate.find(Query.query(Criteria.where("id").in(ids)), Transcode.class);
-    }
-
-    public List<Transcode> getByVideoId(String videoId) {
-        return mongoTemplate.find(Query.query(Criteria.where("videoId").is(videoId)), Transcode.class);
     }
 
     public Transcode getByJobId(String jobId) {
