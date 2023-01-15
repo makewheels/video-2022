@@ -44,7 +44,7 @@ public class IdService {
         String increaseId = new DecimalFormat("00").format(redisIncreaseId);
 
         //生成随机数结尾
-        String random = RandomUtil.randomNumbers(2);
+        String random = RandomUtil.randomNumbers(3);
 
         //拼接返回
         long decimal = Long.parseLong(timestamp + increaseId + random);
