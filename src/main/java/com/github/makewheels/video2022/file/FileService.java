@@ -3,7 +3,7 @@ package com.github.makewheels.video2022.file;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.*;
-import com.github.makewheels.video2022.context.Context;
+import com.github.makewheels.video2022.etc.context.Context;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.constants.FileStatus;

@@ -1,8 +1,8 @@
 package com.github.makewheels.video2022.file;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.context.Context;
-import com.github.makewheels.video2022.context.RequestUtil;
+import com.github.makewheels.video2022.etc.context.Context;
+import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

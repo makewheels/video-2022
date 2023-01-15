@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.SubmitJobsResponseBody;
 import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
-import com.github.makewheels.video2022.file.constants.S3Provider;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeService;
 import com.github.makewheels.video2022.user.bean.User;
@@ -70,32 +69,21 @@ public class TranscodeLauncher {
     }
 
     /**
-     * 转码单个分辨率
+     * 决定用谁转码
      */
-    private void transcodeSingleResolution(User user, Video video, String resolution) {
-        String userId = user.getId();
+    private String getTranscodeProvider(Video video, String targetResolution) {
         String videoId = video.getId();
-        String s3Provider = video.getProvider();
-        String sourceKey = video.getOriginalFileKey();
-        int width = video.getWidth();
-        int height = video.getHeight();
+        Integer width = video.getWidth();
+        Integer height = video.getHeight();
 
-        //新建transcode对象，保存到数据库
-        Transcode transcode = new Transcode();
-        transcode.setUserId(userId);
-        transcode.setVideoId(videoId);
-        transcode.setResolution(resolution);
-        transcode.setSourceKey(sourceKey);
-
-        //用谁转码？
+        //默认用阿里云MPS
         String transcodeProvider = TranscodeProvider.ALIYUN_MPS;
         if (!video.getVideoCodec().equals(VideoCodec.H264)) {
             //如果不是h264，用阿里云
             log.info("决定用谁转码：源视频不是h264，用阿里云MPS转码, videoId = " + videoId);
 
-        } else if (isResolutionOverThanTarget(width, height, resolution)) {
-            //如果是h264，源视频分辨率和目标分辨率不一致，用阿里云
-            //判断源视频和转码模板分辨率是否一致
+        } else if (isResolutionOverThanTarget(width, height, targetResolution)) {
+            //源视分辨率和目标分辨率不一致，用阿里云
             log.info("决定用谁转码：分辨率OverThanTarget，用阿里云MPS转码, videoId = " + videoId);
 
         } else if (video.getBitrate() > 13000) {
@@ -110,6 +98,25 @@ public class TranscodeLauncher {
             }
         }
         log.info("最终决定用谁转码：transcodeProvider = {}, videoId = {}", transcodeProvider, videoId);
+        return transcodeProvider;
+    }
+
+    /**
+     * 创建新transcode对象
+     */
+    private Transcode createTranscode(User user, Video video, String targetResolution) {
+        String userId = user.getId();
+        String videoId = video.getId();
+
+        //新建transcode对象，保存到数据库
+        Transcode transcode = new Transcode();
+        transcode.setUserId(userId);
+        transcode.setVideoId(videoId);
+        transcode.setResolution(targetResolution);
+        transcode.setSourceKey(video.getOriginalFileKey());
+
+        //决定用谁转码
+        String transcodeProvider = getTranscodeProvider(video, targetResolution);
         transcode.setProvider(transcodeProvider);
 
         mongoTemplate.save(transcode);
@@ -117,30 +124,48 @@ public class TranscodeLauncher {
 
         //设置m3u8 url
         String m3u8Key = PathUtil.getS3VideoPrefix(userId, videoId)
-                + "/transcode/" + resolution + "/" + transcodeId + ".m3u8";
+                + "/transcode/" + targetResolution + "/" + transcodeId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
-        if (s3Provider.equals(S3Provider.ALIYUN_OSS)) {
-            transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
-        }
+        transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
         mongoTemplate.save(transcode);
 
-        //反向更新video的transcodeIds
+        //反向追加，更新video的transcodeIds
         List<String> transcodeIds = video.getTranscodeIds();
         if (transcodeIds == null) transcodeIds = new ArrayList<>();
         transcodeIds.add(transcodeId);
         video.setTranscodeIds(transcodeIds);
+
         video.setUpdateTime(new Date());
         mongoTemplate.save(video);
+        return transcode;
+    }
+
+
+    /**
+     * 转码单个分辨率
+     */
+    private void transcodeSingleResolution(User user, Video video, String targetResolution) {
+        String videoId = video.getId();
+        String sourceKey = video.getOriginalFileKey();
+        int width = video.getWidth();
+        int height = video.getHeight();
+
+        //创建新transcode对象
+        Transcode transcode = createTranscode(user, video, targetResolution);
 
         //发起转码
-        log.info("发起 " + resolution + " 转码：videoId = " + videoId + ", transcode-provider = "
+        String transcodeId = transcode.getId();
+        String transcodeProvider = transcode.getProvider();
+        String m3u8Key = transcode.getM3u8Key();
+        log.info("发起 " + targetResolution + " 转码：videoId = " + videoId + ", transcodeProvider = "
                 + transcodeProvider);
         String jobId = null;
         String jobStatus = null;
         switch (transcodeProvider) {
             case TranscodeProvider.ALIYUN_MPS: {
                 SubmitJobsResponseBody.SubmitJobsResponseBodyJobResultListJobResultJob job
-                        = aliyunMpsService.submitTranscodeJobByResolution(sourceKey, m3u8Key, resolution)
+                        = aliyunMpsService.submitTranscodeJobByResolution(
+                                sourceKey, m3u8Key, targetResolution)
                         .getBody().getJobResultList().getJobResult().get(0).getJob();
                 jobId = job.getJobId();
                 log.info("发起阿里云转码 jobId = " + jobId + ", response = " + JSON.toJSONString(job));
@@ -152,7 +177,7 @@ public class TranscodeLauncher {
                 String callbackUrl = externalBaseUrl + "/transcode/aliyunCloudFunctionTranscodeCallback";
                 cloudFunctionTranscodeService.transcode(
                         sourceKey, m3u8Key.substring(0, m3u8Key.lastIndexOf("/")),
-                        videoId, transcodeId, jobId, resolution, width, height,
+                        videoId, transcodeId, jobId, targetResolution, width, height,
                         VideoCodec.H264, AudioCodec.AAC, "keep", callbackUrl);
                 jobStatus = VideoStatus.TRANSCODING;
                 break;

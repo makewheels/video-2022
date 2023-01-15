@@ -2,7 +2,7 @@ package com.github.makewheels.video2022.watch;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.context.Context;
+import com.github.makewheels.video2022.etc.context.Context;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
 import com.github.makewheels.video2022.redis.CacheService;

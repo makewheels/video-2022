@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.watch;
 
-import com.github.makewheels.video2022.context.Context;
-import com.github.makewheels.video2022.context.RequestUtil;
+import com.github.makewheels.video2022.etc.context.Context;
+import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import org.springframework.web.bind.annotation.*;
