@@ -42,8 +42,6 @@ public class TranscodeLauncher {
     @Resource
     private AliyunMpsService aliyunMpsService;
     @Resource
-    private TranscodeCallbackService transcodeCallbackService;
-    @Resource
     private TranscodeFactory transcodeFactory;
     @Resource
     private CacheService cacheService;
