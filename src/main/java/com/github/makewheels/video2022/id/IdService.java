@@ -13,6 +13,9 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+/**
+ * 自定义短id
+ */
 @Service
 @Slf4j
 public class IdService {
