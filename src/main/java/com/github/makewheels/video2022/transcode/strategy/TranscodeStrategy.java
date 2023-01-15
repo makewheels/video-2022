@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.transcode.strategy;
 
+import com.github.makewheels.video2022.transcode.Transcode;
 import org.springframework.stereotype.Service;
 
 /**
@@ -7,5 +8,5 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public interface TranscodeStrategy {
-
+    void handleCallback(Transcode transcode);
 }

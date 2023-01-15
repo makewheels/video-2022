@@ -48,14 +48,6 @@ public class TranscodeLauncher {
     @Value("${spring.profile.active}")
     private String environment;
 
-    private boolean isResolutionOverThan480p(int width, int height) {
-        return width * height > 854 * 480;
-    }
-
-    private boolean isResolutionOverThan720p(int width, int height) {
-        return width * height > 1280 * 720;
-    }
-
     private boolean isResolutionOverThanTarget(int width, int height, String resolution) {
         switch (resolution) {
             case Resolution.R_480P:
@@ -119,6 +111,7 @@ public class TranscodeLauncher {
         String transcodeProvider = getTranscodeProvider(video, targetResolution);
         transcode.setProvider(transcodeProvider);
 
+        //保存MongoDB，得到id
         mongoTemplate.save(transcode);
         String transcodeId = transcode.getId();
 
@@ -128,18 +121,8 @@ public class TranscodeLauncher {
         transcode.setM3u8Key(m3u8Key);
         transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
         mongoTemplate.save(transcode);
-
-        //反向追加，更新video的transcodeIds
-        List<String> transcodeIds = video.getTranscodeIds();
-        if (transcodeIds == null) transcodeIds = new ArrayList<>();
-        transcodeIds.add(transcodeId);
-        video.setTranscodeIds(transcodeIds);
-
-        video.setUpdateTime(new Date());
-        mongoTemplate.save(video);
         return transcode;
     }
-
 
     /**
      * 转码单个分辨率
@@ -152,9 +135,18 @@ public class TranscodeLauncher {
 
         //创建新transcode对象
         Transcode transcode = createTranscode(user, video, targetResolution);
+        String transcodeId = transcode.getId();
+
+        //反向追加，更新video的transcodeIds
+        List<String> transcodeIds = video.getTranscodeIds();
+        if (transcodeIds == null) transcodeIds = new ArrayList<>();
+        transcodeIds.add(transcodeId);
+        video.setTranscodeIds(transcodeIds);
+
+        video.setUpdateTime(new Date());
+        mongoTemplate.save(video);
 
         //发起转码
-        String transcodeId = transcode.getId();
         String transcodeProvider = transcode.getProvider();
         String m3u8Key = transcode.getM3u8Key();
         log.info("发起 " + targetResolution + " 转码：videoId = " + videoId + ", transcodeProvider = "
@@ -229,22 +221,23 @@ public class TranscodeLauncher {
         //加载媒体信息mediaInfo
         loadVideoMediaInfo(video);
 
-        //更新数据库video状态
-        video.setStatus(VideoStatus.TRANSCODING);
+        //更新video
         video.setUpdateTime(new Date());
         mongoTemplate.save(video);
 
         //发起转码
+        Integer width = video.getWidth();
+        Integer height = video.getHeight();
         //480p
 //        transcodeSingleResolution(user, video, Resolution.R_480P);
 
         //720p
-        if (isResolutionOverThan480p(video.getWidth(), video.getHeight())) {
+        if (width * height > 854 * 480) {
             transcodeSingleResolution(user, video, Resolution.R_720P);
         }
 
         //1080p
-        if (isResolutionOverThan720p(video.getWidth(), video.getHeight())) {
+        if (width * height > 1280 * 720) {
             transcodeSingleResolution(user, video, Resolution.R_1080P);
         }
 
