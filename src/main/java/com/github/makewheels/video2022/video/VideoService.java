@@ -129,12 +129,11 @@ public class VideoService {
         video.setIsPermanent(false);
         video.setIsOriginalFileDeleted(false);
         video.setIsTranscodeFilesDeleted(false);
-        video.setUpdateTime(new Date());
-        mongoTemplate.save(video);
+        cacheService.updateVideo(video);
 
         String videoId = video.getId();
         videoFile.setVideoId(videoId);
-        // 更新file上传路径
+        //更新file上传路径
         videoFile.setKey(PathUtil.getS3VideoPrefix(userId, videoId)
                 + "/original/" + videoId + "." + videoFile.getExtension());
         mongoTemplate.save(videoFile);
@@ -142,8 +141,7 @@ public class VideoService {
 
         //更新video的source key
         video.setOriginalFileKey(videoFile.getKey());
-        video.setUpdateTime(new Date());
-        mongoTemplate.save(video);
+        cacheService.updateVideo(video);
         log.info("新建视频：" + JSON.toJSONString(video));
 
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
@@ -173,8 +171,7 @@ public class VideoService {
             mongoTemplate.save(videoFile);
             //更新video的source key
             video.setOriginalFileKey(videoFile.getKey());
-            video.setUpdateTime(new Date());
-            mongoTemplate.save(video);
+            cacheService.updateVideo(video);
         }
 
         //提交搬运视频任务给海外服务器
@@ -202,8 +199,7 @@ public class VideoService {
         JSONObject snippet = youtubeVideoInfo.getJSONObject("snippet");
         video.setTitle(snippet.getString("title"));
         video.setDescription(snippet.getString("description"));
-        video.setUpdateTime(new Date());
-        mongoTemplate.save(video);
+        cacheService.updateVideo(video);
     }
 
 
@@ -225,8 +221,7 @@ public class VideoService {
 
         //更新视频为正在转码状态
         video.setStatus(VideoStatus.TRANSCODING);
-        video.setUpdateTime(new Date());
-        mongoTemplate.save(video);
+        cacheService.updateVideo(video);
 
         //创建子线程发起转码，先给前端返回结果
         new Thread(() -> transcodeLauncher.transcodeVideo(user, video)).start();
@@ -255,8 +250,7 @@ public class VideoService {
 
         oldVideo.setTitle(newVideo.getTitle());
         oldVideo.setDescription(newVideo.getDescription());
-        oldVideo.setUpdateTime(new Date());
-        mongoTemplate.save(oldVideo);
+        cacheService.updateVideo(oldVideo);
 
         log.info("更新视频信息：videoId = {}, title = {}, description = {}",
                 videoId, oldVideo.getTitle(), oldVideo.getDescription());

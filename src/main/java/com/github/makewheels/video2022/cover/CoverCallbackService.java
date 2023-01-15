@@ -122,6 +122,5 @@ public class CoverCallbackService {
         file.setStatus(FileStatus.READY);
         mongoTemplate.save(file);
 
-
     }
 }

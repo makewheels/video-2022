@@ -60,7 +60,7 @@ public class AliyunCfTranscodeImpl implements TranscodeService {
 
         transcode.setJobId(jobId);
         transcode.setStatus(VideoStatus.TRANSCODING);
-        mongoTemplate.save(transcode);
+        cacheService.updateTranscode(transcode);
 
         return transcode;
     }

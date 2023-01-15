@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.video;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +25,10 @@ public class VideoDeleteTask {
     private VideoService videoService;
     @Resource
     private FileService fileService;
-
     @Resource
     private MongoTemplate mongoTemplate;
+    @Resource
+    private CacheService cacheService;
 
     //    @Scheduled(cron = "")
     public void run() {
@@ -44,8 +46,7 @@ public class VideoDeleteTask {
             //更新视频状态
             video.setIsTranscodeFilesDeleted(true);
             video.setDeleteTime(new Date());
-            video.setUpdateTime(new Date());
-            mongoTemplate.save(video);
+            cacheService.updateVideo(video);
         }
     }
 }

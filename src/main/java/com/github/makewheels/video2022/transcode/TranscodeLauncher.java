@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -121,7 +120,7 @@ public class TranscodeLauncher {
                 + "/transcode/" + targetResolution + "/" + transcodeId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
         transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
-        mongoTemplate.save(transcode);
+        cacheService.updateTranscode(transcode);
         return transcode;
     }
 
@@ -189,8 +188,7 @@ public class TranscodeLauncher {
         loadVideoMediaInfo(video);
 
         //更新video
-        video.setUpdateTime(new Date());
-        mongoTemplate.save(video);
+        cacheService.updateVideo(video);
 
         //发起转码
         Integer width = video.getWidth();

@@ -48,6 +48,8 @@ public class TranscodeCallbackService {
     @Resource
     private DingService dingService;
 
+    @Resource
+
     /**
      * 当有一个转码job完成时回调
      */
@@ -126,7 +128,7 @@ public class TranscodeCallbackService {
         String m3u8FileUrl = fileService.generatePresignedUrl(m3u8Key, Duration.ofMinutes(10));
         String m3u8Content = HttpUtil.get(m3u8FileUrl);
         transcode.setM3u8Content(m3u8Content);
-        mongoTemplate.save(transcode);
+        cacheService.updateTranscode(transcode);
     }
 
     /**
@@ -200,7 +202,7 @@ public class TranscodeCallbackService {
                 .max(Comparator.comparing(File::getBitrate)).get().getBitrate();
         transcode.setMaxBitrate(maxBitrate);
 
-        mongoTemplate.save(transcode);
+        cacheService.updateTranscode(transcode);
     }
 
 }
