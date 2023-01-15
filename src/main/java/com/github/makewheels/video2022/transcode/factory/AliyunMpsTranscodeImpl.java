@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.transcode.factory;
 
-import com.github.makewheels.video2022.transcode.Transcode;
+import com.github.makewheels.video2022.transcode.bean.Transcode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

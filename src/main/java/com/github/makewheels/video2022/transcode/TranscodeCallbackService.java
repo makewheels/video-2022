@@ -15,6 +15,8 @@ import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
+import com.github.makewheels.video2022.transcode.bean.Transcode;
+import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
 import com.github.makewheels.video2022.utils.DingService;
 import com.github.makewheels.video2022.utils.M3u8Util;
 import com.github.makewheels.video2022.video.bean.Video;

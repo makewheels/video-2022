@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.transcode;
+package com.github.makewheels.video2022.transcode.contants;
 
 public interface TranscodeProvider {
     String ALIYUN_MPS = "ALIYUN_MPS_TRANSCODE";

@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.transcode;
+package com.github.makewheels.video2022.transcode.contants;
 
 public interface Resolution {
     String R_480P = "480p";

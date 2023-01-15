@@ -1,7 +1,8 @@
-package com.github.makewheels.video2022.transcode;
+package com.github.makewheels.video2022.transcode.bean;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeStatus;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
