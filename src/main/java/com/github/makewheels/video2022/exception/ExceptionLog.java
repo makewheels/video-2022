@@ -10,6 +10,7 @@ import java.util.Date;
 public class ExceptionLog {
     @Id
     private String id;
+
     private String stackTrace;
     private Date createTime;
 

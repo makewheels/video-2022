@@ -32,19 +32,20 @@ public class GlobalExceptionHandler {
 
     @ResponseBody
     @ExceptionHandler(Exception.class)
-    public Result<Void> exceptionHandler(Exception e) {
-        e.printStackTrace();
-        saveException(e);
-        return new Result<>(ErrorCode.FAIL.getCode(), e.getMessage());
+    public Result<Void> exceptionHandler(Exception exception) {
+        exception.printStackTrace();
+        saveException(exception);
+        return new Result<>(ErrorCode.FAIL.getCode(), exception.getMessage());
     }
 
     @ResponseBody
     @ExceptionHandler(VideoException.class)
-    public Result<Object> exceptionHandler(VideoException e) {
-        e.printStackTrace();
-        saveException(e);
-        ErrorCode errorCode = e.getErrorCode();
-        return new Result<>(errorCode.getCode(), errorCode.getValue(), ExceptionUtils.getStackTrace(e));
+    public Result<Object> exceptionHandler(VideoException videoException) {
+        videoException.printStackTrace();
+        saveException(videoException);
+        ErrorCode errorCode = videoException.getErrorCode();
+        String stackTrace = ExceptionUtils.getStackTrace(videoException);
+        return new Result<>(errorCode.getCode(), errorCode.getValue(), stackTrace);
     }
 
 }
