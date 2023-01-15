@@ -69,7 +69,7 @@ public class Transcode {
         switch (provider) {
             case TranscodeProvider.ALIYUN_MPS:
                 return AliyunTranscodeStatus.isFinishedStatus(status);
-            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION_CPU:
+            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 return CloudFunctionTranscodeStatus.isFinishedStatus(status);
         }
         return true;
@@ -82,7 +82,7 @@ public class Transcode {
         switch (provider) {
             case TranscodeProvider.ALIYUN_MPS:
                 return StringUtils.equals(status, AliyunTranscodeStatus.TranscodeSuccess);
-            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION_CPU:
+            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 return true;
         }
         return true;

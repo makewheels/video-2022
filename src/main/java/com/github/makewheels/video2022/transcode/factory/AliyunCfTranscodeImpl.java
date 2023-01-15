@@ -5,11 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
- * 阿里云MPS转码实现类
+ * 阿里云CPU云函数转码实现类
  */
 @Service
 @Slf4j
-public class AliyunMpsTranscodeImpl implements TranscodeService {
+public class AliyunCfTranscodeImpl implements TranscodeService {
     @Override
     public void transcode(Transcode transcode) {
 

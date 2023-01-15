@@ -86,7 +86,7 @@ public class TranscodeLauncher {
             //其它情况用阿里云 云函数
             //本地环境都用阿里云mps转码，不用回调。生产环境才用云函数
             if (environment.equals(Environment.PRODUCTION)) {
-                transcodeProvider = TranscodeProvider.ALIYUN_CLOUD_FUNCTION_CPU;
+                transcodeProvider = TranscodeProvider.ALIYUN_CLOUD_FUNCTION;
             }
         }
         log.info("最终决定用谁转码：transcodeProvider = {}, videoId = {}", transcodeProvider, videoId);
@@ -164,7 +164,7 @@ public class TranscodeLauncher {
                 jobStatus = job.getState();
                 break;
             }
-            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION_CPU:
+            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 jobId = IdUtil.getSnowflakeNextIdStr();
                 String callbackUrl = externalBaseUrl + "/transcode/aliyunCloudFunctionTranscodeCallback";
                 cloudFunctionTranscodeService.transcode(

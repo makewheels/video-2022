@@ -13,7 +13,7 @@ public class TestDing {
     private DingService dingService;
 
     @Test
-    public void testDing() {
+    public void test() {
         String text = "测试消息-test-message-" + UUID.randomUUID();
         dingService.sendMarkdown("test-title", text);
     }

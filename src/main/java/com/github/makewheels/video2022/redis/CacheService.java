@@ -23,7 +23,7 @@ public class CacheService {
     /**
      * 获取redis的key
      */
-    private <T> String getRedisKey(Class<T> clazz, String id) {
+    private String getRedisKey(Class<?> clazz, String id) {
         if (clazz.equals(Video.class)) {
             return RedisKey.videoCache(id);
         } else if (clazz.equals(Transcode.class)) {
