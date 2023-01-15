@@ -30,8 +30,6 @@ import java.util.List;
 @Service
 @Slf4j
 public class TranscodeLauncher {
-    @Value("${external-base-url}")
-    private String externalBaseUrl;
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
     @Value("${spring.profile.active}")

@@ -36,14 +36,24 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
     private TranscodeCallbackService transcodeCallbackService;
 
     /**
-     * 拿到对象，发起阿里云MPS最终回调
+     * 处理回调
      */
-    @Override
-    public void callback(String jobId) {
-        log.info("阿里云MPS转码回调开始：jobId = " + jobId);
-        Transcode transcode = transcodeRepository.getByJobId(jobId);
-        Video video = cacheService.getVideo(transcode.getVideoId());
-        handleCallback(video, transcode);
+    private void handleCallback(Transcode transcode) {
+        String jobId = transcode.getJobId();
+
+        QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
+                = aliyunMpsService.queryTranscodeJob(jobId).getBody().getJobList().getJob().get(0);
+        String jobStatus = job.getState();
+        transcode.setFinishTime(DateUtil.parseUTC(job.getFinishTime()));
+
+        //更新转码状态到数据库
+        if (!StringUtils.equals(jobStatus, transcode.getStatus())) {
+            transcode.setStatus(jobStatus);
+            transcode.setResult(JSONObject.parseObject(JSON.toJSONString(job)));
+            cacheService.updateTranscode(transcode);
+            //通知视频转码完成
+            transcodeCallbackService.onTranscodeFinish(transcode);
+        }
     }
 
     /**
@@ -117,24 +127,14 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
     }
 
     /**
-     * 处理回调
+     * 拿到对象，发起阿里云MPS最终回调
      */
-    public void handleCallback(Video video, Transcode transcode) {
-        String jobId = transcode.getJobId();
-
-        QueryJobListResponseBody.QueryJobListResponseBodyJobListJob job
-                = aliyunMpsService.queryTranscodeJob(jobId).getBody().getJobList().getJob().get(0);
-        String jobStatus = job.getState();
-        transcode.setFinishTime(DateUtil.parseUTC(job.getFinishTime()));
-
-        //更新转码状态到数据库
-        if (!StringUtils.equals(jobStatus, transcode.getStatus())) {
-            transcode.setStatus(jobStatus);
-            transcode.setResult(JSONObject.parseObject(JSON.toJSONString(job)));
-            cacheService.updateTranscode(transcode);
-            //通知视频转码完成
-            transcodeCallbackService.onTranscodeFinish(transcode);
-        }
+    @Override
+    public void callback(String jobId) {
+        log.info("阿里云MPS转码回调开始：jobId = " + jobId);
+        Transcode transcode = transcodeRepository.getByJobId(jobId);
+        Video video = cacheService.getVideo(transcode.getVideoId());
+        handleCallback(transcode);
     }
 
 }

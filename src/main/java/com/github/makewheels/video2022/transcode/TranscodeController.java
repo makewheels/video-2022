@@ -18,8 +18,6 @@ import javax.annotation.Resource;
 @Slf4j
 public class TranscodeController {
     @Resource
-    private TranscodeCallbackService transcodeCallbackService;
-    @Resource
     private TranscodeFactory transcodeFactory;
 
     /**
