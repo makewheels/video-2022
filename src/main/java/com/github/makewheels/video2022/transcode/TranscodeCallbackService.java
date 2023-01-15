@@ -48,8 +48,6 @@ public class TranscodeCallbackService {
     @Resource
     private DingService dingService;
 
-    @Resource
-
     /**
      * 当有一个转码job完成时回调
      */

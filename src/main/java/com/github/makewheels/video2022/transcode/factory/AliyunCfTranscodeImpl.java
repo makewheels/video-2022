@@ -12,7 +12,6 @@ import com.github.makewheels.video2022.video.constants.VideoCodec;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -29,8 +28,6 @@ public class AliyunCfTranscodeImpl implements TranscodeService {
 
     @Resource
     private CloudFunctionTranscodeService cloudFunctionTranscodeService;
-    @Resource
-    private MongoTemplate mongoTemplate;
     @Resource
     private TranscodeRepository transcodeRepository;
     @Resource

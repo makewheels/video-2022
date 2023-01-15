@@ -7,7 +7,6 @@ import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.Video;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -25,8 +24,6 @@ public class VideoDeleteTask {
     private VideoService videoService;
     @Resource
     private FileService fileService;
-    @Resource
-    private MongoTemplate mongoTemplate;
     @Resource
     private CacheService cacheService;
 
