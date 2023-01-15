@@ -57,7 +57,7 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
         //轮询
         for (int i = 0; i < 1000000000; i++) {
             if (i % 3 == 0) {
-                log.info("i = " + i + " 开始睡觉");
+                log.debug("i = " + i + " 开始睡觉");
             }
             ThreadUtil.sleep(2000);
 
@@ -76,7 +76,7 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
 
             //只输出部分日志
             if (i % 3 == 0) {
-                log.info("阿里云轮询查询job结果: jobStatus = {}, job = {}", jobStatus,
+                log.debug("阿里云轮询查询job结果: jobStatus = {}, job = {}", jobStatus,
                         JSON.toJSONString(job));
             }
 
