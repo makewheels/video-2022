@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.context;
+package com.github.makewheels.video2022.etc.context;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
