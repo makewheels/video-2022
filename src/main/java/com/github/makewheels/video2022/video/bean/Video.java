@@ -91,6 +91,6 @@ public class Video {
     }
 
     public boolean isReady() {
-        return StringUtils.equals(status, VideoStatus.READY);
+        return StringUtils.equals(this.status, VideoStatus.READY);
     }
 }
