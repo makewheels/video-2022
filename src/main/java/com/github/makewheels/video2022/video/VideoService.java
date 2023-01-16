@@ -129,7 +129,7 @@ public class VideoService {
         video.setIsPermanent(false);
         video.setIsOriginalFileDeleted(false);
         video.setIsTranscodeFilesDeleted(false);
-        cacheService.updateVideo(video);
+        mongoTemplate.save(video);
 
         String videoId = video.getId();
         videoFile.setVideoId(videoId);
