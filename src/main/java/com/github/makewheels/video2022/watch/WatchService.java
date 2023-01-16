@@ -154,22 +154,6 @@ public class WatchService {
             watchInfo.setCoverUrl(cover.getAccessUrl());
         }
 
-        //拿m3u8播放地址
-        List<String> transcodeIds = video.getTranscodeIds();
-        List<Transcode> transcodeList = transcodeRepository.getByIds(transcodeIds);
-
-//        List<PlayUrl> playUrlList = new ArrayList<>(transcodeList.size());
-//        for (Transcode transcode : transcodeList) {
-//            PlayUrl playUrl = new PlayUrl();
-//            String resolution = transcode.getResolution();
-//            playUrl.setResolution(resolution);
-//            // 改成，调用我自己的getM3u8Content接口，获取m3u8内容
-//            String m3u8Url = getM3u8Url(videoId, clientId, sessionId, transcode.getId(), resolution);
-//            playUrl.setUrl(m3u8Url);
-//            playUrlList.add(playUrl);
-//    }
-//        watchInfo.setPlayUrlList(playUrlList);
-
         watchInfo.setVideoStatus(video.getStatus());
 
         //自适应m3u8地址
