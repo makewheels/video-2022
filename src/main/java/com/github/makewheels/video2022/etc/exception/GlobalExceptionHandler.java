@@ -41,11 +41,19 @@ public class GlobalExceptionHandler {
     @ResponseBody
     @ExceptionHandler(VideoException.class)
     public Result<Object> exceptionHandler(VideoException videoException) {
-        videoException.printStackTrace();
-        saveException(videoException);
+        //打印自定义错误码
         ErrorCode errorCode = videoException.getErrorCode();
+        int code = errorCode.getCode();
+        String value = errorCode.getValue();
+        log.error("code = " + code + ", value = " + value);
+
+        //打印错误堆栈
+        videoException.printStackTrace();
+
+        //把异常保存到数据库
+        saveException(videoException);
         String stackTrace = ExceptionUtils.getStackTrace(videoException);
-        return new Result<>(errorCode.getCode(), errorCode.getValue(), stackTrace);
+        return new Result<>(code, value, stackTrace);
     }
 
 }
