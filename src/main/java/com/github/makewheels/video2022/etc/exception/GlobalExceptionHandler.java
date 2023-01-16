@@ -23,9 +23,13 @@ public class GlobalExceptionHandler {
     /**
      * 保存Exception到数据库
      */
-    private void saveException(Exception e) {
+    private void saveException(Exception exception) {
         ExceptionLog exceptionLog = new ExceptionLog();
-        String stackTrace = ExceptionUtils.getStackTrace(e);
+        if (exception instanceof VideoException) {
+            VideoException videoException = (VideoException) exception;
+            exceptionLog.setErrorCode(videoException.getErrorCode());
+        }
+        String stackTrace = ExceptionUtils.getStackTrace(exception);
         exceptionLog.setStackTrace(stackTrace);
         mongoTemplate.save(exceptionLog);
     }
