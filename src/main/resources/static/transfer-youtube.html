@@ -41,7 +41,7 @@
 
     btn_submit.addEventListener("click", function () {
         axios.post("/video/create", {
-            "type": "YOUTUBE",
+            "videoType": "YOUTUBE",
             "youtubeUrl": input_youtubeUrl.value
         }, {
             headers: {"token": localStorage.token}
