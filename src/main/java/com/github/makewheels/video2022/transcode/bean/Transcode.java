@@ -45,7 +45,6 @@ public class Transcode {
 
     private String sourceKey;
     private String m3u8Key;
-    private String m3u8AccessUrl;
 
     private JSONObject result;
 

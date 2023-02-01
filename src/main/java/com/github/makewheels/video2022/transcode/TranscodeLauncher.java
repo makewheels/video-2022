@@ -115,7 +115,6 @@ public class TranscodeLauncher {
         String m3u8Key = PathUtil.getS3VideoPrefix(userId, videoId)
                 + "/transcode/" + targetResolution + "/" + transcodeId + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
-        transcode.setM3u8AccessUrl(aliyunOssAccessBaseUrl + m3u8Key);
         cacheService.updateTranscode(transcode);
         return transcode;
     }
