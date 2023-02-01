@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.*;
 import com.github.makewheels.video2022.etc.context.Context;
+import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.constants.FileStatus;
@@ -160,8 +161,10 @@ public class FileService {
      * 访问文件：重定向到阿里云对象存储
      */
     public Result<Void> access(
-            HttpServletRequest request, HttpServletResponse response, Context context,
-            String resolution, String fileId, String timestamp, String nonce, String sign) {
+            Context context, String resolution, String fileId, String timestamp, String nonce, String sign) {
+        HttpServletRequest request = RequestUtil.getRequest();
+        HttpServletResponse response = RequestUtil.getResponse();
+
         String videoId = context.getVideoId();
         String clientId = context.getClientId();
         String sessionId = context.getSessionId();

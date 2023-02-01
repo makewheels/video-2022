@@ -1530,3 +1530,6 @@ RequestUtil to DTO改造方案
 
 ## 2023年1月15日11:10:19
 引入cacheService，解决循环依赖
+
+## 2023年2月2日00:32:21
+RequestUtil获取request对象改造方案

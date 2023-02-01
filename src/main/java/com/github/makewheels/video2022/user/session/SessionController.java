@@ -16,7 +16,7 @@ public class SessionController {
     private SessionService sessionService;
 
     @GetMapping("requestSessionId")
-    public Result<JSONObject> requestSessionId(HttpServletRequest request) {
-        return sessionService.requestSessionId(request);
+    public Result<JSONObject> requestSessionId() {
+        return sessionService.requestSessionId();
     }
 }

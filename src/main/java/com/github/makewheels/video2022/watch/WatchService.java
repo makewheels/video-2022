@@ -2,18 +2,19 @@ package com.github.makewheels.video2022.watch;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.etc.context.Context;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
-import com.github.makewheels.video2022.redis.CacheService;
-import com.github.makewheels.video2022.utils.IpService;
+import com.github.makewheels.video2022.etc.context.Context;
+import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileRepository;
-import com.github.makewheels.video2022.transcode.bean.Transcode;
+import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
+import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.utils.DingService;
+import com.github.makewheels.video2022.utils.IpService;
 import com.github.makewheels.video2022.video.VideoRedisService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.Video;
@@ -66,7 +67,8 @@ public class WatchService {
     /**
      * 增加观看记录
      */
-    public Result<Void> addWatchLog(HttpServletRequest request, Context context, String videoStatus) {
+    public Result<Void> addWatchLog(Context context, String videoStatus) {
+        HttpServletRequest request = RequestUtil.getRequest();
         String videoId = context.getVideoId();
         String clientId = context.getClientId();
         String sessionId = context.getSessionId();
