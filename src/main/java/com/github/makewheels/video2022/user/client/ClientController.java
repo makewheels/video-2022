@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 @RestController()
 @RequestMapping("client")
@@ -18,7 +17,7 @@ public class ClientController {
 
     @CrossOrigin
     @GetMapping("requestClientId")
-    public Result<JSONObject> requestClientId(HttpServletRequest request) {
-        return clientService.requestClientId(request);
+    public Result<JSONObject> requestClientId() {
+        return clientService.requestClientId();
     }
 }

@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.user.client;
 
 import cn.hutool.json.JSONObject;
+import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.Result;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,8 @@ public class ClientService {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    public Result<JSONObject> requestClientId(HttpServletRequest request) {
+    public Result<JSONObject> requestClientId( ) {
+        HttpServletRequest request = RequestUtil.getRequest();
         Client client = new Client();
         client.setCreateTime(new Date());
         client.setIp(request.getRemoteAddr());

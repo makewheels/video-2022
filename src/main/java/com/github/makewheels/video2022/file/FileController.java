@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("file")
@@ -31,11 +29,10 @@ public class FileController {
 
     @GetMapping("access")
     public Result<Void> access(
-            HttpServletRequest request, HttpServletResponse response,
             @RequestParam String resolution, @RequestParam String fileId, @RequestParam String timestamp,
             @RequestParam String nonce, @RequestParam String sign) {
-        Context context = RequestUtil.toDTO(request, Context.class);
-        return fileService.access(request, response, context, resolution, fileId, timestamp, nonce, sign);
+        Context context = RequestUtil.toDTO(Context.class);
+        return fileService.access(context, resolution, fileId, timestamp, nonce, sign);
     }
 
 }

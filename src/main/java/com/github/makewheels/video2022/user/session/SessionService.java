@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.user.session;
 
 import cn.hutool.json.JSONObject;
+import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.Result;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,8 @@ public class SessionService {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    public Result<JSONObject> requestSessionId(HttpServletRequest request) {
+    public Result<JSONObject> requestSessionId() {
+        HttpServletRequest request = RequestUtil.getRequest();
         Session session = new Session();
         session.setCreateTime(new Date());
         session.setIp(request.getRemoteAddr());
