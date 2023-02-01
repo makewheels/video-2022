@@ -63,7 +63,7 @@ public class Video {
     private Date updateTime;
 
     @Indexed
-    private Date expireTime;
+    private Date expireTime;                    //过期时间
     @Indexed
     private Boolean isPermanent;                //是否是永久视频
     private Boolean isOriginalFileDeleted;      //源视频是否已删除

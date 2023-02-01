@@ -14,7 +14,7 @@ public class MediaInfo {
     private String videoCodec;
     private String audioCodec;
     private Integer bitrate;
-
+    private Long duration;      //视频时长，单位毫秒
 
     private JSONObject mediaInfo;
 }
