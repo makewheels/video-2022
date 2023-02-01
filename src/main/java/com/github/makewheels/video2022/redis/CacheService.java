@@ -28,9 +28,9 @@ public class CacheService {
         if (clazz.equals(Video.class)) {
             return RedisKey.videoCache(id);
         } else if (clazz.equals(Transcode.class)) {
-            return RedisKey.userCache(id);
-        } else if (clazz.equals(User.class)) {
             return RedisKey.transcodeCache(id);
+        } else if (clazz.equals(User.class)) {
+            return RedisKey.userCache(id);
         }
         return null;
     }

@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+/**
+ * 秘钥工具类
+ */
 @Slf4j
 public class PasswordUtil {
 
