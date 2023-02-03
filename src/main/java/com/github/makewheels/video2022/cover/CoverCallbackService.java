@@ -9,7 +9,7 @@ import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
-import com.github.makewheels.video2022.video.bean.Video;
+import com.github.makewheels.video2022.video.bean.video.Video;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;

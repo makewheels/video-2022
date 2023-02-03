@@ -17,7 +17,7 @@ import com.github.makewheels.video2022.utils.DingService;
 import com.github.makewheels.video2022.utils.IpService;
 import com.github.makewheels.video2022.video.VideoRedisService;
 import com.github.makewheels.video2022.video.VideoRepository;
-import com.github.makewheels.video2022.video.bean.Video;
+import com.github.makewheels.video2022.video.bean.video.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import lombok.extern.slf4j.Slf4j;

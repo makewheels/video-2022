@@ -12,7 +12,7 @@ import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.fileaccesslog.FileAccessLogService;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
-import com.github.makewheels.video2022.video.bean.CreateVideoDTO;
+import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;

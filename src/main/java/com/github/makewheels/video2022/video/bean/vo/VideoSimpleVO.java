@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.video.bean;
+package com.github.makewheels.video2022.video.bean.vo;
 
 import com.alibaba.fastjson.JSON;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class VideoDetailVO {
+public class VideoSimpleVO {
     private String id;
 
     private String userId;
@@ -19,7 +19,6 @@ public class VideoDetailVO {
     private String watchUrl;
     private String shortUrl;
     private String title;
-    private String description;
 
     private String type;
 
