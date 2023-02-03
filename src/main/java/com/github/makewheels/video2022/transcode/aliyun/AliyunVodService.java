@@ -6,7 +6,7 @@ import com.aliyun.teaopenapi.models.Config;
 import com.aliyun.vod20170321.Client;
 import com.aliyun.vod20170321.models.RegisterMediaRequest;
 import com.github.makewheels.video2022.file.FileService;
-import com.github.makewheels.video2022.video.bean.Video;
+import com.github.makewheels.video2022.video.bean.video.Video;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

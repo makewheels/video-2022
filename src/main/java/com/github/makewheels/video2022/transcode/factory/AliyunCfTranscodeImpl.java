@@ -6,7 +6,7 @@ import com.github.makewheels.video2022.transcode.TranscodeCallbackService;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeService;
-import com.github.makewheels.video2022.video.bean.Video;
+import com.github.makewheels.video2022.video.bean.video.Video;
 import com.github.makewheels.video2022.video.constants.AudioCodec;
 import com.github.makewheels.video2022.video.constants.VideoCodec;
 import com.github.makewheels.video2022.video.constants.VideoStatus;

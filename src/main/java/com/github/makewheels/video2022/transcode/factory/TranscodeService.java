@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.transcode.factory;
 
 import com.github.makewheels.video2022.transcode.bean.Transcode;
-import com.github.makewheels.video2022.video.bean.Video;
+import com.github.makewheels.video2022.video.bean.video.Video;
 import org.springframework.stereotype.Service;
 
 /**

@@ -2,10 +2,10 @@ package com.github.makewheels.video2022.video;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.etc.response.Result;
-import com.github.makewheels.video2022.video.bean.CreateVideoDTO;
-import com.github.makewheels.video2022.video.bean.Video;
-import com.github.makewheels.video2022.video.bean.VideoDetailVO;
-import com.github.makewheels.video2022.video.bean.VideoSimpleVO;
+import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
+import com.github.makewheels.video2022.video.bean.video.Video;
+import com.github.makewheels.video2022.video.bean.vo.VideoDetailVO;
+import com.github.makewheels.video2022.video.bean.vo.VideoSimpleVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
