@@ -1,5 +1,6 @@
-package com.github.makewheels.video2022.etc.id;
+package com.github.makewheels.video2022.id;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.github.makewheels.video2022.redis.RedisKey;
 import com.github.makewheels.video2022.redis.RedisService;
@@ -24,13 +25,13 @@ public class IdService {
     @Resource
     private RedisService redisService;
 
-    //以2022年1月1日零点作为起始时间偏移量
+    // shortId以2022年1月1日零点作为起始时间偏移量
     private final static long START_TIME_IN_SECONDS = 1640995200L;
 
     /**
-     * 生成id
+     * 生成shortId
      */
-    public String nextId() {
+    public String generateShortId() {
         //生成时间戳
         long currentSeconds = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
         long timestamp = currentSeconds - START_TIME_IN_SECONDS;
@@ -59,4 +60,10 @@ public class IdService {
         return result;
     }
 
+    /**
+     * 生成videoId
+     */
+    public String generateVideoId() {
+        return "VID" + IdUtil.nanoId();
+    }
 }

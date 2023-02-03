@@ -80,8 +80,9 @@ public class Video {
     public Video() {
         this.createTime = new Date();
         this.updateTime = new Date();
-        this.setStatus(VideoStatus.CREATED);
-        this.setProvider(S3Provider.ALIYUN_OSS);
+        this.status = VideoStatus.CREATED;
+        this.provider = S3Provider.ALIYUN_OSS;
+        this.watchCount = 0;
     }
 
     @Override

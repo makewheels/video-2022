@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.etc.exception.VideoException;
-import com.github.makewheels.video2022.etc.id.IdService;
+import com.github.makewheels.video2022.id.IdService;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
@@ -104,10 +104,9 @@ public class VideoService {
 
         String fileId = videoFile.getId();
         //创建 video
-        video.setWatchCount(0);
         video.setOriginalFileId(fileId);
         video.setUserId(userId);
-        String watchId = idService.nextId();
+        String watchId = idService.generateShortId();
         video.setWatchId(watchId);
         String watchUrl = internalBaseUrl + "/watch?v=" + watchId;
         video.setWatchUrl(watchUrl);
