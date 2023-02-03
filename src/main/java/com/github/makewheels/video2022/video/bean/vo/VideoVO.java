@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class VideoSimpleVO {
+public class VideoVO {
     private String id;
 
     private String userId;
@@ -19,6 +19,7 @@ public class VideoSimpleVO {
     private String watchUrl;
     private String shortUrl;
     private String title;
+    private String description;
 
     private String type;
 

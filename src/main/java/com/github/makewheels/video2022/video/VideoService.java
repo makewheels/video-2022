@@ -5,12 +5,12 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
-import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.exception.VideoException;
+import com.github.makewheels.video2022.etc.id.IdService;
+import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
-import com.github.makewheels.video2022.etc.id.IdService;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.user.UserHolder;
@@ -19,8 +19,7 @@ import com.github.makewheels.video2022.utils.Environment;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.video.Video;
-import com.github.makewheels.video2022.video.bean.vo.VideoDetailVO;
-import com.github.makewheels.video2022.video.bean.vo.VideoSimpleVO;
+import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +34,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -245,7 +243,7 @@ public class VideoService {
         }
         //判断视频是否属于当前用户
         if (!StringUtils.equals(userId, oldVideo.getUserId())) {
-            throw new VideoException(ErrorCode.FAIL);
+            throw new VideoException(ErrorCode.VIDEO_AND_UPLOADER_NOT_MATCH);
         }
 
         oldVideo.setTitle(newVideo.getTitle());
@@ -259,33 +257,16 @@ public class VideoService {
     /**
      * 获取视频详情
      */
-    public VideoDetailVO getVideoDetail(String videoId) {
+    public VideoVO getVideoDetail(String videoId) {
         Video video = cacheService.getVideo(videoId);
         if (video == null) {
             throw new VideoException(ErrorCode.VIDEO_NOT_EXIST);
         }
-        VideoDetailVO videoDetailVO = new VideoDetailVO();
-        BeanUtils.copyProperties(video, videoDetailVO);
-        videoDetailVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-        videoDetailVO.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
-        return videoDetailVO;
-    }
-
-    /**
-     * 分页获取指定userId视频列表
-     */
-    private List<VideoSimpleVO> getVideoList(String userId, int skip, int limit) {
-        List<Video> videos = videoRepository.getVideosByUserId(userId, skip, limit);
-
-        List<VideoSimpleVO> itemList = new ArrayList<>(videos.size());
-        for (Video video : videos) {
-            VideoSimpleVO item = new VideoSimpleVO();
-            BeanUtils.copyProperties(video, item);
-            item.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-            item.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
-            itemList.add(item);
-        }
-        return itemList;
+        VideoVO videoVO = new VideoVO();
+        BeanUtils.copyProperties(video, videoVO);
+        videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
+        videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
+        return videoVO;
     }
 
     /**

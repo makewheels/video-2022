@@ -14,6 +14,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 视频对象
+ */
 @Data
 @Document
 public class Video {
