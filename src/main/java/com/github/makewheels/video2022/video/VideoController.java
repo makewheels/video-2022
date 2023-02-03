@@ -5,12 +5,10 @@ import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.video.Video;
 import com.github.makewheels.video2022.video.bean.vo.VideoDetailVO;
-import com.github.makewheels.video2022.video.bean.vo.VideoSimpleVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 @RestController
 @RequestMapping("video")
@@ -53,15 +51,6 @@ public class VideoController {
     public Result<VideoDetailVO> getVideoDetail(@RequestParam String videoId) {
         VideoDetailVO videoDetail = videoService.getVideoDetail(videoId);
         return Result.ok(videoDetail);
-    }
-
-    /**
-     * 分页获取我的视频
-     */
-    @GetMapping("getMyVideoList")
-    public Result<List<VideoSimpleVO>> getMyVideoList(@RequestParam int skip, @RequestParam int limit) {
-        List<VideoSimpleVO> videoList = videoService.getMyVideoList(skip, limit);
-        return Result.ok(videoList);
     }
 
     /**
