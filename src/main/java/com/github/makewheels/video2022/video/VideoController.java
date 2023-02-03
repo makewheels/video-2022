@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.video.Video;
-import com.github.makewheels.video2022.video.bean.vo.VideoDetailVO;
+import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,8 +39,8 @@ public class VideoController {
      * 更新video信息
      */
     @PostMapping("updateInfo")
-    public Result<Void> updateInfo(@RequestBody Video updateVideo) {
-        videoService.updateVideo(updateVideo);
+    public Result<Void> updateInfo(@RequestBody Video newVideo) {
+        videoService.updateVideo(newVideo);
         return Result.ok();
     }
 
@@ -48,9 +48,9 @@ public class VideoController {
      * 根据videoId获取视频详情
      */
     @GetMapping("getVideoDetail")
-    public Result<VideoDetailVO> getVideoDetail(@RequestParam String videoId) {
-        VideoDetailVO videoDetail = videoService.getVideoDetail(videoId);
-        return Result.ok(videoDetail);
+    public Result<VideoVO> getVideoDetail(@RequestParam String videoId) {
+        VideoVO videoVO = videoService.getVideoDetail(videoId);
+        return Result.ok(videoVO);
     }
 
     /**
