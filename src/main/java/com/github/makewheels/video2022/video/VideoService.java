@@ -272,14 +272,6 @@ public class VideoService {
     }
 
     /**
-     * 分页获取我的视频列表
-     */
-    public List<VideoSimpleVO> getMyVideoList(int skip, int limit) {
-        String userId = UserHolder.get().getId();
-        return getVideoList(userId, skip, limit);
-    }
-
-    /**
      * 分页获取指定userId视频列表
      */
     private List<VideoSimpleVO> getVideoList(String userId, int skip, int limit) {
