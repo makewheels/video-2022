@@ -17,7 +17,7 @@ public class TranscodeFactory {
 
     //让spring把所有实现类都注入在这里，比如：key = aliyunMpsTranscodeImpl
     @Resource
-    private Map<String, TranscodeService> map = new ConcurrentHashMap<>();
+    private Map<String, TranscodeService> transcodeServiceMap = new ConcurrentHashMap<>();
 
     /**
      * 获取class名，用于注入的map，首字母小写
@@ -33,11 +33,11 @@ public class TranscodeFactory {
     public TranscodeService getService(String provider) {
         switch (provider) {
             case TranscodeProvider.ALIYUN_MPS:
-                return map.get(getClassName(AliyunMpsTranscodeImpl.class));
+                return transcodeServiceMap.get(getClassName(AliyunMpsTranscodeImpl.class));
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
-                return map.get(getClassName(AliyunCfTranscodeImpl.class));
+                return transcodeServiceMap.get(getClassName(AliyunCfTranscodeImpl.class));
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION_GPU:
-                return map.get(getClassName(AliyunCfGPUTranscodeImpl.class));
+                return transcodeServiceMap.get(getClassName(AliyunCfGPUTranscodeImpl.class));
         }
         throw new RuntimeException("未找到实现类，provider = " + provider);
     }
