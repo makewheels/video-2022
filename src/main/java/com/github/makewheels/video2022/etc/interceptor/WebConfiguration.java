@@ -49,6 +49,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/video/getOriginalFileDownloadUrl")
                 .excludePathPatterns("/file/access")
                 .excludePathPatterns("/statistics/getTrafficConsume")
+                .excludePathPatterns("/statistics/aggregateTrafficData")
         ;
     }
 }

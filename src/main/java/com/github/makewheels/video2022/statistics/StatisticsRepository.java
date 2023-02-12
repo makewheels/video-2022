@@ -2,13 +2,14 @@ package com.github.makewheels.video2022.statistics;
 
 import com.alibaba.fastjson.JSONObject;
 import org.bson.Document;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -112,5 +113,65 @@ public class StatisticsRepository {
             return 0L;
         }
         return document.getLong("totalSize");
+    }
+
+    /**
+     * GPT生成的代码：
+     * 作用：统计每天流量消耗，用于echarts的柱状图显示
+     * <p>
+     * var startDate = new Date("2022-01-01T00:00:00.000Z");
+     * var endDate = new Date("2023-05-07T23:59:59.999Z");
+     * <p>
+     * var pipeline = [
+     * {
+     * $match: {
+     * createTime: {
+     * $gte: startDate,
+     * $lte: endDate
+     * }
+     * }
+     * },
+     * {
+     * $group: {
+     * _id: {
+     * $dateToString: { format: "%Y-%m-%d", date: "$createTime" }
+     * },
+     * totalSize: { $sum: "$size" }
+     * }
+     * },
+     * {
+     * $sort: { "_id": 1 }
+     * }
+     * ];
+     * <p>
+     * db.fileAccessLog.aggregate(pipeline).forEach(function(doc) {
+     * print(doc._id + ": " + doc.totalSize + " bytes");
+     * });
+     */
+    public List<Document> aggregateTrafficData(Date startDate, Date endDate) {
+//        MatchOperation match = Aggregation.match(Criteria.where("createTime")
+//                .gte(startDate).lte(endDate));
+//        GroupOperation group = Aggregation.group("$dateToString(createTime, '%Y-%m-%d')")
+//                .sum("size").as("totalSize");
+//        SortOperation sort = Aggregation.sort(Sort.Direction.ASC, "_id");
+//        Aggregation aggregation = Aggregation.newAggregation(match, group, sort);
+//        AggregationResults<Document> result = mongoTemplate.aggregate(
+//                aggregation, "fileAccessLog", Document.class);
+//        return result.getMappedResults();
+
+
+        Criteria criteria = Criteria.where("createTime").gte(startDate).lte(endDate);
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(criteria),
+                Aggregation.group("dateFormat(createTime, '%Y-%m-%d')")
+                        .sum("size").as("totalSize"),
+                Aggregation.sort(Sort.Direction.ASC, "_id")
+        );
+
+        AggregationResults<Document> results = mongoTemplate.aggregate(
+                aggregation, "fileAccessLog", Document.class);
+        return results.getMappedResults();
+
     }
 }
