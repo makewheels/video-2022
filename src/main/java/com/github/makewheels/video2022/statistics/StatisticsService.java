@@ -1,13 +1,9 @@
 package com.github.makewheels.video2022.statistics;
 
 import cn.hutool.core.io.FileUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.etc.response.Result;
-import com.github.makewheels.video2022.statistics.bean.EchartsBar;
-import com.github.makewheels.video2022.statistics.bean.Series;
-import com.github.makewheels.video2022.statistics.bean.XAxis;
-import com.github.makewheels.video2022.statistics.bean.YAxis;
-import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.stereotype.Service;
@@ -38,16 +34,24 @@ public class StatisticsService {
     /**
      * 把mongodb转为echarts所需格式
      */
-    public static EchartsBar toEchartsBarData(List<Document> documents) {
-        EchartsBar echartsBar = new EchartsBar();
+    public JSONObject toEchartsBarData(List<Document> documents) {
+        List<Document> modifiableDocuments = new ArrayList<>(documents);
+        modifiableDocuments.sort((d1, d2) -> {
+            String date1 = d1.getString("_id");
+            String date2 = d2.getString("_id");
+            return date1.compareTo(date2);
+        });
+        documents = modifiableDocuments;
 
-        XAxis xAxis = new XAxis();
-        List<String> xAxisData = new ArrayList<>();
+        JSONObject echartsBar = new JSONObject();
 
-        YAxis yAxis = new YAxis();
-        Series series = new Series();
+        JSONObject xAxis = new JSONObject();
+        JSONArray xAxisData = new JSONArray();
 
-        List<Long> seriesData = new ArrayList<>();
+        JSONObject yAxis = new JSONObject();
+        JSONObject series = new JSONObject();
+
+        JSONArray seriesData = new JSONArray();
 
         /**
          * { _id: '2023-01-06', totalSize: 179589256 }
@@ -57,19 +61,20 @@ public class StatisticsService {
          */
         for (Document document : documents) {
             xAxisData.add(document.getString("_id"));
-            seriesData.add(document.getLong("totalSize"));
+            Long totalSize = document.getLong("totalSize");
+            seriesData.add(totalSize);
         }
 
-        xAxis.setData(xAxisData);
-        xAxis.setType("category");
+        xAxis.put("data", xAxisData);
+        xAxis.put("type", "category");
 
-        yAxis.setType("value");
-        series.setData(seriesData);
-        series.setType("bar");
+        yAxis.put("type", "value");
+        series.put("data", seriesData);
+        series.put("type", "bar");
 
-        echartsBar.setXAxis(xAxis);
-        echartsBar.setYAxis(yAxis);
-        echartsBar.setSeries(Lists.newArrayList(series));
+        echartsBar.put("xAxis", xAxis);
+        echartsBar.put("yAxis", yAxis);
+        echartsBar.put("series", series);
 
         return echartsBar;
     }
@@ -77,9 +82,9 @@ public class StatisticsService {
     /**
      * Echarts所需数据：按天统计流量消耗
      */
-    public Result<EchartsBar> aggregateTrafficData(Date startDate, Date endDate) {
+    public Result<JSONObject> aggregateTrafficData(Date startDate, Date endDate) {
         List<Document> documents = statisticsRepository.aggregateTrafficData(startDate, endDate);
-        EchartsBar echartsBar = toEchartsBarData(documents);
+        JSONObject echartsBar = toEchartsBarData(documents);
         return Result.ok(echartsBar);
     }
 

@@ -166,6 +166,5 @@ public class StatisticsRepository {
         AggregationResults<Document> results = mongoTemplate.aggregate(
                 aggregation, "fileAccessLog", Document.class);
         return results.getMappedResults();
-
     }
 }
