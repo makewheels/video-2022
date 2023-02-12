@@ -49,6 +49,8 @@ public class StatisticsService {
         JSONArray xAxisData = new JSONArray();
 
         JSONObject yAxis = new JSONObject();
+        JSONArray yAxisData = new JSONArray();
+
         JSONObject series = new JSONObject();
 
         JSONArray seriesData = new JSONArray();
@@ -62,6 +64,7 @@ public class StatisticsService {
         for (Document document : documents) {
             xAxisData.add(document.getString("_id"));
             Long totalSize = document.getLong("totalSize");
+            yAxisData.add(FileUtil.readableFileSize(totalSize));
             seriesData.add(totalSize);
         }
 
@@ -69,6 +72,8 @@ public class StatisticsService {
         xAxis.put("type", "category");
 
         yAxis.put("type", "value");
+        yAxis.put("data", yAxisData);
+
         series.put("data", seriesData);
         series.put("type", "bar");
 
