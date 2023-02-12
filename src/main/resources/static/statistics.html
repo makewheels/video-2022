@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Echarts Bar Example</title>
+    <!-- 引入 echarts.js -->
+    <script src="https://cdn.staticfile.org/echarts/4.8.0/echarts.min.js"></script>
+    <!-- 引入 axios -->
+    <script src="https://cdn.staticfile.org/axios/0.19.2/axios.min.js"></script>
+</head>
+
+<body>
+<!-- 查询最近7天按钮 -->
+<button id="query7Days">查询最近7天</button>
+<!-- 查询最近30天按钮 -->
+<button id="query30Days">查询最近30天</button>
+<!-- 开始时间输入框 -->
+<input type="text" id="startTime" placeholder="开始时间">
+<!-- 结束时间输入框 -->
+<input type="text" id="endTime" placeholder="结束时间">
+
+<div id="bar-chart" style="width: 600px; height: 400px;"></div>
+</body>
+
+<script>
+    var query7Days = document.getElementById('query7Days');
+    query7Days.addEventListener('click', function () {
+        loadData(getNDaysAgoAtMidnight(7), new Date());
+    });
+    var query30Days = document.getElementById('query30Days');
+    query30Days.addEventListener('click', function () {
+        loadData(getNDaysAgoAtMidnight(30), new Date());
+    });
+
+    var barChart = echarts.init(document.getElementById('bar-chart'));
+
+    //获取n天前的子夜
+    function getNDaysAgoAtMidnight(n) {
+        const today = new Date();
+        const nDaysAgo = new Date(today.getTime() - (n * 24 * 60 * 60 * 1000));
+        nDaysAgo.setHours(0, 0, 0, 0);
+        return nDaysAgo;
+    }
+
+    //加载echarts数据
+    function loadData(startTime, endTime) {
+        axios.get('/statistics/aggregateTrafficData?startTime='
+            + startTime.getTime() + '&endTime=' + endTime.getTime())
+            .then(function (response) {
+                console.log(response.data.data)
+                barChart.setOption(response.data.data);
+            })
+    }
+
+    loadData(getNDaysAgoAtMidnight(7), new Date());
+
+</script>
+</html>
