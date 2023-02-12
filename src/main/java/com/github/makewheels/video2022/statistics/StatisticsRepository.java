@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSONObject;
 import org.bson.Document;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.*;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.DateOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
@@ -149,24 +151,16 @@ public class StatisticsRepository {
      * });
      */
     public List<Document> aggregateTrafficData(Date startDate, Date endDate) {
-//        MatchOperation match = Aggregation.match(Criteria.where("createTime")
-//                .gte(startDate).lte(endDate));
-//        GroupOperation group = Aggregation.group("$dateToString(createTime, '%Y-%m-%d')")
-//                .sum("size").as("totalSize");
-//        SortOperation sort = Aggregation.sort(Sort.Direction.ASC, "_id");
-//        Aggregation aggregation = Aggregation.newAggregation(match, group, sort);
-//        AggregationResults<Document> result = mongoTemplate.aggregate(
-//                aggregation, "fileAccessLog", Document.class);
-//        return result.getMappedResults();
-
-
         Criteria criteria = Criteria.where("createTime").gte(startDate).lte(endDate);
 
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(criteria),
-                Aggregation.group("dateFormat(createTime, '%Y-%m-%d')")
-                        .sum("size").as("totalSize"),
-                Aggregation.sort(Sort.Direction.ASC, "_id")
+                Aggregation.project()
+                        .and(DateOperators.DateToString.dateOf("createTime")
+                                .toString("%Y-%m-%d")).as("date")
+                        .and("size").as("size"),
+                Aggregation.group("date").sum("size").as("totalSize"),
+                Aggregation.sort(Sort.Direction.ASC, "date")
         );
 
         AggregationResults<Document> results = mongoTemplate.aggregate(
