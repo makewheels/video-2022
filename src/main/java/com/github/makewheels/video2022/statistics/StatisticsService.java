@@ -111,6 +111,7 @@ public class StatisticsService {
          * }
          */
         JSONObject label = new JSONObject();
+        label.put("show", true);
         label.put("position", "top");
 //        label.put("fontSize", 14);
 //        label.put("color", "#000");
