@@ -64,6 +64,24 @@
 
 <img id="img_wechatQrcode" height="200px" width="200px" alt="微信小程序分享码"/>
 
+<div id="progress-container">
+    <div id="progress-bar"></div>
+</div>
+
+<style>
+    #progress-container {
+        width: 100%;
+        height: 20px;
+        background-color: #f2f2f2;
+    }
+
+    #progress-bar {
+        width: 0%;
+        height: 100%;
+        background-color: #4caf50;
+    }
+</style>
+
 <script>
     let input_file = document.getElementById("input_file");
 
@@ -184,6 +202,7 @@
             progress: function (p, checkpoint) {
                 let percent = p * 100;
                 text_progress.innerText = percent.toFixed(2) + " %";
+                updateProgress(p);
             }
         });
 
@@ -206,6 +225,14 @@
             });
         });
     }
+
+    //更新进度
+    function updateProgress(state) {
+        let progress = state.loaded / state.total;
+        progress = progress * 100;
+        document.getElementById("progress-bar").style.width = `${progress}%`;
+    }
+
 </script>
 
 </body>
