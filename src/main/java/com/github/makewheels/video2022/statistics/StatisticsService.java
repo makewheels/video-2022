@@ -33,6 +33,31 @@ public class StatisticsService {
 
     /**
      * 把mongodb转为echarts所需格式
+     * <p>
+     * {
+     * title: {
+     * text: '柱状图'
+     * },
+     * tooltip: {},
+     * legend: {
+     * data:['销量']
+     * },
+     * xAxis: {
+     * data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
+     * },
+     * yAxis: {},
+     * series: [{
+     * name: '销量',
+     * type: 'bar',
+     * data: [5, 20, 36, 10, 10, 20],
+     * label: {
+     * show: true,
+     * position: 'top',
+     * fontSize: 14,
+     * color: '#000'
+     * }
+     * }]
+     * };
      */
     public JSONObject toEchartsBarData(List<Document> documents) {
         List<Document> modifiableDocuments = new ArrayList<>(documents);
@@ -76,6 +101,21 @@ public class StatisticsService {
 
         series.put("data", seriesData);
         series.put("type", "bar");
+
+        /**
+         * label: {
+         *     show: true,
+         *     position: 'top',
+         *     fontSize: 14,
+         *     color: '#000'
+         * }
+         */
+        JSONObject label = new JSONObject();
+        label.put("show", true);
+        label.put("position", "top");
+//        label.put("fontSize", 14);
+//        label.put("color", "#000");
+        series.put("label", label);
 
         echartsBar.put("xAxis", xAxis);
         echartsBar.put("yAxis", yAxis);
