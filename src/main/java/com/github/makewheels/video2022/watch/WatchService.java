@@ -99,6 +99,7 @@ public class WatchService {
         //增加video观看次数
         if (videoStatus.equals(VideoStatus.READY)) {
             videoRepository.addWatchCount(videoId);
+            //刷新Redis缓存
             video.setWatchCount(video.getWatchCount() + 1);
             cacheService.updateVideo(video);
         }
