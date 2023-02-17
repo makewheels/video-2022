@@ -95,12 +95,13 @@ public class WatchService {
         watchLog.setSessionId(sessionId);
 
         mongoTemplate.save(watchLog);
-        //增加video观看次数，只有视频就绪状态才增加播放量，其它状态只记录观看记录，不统计播放量
+        Video video = cacheService.getVideo(videoId);
+        //增加video观看次数
         if (videoStatus.equals(VideoStatus.READY)) {
             videoRepository.addWatchCount(videoId);
+            video.setWatchCount(video.getWatchCount() + 1);
+            cacheService.updateVideo(video);
         }
-
-        Video video = cacheService.getVideo(videoId);
 
         //推送钉钉
         String province = ipResult.getString("province");
