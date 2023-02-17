@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @RestController
 @RequestMapping("video")
@@ -51,6 +52,14 @@ public class VideoController {
     public Result<VideoVO> getVideoDetail(@RequestParam String videoId) {
         VideoVO videoVO = videoService.getVideoDetail(videoId);
         return Result.ok(videoVO);
+    }
+
+    /**
+     * 分页获取我的视频
+     */
+    @GetMapping("getMyVideoList")
+    public Result<List<VideoVO>> getMyVideoList(@RequestParam int skip, @RequestParam int limit) {
+        return videoService.getMyVideoList(skip, limit);
     }
 
     /**

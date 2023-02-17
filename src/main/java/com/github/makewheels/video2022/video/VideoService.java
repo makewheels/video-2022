@@ -6,11 +6,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.etc.exception.VideoException;
-import com.github.makewheels.video2022.id.IdService;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
+import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
+import com.github.makewheels.video2022.id.IdService;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.user.UserHolder;
@@ -34,6 +35,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -266,6 +268,31 @@ public class VideoService {
         videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
         videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
         return videoVO;
+    }
+
+    /**
+     * 分页获取指定userId视频列表
+     */
+    private List<VideoVO> getVideoList(String userId, int skip, int limit) {
+        List<Video> videos = videoRepository.getVideosByUserId(userId, skip, limit);
+        List<VideoVO> itemList = new ArrayList<>(videos.size());
+        for (Video video : videos) {
+            VideoVO item = new VideoVO();
+            BeanUtils.copyProperties(video, item);
+            item.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
+            item.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
+            itemList.add(item);
+        }
+        return itemList;
+    }
+
+    /**
+     * 分页获取我的视频列表
+     */
+    public Result<List<VideoVO>> getMyVideoList(int skip, int limit) {
+        String userId = UserHolder.get().getId();
+        List<VideoVO> videoVOList = getVideoList(userId, skip, limit);
+        return Result.ok(videoVOList);
     }
 
     /**
