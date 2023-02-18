@@ -51,7 +51,8 @@ public class JavaFunctionLineCounterTest {
                 allFunctionLineCount.merge(fullFunctionName, functionLinesCount, Integer::sum);
             }
         }
-        List<Map.Entry<String, Integer>> functionLineCountList = new ArrayList<>(allFunctionLineCount.entrySet());
+        List<Map.Entry<String, Integer>> functionLineCountList
+                = new ArrayList<>(allFunctionLineCount.entrySet());
         functionLineCountList.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
 
         // 输出行数前三多的函数
@@ -62,7 +63,8 @@ public class JavaFunctionLineCounterTest {
             int lastDotIndex = fullFunctionName.lastIndexOf(".");
             String className = fullFunctionName.substring(0, lastDotIndex);
             String functionName = fullFunctionName.substring(lastDotIndex + 1);
-            System.out.printf("Class: %-20s Function: %-30s Lines: %d%n", className, functionName, functionLinesCount);
+            System.out.printf("Class: %-20s Function: %-30s Lines: %d%n",
+                    className, functionName, functionLinesCount);
         }
     }
 
