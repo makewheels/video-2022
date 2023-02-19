@@ -28,7 +28,7 @@ public class PasswordDecipher implements BeanFactoryPostProcessor, Ordered {
     public void postProcessBeanFactory(@NotNull ConfigurableListableBeanFactory beanFactory) {
         MutablePropertySources propertySources = environment.getPropertySources();
 
-        String springProfileActive = environment.getProperty("spring.profile.active");
+        String springProfileActive = environment.getProperty("spring.profiles.active");
         Map<String, String> plainTextMap = PasswordUtil.getPlainTextMap(springProfileActive);
 
         plainTextMap.forEach((key, value) -> {

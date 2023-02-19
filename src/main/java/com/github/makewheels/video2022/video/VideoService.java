@@ -67,7 +67,7 @@ public class VideoService {
     private IdService idService;
 
 
-    @Value("${spring.profile.active}")
+    @Value("${spring.profiles.active}")
     private String environment;
 
     private String getShortUrl(String fullUrl) {
