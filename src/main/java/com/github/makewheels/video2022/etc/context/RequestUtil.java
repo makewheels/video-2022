@@ -9,6 +9,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -65,5 +66,13 @@ public class RequestUtil {
     public static HttpServletResponse getResponse() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         return ((ServletRequestAttributes) requestAttributes).getResponse();
+    }
+
+    public static HttpSession getSession() {
+        return getRequest().getSession();
+    }
+
+    public static String getSessionId() {
+        return getSession().getId();
     }
 }

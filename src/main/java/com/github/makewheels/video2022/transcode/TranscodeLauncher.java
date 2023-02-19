@@ -32,7 +32,7 @@ import java.util.List;
 public class TranscodeLauncher {
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
-    @Value("${spring.profile.active}")
+    @Value("${spring.profiles.active}")
     private String environment;
 
     @Resource
