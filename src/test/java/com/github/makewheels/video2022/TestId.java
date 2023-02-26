@@ -13,8 +13,8 @@ public class TestId {
 
     @Test
     public void test() {
-        for (int i = 0; i < 3; i++) {
-            System.out.println(idService.generateShortId());
+        for (int i = 0; i < 50; i++) {
+            idService.getVideoId();
         }
     }
 }
