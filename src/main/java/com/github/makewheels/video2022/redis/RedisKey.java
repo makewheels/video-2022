@@ -11,7 +11,8 @@ public class RedisKey {
     private static final String VIDEO = ROOT + ":video";
     private static final String TRANSCODE = ROOT + ":transcode";
 
-    private static final String INCREASE_ID = ROOT + ":increaseId";
+    private static final String INCREASE_SHORT_ID = ROOT + ":increaseShortId";
+    private static final String INCREASE_LONG_ID = ROOT + ":increaseLongId";
 
     public static String watchInfo(String watchId) {
         return VIDEO + ":watchInfo:" + watchId;
@@ -42,8 +43,11 @@ public class RedisKey {
         return TRANSCODE + ":id:" + id;
     }
 
-    public static String increaseId() {
-        return INCREASE_ID + ":" + DateUtil.formatDate(new Date());
+    public static String increaseShortId() {
+        return INCREASE_SHORT_ID + ":" + DateUtil.formatDate(new Date());
     }
 
+    public static String increaseLongId(long timestamp) {
+        return INCREASE_LONG_ID + ":" + timestamp;
+    }
 }

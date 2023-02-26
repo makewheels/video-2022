@@ -108,7 +108,7 @@ public class VideoService {
         //创建 video
         video.setOriginalFileId(fileId);
         video.setUserId(userId);
-        String watchId = idService.generateShortId();
+        String watchId = idService.nextShortId();
         video.setWatchId(watchId);
         String watchUrl = internalBaseUrl + "/watch?v=" + watchId;
         video.setWatchUrl(watchUrl);
