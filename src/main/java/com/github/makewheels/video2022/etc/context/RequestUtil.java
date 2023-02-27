@@ -75,4 +75,8 @@ public class RequestUtil {
     public static String getSessionId() {
         return getSession().getId();
     }
+
+    public static String getHeader(String name) {
+        return getRequest().getHeader(name);
+    }
 }
