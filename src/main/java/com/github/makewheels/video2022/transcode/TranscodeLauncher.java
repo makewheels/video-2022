@@ -159,7 +159,7 @@ public class TranscodeLauncher {
         SubmitMediaInfoJobResponseBody body = aliyunMpsService.getMediaInfo(sourceKey).getBody();
         SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJob job
                 = body.getMediaInfoJob();
-        log.info("阿里云MPS获取视频，jobId ={}，信息返回：{}", job.getJobId(), JSON.toJSONString(job));
+        log.info("阿里云MPS获取视频媒体信息，jobId ={}，接口返回：{}", job.getJobId(), JSON.toJSONString(job));
 
         //设置mediaInfo
         video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(job)));
@@ -172,7 +172,14 @@ public class TranscodeLauncher {
         SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreams
                 streams = properties.getStreams();
         video.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
-        video.setAudioCodec(streams.getAudioStreamList().getAudioStream().get(0).getCodecName());
+
+        // 设置音频流，注意可能没有音频流
+        List<SubmitMediaInfoJobResponseBody
+                .SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreamsAudioStreamListAudioStream>
+                audioStream = streams.getAudioStreamList().getAudioStream();
+        if (audioStream != null) {
+            video.setAudioCodec(audioStream.get(0).getCodecName());
+        }
     }
 
     /**
