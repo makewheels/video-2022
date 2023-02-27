@@ -12,6 +12,6 @@ public class ShortIdController {
 
     @GetMapping("/{shortId}")
     public String toWatchPage(@PathVariable("shortId") String shortId) {
-        return "redirect:" + baseUrl + "watch?v=" + shortId;
+        return "redirect:" + baseUrl + "/watch?v=" + shortId;
     }
 }
