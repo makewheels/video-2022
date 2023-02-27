@@ -16,6 +16,7 @@ import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.video.Video;
 import com.github.makewheels.video2022.video.constants.VideoCodec;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -177,7 +178,7 @@ public class TranscodeLauncher {
         List<SubmitMediaInfoJobResponseBody
                 .SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreamsAudioStreamListAudioStream>
                 audioStream = streams.getAudioStreamList().getAudioStream();
-        if (audioStream != null) {
+        if (CollectionUtils.isNotEmpty(audioStream)) {
             video.setAudioCodec(audioStream.get(0).getCodecName());
         }
     }
