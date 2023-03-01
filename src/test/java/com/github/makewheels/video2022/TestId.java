@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.github.makewheels.video2022.utils.IdService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +15,8 @@ public class TestId {
     @Test
     public void test() {
         for (int i = 0; i < 50; i++) {
-            idService.getVideoId();
+            System.out.println(idService.getVideoId());
+            ThreadUtil.sleep(50);
         }
     }
 }

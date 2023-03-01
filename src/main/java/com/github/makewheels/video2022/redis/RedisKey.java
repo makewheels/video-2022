@@ -47,7 +47,7 @@ public class RedisKey {
         return INCREASE_SHORT_ID + ":" + DateUtil.formatDate(new Date());
     }
 
-    public static String increaseLongId(long timestamp) {
-        return INCREASE_LONG_ID + ":" + timestamp;
+    public static String increaseLongId(long timeUnit) {
+        return INCREASE_LONG_ID + ":" + timeUnit;
     }
 }

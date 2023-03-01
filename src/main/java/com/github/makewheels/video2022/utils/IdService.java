@@ -4,6 +4,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.github.makewheels.video2022.redis.RedisKey;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -19,32 +20,38 @@ import java.time.ZoneOffset;
 @Service
 @Slf4j
 public class IdService {
+    @Value("${spring.profiles.active}")
+    private String environment;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    public synchronized String nextLongId() {
-        //生成时间戳，以2022年1月1日作为起始时间
-        long timestamp = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) - 1640995200L;
-        timestamp /= 1000;
+    public synchronized String nextId(
+            Duration duration, int serialNumberLength, int randomLength) {
+        // 时间戳，当前时间
+        long currentTime = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli();
+        // 起始时间
+        long startTime = LocalDateTime.of(2023, 1, 1, 0, 0, 0)
+                .toInstant(ZoneOffset.UTC).toEpochMilli();
+        long timeUnit = (currentTime - startTime) / duration.toMillis();
 
-        //生成序列号
-        Long redisIncreaseId = stringRedisTemplate.opsForValue().increment(RedisKey.increaseLongId(timestamp));
-        stringRedisTemplate.expire(RedisKey.increaseShortId(), Duration.ofSeconds(2));
+        // 生成序列号
+        String redisKey = RedisKey.increaseLongId(timeUnit);
+        Long redisIncreaseId = stringRedisTemplate.opsForValue().increment(redisKey);
+        stringRedisTemplate.expire(redisKey, duration.plus(duration));
 
-        String increaseId = new DecimalFormat(StringUtils.repeat("0", 7))
+        String serialNumber = new DecimalFormat(StringUtils.repeat("0", serialNumberLength))
                 .format(redisIncreaseId);
 
-        //生成随机数结尾
-        String random = RandomUtil.randomNumbers(5);
+        // 生成随机数
+        String random = RandomUtil.randomNumbers(randomLength);
+        log.info("生成id: " + timeUnit + "-" + serialNumber + "-" + random);
 
-        //拼接返回
-        long decimal = Long.parseLong(timestamp + increaseId + random);
-        String result = Long.toString(decimal, Character.MAX_RADIX).toUpperCase();
+        // 拼接返回
+        return timeUnit + serialNumber + random;
+    }
 
-        log.info("生成id：format = {}, decimal = {}, result = {}",
-                timestamp + "-" + increaseId + "-" + random, decimal, result);
-
-        return result;
+    public synchronized String nextLongId() {
+        return nextId(Duration.ofSeconds(4), 5, 3);
     }
 
     /**
@@ -80,7 +87,21 @@ public class IdService {
         return result;
     }
 
+    public String getEnvironmentPrefix() {
+        switch (environment) {
+            case Environment.PRODUCTION:
+                return "P";
+            case Environment.PREVIEW:
+                return "V";
+            case Environment.DEVELOPMENT:
+                return "D";
+        }
+        return "";
+    }
+
     public String getVideoId() {
-        return "VID" + nextLongId();
+        String id = nextLongId();
+        String result = Long.toString(Long.parseLong(id), 16).toUpperCase();
+        return "VID" + getEnvironmentPrefix() + result;
     }
 }
