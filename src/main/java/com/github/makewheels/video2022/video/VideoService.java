@@ -11,7 +11,7 @@ import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
-import com.github.makewheels.video2022.id.IdService;
+import com.github.makewheels.video2022.utils.IdService;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.user.UserHolder;

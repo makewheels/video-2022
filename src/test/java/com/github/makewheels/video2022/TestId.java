@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022;
 
-import com.github.makewheels.video2022.id.IdService;
+import com.github.makewheels.video2022.utils.IdService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 

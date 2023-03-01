@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.id;
+package com.github.makewheels.video2022.utils;
 
 import cn.hutool.core.util.RandomUtil;
 import com.github.makewheels.video2022.redis.RedisKey;
