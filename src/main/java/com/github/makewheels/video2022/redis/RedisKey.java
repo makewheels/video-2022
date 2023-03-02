@@ -30,7 +30,6 @@ public class RedisKey {
         return USER + ":token:" + token;
     }
 
-
     public static String userCache(String id) {
         return USER + ":id:" + id;
     }
