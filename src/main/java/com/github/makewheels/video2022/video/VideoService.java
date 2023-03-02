@@ -290,8 +290,7 @@ public class VideoService {
      * 分页获取我的视频列表
      */
     public Result<List<VideoVO>> getMyVideoList(int skip, int limit) {
-        String userId = UserHolder.get().getId();
-        List<VideoVO> videoVOList = getVideoList(userId, skip, limit);
+        List<VideoVO> videoVOList = getVideoList(UserHolder.getUserId(), skip, limit);
         return Result.ok(videoVOList);
     }
 
