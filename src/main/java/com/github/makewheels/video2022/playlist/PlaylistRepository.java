@@ -30,4 +30,5 @@ public class PlaylistRepository {
     public List<PlaylistItem> getPlaylistItemList(List<String> ids) {
         return mongoTemplate.find(Query.query(Criteria.where("id").in(ids)), PlaylistItem.class);
     }
+
 }

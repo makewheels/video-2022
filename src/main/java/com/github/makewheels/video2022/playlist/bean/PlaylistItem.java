@@ -16,4 +16,9 @@ public class PlaylistItem {
     private String owner;
     private Date createTime;
     private Date updateTime;
+
+    public PlaylistItem() {
+        this.createTime = new Date();
+        this.updateTime = new Date();
+    }
 }
