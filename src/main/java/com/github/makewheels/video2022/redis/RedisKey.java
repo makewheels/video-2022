@@ -10,6 +10,8 @@ public class RedisKey {
     private static final String USER = ROOT + ":user";
     private static final String VIDEO = ROOT + ":video";
     private static final String TRANSCODE = ROOT + ":transcode";
+    private static final String PLAYLIST = ROOT + ":playlist";
+    private static final String PLAYLIST_ITEM = ROOT + ":playlistItem";
 
     private static final String INCREASE_SHORT_ID = ROOT + ":increaseShortId";
     private static final String INCREASE_LONG_ID = ROOT + ":increaseLongId";
@@ -40,6 +42,14 @@ public class RedisKey {
 
     public static String transcodeCache(String id) {
         return TRANSCODE + ":id:" + id;
+    }
+
+    public static String playlistCache(String id) {
+        return PLAYLIST + ":id:" + id;
+    }
+
+    public static String playlistItemCache(String id) {
+        return PLAYLIST_ITEM + ":id:" + id;
     }
 
     public static String increaseShortId() {

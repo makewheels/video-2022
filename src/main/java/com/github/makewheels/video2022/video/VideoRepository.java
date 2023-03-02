@@ -17,6 +17,13 @@ public class VideoRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
+    /**
+     * 根据id批量查
+     */
+    public List<Video> getByIdList(List<String> idList) {
+        return mongoTemplate.find(Query.query(Criteria.where("id").in(idList)), Video.class);
+    }
+
     public Video getByWatchId(String watchId) {
         return mongoTemplate.findOne(Query.query(Criteria.where("watchId").is(watchId)), Video.class);
     }

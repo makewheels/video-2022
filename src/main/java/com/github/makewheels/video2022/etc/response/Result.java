@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.etc.response;
 
 import lombok.Data;
+
 @Data
 public class Result<T> {
 
@@ -57,6 +58,10 @@ public class Result<T> {
 
     public static <T> Result<T> error(ErrorCode code, T data) {
         return new Result<T>(code, data);
+    }
+
+    public static <T> Result<T> error(String message) {
+        return new Result<T>(ErrorCode.FAIL, message);
     }
 
 }

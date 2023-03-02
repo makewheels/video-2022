@@ -1,6 +1,8 @@
 package com.github.makewheels.video2022.redis;
 
 import com.alibaba.fastjson.JSON;
+import com.github.makewheels.video2022.playlist.bean.Playlist;
+import com.github.makewheels.video2022.playlist.bean.PlaylistItem;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.video.Video;
@@ -31,6 +33,10 @@ public class CacheService {
             return RedisKey.transcodeCache(id);
         } else if (clazz.equals(User.class)) {
             return RedisKey.userCache(id);
+        } else if (clazz.equals(Playlist.class)) {
+            return RedisKey.playlistCache(id);
+        } else if (clazz.equals(PlaylistItem.class)) {
+            return RedisKey.playlistItemCache(id);
         }
         return null;
     }
@@ -59,14 +65,6 @@ public class CacheService {
         return getByClass(Video.class, id);
     }
 
-    public User getUser(String id) {
-        return getByClass(User.class, id);
-    }
-
-    public Transcode getTranscode(String id) {
-        return getByClass(Transcode.class, id);
-    }
-
     public void updateVideo(Video video) {
         String id = video.getId();
         if (id == null) return;
@@ -79,6 +77,10 @@ public class CacheService {
         mongoTemplate.save(video);
     }
 
+    public User getUser(String id) {
+        return getByClass(User.class, id);
+    }
+
     public void updateUser(User user) {
         String id = user.getId();
         if (id == null) return;
@@ -87,9 +89,34 @@ public class CacheService {
         mongoTemplate.save(user);
     }
 
+    public Transcode getTranscode(String id) {
+        return getByClass(Transcode.class, id);
+    }
+
     public void updateTranscode(Transcode transcode) {
         String redisKey = getRedisKey(Transcode.class, transcode.getId());
         redisService.del(redisKey);
         mongoTemplate.save(transcode);
     }
+
+    public Playlist getPlaylist(String id) {
+        return getByClass(Playlist.class, id);
+    }
+
+    public void updatePlaylist(Playlist playlist) {
+        String redisKey = getRedisKey(Playlist.class, playlist.getId());
+        redisService.del(redisKey);
+        mongoTemplate.save(playlist);
+    }
+
+    public PlaylistItem getPlaylistItem(String id) {
+        return getByClass(PlaylistItem.class, id);
+    }
+
+    public void updatePlaylistItem(PlaylistItem playlistItem) {
+        String redisKey = getRedisKey(PlaylistItem.class, playlistItem.getId());
+        redisService.del(redisKey);
+        mongoTemplate.save(playlistItem);
+    }
+
 }

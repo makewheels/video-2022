@@ -49,7 +49,8 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = videoException.getErrorCode();
         int code = errorCode.getCode();
         String value = errorCode.getValue();
-        log.error("code = " + code + ", value = " + value);
+        String message = videoException.getMessage();
+        log.error("code = " + code + ", value = " + value + ", message = " + message);
 
         //打印错误堆栈
         videoException.printStackTrace();
@@ -57,7 +58,7 @@ public class GlobalExceptionHandler {
         //把异常保存到数据库
         saveException(videoException);
         String stackTrace = ExceptionUtils.getStackTrace(videoException);
-        return new Result<>(code, value, stackTrace);
+        return new Result<>(code, message, stackTrace);
     }
 
 }
