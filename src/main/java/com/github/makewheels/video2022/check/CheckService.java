@@ -2,6 +2,7 @@ package com.github.makewheels.video2022.check;
 
 import com.github.makewheels.video2022.etc.exception.VideoException;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
+import com.github.makewheels.video2022.playlist.bean.IdBean;
 import com.github.makewheels.video2022.playlist.bean.PlaylistItem;
 import com.github.makewheels.video2022.redis.CacheService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -83,13 +84,13 @@ public class CheckService {
         checkVideoExist(videoId);
 
         // 查播放列表里的items
-        List<String> itemIdList = cacheService.getPlaylist(playlistId).getItemIdList();
+        List<IdBean> idBeanList = cacheService.getPlaylist(playlistId).getIdBeanList();
         List<PlaylistItem> itemList = new ArrayList<>();
         if (CollectionUtils.isEmpty(itemList)) {
             return false;
         }
-        for (String itemId : itemIdList) {
-            PlaylistItem playlistItem = cacheService.getPlaylistItem(itemId);
+        for (IdBean idBean : idBeanList) {
+            PlaylistItem playlistItem = cacheService.getPlaylistItem(idBean.getPlaylistItemId());
             if (playlistItem != null) {
                 itemList.add(playlistItem);
             }
