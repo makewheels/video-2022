@@ -21,4 +21,5 @@ public class PlaylistItem {
         this.createTime = new Date();
         this.updateTime = new Date();
     }
+
 }

@@ -81,7 +81,7 @@ public class PlaylistService {
         idBeanList.add(0, idBean);
 
         // 更新Playlist
-        log.info("给Playlist新增item = {}", JSON.toJSONString(playlist));
+        log.info("给Playlist添加item = {}", JSON.toJSONString(playlist));
         cacheService.updatePlaylist(playlist);
     }
 
