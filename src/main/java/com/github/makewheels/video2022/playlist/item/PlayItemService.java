@@ -85,7 +85,6 @@ public class PlayItemService {
 
         // 执行移动
         movePlayItemService.movePlayItem(movePlayItemRequest);
-        Playlist playlist = playlistRepository.getPlaylist(playlistId);
     }
 
 }
