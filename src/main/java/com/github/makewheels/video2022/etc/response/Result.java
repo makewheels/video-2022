@@ -4,11 +4,8 @@ import lombok.Data;
 
 @Data
 public class Result<T> {
-
     private int code;
-
     private String message;
-
     private T data;
 
     public Result() {
@@ -16,26 +13,26 @@ public class Result<T> {
         this.message = ErrorCode.SUCCESS.getValue();
     }
 
-    public Result(ErrorCode rc) {
-        this.code = rc.getCode();
-        this.message = rc.getValue();
+    public Result(ErrorCode errorCode) {
+        this.code = errorCode.getCode();
+        this.message = errorCode.getValue();
     }
 
-    public Result(int code, String message) {
-        this.code = code;
-        this.message = message;
-        this.data = null;
-    }
-
-    public Result(ErrorCode rc, T data) {
-        this.code = rc.getCode();
-        this.message = rc.getValue();
+    public Result(ErrorCode errorCode, T data) {
+        this.code = errorCode.getCode();
+        this.message = errorCode.getValue();
         this.data = data;
     }
 
     public Result(ErrorCode code, String message) {
         this.code = code.getCode();
         this.message = message;
+    }
+
+    public Result(ErrorCode code, String message, T data) {
+        this.code = code.getCode();
+        this.message = message;
+        this.data = data;
     }
 
     public Result(int code, String message, T data) {
@@ -48,8 +45,20 @@ public class Result<T> {
         return new Result<>(ErrorCode.SUCCESS);
     }
 
+    public static Result<Void> ok(String message) {
+        return new Result<>(ErrorCode.SUCCESS, message);
+    }
+
     public static <T> Result<T> ok(T data) {
         return new Result<>(ErrorCode.SUCCESS, data);
+    }
+
+    public static <T> Result<T> ok(String message, T data) {
+        return new Result<>(ErrorCode.SUCCESS, message, data);
+    }
+
+    public static <T> Result<T> ok(T data, String message) {
+        return new Result<>(ErrorCode.SUCCESS, message, data);
     }
 
     public static <T> Result<T> error(ErrorCode code) {

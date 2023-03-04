@@ -36,10 +36,11 @@ public class GlobalExceptionHandler {
 
     @ResponseBody
     @ExceptionHandler(Exception.class)
-    public Result<Void> exceptionHandler(Exception exception) {
+    public Result<Object> exceptionHandler(Exception exception) {
         exception.printStackTrace();
         saveException(exception);
-        return new Result<>(ErrorCode.FAIL.getCode(), exception.getMessage());
+        String stackTrace = ExceptionUtils.getStackTrace(exception);
+        return new Result<>(ErrorCode.FAIL.getCode(), exception.getMessage(), stackTrace);
     }
 
     @ResponseBody

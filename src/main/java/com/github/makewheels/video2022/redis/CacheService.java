@@ -1,8 +1,8 @@
 package com.github.makewheels.video2022.redis;
 
 import com.alibaba.fastjson.JSON;
-import com.github.makewheels.video2022.playlist.bean.Playlist;
-import com.github.makewheels.video2022.playlist.bean.PlaylistItem;
+import com.github.makewheels.video2022.playlist.list.bean.Playlist;
+import com.github.makewheels.video2022.playlist.item.PlayItem;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.video.Video;
@@ -35,7 +35,7 @@ public class CacheService {
             return RedisKey.userCache(id);
         } else if (clazz.equals(Playlist.class)) {
             return RedisKey.playlistCache(id);
-        } else if (clazz.equals(PlaylistItem.class)) {
+        } else if (clazz.equals(PlayItem.class)) {
             return RedisKey.playlistItemCache(id);
         }
         return null;
@@ -97,26 +97,6 @@ public class CacheService {
         String redisKey = getRedisKey(Transcode.class, transcode.getId());
         redisService.del(redisKey);
         mongoTemplate.save(transcode);
-    }
-
-    public Playlist getPlaylist(String id) {
-        return getByClass(Playlist.class, id);
-    }
-
-    public void updatePlaylist(Playlist playlist) {
-        String redisKey = getRedisKey(Playlist.class, playlist.getId());
-        redisService.del(redisKey);
-        mongoTemplate.save(playlist);
-    }
-
-    public PlaylistItem getPlaylistItem(String id) {
-        return getByClass(PlaylistItem.class, id);
-    }
-
-    public void updatePlaylistItem(PlaylistItem playlistItem) {
-        String redisKey = getRedisKey(PlaylistItem.class, playlistItem.getId());
-        redisService.del(redisKey);
-        mongoTemplate.save(playlistItem);
     }
 
 }
