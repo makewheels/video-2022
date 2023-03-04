@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @Document
@@ -29,19 +28,4 @@ public class Playlist {
         this.updateTime = new Date();
     }
 
-    public List<String> getPlaylistItemIds() {
-        return idBeanList.stream().map(IdBean::getPlaylistItemId).collect(Collectors.toList());
-    }
-
-    public List<String> getVideoIds() {
-        return idBeanList.stream().map(IdBean::getVideoId).collect(Collectors.toList());
-    }
-
-    public boolean containsPlaylistItemId(String playlistItemId) {
-        return getVideoIds().contains(playlistItemId);
-    }
-
-    public boolean containsVideoId(String videoId) {
-        return getVideoIds().contains(videoId);
-    }
 }
