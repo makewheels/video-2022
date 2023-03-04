@@ -1,9 +1,14 @@
 package com.github.makewheels.video2022.check;
 
 import com.github.makewheels.video2022.etc.exception.VideoException;
-import com.github.makewheels.video2022.playlist.bean.IdBean;
-import com.github.makewheels.video2022.playlist.bean.Playlist;
+import com.github.makewheels.video2022.playlist.PlaylistRepository;
+import com.github.makewheels.video2022.playlist.item.request.delete.DeletePlayItemMode;
+import com.github.makewheels.video2022.playlist.list.bean.IdBean;
+import com.github.makewheels.video2022.playlist.list.bean.Playlist;
+import com.github.makewheels.video2022.playlist.item.request.add.AddMode;
 import com.github.makewheels.video2022.redis.CacheService;
+import com.github.makewheels.video2022.video.constants.Visibility;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -17,6 +22,8 @@ import java.util.stream.Collectors;
 public class CheckService {
     @Resource
     private CacheService cacheService;
+    @Resource
+    private PlaylistRepository playlistRepository;
 
     /**
      * 检查用户是否存在
@@ -48,15 +55,17 @@ public class CheckService {
             throw new VideoException("视频不属于user, videoId = " + videoId + ", " +
                     "ownerId = " + ownerId + ", userId = " + userId);
         }
-
     }
 
     /**
      * 检查播放列表是否存在
      */
     public void checkPlaylistExist(String playlistId) {
-        if (cacheService.getPlaylist(playlistId) == null) {
+        Playlist playlist = playlistRepository.getPlaylist(playlistId);
+        if (playlist == null) {
             throw new VideoException("播放列表不存在, playlistId = " + playlistId);
+        } else if (playlist.getIsDelete()) {
+            throw new VideoException("播放列表已删除, playlistId = " + playlistId);
         }
     }
 
@@ -67,7 +76,7 @@ public class CheckService {
         checkPlaylistExist(playlistId);
         checkUserExist(userId);
 
-        String ownerId = cacheService.getPlaylist(playlistId).getOwnerId();
+        String ownerId = playlistRepository.getPlaylist(playlistId).getOwnerId();
         if (!ownerId.equals(userId)) {
             throw new VideoException("playlist不属于user, playlistId = " + playlistId + ", " +
                     "ownerId = " + ownerId + ", userId = " + userId);
@@ -92,28 +101,63 @@ public class CheckService {
         return getVideoIds(playlist).contains(videoId);
     }
 
-    public boolean isVideoBelongsToPlaylist(String videoId, String playlistId) {
+    /**
+     * 判断播放列表是否属于user
+     */
+    public boolean isVideoBelongsToPlaylist(String playlistId, String videoId) {
         checkPlaylistExist(playlistId);
         checkVideoExist(videoId);
 
-        Playlist playlist = cacheService.getPlaylist(playlistId);
+        Playlist playlist = playlistRepository.getPlaylist(playlistId);
         return containsVideoId(playlist, videoId);
     }
 
     /**
-     * 检查商品是否属于不播放列表
+     * 检查视频是否属于不播放列表
      */
-    public void checkVideoNotBelongsToPlaylist(String videoId, String playlistId) {
-        if (isVideoBelongsToPlaylist(videoId, playlistId)) {
-            throw new VideoException("视频已经在播放列表里, videoId = " + videoId + ", " +
+    public void checkVideoNotBelongToPlaylist(String playlistId, List<String> videoIdList) {
+        for (String videoId : videoIdList) {
+            if (isVideoBelongsToPlaylist(playlistId, videoId)) {
+                throw new VideoException("视频已经在播放列表里, videoId = " + videoId + ", " +
+                        "playlistId = " + playlistId);
+            }
+        }
+    }
+
+    /**
+     * 检查视频是否属于播放列表
+     */
+    public void checkVideoBelongToPlaylist(String playlistId, String videoId) {
+        if (!isVideoBelongsToPlaylist(playlistId, videoId)) {
+            throw new VideoException("视频不在播放列表里, videoId = " + videoId + ", " +
                     "playlistId = " + playlistId);
         }
     }
 
-    public void checkVideoBelongsToPlaylist(String videoId, String playlistId) {
-        if (!isVideoBelongsToPlaylist(videoId, playlistId)) {
-            throw new VideoException("视频不在播放列表里, videoId = " + videoId + ", " +
-                    "playlistId = " + playlistId);
+    /**
+     * 检查visibility是否合法
+     */
+    public void checkVisibility(String visibility) {
+        if (!StringUtils.equalsAny(visibility, Visibility.ALL)) {
+            throw new VideoException("visibility不合法, visibility = " + visibility);
+        }
+    }
+
+    /**
+     * 检查addMode是否合法
+     */
+    public void checkAddMode(String addMode) {
+        if (!StringUtils.equalsAny(addMode, AddMode.ALL)) {
+            throw new VideoException("addMode不合法, addMode = " + addMode);
+        }
+    }
+
+    /**
+     * 检查deleteMode是否合法
+     */
+    public void checkDeletePlayItemMode(String deleteMode) {
+        if (!StringUtils.equalsAny(deleteMode, DeletePlayItemMode.ALL)) {
+            throw new VideoException("deleteMode不合法, deleteMode = " + deleteMode);
         }
     }
 }
