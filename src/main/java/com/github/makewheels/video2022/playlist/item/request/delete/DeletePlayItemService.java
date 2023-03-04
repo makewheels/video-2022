@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.etc.exception.VideoException;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
 import com.github.makewheels.video2022.playlist.item.PlayItem;
-import com.github.makewheels.video2022.playlist.list.bean.IdBean;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -26,27 +25,11 @@ public class DeletePlayItemService {
     private PlaylistRepository playlistRepository;
 
     /**
-     * 从数据库里把items全捞出来
-     */
-    private List<PlayItem> getAllPlayItems(Playlist playlist) {
-        List<String> playItemIdList = playlist.getIdBeanList().stream()
-                .map(IdBean::getPlaylistItemId).collect(Collectors.toList());
-        List<PlayItem> playItemList = playlistRepository.getPlayItemList(playItemIdList);
-        //把playItemList根据playItemIdList出现顺序排序
-        playItemList.sort((o1, o2) -> {
-            int index1 = playItemIdList.indexOf(o1.getId());
-            int index2 = playItemIdList.indexOf(o2.getId());
-            return index1 - index2;
-        });
-        return playItemList;
-    }
-
-    /**
      * 找出要删除的播放列表items
      */
     private List<PlayItem> getDeletePlayItems(
             Playlist playlist, DeletePlayItemRequest deletePlayItemRequest) {
-        List<PlayItem> playItemList = getAllPlayItems(playlist);
+        List<PlayItem> playItemList = playlistRepository.getPlayItemList(playlist);
 
         // 根据模式找出要删除的items
         String deleteMode = deletePlayItemRequest.getDeleteMode();
