@@ -1,12 +1,14 @@
 package com.github.makewheels.video2022.check;
 
 import com.github.makewheels.video2022.etc.exception.VideoException;
-import com.github.makewheels.video2022.playlist.PlaylistRepository;
+import com.github.makewheels.video2022.playlist.bean.IdBean;
 import com.github.makewheels.video2022.playlist.bean.Playlist;
 import com.github.makewheels.video2022.redis.CacheService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 接口校验，如果校验不通过，抛异常
@@ -15,8 +17,6 @@ import javax.annotation.Resource;
 public class CheckService {
     @Resource
     private CacheService cacheService;
-    @Resource
-    private PlaylistRepository playlistRepository;
 
     /**
      * 检查用户是否存在
@@ -74,12 +74,30 @@ public class CheckService {
         }
     }
 
+    public List<String> getPlaylistItemIds(Playlist playlist) {
+        return playlist.getIdBeanList().stream()
+                .map(IdBean::getPlaylistItemId).collect(Collectors.toList());
+    }
+
+    public List<String> getVideoIds(Playlist playlist) {
+        return playlist.getIdBeanList().stream()
+                .map(IdBean::getVideoId).collect(Collectors.toList());
+    }
+
+    public boolean containsPlaylistItemId(Playlist playlist, String playlistItemId) {
+        return getVideoIds(playlist).contains(playlistItemId);
+    }
+
+    public boolean containsVideoId(Playlist playlist, String videoId) {
+        return getVideoIds(playlist).contains(videoId);
+    }
+
     public boolean isVideoBelongsToPlaylist(String videoId, String playlistId) {
         checkPlaylistExist(playlistId);
         checkVideoExist(videoId);
 
         Playlist playlist = cacheService.getPlaylist(playlistId);
-        return playlist.containsVideoId(videoId);
+        return containsVideoId(playlist, videoId);
     }
 
     /**
