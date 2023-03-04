@@ -19,6 +19,8 @@ public class PlayItem {
     private String videoId;
     private String owner;
 
+    private Boolean isDelete = false;
+
     private Date createTime;
     private Date updateTime;
 
