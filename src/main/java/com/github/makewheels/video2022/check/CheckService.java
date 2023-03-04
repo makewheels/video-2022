@@ -2,7 +2,8 @@ package com.github.makewheels.video2022.check;
 
 import com.github.makewheels.video2022.etc.exception.VideoException;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
-import com.github.makewheels.video2022.playlist.item.request.delete.DeletePlayItemMode;
+import com.github.makewheels.video2022.playlist.item.request.delete.DeleteMode;
+import com.github.makewheels.video2022.playlist.item.request.move.MoveMode;
 import com.github.makewheels.video2022.playlist.list.bean.IdBean;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.playlist.item.request.add.AddMode;
@@ -156,8 +157,17 @@ public class CheckService {
      * 检查deleteMode是否合法
      */
     public void checkDeletePlayItemMode(String deleteMode) {
-        if (!StringUtils.equalsAny(deleteMode, DeletePlayItemMode.ALL)) {
+        if (!StringUtils.equalsAny(deleteMode, DeleteMode.ALL)) {
             throw new VideoException("deleteMode不合法, deleteMode = " + deleteMode);
+        }
+    }
+
+    /**
+     * 检查moveMode是否合法
+     */
+    public void checkMoveMode(String moveMode) {
+        if (!StringUtils.equalsAny(moveMode, MoveMode.ALL)) {
+            throw new VideoException("mode不合法, mode = " + moveMode);
         }
     }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 public class AddPlayItemRequest {
     private String playlistId;
+
     private List<String> videoIdList;
     private String addMode;
 }

@@ -14,10 +14,13 @@ public class DeletePlayItemRequest {
     private String deleteMode;
 
     private List<String> videoIdList;
-    private List<String> playlistItemIdList;
+    private List<String> playItemIdList;
+
+    private Integer singleIndex;
     private List<Integer> indexList;
     private Integer startIndex;
     private Integer endIndex;
+
     private Date startTime;
     private Date endTime;
 

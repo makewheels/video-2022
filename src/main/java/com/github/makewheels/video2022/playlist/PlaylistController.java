@@ -106,7 +106,7 @@ public class PlaylistController {
     @PostMapping("addPlaylistItem")
     public Result<Void> addPlaylistItem(
             @RequestBody AddPlayItemRequest addPlayItemRequest) {
-        playItemService.addVideoListToPlaylist(addPlayItemRequest);
+        playItemService.addVideoToPlaylist(addPlayItemRequest);
         return Result.ok("视频已添加到播放列表");
     }
 
@@ -116,7 +116,7 @@ public class PlaylistController {
     @PostMapping("deletePlaylistItem")
     public Result<Void> deletePlaylistItem(
             @RequestBody DeletePlayItemRequest deletePlayItemRequest) {
-        playItemService.deletePlaylistItem(deletePlayItemRequest);
+        playItemService.deletePlayItem(deletePlayItemRequest);
         return Result.ok("视频已从播放列表移除");
     }
 
@@ -126,7 +126,7 @@ public class PlaylistController {
     @PostMapping("movePlaylistItem")
     public Result<Void> movePlaylistItem(
             @RequestBody MovePlayItemRequest movePlayItemRequest) {
-        playItemService.movePlaylistItem(movePlayItemRequest);
+        playItemService.movePlayItem(movePlayItemRequest);
         return Result.ok("视频位置已移动");
     }
 
