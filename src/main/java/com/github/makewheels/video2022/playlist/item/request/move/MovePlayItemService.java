@@ -68,7 +68,6 @@ public class MovePlayItemService {
         // 根据模式移动
         PlayItem targetPlayItem = findTargetPlayItem(movePlayItemRequest, playItemList);
 
-
     }
 
 }
