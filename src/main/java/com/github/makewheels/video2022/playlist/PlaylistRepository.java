@@ -30,6 +30,10 @@ public class PlaylistRepository {
         return mongoTemplate.findById(id, Playlist.class);
     }
 
+    public boolean isPlaylistExist(String id) {
+        return mongoTemplate.exists(Query.query(Criteria.where("id").is(id)), Playlist.class);
+    }
+
     public PlayItem getPlayItem(Playlist playlist, String videoId) {
         return mongoTemplate.findOne(Query.query(Criteria.where("id").is(playlist.getId())
                 .and("videoId").is(videoId)), PlayItem.class);

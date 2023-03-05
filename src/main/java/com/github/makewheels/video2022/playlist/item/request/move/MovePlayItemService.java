@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.playlist.item.request.move;
 
+import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.etc.exception.VideoException;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
 import com.github.makewheels.video2022.playlist.item.PlayItem;
@@ -8,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -55,9 +58,8 @@ public class MovePlayItemService {
     public void movePlayItem(MovePlayItemRequest movePlayItemRequest) {
         String playlistId = movePlayItemRequest.getPlaylistId();
         String videoId = movePlayItemRequest.getVideoId();
-        String moveMode = movePlayItemRequest.getMoveMode();
 
-        // 查数据库
+        // 查playlist
         Playlist playlist = playlistRepository.getPlaylist(playlistId);
         List<PlayItem> playItemList = playlistRepository.getPlayItemList(playlist);
 
@@ -65,8 +67,20 @@ public class MovePlayItemService {
         PlayItem sourcePlayItem = playItemList.stream()
                 .filter(item -> item.getVideoId().equals(videoId))
                 .findFirst().orElse(null);
-        // 根据模式移动
+
+        // 根据模式找到targetPlayItem
         PlayItem targetPlayItem = findTargetPlayItem(movePlayItemRequest, playItemList);
+        // 执行交换
+        log.info("移动之前playItemList: {}", JSON.toJSONString(playItemList));
+        Collections.swap(playItemList,
+                playItemList.indexOf(sourcePlayItem),
+                playItemList.indexOf(targetPlayItem));
+        log.info("移动之后playItemList: {}", JSON.toJSONString(playItemList));
+
+        // 保存到数据库
+        playlist.setUpdateTime(new Date());
+        playlistRepository.save(playlist);
+
 
     }
 
