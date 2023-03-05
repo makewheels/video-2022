@@ -2,11 +2,11 @@ package com.github.makewheels.video2022.check;
 
 import com.github.makewheels.video2022.etc.exception.VideoException;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
+import com.github.makewheels.video2022.playlist.item.request.add.AddMode;
 import com.github.makewheels.video2022.playlist.item.request.delete.DeleteMode;
 import com.github.makewheels.video2022.playlist.item.request.move.MoveMode;
 import com.github.makewheels.video2022.playlist.list.bean.IdBean;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
-import com.github.makewheels.video2022.playlist.item.request.add.AddMode;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.video.VideoRepository;
@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -90,17 +91,35 @@ public class CheckService {
         }
     }
 
-    public List<String> getPlaylistItemIds(Playlist playlist) {
-        return playlist.getIdBeanList().stream()
-                .map(IdBean::getPlaylistItemId).collect(Collectors.toList());
+    public void checkPlaylistCanDelete(String playlistId, String userId) {
+        checkUserExist(userId);
+
+        Playlist playlist = playlistRepository.getPlaylist(playlistId);
+        if (playlist == null) {
+            throw new VideoException("播放列表不存在, playlistId = " + playlistId);
+        }
+        String ownerId = playlist.getOwnerId();
+        if (!ownerId.equals(userId)) {
+            throw new VideoException("playlist不属于user, playlistId = " + playlistId + ", " +
+                    "ownerId = " + ownerId + ", userId = " + userId);
+        }
+
+        if (!playlist.getIsDelete()) {
+            throw new VideoException("播放列表状态正常, 不能恢复, playlistId = " + playlistId);
+        }
+
     }
 
     public List<String> getVideoIds(Playlist playlist) {
-        return playlist.getIdBeanList().stream()
+        List<IdBean> idBeanList = playlist.getIdBeanList();
+        if (idBeanList == null) {
+            return new ArrayList<>();
+        }
+        return idBeanList.stream()
                 .map(IdBean::getVideoId).collect(Collectors.toList());
     }
 
-    public boolean containsPlaylistItemId(Playlist playlist, String playlistItemId) {
+    public boolean containsPlayItemId(Playlist playlist, String playlistItemId) {
         return getVideoIds(playlist).contains(playlistItemId);
     }
 
@@ -138,6 +157,18 @@ public class CheckService {
         if (!isVideoBelongsToPlaylist(playlistId, videoId)) {
             throw new VideoException("视频不在播放列表里, videoId = " + videoId + ", " +
                     "playlistId = " + playlistId);
+        }
+    }
+
+    /**
+     * 检查视频是否属于播放列表
+     */
+    public void checkVideoBelongToPlaylist(String playlistId, List<String> videoIdList) {
+        for (String videoId : videoIdList) {
+            if (!isVideoBelongsToPlaylist(playlistId, videoId)) {
+                throw new VideoException("视频不在播放列表里, videoId = " + videoId + ", " +
+                        "playlistId = " + playlistId);
+            }
         }
     }
 

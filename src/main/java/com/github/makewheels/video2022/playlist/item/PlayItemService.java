@@ -37,7 +37,7 @@ public class PlayItemService {
     /**
      * 把视频添加到播放列表
      */
-    public void addVideoToPlaylist(AddPlayItemRequest addPlayItemRequest) {
+    public Playlist addVideoToPlaylist(AddPlayItemRequest addPlayItemRequest) {
         String playlistId = addPlayItemRequest.getPlaylistId();
 
         // 校验
@@ -47,6 +47,7 @@ public class PlayItemService {
 
         // 执行添加
         addPlayItemService.addVideoToPlaylist(addPlayItemRequest);
+        return playlistRepository.getPlaylist(playlistId);
     }
 
     /**
@@ -56,7 +57,9 @@ public class PlayItemService {
         // 通用校验
         String userId = UserHolder.getUserId();
         String playlistId = deletePlayItemRequest.getPlaylistId();
+
         checkService.checkPlaylistOwner(playlistId, userId);
+        checkService.checkVideoBelongToPlaylist(playlistId, deletePlayItemRequest.getVideoIdList());
         String deleteMode = deletePlayItemRequest.getDeleteMode();
         checkService.checkDeletePlayItemMode(deleteMode);
 

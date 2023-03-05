@@ -7,6 +7,7 @@ import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.playlist.list.request.CreatePlaylistRequest;
 import com.github.makewheels.video2022.playlist.list.request.UpdatePlaylistRequest;
 import com.github.makewheels.video2022.user.UserHolder;
+import com.github.makewheels.video2022.video.constants.Visibility;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,7 @@ public class PlaylistService {
         playlist.setTitle(title);
         playlist.setDescription(createPlaylistRequest.getDescription());
         playlist.setOwnerId(UserHolder.getUserId());
+        playlist.setVisibility(Visibility.PUBLIC);
         playlistRepository.save(playlist);
         log.info("创建播放列表, title = {}, playlist = {}", title, JSON.toJSONString(playlist));
         return playlist;
@@ -79,7 +81,7 @@ public class PlaylistService {
      */
     public void recoverPlaylist(String playlistId) {
         String userId = UserHolder.getUserId();
-        checkService.checkPlaylistOwner(playlistId, userId);
+        checkService.checkPlaylistCanDelete(playlistId, userId);
         Playlist playlist = playlistRepository.getPlaylist(playlistId);
         playlist.setIsDelete(false);
         playlistRepository.save(playlist);
