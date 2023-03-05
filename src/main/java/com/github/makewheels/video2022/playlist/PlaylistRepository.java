@@ -82,8 +82,10 @@ public class PlaylistRepository {
      * 分页获取指定userId的播放列表
      */
     public List<Playlist> getPlaylistByPage(String userId, int skip, int limit) {
-        return mongoTemplate.find(Query.query(Criteria.where("ownerId").is(userId))
-                .skip(skip).limit(limit), Playlist.class);
+        return mongoTemplate.find(
+                Query.query(Criteria.where("ownerId").is(userId)
+                                .and("isDeleted").is(false))
+                        .skip(skip).limit(limit), Playlist.class);
     }
 
     /**

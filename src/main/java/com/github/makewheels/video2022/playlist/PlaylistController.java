@@ -56,7 +56,7 @@ public class PlaylistController {
     @GetMapping("deletePlaylist")
     public Result<Void> deletePlaylist(@RequestParam String playlistId) {
         playlistService.deletePlaylist(playlistId);
-        return Result.ok("播放列表已删除");
+        return Result.ok("播放列表删除成功");
     }
 
     /**
@@ -65,7 +65,7 @@ public class PlaylistController {
     @GetMapping("recoverPlaylist")
     public Result<Void> recoverPlaylist(@RequestParam String playlistId) {
         playlistService.recoverPlaylist(playlistId);
-        return Result.ok("播放列表已恢复");
+        return Result.ok("播放列表恢复成功");
     }
 
     /**
@@ -104,10 +104,10 @@ public class PlaylistController {
      * 添加视频到播放列表
      */
     @PostMapping("addPlaylistItem")
-    public Result<Void> addPlaylistItem(
+    public Result<Playlist> addPlaylistItem(
             @RequestBody AddPlayItemRequest addPlayItemRequest) {
-        playItemService.addVideoToPlaylist(addPlayItemRequest);
-        return Result.ok("视频已添加到播放列表");
+        Playlist playlist = playItemService.addVideoToPlaylist(addPlayItemRequest);
+        return Result.ok(playlist, "视频已成功添加到播放列表");
     }
 
     /**
@@ -117,7 +117,7 @@ public class PlaylistController {
     public Result<Void> deletePlaylistItem(
             @RequestBody DeletePlayItemRequest deletePlayItemRequest) {
         playItemService.deletePlayItem(deletePlayItemRequest);
-        return Result.ok("视频已从播放列表移除");
+        return Result.ok("视频已成功从播放列表移除");
     }
 
     /**

@@ -81,7 +81,6 @@ public class MovePlayItemService {
         playlist.setUpdateTime(new Date());
         playlistRepository.save(playlist);
 
-
     }
 
 }

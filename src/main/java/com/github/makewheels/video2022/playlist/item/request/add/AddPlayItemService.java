@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,6 +55,7 @@ public class AddPlayItemService {
         }
 
         // 更新Playlist
+        playlist.setUpdateTime(new Date());
         playlistRepository.save(playlist);
         log.info("给Playlist添加item = {}", JSON.toJSONString(playlist));
     }
@@ -63,9 +65,11 @@ public class AddPlayItemService {
      */
     public void addVideoToPlaylist(AddPlayItemRequest addPlayItemRequest) {
         List<String> videoIdList = addPlayItemRequest.getVideoIdList();
+        String playlistId = addPlayItemRequest.getPlaylistId();
+        String addMode = addPlayItemRequest.getAddMode();
         for (String videoId : videoIdList) {
-            addSingleVideoToPlaylist(addPlayItemRequest.getPlaylistId(), videoId,
-                    UserHolder.getUserId(), addPlayItemRequest.getAddMode());
+            String userId = UserHolder.getUserId();
+            addSingleVideoToPlaylist(playlistId, videoId, userId, addMode);
         }
     }
 }
