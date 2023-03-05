@@ -84,6 +84,8 @@ public class PlayItemService {
         checkService.checkMoveMode(moveMode);
 
         // 执行移动
+        log.info("移动视频在播放列表中的位置, movePlayItemRequest = {}",
+                JSON.toJSONString(movePlayItemRequest));
         movePlayItemService.movePlayItem(movePlayItemRequest);
     }
 

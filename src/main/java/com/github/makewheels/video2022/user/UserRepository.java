@@ -13,6 +13,10 @@ public class UserRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
+    public boolean isUserExist(String id) {
+        return mongoTemplate.exists(Query.query(Criteria.where("id").is(id)), User.class);
+    }
+
     public User getByPhone(String phone) {
         Query query = Query.query(Criteria.where("phone").is(phone));
         return mongoTemplate.findOne(query, User.class);

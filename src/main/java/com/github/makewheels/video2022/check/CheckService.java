@@ -8,6 +8,8 @@ import com.github.makewheels.video2022.playlist.list.bean.IdBean;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.playlist.item.request.add.AddMode;
 import com.github.makewheels.video2022.redis.CacheService;
+import com.github.makewheels.video2022.user.UserRepository;
+import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.constants.Visibility;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -24,13 +26,17 @@ public class CheckService {
     @Resource
     private CacheService cacheService;
     @Resource
+    private UserRepository userRepository;
+    @Resource
+    private VideoRepository videoRepository;
+    @Resource
     private PlaylistRepository playlistRepository;
 
     /**
      * 检查用户是否存在
      */
     public void checkUserExist(String userId) {
-        if (cacheService.getUser(userId) == null) {
+        if (!userRepository.isUserExist(userId)) {
             throw new VideoException("用户不存在, userId = " + userId);
         }
     }
@@ -39,7 +45,7 @@ public class CheckService {
      * 检查视频是否存在
      */
     public void checkVideoExist(String videoId) {
-        if (cacheService.getVideo(videoId) == null) {
+        if (!videoRepository.isVideoExist(videoId)) {
             throw new VideoException("视频不存在, videoId = " + videoId);
         }
     }
