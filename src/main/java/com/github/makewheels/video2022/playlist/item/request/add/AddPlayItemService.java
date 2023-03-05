@@ -46,7 +46,7 @@ public class AddPlayItemService {
 
         // 根据模式添加item
         IdBean idBean = new IdBean();
-        idBean.setPlaylistItemId(playItem.getId());
+        idBean.setPlayItemId(playItem.getId());
         idBean.setVideoId(videoId);
         if (AddMode.ADD_TO_TOP.equals(addMode)) {
             idBeanList.add(0, idBean);
