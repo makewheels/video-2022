@@ -67,7 +67,7 @@ public class PlaylistRepository {
      */
     public List<PlayItem> getPlayItemList(Playlist playlist) {
         List<String> playItemIdList = playlist.getIdBeanList().stream()
-                .map(IdBean::getPlaylistItemId).collect(Collectors.toList());
+                .map(IdBean::getPlayItemId).collect(Collectors.toList());
         List<PlayItem> playItemList = getPlayItemList(playItemIdList);
         //把playItemList根据playItemIdList出现顺序排序
         playItemList.sort((o1, o2) -> {

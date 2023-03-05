@@ -7,6 +7,6 @@ import lombok.Data;
  */
 @Data
 public class IdBean {
-    private String playlistItemId;
+    private String playItemId;
     private String videoId;
 }
