@@ -40,9 +40,9 @@ public class VideoController {
      * 更新video信息
      */
     @PostMapping("updateInfo")
-    public Result<Void> updateInfo(@RequestBody Video newVideo) {
-        videoService.updateVideo(newVideo);
-        return Result.ok();
+    public Result<Video> updateInfo(@RequestBody Video newVideo) {
+        Video video = videoService.updateVideo(newVideo);
+        return Result.ok(video);
     }
 
     /**

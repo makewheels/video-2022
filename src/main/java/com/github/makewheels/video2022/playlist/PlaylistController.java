@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.playlist;
 
 import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.playlist.item.PlayItemVO;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.playlist.item.request.add.AddPlayItemRequest;
 import com.github.makewheels.video2022.playlist.item.request.delete.DeletePlayItemRequest;
@@ -72,12 +73,20 @@ public class PlaylistController {
      * 根据playlistId获取播放列表
      */
     @GetMapping("getPlaylistById")
-    public Result<Playlist> getPlaylistById(@RequestParam String playlistId) {
-        Playlist playlist = playlistService.getPlaylistById(playlistId);
-        if (playlist == null) {
-            return Result.error("播放列表不存在, playlistId = " + playlistId);
-        }
+    public Result<Playlist> getPlaylistById(
+            @RequestParam String playlistId,
+            @RequestParam(defaultValue = "false") Boolean showVideoList) {
+        Playlist playlist = playlistService.getPlaylistById(playlistId, showVideoList);
         return Result.ok(playlist);
+    }
+
+    /**
+     * 获取播放列表item播放详情
+     */
+    @GetMapping("getPlayItemListDetail")
+    public Result<List<PlayItemVO>> getPlayItemListDetail(@RequestParam String playlistId) {
+        List<PlayItemVO> playItemVOList = playItemService.getPlayItemListDetail(playlistId);
+        return Result.ok(playItemVOList);
     }
 
     /**

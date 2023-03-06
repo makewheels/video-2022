@@ -22,9 +22,9 @@ import java.util.List;
 @Slf4j
 public class PlaylistService {
     @Resource
-    private PlaylistRepository playlistRepository;
-    @Resource
     private CheckService checkService;
+    @Resource
+    private PlaylistRepository playlistRepository;
 
     /**
      * 创建播放列表
@@ -91,8 +91,13 @@ public class PlaylistService {
     /**
      * 根据id获取播放列表
      */
-    public Playlist getPlaylistById(String playlistId) {
-        return playlistRepository.getPlaylist(playlistId);
+    public Playlist getPlaylistById(String playlistId, Boolean showVideoList) {
+        checkService.checkPlaylistExist(playlistId);
+        Playlist playlist = playlistRepository.getPlaylist(playlistId);
+        if (!showVideoList) {
+            playlist.setVideoList(null);
+        }
+        return playlist;
     }
 
     /**
@@ -111,4 +116,5 @@ public class PlaylistService {
     public List<String> getPlaylistByVideoId(String videoId) {
         return playlistRepository.getPlaylistByVideoAndUser(videoId, UserHolder.getUserId());
     }
+
 }

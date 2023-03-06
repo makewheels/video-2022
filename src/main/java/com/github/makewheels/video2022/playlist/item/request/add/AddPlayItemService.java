@@ -38,10 +38,10 @@ public class AddPlayItemService {
 
         // 给playlist添加item
         Playlist playlist = playlistRepository.getPlaylist(playlistId);
-        List<IdBean> idBeanList = playlist.getIdBeanList();
+        List<IdBean> idBeanList = playlist.getVideoList();
         if (idBeanList == null) {
             idBeanList = new LinkedList<>();
-            playlist.setIdBeanList(idBeanList);
+            playlist.setVideoList(idBeanList);
         }
 
         // 根据模式添加item

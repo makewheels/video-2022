@@ -66,7 +66,7 @@ public class PlaylistRepository {
      * 根据Playlist获取所以PlayItem
      */
     public List<PlayItem> getPlayItemList(Playlist playlist) {
-        List<String> playItemIdList = playlist.getIdBeanList().stream()
+        List<String> playItemIdList = playlist.getVideoList().stream()
                 .map(IdBean::getPlayItemId).collect(Collectors.toList());
         List<PlayItem> playItemList = getPlayItemList(playItemIdList);
         //把playItemList根据playItemIdList出现顺序排序

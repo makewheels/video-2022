@@ -111,7 +111,7 @@ public class CheckService {
     }
 
     public List<String> getVideoIds(Playlist playlist) {
-        List<IdBean> idBeanList = playlist.getIdBeanList();
+        List<IdBean> idBeanList = playlist.getVideoList();
         if (idBeanList == null) {
             return new ArrayList<>();
         }

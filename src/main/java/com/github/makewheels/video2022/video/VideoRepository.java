@@ -11,6 +11,9 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Repository
 public class VideoRepository {
@@ -23,6 +26,14 @@ public class VideoRepository {
 
     public Video getById(String id) {
         return mongoTemplate.findById(id, Video.class);
+    }
+
+    public List<Video> getByIdList(List<String> idList) {
+        return mongoTemplate.find(Query.query(Criteria.where("id").in(idList)), Video.class);
+    }
+
+    public Map<String, Video> getMapByIdList(List<String> idList) {
+        return getByIdList(idList).stream().collect(Collectors.toMap(Video::getId, Function.identity()));
     }
 
     public Video getByWatchId(String watchId) {
