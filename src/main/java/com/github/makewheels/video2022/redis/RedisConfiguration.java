@@ -18,10 +18,12 @@ public class RedisConfiguration extends CachingConfigurerSupport {
     @Bean(name = "redisTemplate")
     public RedisTemplate<String, Object> redisTemplate(
             RedisConnectionFactory redisConnectionFactory) {
+
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         objectMapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance,
                 ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_ARRAY);
+
         Jackson2JsonRedisSerializer<Object> jacksonSerializer
                 = new Jackson2JsonRedisSerializer<>(Object.class);
         jacksonSerializer.setObjectMapper(objectMapper);
