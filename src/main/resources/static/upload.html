@@ -242,22 +242,22 @@
     }
 
     // 加入播放列表按钮监听
-    document.getElementById("btn_addPlaylistItem").addEventListener("click", function () {
-        let playlistId = document.getElementById("select_playlist").value;
-        axios.post("/playlist/addPlaylistItem", {
-            playlistId: playlistId,
-            videoIdList: [videoId],
-            "addMode": "ADD_TO_TOP"
-        }, {
-            headers: {"token": localStorage.token}
-        }).then(function (res) {
-            document.getElementById("span_playlistUrl").innerText = window.location.origin
-                + '/watch?v=' + watchId + '&list=' + playlistId;
-        });
-    });
 
-    loadPlayList();
-    addPlaylistItem();
+    function addPlaylistItem() {
+        document.getElementById("btn_addPlaylistItem").addEventListener("click", function () {
+            let playlistId = document.getElementById("select_playlist").value;
+            axios.post("/playlist/addPlaylistItem", {
+                playlistId: playlistId,
+                videoIdList: [videoId],
+                "addMode": "ADD_TO_TOP"
+            }, {
+                headers: {"token": localStorage.token}
+            }).then(function (res) {
+                document.getElementById("span_playlistUrl").innerText = window.location.origin
+                    + '/watch?v=' + watchId + '&list=' + playlistId;
+            });
+        });
+    }
 
     // 程序从这里开始
     function start() {
