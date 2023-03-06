@@ -131,7 +131,7 @@ public class PlaylistController {
     }
 
     /**
-     * 获取视频所在的播放列表
+     * 反向获取视频所在的播放列表
      */
     @GetMapping("getPlaylistByVideoId")
     public Result<List<String>> getPlaylistByVideoId(@RequestParam String videoId) {

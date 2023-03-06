@@ -34,7 +34,80 @@
     <div id="watchCount" style="font-size: 17px;color: darkcyan;margin-top: 14px"></div>
     <div id="createTime" style="font-size: 17px;color: darkcyan;margin-top: 6px"></div>
     <div id="description" style="font-size: 20px"></div>
+
+    <div class="video-list">
+        <div class="video-item">
+            <img class="video-thumbnail" src="https://example.com/thumbnail.jpg" alt="视频缩略图">
+            <div class="video-info">
+                <h2 class="video-title">视频标题1</h2>
+                <p class="video-meta">
+                    <span class="play-icon"></span>
+                    <span>1000 播放 · 2022-02-01</span>
+                </p>
+            </div>
+        </div>
+        <div class="video-item">
+            <img class="video-thumbnail" src="https://example.com/thumbnail.jpg" alt="视频缩略图">
+            <div class="video-info">
+                <h2 class="video-title">视频标题2</h2>
+                <p class="video-meta">
+                    <span class="play-icon"></span>
+                    <span>1000 播放 · 2022-02-01</span>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
 </div>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 0;
+    }
+    .video-item {
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+        margin: 10px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+    }
+    .video-thumbnail {
+        width: 120px;
+        height: 80px;
+        margin-right: 20px;
+    }
+    .video-info {
+        flex-grow: 1;
+    }
+    .video-title {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+    .video-meta {
+        font-size: 14px;
+        color: #999;
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    .video-meta span {
+        margin-right: 5px;
+    }
+    .play-icon {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background-image: url('https://img.icons8.com/ios-filled/50/000000/play-button-circled.png');
+        background-size: cover;
+        margin-right: 5px;
+    }
+</style>
 
 <script>
     // log.init({ sendAddress: 'https://www.xxx.com/xxx' });
@@ -84,7 +157,7 @@
                 "source": currentUrl,
                 // "cover": coverUrl,
                 "width": "100%",
-                "height": "500px",
+                "height": "400px",
                 "autoplay": true,
                 "isLive": false,
                 "rePlay": false,
@@ -112,6 +185,8 @@
 
                 //加载视频信息
                 loadVideoInfo(videoId);
+                //加载播放列表
+                loadPlaylist(videoId);
                 //增加观看记录
                 addWatchHistory();
                 //给播放器加监听
@@ -170,6 +245,55 @@
                 // } else if (data.type === "YOUTUBE") {
                 //     createTime.innerText = "发布时间：" + data.youtubePublishTimeString;
                 // }
+            });
+    }
+
+    //加载播放列表
+    function loadPlaylist(videoId) {
+        // 发送 GET 请求，获取视频信息
+        axios.get("https://example.com/api/videos")
+            .then(function (response) {
+                // 渲染视频信息到页面上
+                var videos = response.data;
+                var videoList = document.querySelector('.video-list');
+
+                for (var i = 0; i < videos.length; i++) {
+                    var video = videos[i];
+
+                    var videoItem = document.createElement('div');
+                    videoItem.classList.add('video-item');
+
+                    var thumbnailImg = document.createElement('img');
+                    thumbnailImg.classList.add('video-thumbnail');
+                    thumbnailImg.src = video.thumbnail;
+
+                    var videoInfo = document.createElement('div');
+                    videoInfo.classList.add('video-info');
+
+                    var videoTitle = document.createElement('h2');
+                    videoTitle.classList.add('video-title');
+                    videoTitle.innerText = video.title;
+
+                    var videoPlayCount = document.createElement('p');
+                    videoPlayCount.classList.add('video-play-count');
+                    videoPlayCount.innerHTML = '<span class="play-icon"></span>' + video.playCount + ' 播放';
+
+                    var videoCreatedDate = document.createElement('p');
+                    videoCreatedDate.classList.add('video-created-date');
+                    videoCreatedDate.innerText = video.createdDate;
+
+                    videoInfo.appendChild(videoTitle);
+                    videoInfo.appendChild(videoPlayCount);
+                    videoInfo.appendChild(videoCreatedDate);
+
+                    videoItem.appendChild(thumbnailImg);
+                    videoItem.appendChild(videoInfo);
+
+                    videoList.appendChild(videoItem);
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
             });
     }
 
