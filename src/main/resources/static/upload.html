@@ -64,22 +64,25 @@
 
 <img id="img_wechatQrcode" height="200px" width="200px" alt="微信小程序分享码"/>
 
-<div id="progress-container">
-    <div id="progress-bar"></div>
+<div id="progress-bar">
+    <div id="progress-bar-inner"></div>
 </div>
 
 <style>
-    #progress-container {
-        width: 100%;
+    #progress-bar {
+        width: 400px;
         height: 20px;
-        background-color: #f2f2f2;
+        background-color: #eee;
+        border-radius: 5px;
+        margin: 20px 0;
+        overflow: hidden;
     }
 
-    #progress-bar {
-        width: 0%;
+    #progress-bar-inner {
+        width: 0;
         height: 100%;
-        background-color: #4caf50;
-        max-width: 50px;
+        background-color: #4CAF50;
+        transition: width 0.5s ease-in-out;
     }
 </style>
 
@@ -94,6 +97,12 @@
     let watchUrl = document.getElementById("watchUrl");
 
     let text_progress = document.getElementById("text_progress");
+    let progress_bar = document.getElementById("progress-bar-inner");
+
+    let fileId;
+    let videoId;
+    let watchId;
+    let key;
 
     // 监听选中文件
     input_file.onchange = () => {
@@ -103,10 +112,6 @@
         input_title.value = originalFilename.substring(0, originalFilename.lastIndexOf("."));
         createVideo(originalFilename, size, "USER_UPLOAD");
     }
-
-    let fileId;
-    let videoId;
-    let watchId;
 
     //创建视频
     function createVideo(originalFilename, size, videoType) {
@@ -150,20 +155,6 @@
         navigator.clipboard.writeText(content);
     });
 
-    function updateProgress(state) {
-        let progress = state.loaded / state.total;
-        progress = progress * 100;
-        text_progress.innerText = (progress.toFixed(2) + " %");
-    }
-
-    let chunkSize = 1024 * 1024; // 分块大小
-    let uploadId;
-
-    let bucket;
-    let key;
-
-    let bosClient;
-
     //我的开始上传文件
     function beginUpload() {
         //获取上传凭证
@@ -199,11 +190,11 @@
 
         //分片上传
         const result = await client.multipartUpload(key, file, {
-            partSize: 1024 * 1024,
+            partSize: 2 * 1024 * 1024,
             progress: function (p, checkpoint) {
                 let percent = p * 100;
                 text_progress.innerText = percent.toFixed(2) + " %";
-                updateProgress(p);
+                progress_bar.style.width = percent + "%";
             }
         });
 
@@ -225,13 +216,6 @@
                 text_progress.innerText = "上传已完成";
             });
         });
-    }
-
-    //更新进度
-    function updateProgress(state) {
-        let progress = state.loaded / state.total;
-        progress = progress * 100;
-        document.getElementById("progress-bar").style.width = `${progress}%`;
     }
 
 </script>
