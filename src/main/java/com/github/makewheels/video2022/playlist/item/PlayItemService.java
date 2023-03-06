@@ -9,12 +9,20 @@ import com.github.makewheels.video2022.playlist.item.request.delete.DeletePlayIt
 import com.github.makewheels.video2022.playlist.item.request.delete.DeletePlayItemService;
 import com.github.makewheels.video2022.playlist.item.request.move.MovePlayItemRequest;
 import com.github.makewheels.video2022.playlist.item.request.move.MovePlayItemService;
+import com.github.makewheels.video2022.playlist.list.bean.IdBean;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.user.UserHolder;
+import com.github.makewheels.video2022.video.VideoRepository;
+import com.github.makewheels.video2022.video.bean.video.Video;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 播放列表item服务
@@ -26,6 +34,8 @@ public class PlayItemService {
     private CheckService checkService;
     @Resource
     private PlaylistRepository playlistRepository;
+    @Resource
+    private VideoRepository videoRepository;
 
     @Resource
     private AddPlayItemService addPlayItemService;
@@ -92,4 +102,32 @@ public class PlayItemService {
         movePlayItemService.movePlayItem(movePlayItemRequest);
     }
 
+    /**
+     * 获取播放列表items播放详情
+     */
+    public List<PlayItemVO> getPlayItemListDetail(String playlistId) {
+        checkService.checkPlaylistExist(playlistId);
+        // 拿到播放列表
+        Playlist playlist = playlistRepository.getPlaylist(playlistId);
+        List<IdBean> playlistVideoList = playlist.getVideoList();
+        // 拿到列表中所有对应视频
+        List<String> videoIdList = playlistVideoList.stream()
+                .map(IdBean::getVideoId).collect(Collectors.toList());
+        Map<String, Video> videoMap = videoRepository.getMapByIdList(videoIdList);
+        // 组装返回
+        List<PlayItemVO> result = new ArrayList<>(playlistVideoList.size());
+        for (IdBean idBean : playlistVideoList) {
+            String videoId = idBean.getVideoId();
+            Video video = videoMap.get(videoId);
+            PlayItemVO playItemVO = new PlayItemVO();
+            BeanUtils.copyProperties(video, playItemVO);
+            playItemVO.setPlayItemId(idBean.getPlayItemId());
+            playItemVO.setVideoId(videoId);
+            playItemVO.setVideoCreateTime(video.getCreateTime());
+            playItemVO.setVideoUpdateTime(video.getUpdateTime());
+            playItemVO.setVideoStatus(video.getStatus());
+            result.add(playItemVO);
+        }
+        return result;
+    }
 }

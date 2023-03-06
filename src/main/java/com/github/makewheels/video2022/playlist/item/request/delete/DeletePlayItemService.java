@@ -97,7 +97,7 @@ public class DeletePlayItemService {
         List<String> playItemIdList = playItemList.stream()
                 .map(PlayItem::getId).collect(Collectors.toList());
         log.info("删除的playItemIdList = {}", JSON.toJSONString(playItemIdList));
-        playlist.getIdBeanList().removeIf(idBean -> playItemIdList.contains(idBean.getPlayItemId()));
+        playlist.getVideoList().removeIf(idBean -> playItemIdList.contains(idBean.getPlayItemId()));
     }
 
 }

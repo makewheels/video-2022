@@ -233,7 +233,7 @@ public class VideoService {
     /**
      * 更新视频信息
      */
-    public void updateVideo(Video newVideo) {
+    public Video updateVideo(Video newVideo) {
         User user = UserHolder.get();
         String userId = user.getId();
         String videoId = newVideo.getId();
@@ -253,6 +253,7 @@ public class VideoService {
 
         log.info("更新视频信息：videoId = {}, title = {}, description = {}",
                 videoId, oldVideo.getTitle(), oldVideo.getDescription());
+        return oldVideo;
     }
 
     /**

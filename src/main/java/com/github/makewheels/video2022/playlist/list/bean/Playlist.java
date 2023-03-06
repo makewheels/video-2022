@@ -31,7 +31,7 @@ public class Playlist {
     private Date createTime;
     @Indexed
     private Date updateTime;
-    private List<IdBean> idBeanList;
+    private List<IdBean> videoList;
 
     public Playlist() {
         this.createTime = new Date();
