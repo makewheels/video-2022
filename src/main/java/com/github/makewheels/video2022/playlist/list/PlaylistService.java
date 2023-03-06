@@ -99,7 +99,10 @@ public class PlaylistService {
      * 分页获取播放列表
      */
     public List<Playlist> getPlaylistByPage(String userId, int skip, int limit) {
-        return playlistRepository.getPlaylistByPage(userId, skip, limit);
+        List<Playlist> playlists = playlistRepository.getPlaylistByPage(userId, skip, limit);
+        // 默认按更新时间倒序
+        playlists.sort((o1, o2) -> o2.getUpdateTime().compareTo(o1.getUpdateTime()));
+        return playlists;
     }
 
     /**
