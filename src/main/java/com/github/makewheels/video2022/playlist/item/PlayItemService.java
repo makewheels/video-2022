@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.playlist.item;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.check.CheckService;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
@@ -123,8 +124,8 @@ public class PlayItemService {
             BeanUtils.copyProperties(video, playItemVO);
             playItemVO.setPlayItemId(idBean.getPlayItemId());
             playItemVO.setVideoId(videoId);
-            playItemVO.setVideoCreateTime(video.getCreateTime());
-            playItemVO.setVideoUpdateTime(video.getUpdateTime());
+            playItemVO.setVideoCreateTime(DateUtil.formatDate(video.getCreateTime()));
+            playItemVO.setVideoUpdateTime(DateUtil.formatDate(video.getUpdateTime()));
             playItemVO.setVideoStatus(video.getStatus());
             result.add(playItemVO);
         }

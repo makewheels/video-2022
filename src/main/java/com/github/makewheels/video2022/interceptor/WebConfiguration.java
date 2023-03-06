@@ -51,6 +51,8 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/statistics/getTrafficConsume")
                 .excludePathPatterns("/statistics/aggregateTrafficData")
                 .excludePathPatterns("/statistics.html")
+
+                .excludePathPatterns("/playlist/getPlayItemListDetail")
         ;
     }
 }
