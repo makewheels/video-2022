@@ -68,6 +68,13 @@
     <div id="progress-bar-inner"></div>
 </div>
 
+<!--播放列表-->
+<span id="span_playlistUrl"></span>
+<br>
+<select id="select_playlist"></select>
+<br>
+<button id="btn_addPlaylistItem" type="button">加入播放列表</button>
+
 <style>
     #progress-bar {
         width: 400px;
@@ -217,6 +224,48 @@
             });
         });
     }
+
+    // 加载播放列表
+    function loadPlayList() {
+        axios.get("/playlist/getMyPlaylistByPage?skip=0&limit=100", {
+            headers: {"token": localStorage.token}
+        }).then(function (res) {
+            let data = res.data.data;
+            let select = document.getElementById("select_playlist");
+            for (let i = 0; i < data.length; i++) {
+                let option = document.createElement("option");
+                option.value = data[i].id;
+                option.innerText = data[i].title;
+                select.appendChild(option);
+            }
+        });
+    }
+
+    // 加入播放列表按钮监听
+    document.getElementById("btn_addPlaylistItem").addEventListener("click", function () {
+        let playlistId = document.getElementById("select_playlist").value;
+        axios.post("/playlist/addPlaylistItem", {
+            playlistId: playlistId,
+            videoIdList: [videoId],
+            "addMode": "ADD_TO_TOP"
+        }, {
+            headers: {"token": localStorage.token}
+        }).then(function (res) {
+            document.getElementById("span_playlistUrl").innerText = window.location.origin
+                + '/watch?v=' + watchId + '&list=' + playlistId;
+        });
+    });
+
+    loadPlayList();
+    addPlaylistItem();
+
+    // 程序从这里开始
+    function start() {
+        loadPlayList();
+        addPlaylistItem();
+    }
+
+    start();
 
 </script>
 
