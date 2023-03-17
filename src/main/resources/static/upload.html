@@ -13,30 +13,6 @@
 
 <body>
 
-<script>
-    function jumpToLogin() {
-        window.location.href = "//" + document.domain + ":" + location.port + "/login.html" +
-            "?target=" + window.location.href;
-    }
-
-    function checkToken() {
-        //检查token，如果没有跳转登录页
-        if (localStorage.token == null) {
-            jumpToLogin();
-            return;
-        }
-        axios.get("//" + document.domain + ":" + location.port + "/user/getUserByToken?token="
-            + localStorage.token)
-            .then(function (res) {
-                if (res.data.code === 1001) {
-                    jumpToLogin();
-                }
-            });
-    }
-
-    checkToken();
-</script>
-
 <input type="file" id="input_file"/>
 <br>
 
@@ -92,6 +68,30 @@
         transition: width 0.5s ease-in-out;
     }
 </style>
+
+<script>
+    function jumpToLogin() {
+        window.location.href = "//" + document.domain + ":" + location.port + "/login.html" +
+            "?target=" + window.location.href;
+    }
+
+    function checkToken() {
+        //检查token，如果没有跳转登录页
+        if (localStorage.token == null) {
+            jumpToLogin();
+            return;
+        }
+        axios.get("//" + document.domain + ":" + location.port + "/user/getUserByToken?token="
+            + localStorage.token)
+            .then(function (res) {
+                if (res.data.code === 1001) {
+                    jumpToLogin();
+                }
+            });
+    }
+
+    checkToken();
+</script>
 
 <script>
     let input_file = document.getElementById("input_file");
