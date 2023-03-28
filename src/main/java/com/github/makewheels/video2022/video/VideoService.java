@@ -42,165 +42,43 @@ import java.util.List;
 @Service
 @Slf4j
 public class VideoService {
-    @Value("${internal-base-url}")
-    private String internalBaseUrl;
-    @Value("${short-url-service}")
-    private String shortUrlService;
-
     @Resource
     private MongoTemplate mongoTemplate;
 
-    @Resource
-    private YoutubeService youtubeService;
-    @Resource
-    private FileService fileService;
     @Resource
     private TranscodeLauncher transcodeLauncher;
     @Resource
     private CoverLauncher coverLauncher;
 
     @Resource
+    private FileService fileService;
+    @Resource
+    private VideoCreateService videoCreateService;
+
+    @Resource
     private VideoRepository videoRepository;
     @Resource
     private CacheService cacheService;
-    @Resource
-    private IdService idService;
-
-
-    @Value("${spring.profiles.active}")
-    private String environment;
-
-    private String getShortUrl(String fullUrl) {
-        JSONObject body = new JSONObject();
-        body.put("fullUrl", fullUrl);
-        body.put("sign", "DuouXm25hwFWVbUmyw3a");
-        String response = HttpUtil.post(shortUrlService, body.toJSONString());
-        log.info("getShortUrl: body = {}, response = {}",
-                JSON.toJSONString(body), JSON.toJSONString(response));
-        return response;
-    }
 
     /**
      * 创建新视频
      */
     public JSONObject create(CreateVideoDTO createVideoDTO) {
-        User user = UserHolder.get();
-        createVideoDTO.setUser(user);
-        String userId = user.getId();
+        // 调用createService
+        videoCreateService.create(createVideoDTO);
 
-        Video video = new Video();
-        createVideoDTO.setVideo(video);
-
-        String videoType = createVideoDTO.getVideoType();
-        video.setType(videoType);
-
-        //YouTube
-        if (videoType.equals(VideoType.YOUTUBE)) {
-            String youtubeUrl = createVideoDTO.getYoutubeUrl();
-            video.setYoutubeUrl(youtubeUrl);
-            video.setYoutubeVideoId(youtubeService.getYoutubeVideoIdByUrl(youtubeUrl));
-        }
-
-        //创建 video file
-        File videoFile = fileService.createVideoFile(createVideoDTO);
-
-        String fileId = videoFile.getId();
-        //创建 video
-        video.setOriginalFileId(fileId);
-        video.setUserId(userId);
-        String watchId = idService.nextShortId();
-        video.setWatchId(watchId);
-        String watchUrl = internalBaseUrl + "/watch?v=" + watchId;
-        video.setWatchUrl(watchUrl);
-
-        //本地开发环境shortUrl就是watchUrl
-        video.setShortUrl(watchUrl);
-
-        if (environment.equals(Environment.PRODUCTION)) {
-            String shortUrl = getShortUrl(watchUrl);
-            video.setShortUrl(shortUrl);
-        }
-
-        //视频过期时间
-        long expireTimeInMillis = Duration.ofDays(30).toMillis();
-        Date expireTime = new Date(System.currentTimeMillis() + expireTimeInMillis);
-        video.setExpireTime(expireTime);
-        video.setIsPermanent(false);
-        video.setIsOriginalFileDeleted(false);
-        video.setIsTranscodeFilesDeleted(false);
-        mongoTemplate.save(video);
-
-        String videoId = video.getId();
-        videoFile.setVideoId(videoId);
-        //更新file上传路径
-        videoFile.setKey(PathUtil.getS3VideoPrefix(userId, videoId)
-                + "/original/" + videoId + "." + videoFile.getExtension());
-        mongoTemplate.save(videoFile);
-        log.info("新建文件：" + JSON.toJSONString(videoFile));
-
-        //更新video的source key
-        video.setOriginalFileKey(videoFile.getKey());
-        cacheService.updateVideo(video);
-        log.info("新建视频：" + JSON.toJSONString(video));
-
-        //如果是搬运YouTube视频，多一个步骤，通知海外服务器
-        if (videoType.equals(VideoType.YOUTUBE)) {
-            new Thread(() -> handleCreateYoutube(video, user, videoFile)).start();
-        }
+        // 返回给前端
+        Video video = createVideoDTO.getVideo();
+        File videoFile = createVideoDTO.getVideoFile();
 
         JSONObject response = new JSONObject();
-        response.put("fileId", fileId);
-        response.put("videoId", videoId);
-        response.put("watchId", watchId);
-        response.put("watchUrl", watchUrl);
+        response.put("fileId", videoFile.getId());
+        response.put("videoId", video.getId());
+        response.put("watchId", video.getWatchId());
+        response.put("watchUrl", video.getWatchUrl());
         response.put("shortUrl", video.getShortUrl());
         return response;
     }
-
-    /**
-     * 创建视频：处理youtube
-     */
-    private void handleCreateYoutube(Video video, User user, File videoFile) {
-        String extension = youtubeService.getFileExtension(video.getYoutubeVideoId());
-        if (!videoFile.getExtension().equals(extension)) {
-            //更新file
-            videoFile.setExtension(extension);
-            String newKey = videoFile.getKey();
-            videoFile.setKey(newKey.substring(0, newKey.lastIndexOf(".")) + "." + extension);
-            mongoTemplate.save(videoFile);
-            //更新video的source key
-            video.setOriginalFileKey(videoFile.getKey());
-            cacheService.updateVideo(video);
-        }
-
-        //提交搬运视频任务给海外服务器
-        youtubeService.transferVideo(user, video, videoFile);
-
-        //获取视频信息，保存title和description到数据库
-        JSONObject youtubeVideoInfo = youtubeService.getVideoInfo(video.getYoutubeVideoId());
-        video.setYoutubeVideoInfo(youtubeVideoInfo);
-
-        //youtube视频可以直接发起搬运封面，不必等源视频上传完成
-        //上传完成的截帧操作已做幂等性处理，会判断如果是youtube视频，跳过截帧
-        new Thread(() -> coverLauncher.createCover(user, video)).start();
-
-        //更新youtube publish time
-        JSONObject publishedAt = youtubeVideoInfo.getJSONObject("snippet")
-                .getJSONObject("publishedAt");
-        int timeZoneShift = publishedAt.getInteger("timeZoneShift");
-        long value = publishedAt.getLong("value");
-        ZoneId zoneId = ZoneId.of("UTC+" + timeZoneShift);
-        Instant instant = ZonedDateTime.ofInstant(Instant.ofEpochMilli(value), zoneId).toInstant();
-        Date youtubePublishTime = Date.from(
-                ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).toInstant());
-        video.setYoutubePublishTime(youtubePublishTime);
-
-        JSONObject snippet = youtubeVideoInfo.getJSONObject("snippet");
-        video.setTitle(snippet.getString("title"));
-        video.setDescription(snippet.getString("description"));
-        cacheService.updateVideo(video);
-    }
-
 
     /**
      * 原始文件上传完成，开始转码

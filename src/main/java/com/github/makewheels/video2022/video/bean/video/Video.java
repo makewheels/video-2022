@@ -83,6 +83,9 @@ public class Video {
         this.status = VideoStatus.CREATED;
         this.provider = S3Provider.ALIYUN_OSS;
         this.watchCount = 0;
+        this.isPermanent = false;
+        this.isOriginalFileDeleted = false;
+        this.isTranscodeFilesDeleted = false;
     }
 
     @Override
