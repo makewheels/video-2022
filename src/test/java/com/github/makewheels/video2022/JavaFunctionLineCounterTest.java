@@ -18,7 +18,6 @@ public class JavaFunctionLineCounterTest {
 
     @Test
     public void run() {
-
         countFunctionLines("D:\\workSpace\\intellijidea\\video-2022");
 //        countFunctionLines("D:\\workSpace\\xiaomi\\maps");
     }

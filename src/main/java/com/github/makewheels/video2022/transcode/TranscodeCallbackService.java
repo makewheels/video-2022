@@ -143,9 +143,9 @@ public class TranscodeCallbackService {
     }
 
     /**
-     * 转码完成后，更新对象存储ts碎片
+     * 生成阿里云对象存储中的ts文件
      */
-    private void saveS3Files(Video video, Transcode transcode) {
+    private List<File> getTsFiles(Video video, Transcode transcode) {
         String videoId = video.getId();
         String userId = video.getUserId();
         String m3u8Content = transcode.getM3u8Content();
@@ -165,30 +165,39 @@ public class TranscodeCallbackService {
         List<File> tsFiles = new ArrayList<>(filenames.size());
         for (int i = 0; i < filenames.size(); i++) {
             String filename = filenames.get(i);
-            File tsFile = new File();
-            tsFile.setStatus(FileStatus.READY);
+            File file = new File();
+            file.setStatus(FileStatus.READY);
 
-            tsFile.setType(FileType.TRANSCODE_TS);
-            tsFile.setUserId(userId);
-            tsFile.setVideoId(videoId);
-            tsFile.setVideoType(video.getType());
-            tsFile.setTranscodeId(transcode.getId());
-            tsFile.setResolution(transcode.getResolution());
-            tsFile.setTsIndex(i);
-            tsFile.setObjectInfo(ossFilenameMap.get(filename));
+            file.setType(FileType.TRANSCODE_TS);
+            file.setUserId(userId);
+            file.setVideoId(videoId);
+            file.setVideoType(video.getType());
+            file.setTranscodeId(transcode.getId());
+            file.setResolution(transcode.getResolution());
+            file.setTsIndex(i);
+            file.setObjectInfo(ossFilenameMap.get(filename));
 
             //计算ts码率
-            tsFile.setBitrate(calculateBitrate(tsFile.getSize(), tsTimeLengthMap.get(filename)));
+            file.setBitrate(calculateBitrate(file.getSize(), tsTimeLengthMap.get(filename)));
 
-            tsFiles.add(tsFile);
+            tsFiles.add(file);
         }
+        return tsFiles;
+    }
+
+    /**
+     * 转码完成后，更新对象存储ts碎片
+     */
+    private void saveS3Files(Video video, Transcode transcode) {
+        List<File> tsFiles = getTsFiles(video, transcode);
 
         //保存所有ts文件到数据库
         log.info("保存tsFiles, 总共 {} 个", tsFiles.size());
         mongoTemplate.insertAll(tsFiles);
 
         //反向更新transcode的ts文件id列表
-        transcode.setTsFileIds(tsFiles.stream().map(File::getId).collect(Collectors.toList()));
+        List<String> tsFileIds = tsFiles.stream().map(File::getId).collect(Collectors.toList());
+        transcode.setTsFileIds(tsFileIds);
 
         //计算transcode平均码率
         long tsTotalSize = tsFiles.stream().mapToLong(File::getSize).sum();
