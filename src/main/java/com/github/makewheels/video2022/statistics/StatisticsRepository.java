@@ -71,35 +71,6 @@ public class StatisticsRepository {
      * ]);
      */
     public long getTrafficConsumeByTimeRange(String videoId, List<Integer> hours) {
-//        Aggregation aggregation = Aggregation.newAggregation(
-//                Aggregation.project("hour", "videoId", "size"),
-//                Aggregation.match(
-//                        Criteria.where("videoId").is(videoId)
-//                                .and("hour").in(hours)
-//                ),
-//                Aggregation.group("id").sum("size").as("sum")
-//        );
-//        AggregationResults<JSONObject> result = mongoTemplate.aggregate(
-//                aggregation, "fileAccessLog", JSONObject.class);
-//        return result.getMappedResults().get(0).getLong("sum");
-
-//        Aggregation aggregation = Aggregation.newAggregation(
-//                Aggregation.match(Criteria.where("videoId").is(videoId)),
-//                Aggregation.match(Criteria.where("videoId").is(videoId)),
-//
-//                Aggregation.project().andExpression("$hour(createTime)").as("hour"),
-//
-//                Aggregation.project("size"),
-//                Aggregation.group().sum("size").as("totalSize")
-//        );
-//        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "fileAccessLog", Document.class);
-//        Document document = results.getUniqueMappedResult();
-//        if (document == null) {
-//            return 0L;
-//        }
-//        return document.getLong("totalSize");
-
-
         // 2023年2月11日14:53:51 ChatGPT从js转为的java代码：
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.project("videoId", "size")

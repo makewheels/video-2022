@@ -33,9 +33,9 @@ public class JavaFunctionLineCounterTest {
             FileReader fileReader = new FileReader(javaFile);
             String javaCode = fileReader.readString();
             JavaParser javaParser = new JavaParser();
-            CompilationUnit cu = javaParser.parse(javaCode).getResult().get();
+            CompilationUnit compilationUnit = javaParser.parse(javaCode).getResult().get();
             Map<String, Integer> functionLineCount = new HashMap<>();
-            new MethodVisitor().visit(cu, functionLineCount);
+            new MethodVisitor().visit(compilationUnit, functionLineCount);
             functionLines.put(className, functionLineCount);
         }
 
