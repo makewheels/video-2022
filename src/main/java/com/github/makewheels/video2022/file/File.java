@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.ObjectMetadata;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.S3Provider;
 import lombok.Data;
@@ -16,6 +17,7 @@ import java.util.Date;
 
 @Data
 @Document
+@JsonIgnoreProperties("objectInfo")
 public class File {
     @Id
     private String id;
