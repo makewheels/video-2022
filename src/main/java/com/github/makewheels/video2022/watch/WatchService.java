@@ -27,7 +27,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -65,36 +64,40 @@ public class WatchService {
     private String internalBaseUrl;
 
     /**
+     * 保存观看记录到数据库
+     */
+    private void saveWatchLog(Context context, Video video) {
+        //保存观看记录
+        WatchLog watchLog = new WatchLog();
+        watchLog.setCreateTime(new Date());
+        String ip = RequestUtil.getIp();
+        watchLog.setIp(ip);
+
+        //查询ip归属地
+        JSONObject ipResult = ipService.getIpResultWithRedis(ip);
+        watchLog.setIpInfo(ipResult);
+        String userAgent = RequestUtil.getUserAgent();
+        watchLog.setUserAgent(userAgent);
+        watchLog.setVideoStatus(video.getStatus());
+        watchLog.setVideoId(video.getId());
+        watchLog.setClientId(context.getClientId());
+        watchLog.setSessionId(context.getSessionId());
+
+        mongoTemplate.save(watchLog);
+    }
+
+    /**
      * 增加观看记录
      */
     public Result<Void> addWatchLog(Context context, String videoStatus) {
-        HttpServletRequest request = RequestUtil.getRequest();
         String videoId = context.getVideoId();
-        String clientId = context.getClientId();
         String sessionId = context.getSessionId();
 
         //观看记录根据videoId和sessionId判断是否已存在观看记录，如果已存在则跳过
         if (watchRepository.isWatchLogExist(videoId, sessionId, videoStatus)) {
             return Result.ok();
         }
-        //保存观看记录
-        WatchLog watchLog = new WatchLog();
-        watchLog.setCreateTime(new Date());
-        String ip = request.getRemoteAddr();
-        watchLog.setIp(ip);
 
-        //查询ip归属地
-        JSONObject ipResponse = ipService.getIpWithRedis(ip);
-        JSONObject ipResult = ipResponse.getJSONObject("result");
-        watchLog.setIpInfo(ipResult);
-        String userAgent = request.getHeader("User-Agent");
-        watchLog.setUserAgent(userAgent);
-        watchLog.setVideoStatus(videoStatus);
-        watchLog.setVideoId(videoId);
-        watchLog.setClientId(clientId);
-        watchLog.setSessionId(sessionId);
-
-        mongoTemplate.save(watchLog);
         Video video = cacheService.getVideo(videoId);
         //增加video观看次数
         if (videoStatus.equals(VideoStatus.READY)) {
@@ -104,7 +107,12 @@ public class WatchService {
             cacheService.updateVideo(video);
         }
 
+        //保存观看记录到数据库
+        saveWatchLog(context, video);
+
         //推送钉钉
+        String ip = RequestUtil.getIp();
+        JSONObject ipResult = ipService.getIpResultWithRedis(ip);
         String province = ipResult.getString("province");
         String city = ipResult.getString("city");
         String district = ipResult.getString("district");
@@ -115,7 +123,7 @@ public class WatchService {
                 "# viewCount: " + video.getWatchCount() + "\n\n" +
                 "# ip: " + ip + "\n\n" +
                 "# ipInfo: " + province + " " + city + " " + district + "\n\n" + "\n\n" +
-                "# User-Agent: " + userAgent;
+                "# User-Agent: " + RequestUtil.getUserAgent();
         dingService.sendMarkdown("观看记录", markdownText);
 
         return Result.ok();

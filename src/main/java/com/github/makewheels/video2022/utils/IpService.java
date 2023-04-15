@@ -40,4 +40,8 @@ public class IpService {
         return jsonObject;
     }
 
+    public JSONObject getIpResultWithRedis(String ip) {
+        JSONObject ipResponse = getIpWithRedis(ip);
+        return ipResponse.getJSONObject("result");
+    }
 }

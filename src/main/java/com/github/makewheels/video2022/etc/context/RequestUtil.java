@@ -79,4 +79,12 @@ public class RequestUtil {
     public static String getHeader(String name) {
         return getRequest().getHeader(name);
     }
+
+    public static String getUserAgent() {
+        return getHeader("User-Agent");
+    }
+
+    public static String getIp() {
+        return getRequest().getRemoteAddr();
+    }
 }
