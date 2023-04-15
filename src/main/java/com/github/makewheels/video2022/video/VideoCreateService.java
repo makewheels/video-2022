@@ -60,8 +60,10 @@ public class VideoCreateService {
         createVideoDTO.setUser(user);
         String userId = user.getId();
 
+        //创建 video
         Video video = new Video();
         createVideoDTO.setVideo(video);
+        video.setUserId(userId);
 
         String videoType = createVideoDTO.getVideoType();
         video.setType(videoType);
@@ -78,9 +80,7 @@ public class VideoCreateService {
         createVideoDTO.setVideoFile(videoFile);
 
         String fileId = videoFile.getId();
-        //创建 video
         video.setOriginalFileId(fileId);
-        video.setUserId(userId);
         String watchId = idService.nextShortId();
         video.setWatchId(watchId);
         String watchUrl = internalBaseUrl + "/watch?v=" + watchId;
