@@ -10,17 +10,17 @@ public class Result<T> {
 
     public Result() {
         this.code = ErrorCode.SUCCESS.getCode();
-        this.message = ErrorCode.SUCCESS.getValue();
+        this.message = ErrorCode.SUCCESS.getMessage();
     }
 
     public Result(ErrorCode errorCode) {
         this.code = errorCode.getCode();
-        this.message = errorCode.getValue();
+        this.message = errorCode.getMessage();
     }
 
     public Result(ErrorCode errorCode, T data) {
         this.code = errorCode.getCode();
-        this.message = errorCode.getValue();
+        this.message = errorCode.getMessage();
         this.data = data;
     }
 
