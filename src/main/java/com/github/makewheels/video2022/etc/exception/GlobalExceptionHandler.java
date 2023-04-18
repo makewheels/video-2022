@@ -49,8 +49,8 @@ public class GlobalExceptionHandler {
         //打印自定义错误码
         ErrorCode errorCode = videoException.getErrorCode();
         int code = errorCode.getCode();
-        String value = errorCode.getValue();
-        String message = videoException.getMessage();
+        String value = errorCode.getMessage();
+        String message = errorCode.getMessage();
         log.error("code = " + code + ", value = " + value + ", message = " + message);
 
         //打印错误堆栈

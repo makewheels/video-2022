@@ -16,19 +16,19 @@ public enum ErrorCode {
     ;
 
     private final int code;
-    private final String value;
+    private final String message;
 
-    ErrorCode(int code, String value) {
+    ErrorCode(int code, String message) {
         this.code = code;
-        this.value = value;
+        this.message = message;
     }
 
     public int getCode() {
         return code;
     }
 
-    public String getValue() {
-        return value;
+    public String getMessage() {
+        return message;
     }
 
 }
