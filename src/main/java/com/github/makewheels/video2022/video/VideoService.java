@@ -5,6 +5,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
+import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.etc.exception.VideoException;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
@@ -49,6 +50,8 @@ public class VideoService {
     private TranscodeLauncher transcodeLauncher;
     @Resource
     private CoverLauncher coverLauncher;
+    @Resource
+    private CoverService coverService;
 
     @Resource
     private FileService fileService;
@@ -146,6 +149,7 @@ public class VideoService {
         BeanUtils.copyProperties(video, videoVO);
         videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
         videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
+        videoVO.setCoverUrl(coverService.getSignedCoverUrl(video.getCoverId()));
         return videoVO;
     }
 

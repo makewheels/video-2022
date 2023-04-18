@@ -12,6 +12,10 @@ public class CoverRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
+    public Cover getById(String id){
+        return mongoTemplate.findById(id, Cover.class);
+    }
+
     public Cover getByJobId(String jobId) {
         return mongoTemplate.findOne(Query.query(Criteria.where("jobId").is(jobId)), Cover.class);
     }
