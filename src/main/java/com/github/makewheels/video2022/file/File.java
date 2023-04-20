@@ -54,6 +54,8 @@ public class File {
     private Long size;
     @Indexed
     private String etag;
+    @Indexed
+    private String md5;
     private String acl;
 
     @Indexed
