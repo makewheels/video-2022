@@ -45,7 +45,7 @@ public class CoverCallbackService {
         String coverProvider = cover.getProvider();
         if (StringUtils.equalsAny(coverProvider, CoverProvider.ALIYUN_CLOUD_FUNCTION, CoverProvider.ALIYUN_MPS)) {
             if (!aliyunOssService.doesObjectExist(key)) {
-                return Result.error(ErrorCode.FAIL);
+                return Result.error(ErrorCode.FILE_NOT_EXIST);
             }
         }
         //更新cover状态
