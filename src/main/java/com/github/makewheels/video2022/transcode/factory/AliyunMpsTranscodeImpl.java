@@ -102,7 +102,7 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
      * 发起转码
      */
     @Override
-    public Transcode transcode(Video video, Transcode transcode) {
+    public void transcode(Video video, Transcode transcode) {
         String sourceKey = transcode.getSourceKey();
         String m3u8Key = transcode.getM3u8Key();
         String resolution = transcode.getResolution();
@@ -121,9 +121,6 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
 
         //异步轮询查询阿里云转码状态
         new Thread(() -> iterateQueryAliyunTranscodeJob(video, transcode)).start();
-
-        //返回
-        return transcode;
     }
 
     /**

@@ -36,7 +36,7 @@ public class AliyunCfTranscodeImpl implements TranscodeService {
     private CacheService cacheService;
 
     @Override
-    public Transcode transcode(Video video, Transcode transcode) {
+    public void transcode(Video video, Transcode transcode) {
         String videoId = video.getId();
         String transcodeId = transcode.getId();
 
@@ -58,8 +58,6 @@ public class AliyunCfTranscodeImpl implements TranscodeService {
         transcode.setJobId(jobId);
         transcode.setStatus(VideoStatus.TRANSCODING);
         cacheService.updateTranscode(transcode);
-
-        return transcode;
     }
 
     @Override
