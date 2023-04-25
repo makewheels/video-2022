@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public interface TranscodeService {
-    Transcode transcode(Video video, Transcode transcode);
+    void transcode(Video video, Transcode transcode);
 
     void callback(String jobId);
 }
