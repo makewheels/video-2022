@@ -14,6 +14,7 @@ import java.util.Date;
 /**
  * <a href="https://chromedriver.storage.googleapis.com/index.html?path=112.0.5615.49/">chromedriver下载</a>
  */
+//@SpringBootTest
 public class TestUpload {
     private WebDriver webDriver;
 
