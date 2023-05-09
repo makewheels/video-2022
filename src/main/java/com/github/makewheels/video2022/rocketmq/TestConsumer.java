@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.messagequeue;
+package com.github.makewheels.video2022.rocketmq;
 
 import org.apache.rocketmq.spring.annotation.ConsumeMode;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
