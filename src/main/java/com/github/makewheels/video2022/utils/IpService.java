@@ -41,7 +41,12 @@ public class IpService {
     }
 
     public JSONObject getIpResultWithRedis(String ip) {
-        JSONObject ipResponse = getIpWithRedis(ip);
-        return ipResponse.getJSONObject("result");
+        try {
+            JSONObject ipResponse = getIpWithRedis(ip);
+            ipResponse.getJSONObject("result");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
