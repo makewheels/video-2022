@@ -1,8 +1,6 @@
 package com.github.makewheels.video2022.video;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.http.HttpUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.cover.CoverService;
@@ -12,32 +10,24 @@ import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
-import com.github.makewheels.video2022.utils.IdService;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
-import com.github.makewheels.video2022.utils.Environment;
-import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.video.Video;
+import com.github.makewheels.video2022.video.bean.video.YouTube;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
-import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -148,7 +138,7 @@ public class VideoService {
         VideoVO videoVO = new VideoVO();
         BeanUtils.copyProperties(video, videoVO);
         videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-        videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
+        videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYouTube().getPublishTime()));
         videoVO.setCoverUrl(coverService.getSignedCoverUrl(video.getCoverId()));
         return videoVO;
     }
@@ -163,7 +153,13 @@ public class VideoService {
             VideoVO item = new VideoVO();
             BeanUtils.copyProperties(video, item);
             item.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-            item.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYoutubePublishTime()));
+            YouTube youTube = video.getYouTube();
+            if (youTube != null) {
+                if (youTube.getPublishTime() != null) {
+                    item.setYoutubePublishTimeString(DateUtil.formatDateTime(youTube.getPublishTime()));
+
+                }
+            }
             itemList.add(item);
         }
         return itemList;

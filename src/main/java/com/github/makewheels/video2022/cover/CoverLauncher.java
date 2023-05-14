@@ -90,7 +90,6 @@ public class CoverLauncher {
 
         //更新video
         video.setCoverId(cover.getId());
-        video.setCoverUrl(cover.getAccessUrl());
         cacheService.updateVideo(video);
     }
 
@@ -104,7 +103,7 @@ public class CoverLauncher {
         String videoProvider = video.getProvider();
         cover.setProvider(CoverProvider.YOUTUBE);
         //获取youtube下载url
-        JSONObject snippet = video.getYoutubeVideoInfo().getJSONObject("snippet");
+        JSONObject snippet = video.getYouTube().getVideoInfo().getJSONObject("snippet");
         String downloadUrl = snippet.getJSONObject("thumbnails")
                 .getJSONObject("standard").getString("url");
         //设置cover

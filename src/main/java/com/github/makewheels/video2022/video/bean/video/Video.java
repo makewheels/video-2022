@@ -25,20 +25,20 @@ public class Video {
     @Indexed
     private String userId;
     @Indexed
-    private String originalFileId;
-    private String originalFileKey; //TODO 删除这个字段
-
-    private Integer watchCount; //观看次数
-    private Long duration;      //视频时长，单位毫秒
-    private String coverId; // TODO 字段挪到子类 Cover
-    private String coverUrl;// TODO 字段挪到子类 Cover
-
-    @Indexed
     private String watchId;
     private String watchUrl;
     private String shortUrl;
     private String title;
     private String description;
+    private Integer watchCount; //观看次数
+    private Long duration;      //视频时长，单位毫秒
+    private List<String> transcodeIds; //转码id列表
+
+    @Indexed
+    private String originalFileId;
+    private String originalFileKey; //TODO 删除这个字段
+
+    private String coverId;
 
     private Integer width;  // TODO 字段挪到子类 MediaInfo
     private Integer height;// TODO 字段挪到子类 MediaInfo
@@ -52,14 +52,10 @@ public class Video {
     @Indexed
     private String provider;    //它就是对象存储提供商，和file是一对一关系
 
-    @Indexed
-    private String youtubeVideoId; // TODO 字段挪到子类 YouTube
-    private String youtubeUrl; // TODO 字段挪到子类 YouTube
-    private JSONObject youtubeVideoInfo; // TODO 字段挪到子类 YouTube
-    private Date youtubePublishTime; // TODO 字段挪到子类 YouTube
+    private YouTube youTube;
 
     @Indexed
-    private String status;   //转码状态
+    private String status;     //转码状态
     @Indexed
     private Date createTime;
     @Indexed
@@ -73,8 +69,6 @@ public class Video {
     private Boolean isTranscodeFilesDeleted;    //ts转码文件是否已删除
     private Date deleteTime;                    //什么时候删的
 
-    private List<String> transcodeIds;
-
     public Video() {
         this.createTime = new Date();
         this.updateTime = new Date();
@@ -84,6 +78,8 @@ public class Video {
         this.isPermanent = false;
         this.isOriginalFileDeleted = false;
         this.isTranscodeFilesDeleted = false;
+
+        this.youTube = new YouTube();
     }
 
     @Override

@@ -14,6 +14,7 @@ import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.utils.ShortUrlService;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.video.Video;
+import com.github.makewheels.video2022.video.bean.video.YouTube;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,8 +72,10 @@ public class VideoCreateService {
         //YouTube
         if (videoType.equals(VideoType.YOUTUBE)) {
             String youtubeUrl = createVideoDTO.getYoutubeUrl();
-            video.setYoutubeUrl(youtubeUrl);
-            video.setYoutubeVideoId(youtubeService.getYoutubeVideoIdByUrl(youtubeUrl));
+            YouTube youTube = new YouTube();
+            youTube.setUrl(youtubeUrl);
+            youTube.setVideoId(youtubeService.getYoutubeVideoIdByUrl(youtubeUrl));
+            video.setYouTube(youTube);
         }
 
         //创建 video file
@@ -135,7 +138,7 @@ public class VideoCreateService {
      * 创建视频：处理youtube
      */
     private void handleCreateYoutube(Video video, User user, File videoFile) {
-        String extension = youtubeService.getFileExtension(video.getYoutubeVideoId());
+        String extension = youtubeService.getFileExtension(video.getYouTube().getVideoId());
         if (!videoFile.getExtension().equals(extension)) {
             //更新file
             videoFile.setExtension(extension);
@@ -151,8 +154,8 @@ public class VideoCreateService {
         youtubeService.transferVideo(user, video, videoFile);
 
         //获取视频信息，保存title和description到数据库
-        JSONObject youtubeVideoInfo = youtubeService.getVideoInfo(video.getYoutubeVideoId());
-        video.setYoutubeVideoInfo(youtubeVideoInfo);
+        JSONObject youtubeVideoInfo = youtubeService.getVideoInfo(video.getYouTube().getVideoId());
+        video.getYouTube().setVideoInfo(youtubeVideoInfo);
 
         //youtube视频可以直接发起搬运封面，不必等源视频上传完成
         //上传完成的截帧操作已做幂等性处理，会判断如果是youtube视频，跳过截帧
@@ -165,9 +168,9 @@ public class VideoCreateService {
         long value = publishedAt.getLong("value");
         ZoneId zoneId = ZoneId.of("UTC+" + timeZoneShift);
         Instant instant = ZonedDateTime.ofInstant(Instant.ofEpochMilli(value), zoneId).toInstant();
-        Date youtubePublishTime = Date.from(
+        Date publishTime = Date.from(
                 ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).toInstant());
-        video.setYoutubePublishTime(youtubePublishTime);
+        video.getYouTube().setPublishTime(publishTime);
 
         JSONObject snippet = youtubeVideoInfo.getJSONObject("snippet");
         video.setTitle(snippet.getString("title"));
