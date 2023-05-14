@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -114,50 +115,6 @@ public class FileService {
     }
 
     /**
-     * 列举所有文件
-     */
-    public List<OSSObjectSummary> listAllObjects(String prefix) {
-        return aliyunOssService.listAllObjects(prefix);
-    }
-
-    /**
-     * 删除文件
-     */
-    public List<String> deleteObjects(List<String> keys) {
-        return aliyunOssService.deleteObjects(keys);
-    }
-
-    /**
-     * 获取单个文件
-     */
-    public OSSObject getObject(String key) {
-        return aliyunOssService.getObject(key);
-    }
-
-    /**
-     * 预签名下载文件
-     */
-    public String generatePresignedUrl(String key, Duration duration) {
-        return aliyunOssService.generatePresignedUrl(key, duration);
-    }
-
-    /**
-     * 设置对象权限
-     */
-    public void setObjectAcl(String key, CannedAccessControlList cannedAccessControlList) {
-        log.info("阿里云OSS设置对象权限, key = {}, cannedAccessControlList = {}",
-                key, cannedAccessControlList);
-        aliyunOssService.setObjectAcl(key, cannedAccessControlList);
-    }
-
-    /**
-     * 上传文件
-     */
-    public PutObjectResult putObject(String key, InputStream inputStream) {
-        return aliyunOssService.putObject(key, inputStream);
-    }
-
-    /**
      * 访问文件：重定向到阿里云对象存储
      */
     public Result<Void> access(
@@ -184,4 +141,75 @@ public class FileService {
         }
         return Result.ok();
     }
+
+    /**
+     * 上传文件
+     */
+    public PutObjectResult putObject(String key, InputStream inputStream) {
+        return aliyunOssService.putObject(key, inputStream);
+    }
+
+    /**
+     * 获取单个文件
+     */
+    public OSSObject getObject(String key) {
+        return aliyunOssService.getObject(key);
+    }
+
+    /**
+     * 获取多个文件信息
+     * 因为阿里云没有批量查key接口，那就遍历一个一个查
+     */
+    public List<OSSObject> getObjects(List<String> keys) {
+        List<OSSObject> objects = new ArrayList<>(keys.size());
+        for (String key : keys) {
+            aliyunOssService.getObject(key);
+        }
+        return objects;
+    }
+
+    /**
+     * 按照prefix查找文件
+     */
+    public List<OSSObjectSummary> findObjects(String prefix) {
+        return aliyunOssService.listAllObjects(prefix);
+    }
+
+    /**
+     * 删除文件
+     */
+    public VoidResult deleteObject(String key) {
+        return aliyunOssService.deleteObject(key);
+    }
+
+    /**
+     * 删除文件
+     */
+    public List<String> deleteObjects(List<String> keys) {
+        DeleteObjectsResult deleteObjectsResult = aliyunOssService.deleteObjects(keys);
+        return deleteObjectsResult.getDeletedObjects();
+    }
+
+    /**
+     * 预签名下载文件
+     */
+    public String generatePresignedUrl(String key, Duration duration) {
+        return aliyunOssService.generatePresignedUrl(key, duration);
+    }
+
+    /**
+     * 设置对象权限
+     */
+    public void setObjectAcl(String key, CannedAccessControlList cannedAccessControlList) {
+        aliyunOssService.setObjectAcl(key, cannedAccessControlList);
+    }
+
+    /**
+     * 改变object存储类型
+     */
+    public CopyObjectResult changeObjectStorageClass(String key, StorageClass storageClass) {
+        return aliyunOssService.changeObjectStorageClass(key, storageClass);
+    }
+
+
 }

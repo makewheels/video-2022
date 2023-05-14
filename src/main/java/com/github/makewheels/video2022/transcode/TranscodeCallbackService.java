@@ -152,7 +152,7 @@ public class TranscodeCallbackService {
 
         //获取对象存储每一个文件
         String transcodeFolder = FilenameUtils.getPath(transcode.getM3u8Key());
-        List<OSSObjectSummary> objects = fileService.listAllObjects(transcodeFolder);
+        List<OSSObjectSummary> objects = fileService.findObjects(transcodeFolder);
         Map<String, OSSObjectSummary> ossFilenameMap = objects.stream().collect(
                 Collectors.toMap(e -> FilenameUtils.getName(e.getKey()), Function.identity()));
 

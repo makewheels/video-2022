@@ -7,6 +7,7 @@ import com.aliyun.oss.HttpMethod;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.common.comm.Protocol;
+import com.aliyun.oss.internal.OSSHeaders;
 import com.aliyun.oss.model.*;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.auth.sts.AssumeRoleRequest;
@@ -38,7 +39,10 @@ public class AliyunOssService {
 
     private OSS ossClient;
 
-    public OSS getClient() {
+    /**
+     * 获取client
+     */
+    private OSS getClient() {
         if (ossClient != null) return ossClient;
         ClientBuilderConfiguration configuration = new ClientBuilderConfiguration();
         configuration.setProtocol(Protocol.HTTPS);
@@ -47,14 +51,12 @@ public class AliyunOssService {
     }
 
     /**
-     * 获取单个文件
+     * 关闭client
      */
-    public OSSObject getObject(String key) {
-        return getClient().getObject(bucket, key);
-    }
-
-    public boolean doesObjectExist(String key) {
-        return getClient().doesObjectExist(bucket, key);
+    public void shutdownClient() {
+        if (ossClient != null) {
+            ossClient.shutdown();
+        }
     }
 
     /**
@@ -92,23 +94,47 @@ public class AliyunOssService {
     }
 
     /**
-     * 列列举所有文件，内部分页遍历所有文件
+     * 上传
+     */
+    public PutObjectResult putObject(String key, InputStream inputStream) {
+        log.info("阿里云OSS上传: key = {}", key);
+        try {
+            getClient().putObject(bucket, key, inputStream);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 判断object是否存在
+     */
+    public boolean doesObjectExist(String key) {
+        return getClient().doesObjectExist(bucket, key);
+    }
+
+    /**
+     * 获取单个文件
+     */
+    public OSSObject getObject(String key) {
+        return getClient().getObject(bucket, key);
+    }
+
+    /**
+     * 按照prefix查找，分页遍历，列举所有文件
      */
     public List<OSSObjectSummary> listAllObjects(String prefix) {
         List<OSSObjectSummary> objects = new ArrayList<>();
-
         String nextContinuationToken = null;
         ListObjectsV2Result result;
         do {
-            ListObjectsV2Request request = new ListObjectsV2Request();
-            request.setBucketName(bucket);
-            request.withMaxKeys(1000);
-            request.setContinuationToken(nextContinuationToken);
-            request.setPrefix(prefix);
-            result = getClient().listObjectsV2(request);
-
+            ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request();
+            listObjectsRequest.setBucketName(bucket);
+            listObjectsRequest.withMaxKeys(1000);
+            listObjectsRequest.setContinuationToken(nextContinuationToken);
+            listObjectsRequest.setPrefix(prefix);
+            result = getClient().listObjectsV2(listObjectsRequest);
             objects.addAll(result.getObjectSummaries());
-
             nextContinuationToken = result.getNextContinuationToken();
         } while (result.isTruncated());
         return objects;
@@ -117,10 +143,17 @@ public class AliyunOssService {
     /**
      * 删除文件
      */
-    public List<String> deleteObjects(List<String> keys) {
-        DeleteObjectsResult deleteObjectsResult = getClient()
-                .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keys));
-        return deleteObjectsResult.getDeletedObjects();
+    public VoidResult deleteObject(String key) {
+        return getClient().deleteObject(bucket, key);
+    }
+
+    /**
+     * 删除文件
+     */
+    public DeleteObjectsResult deleteObjects(List<String> keys) {
+        DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucket);
+        deleteObjectsRequest.setKeys(keys);
+        return getClient().deleteObjects(deleteObjectsRequest);
     }
 
     /**
@@ -135,19 +168,21 @@ public class AliyunOssService {
      * 设置对象权限
      */
     public void setObjectAcl(String key, CannedAccessControlList cannedAccessControlList) {
+        log.info("阿里云OSS设置对象权限, key = {}, cannedAccessControlList = {}",
+                key, cannedAccessControlList);
         getClient().setObjectAcl(bucket, key, cannedAccessControlList);
     }
 
     /**
-     * 上传
+     * 改变object存储类型，通过覆盖key实现
      */
-    public PutObjectResult putObject(String key, InputStream inputStream) {
-        log.info("阿里云OSS上传: key = {}", key);
-        try {
-            getClient().putObject(bucket, key, inputStream);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        return null;
+    public CopyObjectResult changeObjectStorageClass(String key, StorageClass storageClass) {
+        log.info("阿里云OSS改变object存储类型, key = {}, storageClass = {}", key, storageClass);
+        CopyObjectRequest copyObjectRequest = new CopyObjectRequest(bucket, key, bucket, key);
+        ObjectMetadata meta = new ObjectMetadata();
+        meta.setHeader(OSSHeaders.OSS_STORAGE_CLASS, storageClass);
+        copyObjectRequest.setNewObjectMetadata(meta);
+        return ossClient.copyObject(copyObjectRequest);
     }
+
 }
