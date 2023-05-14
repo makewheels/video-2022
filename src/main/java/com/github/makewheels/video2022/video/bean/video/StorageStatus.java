@@ -6,10 +6,10 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import java.util.Date;
 
 /**
- * 视频过期
+ * 视频存储状态，可能过期删除或者在低频存储
  */
 @Data
-public class Expire {
+public class StorageStatus {
     @Indexed
     private Date expireTime;                    //过期时间
     @Indexed

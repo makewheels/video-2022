@@ -6,7 +6,6 @@ import com.github.makewheels.video2022.file.constants.S3Provider;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -27,12 +26,12 @@ public class Video {
     private String userId;
     @Indexed
     private String originalFileId;
-    private String originalFileKey;
+    private String originalFileKey; //TODO 删除这个字段
 
-    private Integer watchCount;
+    private Integer watchCount; //观看次数
     private Long duration;      //视频时长，单位毫秒
-    private String coverId;
-    private String coverUrl;
+    private String coverId; // TODO 字段挪到子类 Cover
+    private String coverUrl;// TODO 字段挪到子类 Cover
 
     @Indexed
     private String watchId;
@@ -41,25 +40,26 @@ public class Video {
     private String title;
     private String description;
 
-    private Integer width;
-    private Integer height;
-    private String videoCodec;
-    private String audioCodec;
-    private Integer bitrate;
+    private Integer width;  // TODO 字段挪到子类 MediaInfo
+    private Integer height;// TODO 字段挪到子类 MediaInfo
+    private String videoCodec;// TODO 字段挪到子类 MediaInfo
+    private String audioCodec;// TODO 字段挪到子类 MediaInfo
+    private Integer bitrate;// TODO 字段挪到子类 MediaInfo
+    private JSONObject mediaInfo;// TODO 字段挪到子类 MediaInfo
 
     @Indexed
-    private String type;
+    private String type;  //类型：是用户上传还是YouTube
     @Indexed
     private String provider;    //它就是对象存储提供商，和file是一对一关系
 
     @Indexed
-    private String youtubeVideoId;
-    private String youtubeUrl;
-    private JSONObject youtubeVideoInfo;
-    private Date youtubePublishTime;
+    private String youtubeVideoId; // TODO 字段挪到子类 YouTube
+    private String youtubeUrl; // TODO 字段挪到子类 YouTube
+    private JSONObject youtubeVideoInfo; // TODO 字段挪到子类 YouTube
+    private Date youtubePublishTime; // TODO 字段挪到子类 YouTube
 
     @Indexed
-    private String status;
+    private String status;   //转码状态
     @Indexed
     private Date createTime;
     @Indexed
@@ -72,8 +72,6 @@ public class Video {
     private Boolean isOriginalFileDeleted;      //源视频是否已删除
     private Boolean isTranscodeFilesDeleted;    //ts转码文件是否已删除
     private Date deleteTime;                    //什么时候删的
-
-    private JSONObject mediaInfo;
 
     private List<String> transcodeIds;
 
@@ -94,10 +92,10 @@ public class Video {
     }
 
     public boolean isYoutube() {
-        return StringUtils.equals(type, VideoType.YOUTUBE);
+        return VideoType.YOUTUBE.equals(this.type);
     }
 
     public boolean isReady() {
-        return StringUtils.equals(this.status, VideoStatus.READY);
+        return VideoStatus.READY.equals(this.status);
     }
 }
