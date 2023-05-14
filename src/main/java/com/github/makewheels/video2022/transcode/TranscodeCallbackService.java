@@ -4,6 +4,7 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
+import com.aliyun.oss.model.StorageClass;
 import com.github.makewheels.video2022.file.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
@@ -66,13 +67,11 @@ public class TranscodeCallbackService {
         //保存对象存储中的ts文件
         saveS3Files(video, transcode);
 
-        //如果视频已就绪
-        String title = video.getTitle();
-        if (video.getStatus().equals(VideoStatus.READY)) {
-            log.info("视频已就绪, videoId = {}, title = {}", videoId, title);
-            //通知钉钉
-            dingService.sendMarkdown("视频就绪", "视频就绪\n\n" + title + "\n\n" + videoId);
-        }
+        //改变源视频对象存储storageClass
+        changeOriginalFileStorageClass(video);
+
+        //发钉钉消息
+        sendDing(video);
     }
 
     /**
@@ -210,6 +209,28 @@ public class TranscodeCallbackService {
         transcode.setMaxBitrate(maxBitrate);
 
         mongoTemplate.save(transcode);
+    }
+
+    /**
+     * 改变源视频对象存储storageClass，为低频存储
+     */
+    private void changeOriginalFileStorageClass(Video video) {
+        String originalFileKey = fileService.getKey(video.getOriginalFileId());
+        fileService.changeObjectStorageClass(originalFileKey, StorageClass.IA);
+    }
+
+    /**
+     * 发送视频已就绪钉钉消息
+     */
+    private void sendDing(Video video) {
+        String videoId = video.getId();
+        //如果视频已就绪
+        String title = video.getTitle();
+        if (video.getStatus().equals(VideoStatus.READY)) {
+            log.info("视频已就绪, videoId = {}, title = {}", videoId, title);
+            //通知钉钉
+            dingService.sendMarkdown("视频就绪", "视频就绪\n\n" + title + "\n\n" + videoId);
+        }
     }
 
 }
