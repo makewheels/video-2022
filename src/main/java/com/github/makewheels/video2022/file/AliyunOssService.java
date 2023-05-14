@@ -182,7 +182,14 @@ public class AliyunOssService {
         ObjectMetadata meta = new ObjectMetadata();
         meta.setHeader(OSSHeaders.OSS_STORAGE_CLASS, storageClass);
         copyObjectRequest.setNewObjectMetadata(meta);
-        return ossClient.copyObject(copyObjectRequest);
+        return getClient().copyObject(copyObjectRequest);
+    }
+
+    /**
+     * 取回object
+     */
+    public RestoreObjectResult restoreObject(String key) {
+        return getClient().restoreObject(bucket, key);
     }
 
 }
