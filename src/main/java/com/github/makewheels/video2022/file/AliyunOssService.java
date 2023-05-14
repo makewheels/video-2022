@@ -174,6 +174,20 @@ public class AliyunOssService {
     }
 
     /**
+     * 重命名
+     */
+    public VoidResult renameObject(String sourceKey, String destinationKey) {
+        return getClient().renameObject(bucket, sourceKey, destinationKey);
+    }
+
+    /**
+     * 拷贝
+     */
+    public CopyObjectResult copy(String sourceKey, String destinationKey) {
+        return getClient().copyObject(bucket, sourceKey, bucket, destinationKey);
+    }
+
+    /**
      * 改变object存储类型，通过覆盖key实现
      */
     public CopyObjectResult changeObjectStorageClass(String key, StorageClass storageClass) {
@@ -192,4 +206,17 @@ public class AliyunOssService {
         return getClient().restoreObject(bucket, key);
     }
 
+    /**
+     * 创建软连接
+     */
+    public VoidResult createSymlink(String symlink, String target) {
+        return getClient().createSymlink(bucket, symlink, target);
+    }
+
+    /**
+     * 获取软连接
+     */
+    public OSSSymlink getSymlink(String bucket, String symlink) {
+        return getClient().getSymlink(bucket, symlink);
+    }
 }

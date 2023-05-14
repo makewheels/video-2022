@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.api;
+package com.github.makewheels.video2022.etc.api;
 
 public interface ApiType {
     String DING = "DING";

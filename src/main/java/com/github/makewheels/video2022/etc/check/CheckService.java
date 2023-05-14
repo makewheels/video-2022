@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.check;
+package com.github.makewheels.video2022.etc.check;
 
 import com.github.makewheels.video2022.etc.exception.VideoException;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;

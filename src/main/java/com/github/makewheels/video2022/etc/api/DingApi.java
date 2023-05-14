@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.api;
+package com.github.makewheels.video2022.etc.api;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

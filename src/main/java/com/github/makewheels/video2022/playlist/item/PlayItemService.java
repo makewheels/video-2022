@@ -2,7 +2,7 @@ package com.github.makewheels.video2022.playlist.item;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
-import com.github.makewheels.video2022.check.CheckService;
+import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
 import com.github.makewheels.video2022.playlist.item.request.add.AddPlayItemRequest;
 import com.github.makewheels.video2022.playlist.item.request.add.AddPlayItemService;
