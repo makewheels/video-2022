@@ -5,7 +5,7 @@ import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.utils.PathUtil;
-import com.github.makewheels.video2022.video.bean.video.Video;
+import com.github.makewheels.video2022.video.bean.entity.Video;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

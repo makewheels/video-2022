@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.video.bean.video;
+package com.github.makewheels.video2022.video.bean.entity;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
