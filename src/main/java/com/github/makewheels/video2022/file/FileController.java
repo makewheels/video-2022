@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.file;
 
 import com.alibaba.fastjson.JSONObject;
+import com.aliyun.oss.model.OSSObject;
 import com.github.makewheels.video2022.etc.context.Context;
 import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.Result;
@@ -16,6 +17,12 @@ import javax.annotation.Resource;
 public class FileController {
     @Resource
     private FileService fileService;
+
+    @GetMapping("getOssInfoByKey")
+    public Result<OSSObject> getOssInfoByKey(@RequestParam String key) {
+        OSSObject object = fileService.getObject(key);
+        return Result.ok(object);
+    }
 
     @GetMapping("getUploadCredentials")
     public Result<JSONObject> getUploadCredentials(@RequestParam String fileId) {

@@ -39,8 +39,6 @@ public class FileService {
     private AliyunOssService aliyunOssService;
 
     @Resource
-    private FileService fileService;
-    @Resource
     private FileRepository fileRepository;
 
     @Resource
@@ -133,7 +131,7 @@ public class FileService {
         new Thread(() -> fileAccessLogService.saveAccessLog(
                 request, videoId, clientId, sessionId, resolution, fileId)).start();
 
-        String key = fileService.getKey(fileId);
+        String key = getKey(fileId);
         String url = generatePresignedUrl(key, Duration.ofHours(3));
         response.setStatus(HttpServletResponse.SC_FOUND);
         try {
