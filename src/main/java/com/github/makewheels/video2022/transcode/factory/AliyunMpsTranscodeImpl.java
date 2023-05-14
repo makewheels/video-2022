@@ -6,15 +6,16 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QueryJobListResponseBody;
 import com.aliyun.mts20140618.models.SubmitJobsResponseBody;
-import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeCallbackService;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
+import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.video.Video;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -28,12 +29,14 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
     @Resource
     private AliyunMpsService aliyunMpsService;
     @Resource
-    private TranscodeRepository transcodeRepository;
+    private TranscodeCallbackService transcodeCallbackService;
 
     @Resource
-    private CacheService cacheService;
+    private MongoTemplate mongoTemplate;
     @Resource
-    private TranscodeCallbackService transcodeCallbackService;
+    private TranscodeRepository transcodeRepository;
+    @Resource
+    private VideoRepository videoRepository;
 
     /**
      * 处理回调
@@ -50,7 +53,7 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
         if (!StringUtils.equals(jobStatus, transcode.getStatus())) {
             transcode.setStatus(jobStatus);
             transcode.setResult(JSONObject.parseObject(JSON.toJSONString(job)));
-            cacheService.updateTranscode(transcode);
+            mongoTemplate.save(transcode);
             //通知视频转码完成
             transcodeCallbackService.onTranscodeFinish(transcode);
         }
@@ -117,7 +120,7 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
         //更新状态
         transcode.setJobId(jobId);
         transcode.setStatus(job.getState());
-        cacheService.updateTranscode(transcode);
+        mongoTemplate.save(transcode);
 
         //异步轮询查询阿里云转码状态
         new Thread(() -> iterateQueryAliyunTranscodeJob(video, transcode)).start();
@@ -130,7 +133,6 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
     public void callback(String jobId) {
         log.info("阿里云MPS转码回调开始：jobId = " + jobId);
         Transcode transcode = transcodeRepository.getByJobId(jobId);
-        Video video = cacheService.getVideo(transcode.getVideoId());
         handleCallback(transcode);
     }
 

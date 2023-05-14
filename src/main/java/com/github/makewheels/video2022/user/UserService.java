@@ -120,7 +120,7 @@ public class UserService {
     }
 
     public User getUserById(String userId) {
-        User user = cacheService.getUser(userId);
+        User user = userRepository.getById(userId);
         if (user != null) {
             user.setToken(null);
         }
