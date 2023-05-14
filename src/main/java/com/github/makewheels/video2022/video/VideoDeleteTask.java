@@ -34,7 +34,7 @@ public class VideoDeleteTask {
         for (Video video : videos) {
             String transcodePath = PathUtil.getS3TranscodePrefix(video.getUserId(), video.getId());
             //列举文件
-            List<OSSObjectSummary> objects = fileService.listAllObjects(transcodePath);
+            List<OSSObjectSummary> objects = fileService.findObjects(transcodePath);
             List<String> keys = objects.stream().map(OSSObjectSummary::getKey).collect(Collectors.toList());
             //执行删除
             List<String> deletedKeys = fileService.deleteObjects(keys);
