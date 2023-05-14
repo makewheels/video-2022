@@ -48,9 +48,6 @@ public class AliyunMpsService {
 
     /**
      * 获取媒体信息
-     *
-     * @param key
-     * @return
      */
     public SubmitMediaInfoJobResponse getMediaInfo(String key) {
         SubmitMediaInfoJobRequest request = new SubmitMediaInfoJobRequest();
@@ -67,11 +64,6 @@ public class AliyunMpsService {
 
     /**
      * 提交转码任务
-     *
-     * @param from
-     * @param to
-     * @param templateId
-     * @return
      */
     private SubmitJobsResponse runSubmitTranscodeJob(String from, String to, String templateId) {
         //阿里云转码的output特殊，
