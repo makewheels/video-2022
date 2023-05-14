@@ -13,7 +13,7 @@ import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.utils.DingService;
 import com.github.makewheels.video2022.utils.M3u8Util;
-import com.github.makewheels.video2022.video.bean.video.Video;
+import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;

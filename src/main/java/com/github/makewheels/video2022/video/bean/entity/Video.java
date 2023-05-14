@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.video.bean.video;
+package com.github.makewheels.video2022.video.bean.entity;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -39,6 +39,7 @@ public class Video {
 
     private String coverId;
 
+//    private MediaInfo mediaInfo;
     private Integer width;  // TODO 字段挪到子类 MediaInfo
     private Integer height;// TODO 字段挪到子类 MediaInfo
     private String videoCodec;// TODO 字段挪到子类 MediaInfo
