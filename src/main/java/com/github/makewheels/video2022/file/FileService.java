@@ -211,5 +211,11 @@ public class FileService {
         return aliyunOssService.changeObjectStorageClass(key, storageClass);
     }
 
+    /**
+     * 取回object
+     */
+    public RestoreObjectResult restoreObject(String key) {
+        return aliyunOssService.restoreObject(key);
+    }
 
 }
