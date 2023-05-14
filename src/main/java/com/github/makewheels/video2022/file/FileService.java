@@ -39,6 +39,8 @@ public class FileService {
     private AliyunOssService aliyunOssService;
 
     @Resource
+    private FileService fileService;
+    @Resource
     private FileRepository fileRepository;
 
     @Resource
@@ -126,13 +128,13 @@ public class FileService {
         String clientId = context.getClientId();
         String sessionId = context.getSessionId();
 
-        File file = fileRepository.getById(fileId);
 
         //异步保存访问File记录
         new Thread(() -> fileAccessLogService.saveAccessLog(
                 request, videoId, clientId, sessionId, resolution, fileId)).start();
 
-        String url = generatePresignedUrl(file.getKey(), Duration.ofHours(3));
+        String key = fileService.getKey(fileId);
+        String url = generatePresignedUrl(key, Duration.ofHours(3));
         response.setStatus(HttpServletResponse.SC_FOUND);
         try {
             response.sendRedirect(url);
@@ -140,6 +142,14 @@ public class FileService {
             e.printStackTrace();
         }
         return Result.ok();
+    }
+
+    /**
+     * 通过id获取对象存储的key
+     */
+    public String getKey(String fileId) {
+        File file = fileRepository.getById(fileId);
+        return file.getKey();
     }
 
     /**
