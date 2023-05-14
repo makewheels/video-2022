@@ -126,7 +126,7 @@ public class TranscodeCallbackService {
         String m3u8FileUrl = fileService.generatePresignedUrl(m3u8Key, Duration.ofMinutes(10));
         String m3u8Content = HttpUtil.get(m3u8FileUrl);
         transcode.setM3u8Content(m3u8Content);
-        cacheService.updateTranscode(transcode);
+        mongoTemplate.save(transcode);
     }
 
     /**
@@ -209,7 +209,7 @@ public class TranscodeCallbackService {
                 .max(Comparator.comparing(File::getBitrate)).get().getBitrate();
         transcode.setMaxBitrate(maxBitrate);
 
-        cacheService.updateTranscode(transcode);
+        mongoTemplate.save(transcode);
     }
 
 }

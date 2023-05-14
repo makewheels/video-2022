@@ -183,7 +183,7 @@ public class WatchService {
      * 根据转码对象获取m3u8内容，返回String
      */
     public String getM3u8Content(Context context, String transcodeId, String resolution) {
-        Transcode transcode = cacheService.getTranscode(transcodeId);
+        Transcode transcode = transcodeRepository.getById(transcodeId);
         //找到transcode对应的tsFiles
         List<File> files = fileRepository.getByIds(transcode.getTsFileIds());
         Map<String, File> fileMap = files.stream().collect(

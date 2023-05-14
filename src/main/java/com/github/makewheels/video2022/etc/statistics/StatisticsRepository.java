@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.statistics;
+package com.github.makewheels.video2022.etc.statistics;
 
 import com.alibaba.fastjson.JSONObject;
 import org.bson.Document;

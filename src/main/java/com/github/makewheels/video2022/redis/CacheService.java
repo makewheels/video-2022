@@ -77,26 +77,4 @@ public class CacheService {
         mongoTemplate.save(video);
     }
 
-    public User getUser(String id) {
-        return getByClass(User.class, id);
-    }
-
-    public void updateUser(User user) {
-        String id = user.getId();
-        if (id == null) return;
-        String redisKey = getRedisKey(User.class, id);
-        redisService.del(redisKey);
-        mongoTemplate.save(user);
-    }
-
-    public Transcode getTranscode(String id) {
-        return getByClass(Transcode.class, id);
-    }
-
-    public void updateTranscode(Transcode transcode) {
-        String redisKey = getRedisKey(Transcode.class, transcode.getId());
-        redisService.del(redisKey);
-        mongoTemplate.save(transcode);
-    }
-
 }

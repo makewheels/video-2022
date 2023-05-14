@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022.transcode.factory;
 
 import cn.hutool.core.util.IdUtil;
-import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeCallbackService;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
@@ -12,6 +11,7 @@ import com.github.makewheels.video2022.video.constants.VideoCodec;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -33,7 +33,7 @@ public class AliyunCfTranscodeImpl implements TranscodeService {
     @Resource
     private TranscodeCallbackService transcodeCallbackService;
     @Resource
-    private CacheService cacheService;
+    private MongoTemplate mongoTemplate;
 
     @Override
     public void transcode(Video video, Transcode transcode) {
@@ -57,7 +57,7 @@ public class AliyunCfTranscodeImpl implements TranscodeService {
 
         transcode.setJobId(jobId);
         transcode.setStatus(VideoStatus.TRANSCODING);
-        cacheService.updateTranscode(transcode);
+        mongoTemplate.save(transcode);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class AliyunCfTranscodeImpl implements TranscodeService {
         Transcode transcode = transcodeRepository.getByJobId(jobId);
         transcode.setStatus("FINISHED");
         transcode.setFinishTime(new Date());
-        cacheService.updateTranscode(transcode);
+        mongoTemplate.save(transcode);
         transcodeCallbackService.onTranscodeFinish(transcode);
     }
 }
