@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 定时删除过期视频
+ * 改低频存储
  */
 @Component
 @Slf4j
-public class VideoDeleteTask {
+public class ChangeStorageClassTask {
     @Resource
     private VideoService videoService;
     @Resource

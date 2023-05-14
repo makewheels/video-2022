@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.playlist.list;
 
 import com.alibaba.fastjson.JSON;
-import com.github.makewheels.video2022.check.CheckService;
+import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.playlist.list.request.CreatePlaylistRequest;
