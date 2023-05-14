@@ -185,7 +185,7 @@ public class VideoService {
      */
     public String getOriginalFileDownloadUrl(String videoId) {
         Video video = cacheService.getVideo(videoId);
-        String originalFileKey = video.getOriginalFileKey();
+        String originalFileKey = fileService.getKey(video.getOriginalFileId());
         return fileService.generatePresignedUrl(originalFileKey, Duration.ofHours(2));
     }
 }

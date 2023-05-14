@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QuerySnapshotJobListResponseBody;
 import com.aliyun.mts20140618.models.SubmitSnapshotJobResponse;
 import com.github.makewheels.video2022.file.File;
+import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.file.constants.S3Provider;
@@ -37,6 +38,9 @@ public class CoverLauncher {
     @Resource
     private MongoTemplate mongoTemplate;
     @Resource
+    private FileService fileService;
+
+    @Resource
     private YoutubeService youtubeService;
     @Resource
     private AliyunMpsService aliyunMpsService;
@@ -55,7 +59,6 @@ public class CoverLauncher {
     public void createCover(User user, Video video) {
         String userId = user.getId();
         String videoId = video.getId();
-        String sourceKey = video.getOriginalFileKey();
         String videoProvider = video.getProvider();
         String videoType = video.getType();
 
@@ -73,7 +76,6 @@ public class CoverLauncher {
         cover.setUserId(userId);
         cover.setVideoId(videoId);
         cover.setStatus(CoverStatus.CREATED);
-        cover.setSourceKey(sourceKey);
         cover.setFileId(file.getId());
         mongoTemplate.save(cover);
 
@@ -140,8 +142,9 @@ public class CoverLauncher {
         String videoId = video.getId();
         String targetKey = PathUtil.getS3VideoPrefix(video.getUserId(), videoId)
                 + "/cover/" + cover.getId() + ".jpg";
-        SubmitSnapshotJobResponse response = aliyunMpsService.submitSnapshotJob(
-                video.getOriginalFileKey(), targetKey);
+
+        String originalFileKey = fileService.getKey(video.getOriginalFileId());
+        SubmitSnapshotJobResponse response = aliyunMpsService.submitSnapshotJob(originalFileKey, targetKey);
         String jobId = response.getBody().getSnapshotJob().getId();
 
         //调一次阿里云接口，查询一次status，更新到数据库的cover

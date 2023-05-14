@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.aliyun.teaopenapi.models.Config;
 import com.aliyun.vod20170321.Client;
 import com.aliyun.vod20170321.models.RegisterMediaRequest;
+import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.video.bean.video.Video;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,8 @@ import java.time.Duration;
 public class AliyunVodService {
     @Resource
     private FileService fileService;
+    @Resource
+    private FileRepository fileRepository;
 
     public static Client createClient(String accessKeyId, String accessKeySecret) {
         Config config = new Config()
@@ -37,7 +40,8 @@ public class AliyunVodService {
         RegisterMediaRequest request = new RegisterMediaRequest();
         JSONArray registerMetadatas = new JSONArray();
         JSONObject registerMetadata = new JSONObject();
-        String fileURL = fileService.generatePresignedUrl(video.getOriginalFileKey(), Duration.ofHours(1));
+        String originalFileKey = fileService.getKey(video.getOriginalFileId());
+        String fileURL = fileService.generatePresignedUrl(originalFileKey, Duration.ofHours(1));
         registerMetadata.put("FileURL", fileURL);
         registerMetadata.put("Title", video.getTitle());
         request.setRegisterMetadatas(registerMetadatas.toJSONString());

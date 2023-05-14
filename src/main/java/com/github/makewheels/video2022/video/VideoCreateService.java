@@ -123,9 +123,6 @@ public class VideoCreateService {
         mongoTemplate.save(videoFile);
         log.info("新建文件：" + JSON.toJSONString(videoFile));
 
-        //更新video的source key
-        video.setOriginalFileKey(videoFile.getKey());
-        cacheService.updateVideo(video);
         log.info("新建视频：" + JSON.toJSONString(video));
 
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
@@ -145,9 +142,6 @@ public class VideoCreateService {
             String newKey = videoFile.getKey();
             videoFile.setKey(newKey.substring(0, newKey.lastIndexOf(".")) + "." + extension);
             mongoTemplate.save(videoFile);
-            //更新video的source key
-            video.setOriginalFileKey(videoFile.getKey());
-            cacheService.updateVideo(video);
         }
 
         //提交搬运视频任务给海外服务器

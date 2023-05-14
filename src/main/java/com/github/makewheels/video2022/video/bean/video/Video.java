@@ -36,7 +36,6 @@ public class Video {
 
     @Indexed
     private String originalFileId;
-    private String originalFileKey; //TODO 删除这个字段
 
     private String coverId;
 
