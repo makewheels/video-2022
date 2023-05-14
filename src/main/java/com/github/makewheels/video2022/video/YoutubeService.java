@@ -87,7 +87,7 @@ public class YoutubeService {
     public JSONObject transferVideo(User user, Video video, File file) {
         JSONObject body = new JSONObject();
         body.put("missionId", IdUtil.nanoId());
-        body.put("youtubeVideoId", video.getYoutubeVideoId());
+        body.put("youtubeVideoId", video.getYouTube().getVideoId());
         body.put("key", file.getKey());
         body.put("provider", file.getProvider());
         body.put("fileId", file.getId());

@@ -12,8 +12,8 @@ import java.util.Date;
 @Data
 public class YouTube {
     @Indexed
-    private String youtubeVideoId;
-    private String youtubeUrl;
-    private JSONObject youtubeVideoInfo;
-    private Date youtubePublishTime;
+    private String videoId;
+    private String url;
+    private JSONObject videoInfo;
+    private Date publishTime;
 }
