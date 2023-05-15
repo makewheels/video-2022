@@ -16,5 +16,5 @@ public class MediaInfo {
     private Integer bitrate;
     private Long duration;      //视频时长，单位毫秒
 
-    private JSONObject mediaInfo;
+    private JSONObject response;
 }
