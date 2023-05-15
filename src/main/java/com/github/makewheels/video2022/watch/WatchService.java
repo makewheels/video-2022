@@ -4,16 +4,16 @@ import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
+import com.github.makewheels.video2022.ding.NotificationService;
 import com.github.makewheels.video2022.etc.context.Context;
 import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
-import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.FileRepository;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
-import com.github.makewheels.video2022.utils.DingService;
 import com.github.makewheels.video2022.utils.IpService;
 import com.github.makewheels.video2022.video.VideoRedisService;
 import com.github.makewheels.video2022.video.VideoRepository;
@@ -58,7 +58,7 @@ public class WatchService {
     @Resource
     private CacheService cacheService;
     @Resource
-    private DingService dingService;
+    private NotificationService notificationService;
 
     @Value("${internal-base-url}")
     private String internalBaseUrl;
@@ -110,7 +110,6 @@ public class WatchService {
         //保存观看记录到数据库
         saveWatchLog(context, video);
 
-        //推送钉钉
         String ip = RequestUtil.getIp();
         JSONObject ipResult = ipService.getIpResultWithRedis(ip);
         String province = ipResult.getString("province");
@@ -119,12 +118,8 @@ public class WatchService {
         log.info("观看记录：videoId = {}, title = {}, {} {} {} {}",
                 videoId, video.getTitle(), ip, province, city, district);
 
-        String markdownText = "# video: " + video.getTitle() + "\n\n" +
-                "# viewCount: " + video.getWatchCount() + "\n\n" +
-                "# ip: " + ip + "\n\n" +
-                "# ipInfo: " + province + " " + city + " " + district + "\n\n" + "\n\n" +
-                "# User-Agent: " + RequestUtil.getUserAgent();
-        dingService.sendMarkdown("观看记录", markdownText);
+        //推送钉钉
+        notificationService.sendWatchLogMessage(video, ipResult);
 
         return Result.ok();
     }

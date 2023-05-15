@@ -30,11 +30,13 @@ public class IpService {
         //先查Redis，如果有直接返回
         JSONObject jsonObject = redisService.getForJSONObject(RedisKey.ip(ipForRedisKey));
         if (jsonObject != null) {
+            jsonObject.put("ip", ip);
             return jsonObject;
         }
 
         //如果Redis没有，调阿里云接口
         JSONObject ipInfoFromApi = getIpInfoFromApi(ip);
+        ipInfoFromApi.put("ip", ip);
 
         redisService.set(RedisKey.ip(ipForRedisKey), ipInfoFromApi.toJSONString(), RedisTime.SIX_HOURS);
         return jsonObject;

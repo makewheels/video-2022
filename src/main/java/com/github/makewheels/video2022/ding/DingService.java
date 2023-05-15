@@ -1,5 +1,6 @@
-package com.github.makewheels.video2022.utils;
+package com.github.makewheels.video2022.ding;
 
+import cn.hutool.core.codec.Base64;
 import com.alibaba.fastjson.JSON;
 import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;
@@ -9,7 +10,6 @@ import com.github.makewheels.video2022.etc.api.ApiType;
 import com.github.makewheels.video2022.etc.api.DingApi;
 import com.taobao.api.ApiException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -26,23 +26,24 @@ import java.util.Date;
 @Service
 @Slf4j
 public class DingService {
-    private String webhookUrl = "https://oapi.dingtalk.com/robot/send?" +
-            "access_token=960a84c7fac8bb09ac013bd0ed23b7085282d5dc59aeb3c08562c1fb3e961699";
-    private String secret
-            = "SEC924dc9d2ba24b5f5354f674adc81d33626ed997e1823de89f04338e581cebb1c";
+    @Resource
+    private RobotFactory robotFactory;
     @Resource
     private MongoTemplate mongoTemplate;
 
-    private String getUrl() {
+    /**
+     * 签名
+     */
+    private String generateUrl(String accessToken, String secret) {
+        String baseUrl = "https://oapi.dingtalk.com/robot/send?";
         long timestamp = System.currentTimeMillis();
         String stringToSign = timestamp + "\n" + secret;
-        Mac mac;
         try {
-            mac = Mac.getInstance("HmacSHA256");
+            Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
             byte[] signData = mac.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8));
-            String sign = URLEncoder.encode(new String(new Base64().encode(signData)), "UTF-8");
-            return webhookUrl + "&timestamp=" + timestamp + "&sign=" + sign;
+            String sign = URLEncoder.encode(Base64.encode(signData), "UTF-8");
+            return baseUrl + "access_token=" + accessToken + "&timestamp=" + timestamp + "&sign=" + sign;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -50,11 +51,15 @@ public class DingService {
     }
 
     /**
+     * 按照机器人类型生成url
+     */
+    private String generateUrl(String robotType) {
+        RobotConfig robotConfig = robotFactory.getRobotByType(robotType);
+        return generateUrl(robotConfig.getAccessToken(), robotConfig.getSecret());
+    }
+
+    /**
      * 创建一个初始化对象
-     *
-     * @param title
-     * @param text
-     * @return
      */
     private DingApi createApiLog(String title, String text) {
         DingApi dingApi = new DingApi();
@@ -70,14 +75,18 @@ public class DingService {
      * 发送 markdown
      * <p>
      * 示例返回：
-     * {"body":"{\"errcode\":0,\"errmsg\":\"ok\"}","errcode":0,"errmsg":"ok","errorCode":"0","msg":"ok","params":{"markdown":"{\"text\":\"27f13623-9719-4a19-a914-597d315b931d\\n\\nfefg\",\"title\":\"test-title\"}","msgtype":"markdown"},"subCode":"","subMsg":"","success":true}
+     * {"body":"{\"errcode\":0,\"errmsg\":\"ok\"}","errcode":0,"errmsg":"ok","errorCode":"0","msg":"ok",
+     * "params":{"markdown":"{\"text\":\"27f13623-9719-4a19-a914-597d315b931d\\n\\nfefg\",
+     * \"title\":\"test-title\"}","msgtype":"markdown"},"subCode":"","subMsg":"","success":true}
      */
-    public OapiRobotSendResponse sendMarkdown(String title, String markdownText) {
+    public OapiRobotSendResponse sendMarkdown(String robotType, String title, String markdownText) {
         DingApi dingApi = createApiLog(title, markdownText);
         dingApi.setMessageType("markdown");
         log.info("钉钉发送消息：title: {}", title);
         log.info("钉钉发送消息：markdownText: {}", markdownText);
-        DingTalkClient client = new DefaultDingTalkClient(getUrl());
+
+        String url = generateUrl(robotType);
+        DingTalkClient client = new DefaultDingTalkClient(url);
         OapiRobotSendRequest request = new OapiRobotSendRequest();
         request.setMsgtype("markdown");
 
