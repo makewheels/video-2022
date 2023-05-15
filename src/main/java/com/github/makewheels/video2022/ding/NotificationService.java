@@ -52,7 +52,7 @@ public class NotificationService {
      */
     public void sendExceptionMessage(Exception e, ExceptionLog exceptionLog) {
         String messageTitle = e.getMessage();
-        String clickUrl = externalBaseUrl + "/exception/getById?" + exceptionLog.getId();
+        String clickUrl = externalBaseUrl + "/exception/getById?exceptionLogId=" + exceptionLog.getId();
         String markdownText = e.getMessage() + "\n\n```" + exceptionLog.getExceptionStackTrace() + "```"
                 + "\n\n[点击查看" + exceptionLog.getId() + "](" + clickUrl + ")";
         dingService.sendMarkdown(RobotType.EXCEPTION, messageTitle, markdownText);
