@@ -1543,3 +1543,6 @@ RequestUtil to DTO改造方案
 
 ## 2023年2月2日00:32:21
 RequestUtil获取request对象改造方案
+
+## 2023年5月16日07:53:24
+改造钉钉通知类NotificationService，把异常发送到钉钉
