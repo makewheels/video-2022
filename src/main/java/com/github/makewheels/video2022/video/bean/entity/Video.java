@@ -43,7 +43,7 @@ public class Video {
 
     private String coverId;
 
-    //    private MediaInfo mediaInfo;
+    private MediaInfo mediaInfoNew;
     private Integer width;  // TODO 字段挪到子类 MediaInfo
     private Integer height;// TODO 字段挪到子类 MediaInfo
     private String videoCodec;// TODO 字段挪到子类 MediaInfo
@@ -84,6 +84,7 @@ public class Video {
         this.isTranscodeFilesDeleted = false;
 
         this.youTube = new YouTube();
+        this.mediaInfoNew = new MediaInfo();
     }
 
     @Override

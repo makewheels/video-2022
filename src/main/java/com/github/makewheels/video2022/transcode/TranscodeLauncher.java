@@ -167,7 +167,7 @@ public class TranscodeLauncher {
         log.info("阿里云MPS获取视频媒体信息，jobId ={}，接口返回：{}", job.getJobId(), JSON.toJSONString(job));
 
         //设置mediaInfo
-        video.setMediaInfo(JSONObject.parseObject(JSON.toJSONString(job)));
+        video.getMediaInfoNew().setResponse(JSONObject.parseObject(JSON.toJSONString(job)));
         SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties properties
                 = job.getProperties();
         video.setDuration((long) (Double.parseDouble(properties.getDuration()) * 1000));
