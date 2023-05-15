@@ -16,7 +16,7 @@ public class FileController {
     @Resource
     private FileService fileService;
 
-    @PostMapping("getOssObjectMetadataByKey")
+    @GetMapping("getOssObjectMetadataByKey")
     public Result<ObjectMetadata> getOssObjectMetadataByKey(@RequestParam String key) {
         OSSObject object = fileService.getObject(key);
         return Result.ok(object.getObjectMetadata());
