@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.file;
+package com.github.makewheels.video2022.file.oss;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -27,7 +27,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class AliyunOssService {
+public class OssService {
     @Value("${aliyun.oss.bucket}")
     private String bucket;
     @Value("${aliyun.oss.endpoint}")

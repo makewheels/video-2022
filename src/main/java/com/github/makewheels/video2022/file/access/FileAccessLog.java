@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.fileaccesslog;
+package com.github.makewheels.video2022.file.access;
 
 import com.alibaba.fastjson.JSON;
 import lombok.Data;

@@ -1,6 +1,6 @@
-package com.github.makewheels.video2022.fileaccesslog;
+package com.github.makewheels.video2022.file.access;
 
-import com.github.makewheels.video2022.file.File;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
