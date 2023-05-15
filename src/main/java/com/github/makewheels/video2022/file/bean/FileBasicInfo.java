@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * 文件基本信息
+ * 文件基本信息，父类用于继承
  */
 @Data
 public class FileBasicInfo {

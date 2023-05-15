@@ -5,10 +5,7 @@ import com.aliyun.oss.model.OSSObject;
 import com.github.makewheels.video2022.etc.context.Context;
 import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.Result;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -18,7 +15,7 @@ public class FileController {
     @Resource
     private FileService fileService;
 
-    @GetMapping("getOssInfoByKey")
+    @PostMapping("getOssInfoByKey")
     public Result<OSSObject> getOssInfoByKey(@RequestParam String key) {
         OSSObject object = fileService.getObject(key);
         return Result.ok(object);
