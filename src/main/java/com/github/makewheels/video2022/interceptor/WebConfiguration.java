@@ -55,6 +55,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/playlist/getPlayItemListDetail")
                 .excludePathPatterns("/sendmsg")
                 .excludePathPatterns("/file/getOssObjectMetadataByKey")
+                .excludePathPatterns("/exception/getById")
         ;
     }
 }
