@@ -5,13 +5,13 @@ import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.StorageClass;
-import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.ding.NotificationService;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
-import com.github.makewheels.video2022.utils.DingService;
 import com.github.makewheels.video2022.utils.M3u8Util;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
@@ -47,7 +47,7 @@ public class TranscodeCallbackService {
     @Resource
     private CacheService cacheService;
     @Resource
-    private DingService dingService;
+    private NotificationService notificationService;
 
     /**
      * 当有一个转码job完成时回调
@@ -68,10 +68,14 @@ public class TranscodeCallbackService {
         saveS3Files(video, transcode);
 
         //改变源视频对象存储storageClass
-        changeOriginalFileStorageClass(video);
+//        changeOriginalFileStorageClass(video);
 
         //发钉钉消息
         sendDing(video);
+
+        if (video.isReady()) {
+            log.info("视频已就绪, videoId = {}, title = {}", videoId, video.getTitle());
+        }
     }
 
     /**
@@ -220,16 +224,11 @@ public class TranscodeCallbackService {
     }
 
     /**
-     * 发送视频已就绪钉钉消息
+     * 如果视频已就绪，发送钉钉消息
      */
     private void sendDing(Video video) {
-        String videoId = video.getId();
-        //如果视频已就绪
-        String title = video.getTitle();
-        if (video.getStatus().equals(VideoStatus.READY)) {
-            log.info("视频已就绪, videoId = {}, title = {}", videoId, title);
-            //通知钉钉
-            dingService.sendMarkdown("视频就绪", "视频就绪\n\n" + title + "\n\n" + videoId);
+        if (video.isReady()) {
+            notificationService.sendVideoReadyMessage(video);
         }
     }
 

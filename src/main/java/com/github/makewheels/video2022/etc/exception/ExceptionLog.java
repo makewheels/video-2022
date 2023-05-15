@@ -13,7 +13,9 @@ public class ExceptionLog {
     private String id;
 
     private ErrorCode errorCode;
-    private String stackTrace;
+
+    private String exceptionMessage;
+    private String exceptionStackTrace;
     private Date createTime;
 
     public ExceptionLog() {

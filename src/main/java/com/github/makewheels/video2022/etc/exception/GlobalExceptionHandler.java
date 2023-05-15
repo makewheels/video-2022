@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.etc.exception;
 
+import com.github.makewheels.video2022.ding.NotificationService;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -19,26 +20,14 @@ import javax.annotation.Resource;
 public class GlobalExceptionHandler {
     @Resource
     private MongoTemplate mongoTemplate;
-
-    /**
-     * 保存Exception到数据库
-     */
-    private void saveException(Exception exception) {
-        ExceptionLog exceptionLog = new ExceptionLog();
-        if (exception instanceof VideoException) {
-            VideoException videoException = (VideoException) exception;
-            exceptionLog.setErrorCode(videoException.getErrorCode());
-        }
-        String stackTrace = ExceptionUtils.getStackTrace(exception);
-        exceptionLog.setStackTrace(stackTrace);
-        mongoTemplate.save(exceptionLog);
-    }
+    @Resource
+    private NotificationService notificationService;
 
     @ResponseBody
     @ExceptionHandler(Exception.class)
     public Result<Object> exceptionHandler(Exception exception) {
         exception.printStackTrace();
-        saveException(exception);
+        handleException(exception);
         String stackTrace = ExceptionUtils.getStackTrace(exception);
         return new Result<>(ErrorCode.FAIL.getCode(), exception.getMessage(), stackTrace);
     }
@@ -57,9 +46,28 @@ public class GlobalExceptionHandler {
         videoException.printStackTrace();
 
         //把异常保存到数据库
-        saveException(videoException);
+        handleException(videoException);
         String stackTrace = ExceptionUtils.getStackTrace(videoException);
         return new Result<>(code, message, stackTrace);
     }
+
+    /**
+     * 最终处理异常
+     */
+    private void handleException(Exception exception) {
+        ExceptionLog exceptionLog = new ExceptionLog();
+        if (exception instanceof VideoException) {
+            VideoException videoException = (VideoException) exception;
+            exceptionLog.setErrorCode(videoException.getErrorCode());
+        }
+        exceptionLog.setExceptionStackTrace(ExceptionUtils.getStackTrace(exception));
+
+        //保存到数据库
+        mongoTemplate.save(exceptionLog);
+
+        //发送钉钉消息
+        notificationService.sendExceptionMessage(exception, exceptionLog);
+    }
+
 
 }
