@@ -9,6 +9,8 @@ import com.github.makewheels.video2022.etc.response.Result;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("file")
@@ -17,9 +19,13 @@ public class FileController {
     private FileService fileService;
 
     @GetMapping("getOssObjectMetadataByKey")
-    public Result<ObjectMetadata> getOssObjectMetadataByKey(@RequestParam String key) {
+    public Result<Map<String, String>> getOssObjectMetadataByKey(@RequestParam String key) {
         OSSObject object = fileService.getObject(key);
-        return Result.ok(object.getObjectMetadata());
+        ObjectMetadata objectMetadata = object.getObjectMetadata();
+        String contentMD5 = objectMetadata.getContentMD5();
+        Map<String, String> map = new HashMap<>();
+        map.put("contentMD5", contentMD5);
+        return Result.ok(map);
     }
 
     @GetMapping("getUploadCredentials")
