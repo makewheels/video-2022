@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.StorageClass;
-import com.github.makewheels.video2022.file.File;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;

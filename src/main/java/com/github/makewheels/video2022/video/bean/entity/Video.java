@@ -23,7 +23,11 @@ public class Video {
     private String id;
 
     @Indexed
-    private String userId;
+    private String userId;   // 所有者 ownerId
+
+//    @Indexed
+//    private String uploader; //上传者
+
     @Indexed
     private String watchId;
     private String watchUrl;
@@ -39,7 +43,7 @@ public class Video {
 
     private String coverId;
 
-//    private MediaInfo mediaInfo;
+    //    private MediaInfo mediaInfo;
     private Integer width;  // TODO 字段挪到子类 MediaInfo
     private Integer height;// TODO 字段挪到子类 MediaInfo
     private String videoCodec;// TODO 字段挪到子类 MediaInfo

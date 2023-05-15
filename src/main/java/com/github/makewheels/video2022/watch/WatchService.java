@@ -8,7 +8,7 @@ import com.github.makewheels.video2022.etc.context.Context;
 import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
-import com.github.makewheels.video2022.file.File;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;

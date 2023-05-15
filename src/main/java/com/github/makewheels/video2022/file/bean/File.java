@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.file;
+package com.github.makewheels.video2022.file.bean;
 
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObject;

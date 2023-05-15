@@ -7,9 +7,11 @@ import com.github.makewheels.video2022.etc.context.Context;
 import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
-import com.github.makewheels.video2022.fileaccesslog.FileAccessLogService;
+import com.github.makewheels.video2022.file.access.FileAccessLogService;
+import com.github.makewheels.video2022.file.oss.OssService;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
@@ -36,7 +38,7 @@ public class FileService {
     @Resource
     private MongoTemplate mongoTemplate;
     @Resource
-    private AliyunOssService aliyunOssService;
+    private OssService ossService;
 
     @Resource
     private FileRepository fileRepository;
@@ -83,7 +85,7 @@ public class FileService {
         String key = file.getKey();
         //根据provider，获取上传凭证
         String provider = file.getProvider();
-        JSONObject credentials = aliyunOssService.getUploadCredentials(key);
+        JSONObject credentials = ossService.getUploadCredentials(key);
         if (credentials == null) return Result.error(ErrorCode.FAIL);
         credentials.put("provider", provider);
         log.info("生成上传凭证，fileId = " + fileId + " " + JSON.toJSONString(credentials));
@@ -103,7 +105,7 @@ public class FileService {
         log.info("处理文件上传完成，fileId = " + fileId + ", key = " + key);
 
         //判断provider
-        OSSObject object = aliyunOssService.getObject(key);
+        OSSObject object = ossService.getObject(key);
         ObjectMetadata objectMetadata = object.getObjectMetadata();
         file.setSize(objectMetadata.getContentLength());
         file.setEtag(objectMetadata.getETag());
@@ -154,14 +156,14 @@ public class FileService {
      * 上传文件
      */
     public PutObjectResult putObject(String key, InputStream inputStream) {
-        return aliyunOssService.putObject(key, inputStream);
+        return ossService.putObject(key, inputStream);
     }
 
     /**
      * 获取单个文件
      */
     public OSSObject getObject(String key) {
-        return aliyunOssService.getObject(key);
+        return ossService.getObject(key);
     }
 
     /**
@@ -171,7 +173,7 @@ public class FileService {
     public List<OSSObject> getObjects(List<String> keys) {
         List<OSSObject> objects = new ArrayList<>(keys.size());
         for (String key : keys) {
-            aliyunOssService.getObject(key);
+            ossService.getObject(key);
         }
         return objects;
     }
@@ -180,21 +182,21 @@ public class FileService {
      * 按照prefix查找文件
      */
     public List<OSSObjectSummary> findObjects(String prefix) {
-        return aliyunOssService.listAllObjects(prefix);
+        return ossService.listAllObjects(prefix);
     }
 
     /**
      * 删除文件
      */
     public VoidResult deleteObject(String key) {
-        return aliyunOssService.deleteObject(key);
+        return ossService.deleteObject(key);
     }
 
     /**
      * 删除文件
      */
     public List<String> deleteObjects(List<String> keys) {
-        DeleteObjectsResult deleteObjectsResult = aliyunOssService.deleteObjects(keys);
+        DeleteObjectsResult deleteObjectsResult = ossService.deleteObjects(keys);
         return deleteObjectsResult.getDeletedObjects();
     }
 
@@ -202,28 +204,28 @@ public class FileService {
      * 预签名下载文件
      */
     public String generatePresignedUrl(String key, Duration duration) {
-        return aliyunOssService.generatePresignedUrl(key, duration);
+        return ossService.generatePresignedUrl(key, duration);
     }
 
     /**
      * 设置对象权限
      */
     public void setObjectAcl(String key, CannedAccessControlList cannedAccessControlList) {
-        aliyunOssService.setObjectAcl(key, cannedAccessControlList);
+        ossService.setObjectAcl(key, cannedAccessControlList);
     }
 
     /**
      * 改变object存储类型
      */
     public CopyObjectResult changeObjectStorageClass(String key, StorageClass storageClass) {
-        return aliyunOssService.changeObjectStorageClass(key, storageClass);
+        return ossService.changeObjectStorageClass(key, storageClass);
     }
 
     /**
      * 取回object
      */
     public RestoreObjectResult restoreObject(String key) {
-        return aliyunOssService.restoreObject(key);
+        return ossService.restoreObject(key);
     }
 
 }

@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.video.bean.dto;
 
 import com.alibaba.fastjson.JSON;
-import com.github.makewheels.video2022.file.File;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import lombok.Data;

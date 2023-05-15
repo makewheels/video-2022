@@ -4,10 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.aliyun.mts20140618.models.QuerySnapshotJobListResponseBody;
 import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.OSSObject;
-import com.github.makewheels.video2022.file.*;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.file.constants.FileStatus;
+import com.github.makewheels.video2022.file.oss.OssService;
+import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.file.FileRepository;
+import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +28,7 @@ public class CoverCallbackService {
     private MongoTemplate mongoTemplate;
 
     @Resource
-    private AliyunOssService aliyunOssService;
+    private OssService ossService;
     @Resource
     private AliyunMpsService aliyunMpsService;
     @Resource
@@ -44,7 +47,7 @@ public class CoverCallbackService {
         //向对象存储确认文件存在
         String coverProvider = cover.getProvider();
         if (StringUtils.equalsAny(coverProvider, CoverProvider.ALIYUN_CLOUD_FUNCTION, CoverProvider.ALIYUN_MPS)) {
-            if (!aliyunOssService.doesObjectExist(key)) {
+            if (!ossService.doesObjectExist(key)) {
                 return Result.error(ErrorCode.FILE_NOT_EXIST);
             }
         }
