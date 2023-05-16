@@ -29,7 +29,7 @@ public class RequestUtil {
     /**
      * 根据url的参数，转为DTO对象
      */
-    public static <T> T toDTO(Class<T> clazz) {
+    private static <T> T toDTO(Class<T> clazz) {
         HttpServletRequest request = getRequest();
         Map<String, String[]> parameterMap = request.getParameterMap();
         Map<String, String> simpleHashMap = new HashMap<>(parameterMap.size());
@@ -50,6 +50,10 @@ public class RequestUtil {
 
     public static <T> T toDTO(JSONObject body, Class<T> clazz) {
         return toDTO(body.toJSONString(), clazz);
+    }
+
+    public static Context getContext() {
+        return toDTO(Context.class);
     }
 
     /**
