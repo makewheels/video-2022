@@ -1,6 +1,5 @@
 package com.github.makewheels.video2022.watch;
 
-import com.github.makewheels.video2022.etc.context.Context;
 import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.Result;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
@@ -22,8 +21,7 @@ public class WatchController {
      */
     @GetMapping("addWatchLog")
     public Result<Void> addWatchLog(@RequestParam String videoStatus) {
-        Context context = RequestUtil.toDTO(Context.class);
-        return watchService.addWatchLog(context, videoStatus);
+        return watchService.addWatchLog(RequestUtil.getContext(), videoStatus);
     }
 
     /**
@@ -31,8 +29,7 @@ public class WatchController {
      */
     @GetMapping("getWatchInfo")
     public Result<WatchInfo> getWatchInfo(@RequestParam String watchId) {
-        Context context = RequestUtil.toDTO(Context.class);
-        return watchService.getWatchInfo(context, watchId);
+        return watchService.getWatchInfo(RequestUtil.getContext(), watchId);
     }
 
     /**
@@ -40,8 +37,7 @@ public class WatchController {
      */
     @GetMapping("getM3u8Content.m3u8")
     public String getM3u8Content(@RequestParam String transcodeId, @RequestParam String resolution) {
-        Context context = RequestUtil.toDTO(Context.class);
-        return watchService.getM3u8Content(context, transcodeId, resolution);
+        return watchService.getM3u8Content(RequestUtil.getContext(), transcodeId, resolution);
     }
 
     /**
@@ -49,7 +45,6 @@ public class WatchController {
      */
     @GetMapping("getMultivariantPlaylist.m3u8")
     public String getMultivariantPlaylist() {
-        Context context = RequestUtil.toDTO(Context.class);
-        return watchService.getMultivariantPlaylist(context);
+        return watchService.getMultivariantPlaylist(RequestUtil.getContext());
     }
 }

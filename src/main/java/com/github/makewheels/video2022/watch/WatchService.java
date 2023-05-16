@@ -243,7 +243,8 @@ public class WatchService {
                     .append(transcode.getMaxBitrate())
                     .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate())
                     .append("\n")
-                    .append(m3u8Url).append("\n");
+                    .append(m3u8Url)
+                    .append("\n");
         }
         return stringBuilder.toString();
     }
