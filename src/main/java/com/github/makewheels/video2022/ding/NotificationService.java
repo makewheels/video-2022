@@ -35,7 +35,7 @@ public class NotificationService {
         String markdownText = "视频就绪"
                 + "\n\n" + video.getId()
                 + "\n\n" + videoTitle
-                + "![" + videoTitle + "](" + coverUrl + ")";
+                + "\n\n![" + videoTitle + "](" + coverUrl + ")";
         return dingService.sendMarkdown(RobotType.WATCH_LOG, messageTitle, markdownText);
     }
 
@@ -44,14 +44,17 @@ public class NotificationService {
      */
     public OapiRobotSendResponse sendWatchLogMessage(Video video, JSONObject ipInfo) {
         String videoTitle = video.getTitle();
+        String coverUrl = coverService.getSignedCoverUrl(video.getCoverId());
+
         String messageTitle = "观看记录: " + videoTitle;
         String markdownText = "# video: " + videoTitle + "\n\n" +
                 "# viewCount: " + video.getWatchCount() + "\n\n" +
                 "# ip: " + ipInfo.getString("ip") + "\n\n" +
                 "# ipInfo: " + ipInfo.getString("province") + " "
                 + ipInfo.getString("city") + " "
-                + ipInfo.getString("district") + "\n\n\n\n"
-                + "# User-Agent: " + RequestUtil.getUserAgent();
+                + ipInfo.getString("district") + "\n\n"
+                + "# User-Agent:\n\n" + RequestUtil.getUserAgent()
+                + "\n\n![" + videoTitle + "](" + coverUrl + ")";
         return dingService.sendMarkdown(RobotType.WATCH_LOG, messageTitle, markdownText);
     }
 
