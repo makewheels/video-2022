@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 @RestController
-@RequestMapping("exception")
+@RequestMapping("exceptionLog")
 public class ExceptionController {
     @Resource
     private MongoTemplate mongoTemplate;

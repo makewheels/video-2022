@@ -5,6 +5,7 @@ import com.dingtalk.api.response.OapiRobotSendResponse;
 import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.exception.ExceptionLog;
 import com.github.makewheels.video2022.video.bean.entity.Video;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -52,9 +53,18 @@ public class NotificationService {
      */
     public void sendExceptionMessage(Exception e, ExceptionLog exceptionLog) {
         String messageTitle = "异常信息";
-        String clickUrl = externalBaseUrl + "/exception/getById?exceptionLogId=" + exceptionLog.getId();
-        String markdownText = e.getMessage() + "\n\n```" + exceptionLog.getExceptionStackTrace() + "```"
-                + "\n\n[点击查看" + exceptionLog.getId() + "](" + clickUrl + ")";
+
+        String clickUrl = externalBaseUrl + "/exceptionLog/getById?exceptionLogId=" + exceptionLog.getId();
+
+        String exceptionStackTrace = StringUtils.substring(exceptionLog.getExceptionStackTrace(), 0, 1000);
+
+        String markdownClickUrl = "[点击查看异常 " + exceptionLog.getId() + "](" + clickUrl + ")";
+
+        String markdownText = "message: " + e.getMessage()
+                + "\n\n" + markdownClickUrl
+                + "\n\n```" + exceptionStackTrace + "```"
+                + "\n\n" + markdownClickUrl;
+
         dingService.sendMarkdown(RobotType.EXCEPTION, messageTitle, markdownText);
     }
 
