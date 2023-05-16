@@ -74,7 +74,7 @@ public class WatchService {
         watchLog.setIp(ip);
 
         //查询ip归属地
-        JSONObject ipResult = ipService.getIpResultWithRedis(ip);
+        JSONObject ipResult = ipService.getIpWithRedis(ip);
         watchLog.setIpInfo(ipResult);
         String userAgent = RequestUtil.getUserAgent();
         watchLog.setUserAgent(userAgent);
@@ -111,7 +111,7 @@ public class WatchService {
         saveWatchLog(context, video);
 
         String ip = RequestUtil.getIp();
-        JSONObject ipResult = ipService.getIpResultWithRedis(ip);
+        JSONObject ipResult = ipService.getIpWithRedis(ip);
         String province = ipResult.getString("province");
         String city = ipResult.getString("city");
         String district = ipResult.getString("district");
