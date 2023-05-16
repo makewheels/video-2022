@@ -53,6 +53,7 @@ public class IpService {
         //把响应里的result提到外层
         result.putAll(result.getJSONObject("result"));
         result.remove("result");
+        log.debug("处理ip响应结果handleApiResponse " + result.toJSONString());
     }
 
     public JSONObject getIpWithRedis(String ip) {
