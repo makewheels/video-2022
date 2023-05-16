@@ -34,8 +34,6 @@ public class Cover {
     @Indexed
     private String status;
 
-    private String sourceKey;
-
     private String accessUrl;
 
     private String extension;
