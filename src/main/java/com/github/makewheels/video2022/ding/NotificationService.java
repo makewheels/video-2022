@@ -56,7 +56,7 @@ public class NotificationService {
 
         String clickUrl = externalBaseUrl + "/exceptionLog/getById?exceptionLogId=" + exceptionLog.getId();
 
-        String exceptionStackTrace = StringUtils.substring(exceptionLog.getExceptionStackTrace(), 0, 1000);
+        String exceptionStackTrace = StringUtils.substring(exceptionLog.getExceptionStackTrace(), 0, 500);
 
         String markdownClickUrl = "[点击查看异常 " + exceptionLog.getId() + "](" + clickUrl + ")";
 
