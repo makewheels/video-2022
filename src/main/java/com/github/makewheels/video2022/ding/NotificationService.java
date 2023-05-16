@@ -51,7 +51,7 @@ public class NotificationService {
      * 发送异常消息
      */
     public void sendExceptionMessage(Exception e, ExceptionLog exceptionLog) {
-        String messageTitle = e.getMessage();
+        String messageTitle = "异常信息";
         String clickUrl = externalBaseUrl + "/exception/getById?exceptionLogId=" + exceptionLog.getId();
         String markdownText = e.getMessage() + "\n\n```" + exceptionLog.getExceptionStackTrace() + "```"
                 + "\n\n[点击查看" + exceptionLog.getId() + "](" + clickUrl + ")";
