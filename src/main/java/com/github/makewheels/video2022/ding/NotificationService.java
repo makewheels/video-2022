@@ -2,6 +2,7 @@ package com.github.makewheels.video2022.ding;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dingtalk.api.response.OapiRobotSendResponse;
+import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.exception.ExceptionLog;
 import com.github.makewheels.video2022.video.bean.entity.Video;
@@ -16,19 +17,25 @@ import javax.annotation.Resource;
  */
 @Service
 public class NotificationService {
-    @Resource
-    private DingService dingService;
     @Value("${external-base-url}")
     private String externalBaseUrl;
 
+    @Resource
+    private DingService dingService;
+    @Resource
+    private CoverService coverService;
 
     /**
      * 发送视频就绪消息
      */
     public OapiRobotSendResponse sendVideoReadyMessage(Video video) {
         String videoTitle = video.getTitle();
+        String coverUrl = coverService.getSignedCoverUrl(video.getCoverId());
         String messageTitle = "视频就绪: " + videoTitle;
-        String markdownText = "视频就绪\n\n" + video.getId() + "\n\n" + videoTitle;
+        String markdownText = "视频就绪"
+                + "\n\n" + video.getId()
+                + "\n\n" + videoTitle
+                + "![" + videoTitle + "](" + coverUrl + ")";
         return dingService.sendMarkdown(RobotType.WATCH_LOG, messageTitle, markdownText);
     }
 
@@ -56,7 +63,8 @@ public class NotificationService {
 
         String clickUrl = externalBaseUrl + "/exceptionLog/getById?exceptionLogId=" + exceptionLog.getId();
 
-        String exceptionStackTrace = StringUtils.substring(exceptionLog.getExceptionStackTrace(), 0, 500);
+        String exceptionStackTrace = StringUtils.substring(
+                exceptionLog.getExceptionStackTrace(), 0, 500);
 
         String markdownClickUrl = "[点击查看异常 " + exceptionLog.getId() + "](" + clickUrl + ")";
 
