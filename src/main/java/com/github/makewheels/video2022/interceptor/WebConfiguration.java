@@ -19,45 +19,6 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/**")
                 .excludePathPatterns("/upload.html")
                 .excludePathPatterns("/playlist/getMyPlaylistByPage")
-
-//                .excludePathPatterns("/app/checkUpdate")
-//                .excludePathPatterns("/favicon.ico")
-//                .excludePathPatterns("/static/favicon.ico")
-//                .excludePathPatterns("/healthCheck")
-//                .excludePathPatterns("/error")
-
-//                .excludePathPatterns("/login.html")
-//                .excludePathPatterns("/user/requestVerificationCode")
-//                .excludePathPatterns("/user/submitVerificationCode")
-//                .excludePathPatterns("/user/getUserByToken")
-//                .excludePathPatterns("/user/getUserById")
-//                .excludePathPatterns("/client/requestClientId")
-//                .excludePathPatterns("/session/requestSessionId")
-
-//                .excludePathPatterns("/save-token.html")
-//                .excludePathPatterns("/transfer-youtube.html")
-
-//                .excludePathPatterns("/transcode/baiduTranscodeCallback")
-//                .excludePathPatterns("/transcode/aliyunCloudFunctionTranscodeCallback")
-
-//                .excludePathPatterns("/watch")
-//                .excludePathPatterns("/watchController/addWatchLog")
-//                .excludePathPatterns("/watchController/getWatchInfo")
-//                .excludePathPatterns("/watchController/getM3u8Content.m3u8")
-//                .excludePathPatterns("/watchController/getMultivariantPlaylist.m3u8")
-
-//                .excludePathPatterns("/video/getVideoDetail")
-//                .excludePathPatterns("/video/getVideoListByUserId")
-//                .excludePathPatterns("/video/getOriginalFileDownloadUrl")
-//                .excludePathPatterns("/file/access")
-//                .excludePathPatterns("/statistics/getTrafficConsume")
-//                .excludePathPatterns("/statistics/aggregateTrafficData")
-//                .excludePathPatterns("/statistics.html")
-
-//                .excludePathPatterns("/playlist/getPlayItemListDetail")
-//                .excludePathPatterns("/sendmsg")
-//                .excludePathPatterns("/file/getOssObjectMetadataByKey")
-//                .excludePathPatterns("/exceptionLog/getById")
         ;
     }
 }
