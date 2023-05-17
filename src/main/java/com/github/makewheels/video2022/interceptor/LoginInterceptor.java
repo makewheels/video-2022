@@ -22,6 +22,9 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Value("${server.port}")
     private Integer serverPort;
 
+    public LoginInterceptor() {
+    }
+
     @Override
     public boolean preHandle(
             @NotNull HttpServletRequest request, @NotNull HttpServletResponse response,
@@ -47,7 +50,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception e) {
         UserHolder.remove();
     }
 }
