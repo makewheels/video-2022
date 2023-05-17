@@ -144,7 +144,7 @@
         <dependency>
             <groupId>com.aliyun</groupId>
             <artifactId>mts20140618</artifactId>
-            <version>3.3.54</version>
+            <version>3.3.56</version>
         </dependency>
 
         <!--阿里云视频点播VOD-->
