@@ -104,8 +104,7 @@ public class PlaylistController {
      */
     @GetMapping("getMyPlaylistByPage")
     public Result<List<Playlist>> getPlaylistByPage(@RequestParam int skip, @RequestParam int limit) {
-        List<Playlist> playlists = playlistService.getPlaylistByPage(
-                UserHolder.getUserId(), skip, limit);
+        List<Playlist> playlists = playlistService.getPlaylistByPage(UserHolder.getUserId(), skip, limit);
         return Result.ok(playlists);
     }
 

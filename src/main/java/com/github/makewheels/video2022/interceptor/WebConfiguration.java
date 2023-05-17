@@ -18,6 +18,7 @@ public class WebConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(getLoginInterceptor())
                 .excludePathPatterns("/**")
                 .excludePathPatterns("/upload.html")
+                .excludePathPatterns("/playlist/getMyPlaylistByPage")
 
 //                .excludePathPatterns("/app/checkUpdate")
 //                .excludePathPatterns("/favicon.ico")
