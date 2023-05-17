@@ -9,16 +9,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfiguration implements WebMvcConfigurer {
 
     @Bean
-    public LoginInterceptor getLoginInterceptor() {
-        return new LoginInterceptor();
+    public CheckTokenInterceptor getLoginInterceptor() {
+        return new CheckTokenInterceptor();
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(getLoginInterceptor())
                 .excludePathPatterns("/**")
-                .excludePathPatterns("/upload.html")
-                .excludePathPatterns("/playlist/getMyPlaylistByPage")
+                .addPathPatterns("/upload.html")
+                .addPathPatterns("/playlist/getMyPlaylistByPage")
         ;
     }
 }

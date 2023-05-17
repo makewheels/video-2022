@@ -16,13 +16,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 @Slf4j
-public class LoginInterceptor implements HandlerInterceptor {
+public class CheckTokenInterceptor implements HandlerInterceptor {
     @Resource
     private UserService userService;
     @Value("${server.port}")
     private Integer serverPort;
 
-    public LoginInterceptor() {
+    public CheckTokenInterceptor() {
     }
 
     @Override
