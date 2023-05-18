@@ -40,6 +40,7 @@ public class Video {
     @Indexed
     private String originalFileId;
 
+    @Indexed
     private String coverId;
 
     private MediaInfo mediaInfo;    // 媒体信息
