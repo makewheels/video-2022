@@ -66,7 +66,7 @@ public class VideoController {
      * 获取原始文件下载地址
      */
     @GetMapping("getOriginalFileDownloadUrl")
-    public Result<JSONObject> getMyVideoList(@RequestParam String videoId) {
+    public Result<JSONObject> getOriginalFileDownloadUrl(@RequestParam String videoId) {
         String url = videoService.getOriginalFileDownloadUrl(videoId);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("url", url);
