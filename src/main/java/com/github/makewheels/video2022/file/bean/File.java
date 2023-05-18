@@ -6,7 +6,7 @@ import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.github.makewheels.video2022.file.constants.FileStatus;
-import com.github.makewheels.video2022.file.constants.S3Provider;
+import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
 import lombok.Data;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.data.annotation.Id;
@@ -79,7 +79,7 @@ public class File {
         this.createTime = new Date();
         this.isDeleted = false;
         this.status = FileStatus.CREATED;
-        this.provider = S3Provider.ALIYUN_OSS;
+        this.provider = ObjectStorageProvider.ALIYUN_OSS;
     }
 
     @Override

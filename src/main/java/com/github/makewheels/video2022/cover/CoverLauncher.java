@@ -8,7 +8,7 @@ import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
-import com.github.makewheels.video2022.file.constants.S3Provider;
+import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.user.bean.User;
@@ -81,11 +81,11 @@ public class CoverLauncher {
 
         //判断类型
         //如果是youtube搬运
-        if (videoType.equals(VideoType.YOUTUBE) && videoProvider.equals(S3Provider.ALIYUN_OSS)) {
+        if (videoType.equals(VideoType.YOUTUBE) && videoProvider.equals(ObjectStorageProvider.ALIYUN_OSS)) {
             handleYoutubeCover(user, video, cover, file);
             //如果是用户自己上传
         } else if (videoType.equals(VideoType.USER_UPLOAD)) {
-            if (videoProvider.equals(S3Provider.ALIYUN_OSS)) {
+            if (videoProvider.equals(ObjectStorageProvider.ALIYUN_OSS)) {
                 handleAliyunMpsCover(user, video, cover, file);
             }
         }
@@ -114,7 +114,7 @@ public class CoverLauncher {
         String key = PathUtil.getS3VideoPrefix(userId, videoId)
                 + "/cover/" + coverId + "." + extension;
         cover.setKey(key);
-        if (videoProvider.equals(S3Provider.ALIYUN_OSS)) {
+        if (videoProvider.equals(ObjectStorageProvider.ALIYUN_OSS)) {
             cover.setAccessUrl(aliyunOssAccessBaseUrl + key);
         }
         //更新cover

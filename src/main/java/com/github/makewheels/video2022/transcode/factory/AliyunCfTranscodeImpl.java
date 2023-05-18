@@ -5,6 +5,7 @@ import com.github.makewheels.video2022.transcode.TranscodeCallbackService;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeService;
+import com.github.makewheels.video2022.video.bean.entity.MediaInfo;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.AudioCodec;
 import com.github.makewheels.video2022.video.constants.VideoCodec;
@@ -44,8 +45,9 @@ public class AliyunCfTranscodeImpl implements TranscodeService {
         String m3u8Key = transcode.getM3u8Key();
         String targetResolution = transcode.getResolution();
 
-        Integer width = video.getWidth();
-        Integer height = video.getHeight();
+        MediaInfo mediaInfo = video.getMediaInfo();
+        Integer width = mediaInfo.getWidth();
+        Integer height = mediaInfo.getHeight();
 
         String jobId = IdUtil.getSnowflakeNextIdStr();
         String outputDir = m3u8Key.substring(0, m3u8Key.lastIndexOf("/"));
