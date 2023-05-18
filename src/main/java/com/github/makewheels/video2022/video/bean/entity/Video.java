@@ -1,8 +1,7 @@
 package com.github.makewheels.video2022.video.bean.entity;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.file.constants.S3Provider;
+import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.Data;
@@ -34,22 +33,16 @@ public class Video {
     private String shortUrl;
     private String title;
     private String description;
-    private Integer watchCount; //观看次数
-    private Long duration;      //视频时长，单位毫秒
-    private List<String> transcodeIds; //转码id列表
+    private Integer watchCount;         //观看次数
+    private Long duration;              //视频时长，单位毫秒
+    private List<String> transcodeIds;  //转码id列表
 
     @Indexed
     private String originalFileId;
 
     private String coverId;
 
-    private MediaInfo mediaInfoNew;
-    private Integer width;  // TODO 字段挪到子类 MediaInfo
-    private Integer height;// TODO 字段挪到子类 MediaInfo
-    private String videoCodec;// TODO 字段挪到子类 MediaInfo
-    private String audioCodec;// TODO 字段挪到子类 MediaInfo
-    private Integer bitrate;// TODO 字段挪到子类 MediaInfo
-    private JSONObject mediaInfo;// TODO 字段挪到子类 MediaInfo
+    private MediaInfo mediaInfo;    // 媒体信息
 
     @Indexed
     private String type;  //类型：是用户上传还是YouTube
@@ -77,14 +70,14 @@ public class Video {
         this.createTime = new Date();
         this.updateTime = new Date();
         this.status = VideoStatus.CREATED;
-        this.provider = S3Provider.ALIYUN_OSS;
+        this.provider = ObjectStorageProvider.ALIYUN_OSS;
         this.watchCount = 0;
         this.isPermanent = false;
         this.isOriginalFileDeleted = false;
         this.isTranscodeFilesDeleted = false;
 
         this.youTube = new YouTube();
-        this.mediaInfoNew = new MediaInfo();
+        this.mediaInfo = new MediaInfo();
     }
 
     @Override

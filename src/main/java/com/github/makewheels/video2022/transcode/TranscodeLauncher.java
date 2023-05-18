@@ -14,6 +14,7 @@ import com.github.makewheels.video2022.transcode.factory.TranscodeService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.Environment;
 import com.github.makewheels.video2022.utils.PathUtil;
+import com.github.makewheels.video2022.video.bean.entity.MediaInfo;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoCodec;
 import lombok.extern.slf4j.Slf4j;
@@ -64,20 +65,19 @@ public class TranscodeLauncher {
      */
     private String getTranscodeProvider(Video video, String targetResolution) {
         String videoId = video.getId();
-        Integer width = video.getWidth();
-        Integer height = video.getHeight();
+        MediaInfo mediaInfo = video.getMediaInfo();
 
         //默认用阿里云MPS
         String transcodeProvider = TranscodeProvider.ALIYUN_MPS;
-        if (!video.getVideoCodec().equals(VideoCodec.H264)) {
+        if (!mediaInfo.getVideoCodec().equals(VideoCodec.H264)) {
             //如果不是h264，用阿里云
             log.info("决定用谁转码：源视频不是h264，用阿里云MPS转码, videoId = " + videoId);
 
-        } else if (isResolutionOverThanTarget(width, height, targetResolution)) {
+        } else if (isResolutionOverThanTarget(mediaInfo.getWidth(), mediaInfo.getHeight(), targetResolution)) {
             //源视分辨率和目标分辨率不一致，用阿里云
             log.info("决定用谁转码：分辨率OverThanTarget，用阿里云MPS转码, videoId = " + videoId);
 
-        } else if (video.getBitrate() > 13000) {
+        } else if (mediaInfo.getBitrate() > 13000) {
             //如果源片码率太高，用阿里云压缩码率
             log.info("决定用谁转码：码率超标，用阿里云MPS转码, videoId = " + videoId);
 
@@ -156,8 +156,8 @@ public class TranscodeLauncher {
      */
     private void loadVideoMediaInfo(Video video) {
         String videoId = video.getId();
-
         String sourceKey = fileService.getKey(video.getOriginalFileId());
+        MediaInfo mediaInfo = video.getMediaInfo();
 
         log.info("通过阿里云MPS获取视频信息，videoId = {}, title = {}", videoId, video.getTitle());
         //获取视频媒体信息，确定只用阿里云mps，不用其它供应商
@@ -167,23 +167,23 @@ public class TranscodeLauncher {
         log.info("阿里云MPS获取视频媒体信息，jobId ={}，接口返回：{}", job.getJobId(), JSON.toJSONString(job));
 
         //设置mediaInfo
-        video.getMediaInfoNew().setResponse(JSONObject.parseObject(JSON.toJSONString(job)));
-        SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties properties
-                = job.getProperties();
+        mediaInfo.setResponse(JSONObject.parseObject(JSON.toJSONString(job)));
+        SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties
+                properties = job.getProperties();
         video.setDuration((long) (Double.parseDouble(properties.getDuration()) * 1000));
-        video.setHeight(Integer.parseInt(properties.getHeight()));
-        video.setWidth(Integer.parseInt(properties.getWidth()));
-        video.setBitrate((int) Double.parseDouble(properties.getBitrate()));
+        mediaInfo.setHeight(Integer.parseInt(properties.getHeight()));
+        mediaInfo.setWidth(Integer.parseInt(properties.getWidth()));
+        mediaInfo.setBitrate((int) Double.parseDouble(properties.getBitrate()));
         SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreams
                 streams = properties.getStreams();
-        video.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
+        mediaInfo.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
 
         // 设置音频流，注意可能没有音频流
         List<SubmitMediaInfoJobResponseBody
                 .SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreamsAudioStreamListAudioStream>
                 audioStream = streams.getAudioStreamList().getAudioStream();
         if (CollectionUtils.isNotEmpty(audioStream)) {
-            video.setAudioCodec(audioStream.get(0).getCodecName());
+            mediaInfo.setAudioCodec(audioStream.get(0).getCodecName());
         }
     }
 
@@ -198,8 +198,9 @@ public class TranscodeLauncher {
         cacheService.updateVideo(video);
 
         //发起转码
-        Integer width = video.getWidth();
-        Integer height = video.getHeight();
+        MediaInfo mediaInfo = video.getMediaInfo();
+        Integer width = mediaInfo.getWidth();
+        Integer height = mediaInfo.getHeight();
 
         //720p
         if (width * height > 854 * 480) {
