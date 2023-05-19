@@ -3,11 +3,11 @@ package com.github.makewheels.video2022.ding;
 import com.alibaba.fastjson.JSONObject;
 import com.dingtalk.api.response.OapiRobotSendResponse;
 import com.github.makewheels.video2022.cover.CoverService;
+import com.github.makewheels.video2022.environment.EnvironmentService;
 import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.exception.ExceptionLog;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -17,8 +17,8 @@ import javax.annotation.Resource;
  */
 @Service
 public class NotificationService {
-    @Value("${external-base-url}")
-    private String externalBaseUrl;
+    @Resource
+    private EnvironmentService environmentService;
 
     @Resource
     private DingService dingService;
@@ -64,7 +64,8 @@ public class NotificationService {
     public void sendExceptionMessage(Exception e, ExceptionLog exceptionLog) {
         String messageTitle = "异常信息";
 
-        String clickUrl = externalBaseUrl + "/exceptionLog/getById?exceptionLogId=" + exceptionLog.getId();
+        String clickUrl = environmentService.getCallbackUrl(
+                "/exceptionLog/getById?exceptionLogId=" + exceptionLog.getId());
 
         String exceptionStackTrace = StringUtils.substring(
                 exceptionLog.getExceptionStackTrace(), 0, 500);

@@ -4,8 +4,9 @@ import cn.hutool.core.io.file.FileNameUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QuerySnapshotJobListResponseBody;
 import com.aliyun.mts20140618.models.SubmitSnapshotJobResponse;
-import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
@@ -30,8 +31,8 @@ import java.util.Date;
 @Service
 @Slf4j
 public class CoverLauncher {
-    @Value("${external-base-url}")
-    private String externalBaseUrl;
+    @Resource
+    private EnvironmentService environmentService;
     @Value("${aliyun.oss.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
 
@@ -129,8 +130,9 @@ public class CoverLauncher {
         mongoTemplate.save(file);
 
         //发起请求，搬运youtube封面
-        String businessUploadFinishCallbackUrl = externalBaseUrl + "/cover/youtubeUploadFinishCallback"
-                + "?coverId=" + coverId + "&token=" + user.getToken();
+        String path = "/cover/youtubeUploadFinishCallback?" +
+                "coverId=" + coverId + "&token=" + user.getToken();
+        String businessUploadFinishCallbackUrl = environmentService.getCallbackUrl(path);
         log.info("发起youtube搬运封面请求：downloadUrl = {}", downloadUrl);
         youtubeService.transferFile(user, file, downloadUrl, businessUploadFinishCallbackUrl);
     }
