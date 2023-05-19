@@ -3,11 +3,11 @@ package com.github.makewheels.video2022.video;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.github.makewheels.video2022.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -18,10 +18,7 @@ import java.util.Map;
 @Service
 @Slf4j
 public class YoutubeService {
-    @Value("${youtube-service-url}")
-    private String youtubeServiceUrl;
-    @Value("${external-base-url}")
-    private String externalBaseUrl;
+    private EnvironmentService environmentService;
 
     /**
      * 获取文件拓展名
@@ -75,7 +72,8 @@ public class YoutubeService {
      */
     public JSONObject getVideoInfo(String youtubeVideoId) {
         log.info("获取YouTube视频信息：youtubeVideoId = " + youtubeVideoId);
-        String json = HttpUtil.get(youtubeServiceUrl + "/youtube/getVideoInfo?youtubeVideoId="
+        String json = HttpUtil.get(environmentService.getYoutubeServiceUrl()
+                + "/youtube/getVideoInfo?youtubeVideoId="
                 + youtubeVideoId);
         log.info("获取YouTube视频信息，海外服务器返回：" + json);
         return JSONObject.parseObject(json);
@@ -95,19 +93,22 @@ public class YoutubeService {
         body.put("videoId", video.getId());
 
         //获取文件上传凭证地址
-        body.put("getUploadCredentialsUrl", externalBaseUrl + "/file/getUploadCredentials" +
-                "?fileId=" + file.getId() + "&token=" + user.getToken());
+        body.put("getUploadCredentialsUrl", environmentService.getCallbackUrl(
+                "/file/getUploadCredentials?"
+                        + "fileId=" + file.getId() + "&token=" + user.getToken()));
 
         //文件上传完成回调地址
-        body.put("fileUploadFinishCallbackUrl", externalBaseUrl + "/file/uploadFinish"
-                + "?fileId=" + file.getId() + "&token=" + user.getToken());
+        body.put("fileUploadFinishCallbackUrl", environmentService.getCallbackUrl(
+                "/file/uploadFinish?"
+                        + "fileId=" + file.getId() + "&token=" + user.getToken()));
 
         //通知业务原始文件上传完成回调地址
-        body.put("businessUploadFinishCallbackUrl", externalBaseUrl + "/video/originalFileUploadFinish"
-                + "?videoId=" + video.getId() + "&token=" + user.getToken());
+        body.put("businessUploadFinishCallbackUrl", environmentService.getCallbackUrl(
+                "/video/originalFileUploadFinish?"
+                        + "videoId=" + video.getId() + "&token=" + user.getToken()));
 
         log.info("提交搬运视频任务，body = " + body.toJSONString());
-        String json = HttpUtil.post(youtubeServiceUrl + "/youtube/transferVideo",
+        String json = HttpUtil.post(environmentService.getYoutubeServiceUrl() + "/youtube/transferVideo",
                 body.toJSONString());
         log.info("提交搬运视频任务，海外服务器返回：" + json);
         return JSONObject.parseObject(json);
@@ -125,18 +126,21 @@ public class YoutubeService {
         body.put("downloadUrl", downloadUrl);
 
         //获取文件上传凭证地址
-        body.put("getUploadCredentialsUrl", externalBaseUrl + "/file/getUploadCredentials" +
-                "?fileId=" + file.getId() + "&token=" + user.getToken());
+        body.put("getUploadCredentialsUrl", environmentService.getCallbackUrl(
+                "/file/getUploadCredentials?" +
+                        "fileId=" + file.getId() + "&token=" + user.getToken()));
 
         //文件上传完成回调地址
-        body.put("fileUploadFinishCallbackUrl", externalBaseUrl + "/file/uploadFinish"
-                + "?fileId=" + file.getId() + "&token=" + user.getToken());
+        body.put("fileUploadFinishCallbackUrl", environmentService.getCallbackUrl(
+                "/file/uploadFinish?"
+                + "fileId=" + file.getId() + "&token=" + user.getToken()));
 
         //通知业务原始文件上传完成回调地址
         body.put("businessUploadFinishCallbackUrl", businessUploadFinishCallbackUrl);
 
         log.info("提交搬运文件任务，body = " + body.toJSONString());
-        String json = HttpUtil.post(youtubeServiceUrl + "/youtube/transferFile",
+        String json = HttpUtil.post(
+                environmentService.getYoutubeServiceUrl() + "/youtube/transferFile",
                 body.toJSONString());
         log.info("提交搬运文件任务，海外服务器返回：" + json);
         return JSONObject.parseObject(json);

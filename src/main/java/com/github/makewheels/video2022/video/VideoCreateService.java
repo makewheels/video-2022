@@ -3,12 +3,12 @@ package com.github.makewheels.video2022.video;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
-import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
-import com.github.makewheels.video2022.utils.Environment;
 import com.github.makewheels.video2022.utils.IdService;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.utils.ShortUrlService;
@@ -17,7 +17,6 @@ import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +30,6 @@ import java.util.Date;
 @Service
 @Slf4j
 public class VideoCreateService {
-    @Value("${internal-base-url}")
-    private String internalBaseUrl;
-
     @Resource
     private MongoTemplate mongoTemplate;
 
@@ -50,8 +46,8 @@ public class VideoCreateService {
     @Resource
     private ShortUrlService shortUrlService;
 
-    @Value("${spring.profiles.active}")
-    private String environment;
+    @Resource
+    private EnvironmentService environmentService;
 
     /**
      * 创建视频对象
@@ -86,13 +82,13 @@ public class VideoCreateService {
         video.setOriginalFileId(fileId);
         String watchId = idService.nextShortId();
         video.setWatchId(watchId);
-        String watchUrl = internalBaseUrl + "/watch?v=" + watchId;
+        String watchUrl = environmentService.getInternalBaseUrl() + "/watch?v=" + watchId;
         video.setWatchUrl(watchUrl);
 
         //本地开发环境shortUrl就是watchUrl
         video.setShortUrl(watchUrl);
 
-        if (environment.equals(Environment.PRODUCTION)) {
+        if (environmentService.isProductionEnv()) {
             String shortUrl = shortUrlService.getShortUrl(watchUrl);
             video.setShortUrl(shortUrl);
         }

@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.transcode;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
+import com.github.makewheels.video2022.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
@@ -12,14 +13,12 @@ import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
 import com.github.makewheels.video2022.transcode.factory.TranscodeFactory;
 import com.github.makewheels.video2022.transcode.factory.TranscodeService;
 import com.github.makewheels.video2022.user.bean.User;
-import com.github.makewheels.video2022.utils.Environment;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.entity.MediaInfo;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoCodec;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -33,8 +32,8 @@ import java.util.List;
 @Service
 @Slf4j
 public class TranscodeLauncher {
-    @Value("${spring.profiles.active}")
-    private String environment;
+    @Resource
+    private EnvironmentService environmentService;
 
     @Resource
     private MongoTemplate mongoTemplate;
@@ -84,7 +83,7 @@ public class TranscodeLauncher {
         } else {
             //其它情况用阿里云 云函数
             //本地环境都用阿里云mps转码，不用回调。生产环境才用云函数
-            if (environment.equals(Environment.PRODUCTION)) {
+            if (environmentService.isProductionEnv()) {
                 transcodeProvider = TranscodeProvider.ALIYUN_CLOUD_FUNCTION;
             }
         }

@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.cover.CoverRepository;
 import com.github.makewheels.video2022.ding.NotificationService;
+import com.github.makewheels.video2022.environment.EnvironmentService;
 import com.github.makewheels.video2022.etc.context.Context;
 import com.github.makewheels.video2022.etc.context.RequestUtil;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
@@ -22,7 +23,6 @@ import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -60,8 +60,7 @@ public class WatchService {
     @Resource
     private NotificationService notificationService;
 
-    @Value("${internal-base-url}")
-    private String internalBaseUrl;
+    private EnvironmentService environmentService;
 
     /**
      * 保存观看记录到数据库
@@ -129,7 +128,7 @@ public class WatchService {
      */
     private String getM3u8Url(String videoId, String clientId, String sessionId, String transcodeId,
                               String resolution) {
-        return internalBaseUrl + "/watchController/getM3u8Content.m3u8?"
+        return environmentService.getInternalBaseUrl() + "/watchController/getM3u8Content.m3u8?"
                 + "resolution=" + resolution
                 + "&videoId=" + videoId
                 + "&clientId=" + clientId
@@ -164,7 +163,7 @@ public class WatchService {
         watchInfo.setVideoStatus(video.getStatus());
 
         //自适应m3u8地址
-        watchInfo.setMultivariantPlaylistUrl(internalBaseUrl
+        watchInfo.setMultivariantPlaylistUrl(environmentService.getInternalBaseUrl()
                 + "/watchController/getMultivariantPlaylist.m3u8?videoId=" + videoId
                 + "&clientId=" + context.getClientId() + "&sessionId=" + context.getSessionId());
         //缓存redis，先判断视频状态：只有READY才放入缓存
@@ -194,7 +193,7 @@ public class WatchService {
             String filename = lines.get(i);
             if (StringUtils.startsWith(filename, "#")) continue;
             File file = fileMap.get(filename);
-            String url = internalBaseUrl + "/file/access?"
+            String url = environmentService.getInternalBaseUrl() + "/file/access?"
                     + "resolution=" + transcode.getResolution()
                     + "&tsIndex=" + fileMap.get(filename).getTsIndex()
                     + "&videoId=" + context.getVideoId()

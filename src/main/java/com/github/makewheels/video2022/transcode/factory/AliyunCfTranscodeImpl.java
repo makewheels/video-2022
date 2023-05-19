@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.transcode.factory;
 
 import cn.hutool.core.util.IdUtil;
+import com.github.makewheels.video2022.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.TranscodeCallbackService;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
@@ -11,7 +12,6 @@ import com.github.makewheels.video2022.video.constants.AudioCodec;
 import com.github.makewheels.video2022.video.constants.VideoCodec;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +24,7 @@ import java.util.Date;
 @Service
 @Slf4j
 public class AliyunCfTranscodeImpl implements TranscodeService {
-    @Value("${external-base-url}")
-    private String externalBaseUrl;
+    private EnvironmentService environmentService;
 
     @Resource
     private CloudFunctionTranscodeService cloudFunctionTranscodeService;
@@ -51,7 +50,8 @@ public class AliyunCfTranscodeImpl implements TranscodeService {
 
         String jobId = IdUtil.getSnowflakeNextIdStr();
         String outputDir = m3u8Key.substring(0, m3u8Key.lastIndexOf("/"));
-        String callbackUrl = externalBaseUrl + "/transcode/aliyunCloudFunctionTranscodeCallback";
+        String callbackUrl = environmentService.getCallbackUrl(
+                "/transcode/aliyunCloudFunctionTranscodeCallback");
 
         cloudFunctionTranscodeService.transcode(
                 sourceKey, outputDir, videoId, transcodeId, jobId, targetResolution, width, height,

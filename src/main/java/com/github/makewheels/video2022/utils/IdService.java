@@ -1,10 +1,10 @@
 package com.github.makewheels.video2022.utils;
 
 import cn.hutool.core.util.RandomUtil;
+import com.github.makewheels.video2022.environment.EnvironmentService;
 import com.github.makewheels.video2022.redis.RedisKey;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +20,8 @@ import java.time.ZoneOffset;
 @Service
 @Slf4j
 public class IdService {
-    @Value("${spring.profiles.active}")
-    private String environment;
+    @Resource
+    private EnvironmentService environmentService;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
@@ -88,13 +88,10 @@ public class IdService {
     }
 
     public String getEnvironmentPrefix() {
-        switch (environment) {
-            case Environment.PRODUCTION:
-                return "P";
-            case Environment.PREVIEW:
-                return "V";
-            case Environment.DEVELOPMENT:
-                return "D";
+        if (environmentService.isProductionEnv()) {
+            return "P";
+        } else if (environmentService.isDevelopmentEnv()) {
+            return "D";
         }
         return "";
     }
