@@ -60,6 +60,7 @@ public class WatchService {
     @Resource
     private NotificationService notificationService;
 
+    @Resource
     private EnvironmentService environmentService;
 
     /**

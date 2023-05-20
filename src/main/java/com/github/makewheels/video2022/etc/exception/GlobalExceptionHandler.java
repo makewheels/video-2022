@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.etc.exception;
 
 import com.github.makewheels.video2022.ding.NotificationService;
+import com.github.makewheels.video2022.environment.EnvironmentService;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,8 @@ public class GlobalExceptionHandler {
     private MongoTemplate mongoTemplate;
     @Resource
     private NotificationService notificationService;
+    @Resource
+    private EnvironmentService environmentService;
 
     @ResponseBody
     @ExceptionHandler(Exception.class)
@@ -66,7 +69,10 @@ public class GlobalExceptionHandler {
         mongoTemplate.save(exceptionLog);
 
         //发送钉钉消息
-        notificationService.sendExceptionMessage(exception, exceptionLog);
+        //只有生产才发错误消息到钉钉
+        if (environmentService.isProductionEnv()) {
+            notificationService.sendExceptionMessage(exception, exceptionLog);
+        }
     }
 
 

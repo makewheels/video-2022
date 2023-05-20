@@ -20,5 +20,6 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/upload.html")
                 .addPathPatterns("/playlist/getMyPlaylistByPage")
         ;
+
     }
 }
