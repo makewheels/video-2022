@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.ding;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.dingtalk.api.response.OapiRobotSendResponse;
 import com.github.makewheels.video2022.cover.CoverService;
@@ -11,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * 通知服务
@@ -49,6 +51,7 @@ public class NotificationService {
         String messageTitle = "观看记录: " + videoTitle;
         String markdownText = "# video: " + videoTitle + "\n\n" +
                 "# viewCount: " + video.getWatchCount() + "\n\n" +
+                "# 时间: " + DateUtil.formatDateTime(new Date()) + "\n\n" +
                 "# ip: " + ipInfo.getString("ip") + "\n\n" +
                 "# ipInfo: " + ipInfo.getString("province") + " "
                 + ipInfo.getString("city") + " "
@@ -73,6 +76,7 @@ public class NotificationService {
         String markdownClickUrl = "[点击查看异常 " + exceptionLog.getId() + "](" + clickUrl + ")";
 
         String markdownText = "message: " + e.getMessage()
+                + "\n\n# 时间: " + DateUtil.formatDateTime(new Date())
                 + "\n\n" + markdownClickUrl
                 + "\n\n```" + exceptionStackTrace + "```"
                 + "\n\n" + markdownClickUrl;
