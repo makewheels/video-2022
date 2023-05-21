@@ -10,6 +10,7 @@ import com.github.makewheels.video2022.video.bean.entity.Video;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.Map;
 @Service
 @Slf4j
 public class YoutubeService {
+    @Resource
     private EnvironmentService environmentService;
 
     /**
