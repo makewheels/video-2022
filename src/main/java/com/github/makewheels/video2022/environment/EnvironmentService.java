@@ -3,6 +3,9 @@ package com.github.makewheels.video2022.environment;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * 环境，配置
+ */
 @Service
 public class EnvironmentService {
     @Value("${internal-base-url}")
@@ -18,6 +21,9 @@ public class EnvironmentService {
 
     @Value("${spring.profiles.active}")
     private String environment;
+
+    @Value("${server.port}")
+    private Integer serverPort;
 
     public String getInternalBaseUrl() {
         return internalBaseUrl;
@@ -48,6 +54,10 @@ public class EnvironmentService {
 
     public String getEnvironment() {
         return environment;
+    }
+
+    public Integer getServerPort() {
+        return serverPort;
     }
 
     public boolean isDevelopmentEnv() {

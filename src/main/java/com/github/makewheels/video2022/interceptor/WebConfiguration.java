@@ -16,9 +16,14 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(getLoginInterceptor())
-                .excludePathPatterns("/**")
-                .addPathPatterns("/upload.html")
+                .addPathPatterns("/save-token.html")
                 .addPathPatterns("/playlist/getMyPlaylistByPage")
+                .addPathPatterns("/video/create")
+                .addPathPatterns("/file/getUploadCredentials")
+                .addPathPatterns("/video/originalFileUploadFinish")
+                .addPathPatterns("/file/uploadFinish")
+                .addPathPatterns("/video/updateInfo")
+                .addPathPatterns("/miniProgram/getShareQrCodeUrl")
         ;
 
     }
