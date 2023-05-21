@@ -6,6 +6,7 @@ import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.StorageClass;
 import com.github.makewheels.video2022.ding.NotificationService;
+import com.github.makewheels.video2022.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
@@ -48,6 +49,8 @@ public class TranscodeCallbackService {
     private CacheService cacheService;
     @Resource
     private NotificationService notificationService;
+    @Resource
+    private EnvironmentService environmentService;
 
     /**
      * 当有一个转码job完成时回调
@@ -227,7 +230,7 @@ public class TranscodeCallbackService {
      * 如果视频已就绪，发送钉钉消息
      */
     private void sendDing(Video video) {
-        if (video.isReady()) {
+        if (video.isReady() && environmentService.isProductionEnv()) {
             notificationService.sendVideoReadyMessage(video);
         }
     }

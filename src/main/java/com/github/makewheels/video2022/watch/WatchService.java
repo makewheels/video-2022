@@ -119,7 +119,9 @@ public class WatchService {
                 videoId, video.getTitle(), ip, province, city, district);
 
         //推送钉钉
-        notificationService.sendWatchLogMessage(video, ipResult);
+        if (environmentService.isProductionEnv()) {
+            notificationService.sendWatchLogMessage(video, ipResult);
+        }
 
         return Result.ok();
     }
