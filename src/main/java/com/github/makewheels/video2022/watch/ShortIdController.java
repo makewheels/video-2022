@@ -4,8 +4,11 @@ import com.github.makewheels.video2022.environment.EnvironmentService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import javax.annotation.Resource;
+
 @Controller
 public class ShortIdController {
+    @Resource
     private EnvironmentService environmentService;
 
     //    @GetMapping("/{shortId}")
