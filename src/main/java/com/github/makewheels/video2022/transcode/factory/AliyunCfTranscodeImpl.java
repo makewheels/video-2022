@@ -24,6 +24,7 @@ import java.util.Date;
 @Service
 @Slf4j
 public class AliyunCfTranscodeImpl implements TranscodeService {
+    @Resource
     private EnvironmentService environmentService;
 
     @Resource
