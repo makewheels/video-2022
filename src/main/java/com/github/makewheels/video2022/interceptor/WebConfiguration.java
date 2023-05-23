@@ -25,6 +25,8 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/video/updateInfo")
                 .addPathPatterns("/playlist/addPlaylistItem")
                 .addPathPatterns("/miniProgram/getShareQrCodeUrl")
+
+                .addPathPatterns("/video/getMyVideoList")
         ;
 
     }
