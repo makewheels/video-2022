@@ -19,6 +19,7 @@ public class CoverService {
     public String getSignedCoverUrl(String coverId) {
         Cover cover = coverRepository.getById(coverId);
         if (cover == null) return null;
-        return fileService.generatePresignedUrl(cover.getKey(), Duration.ofHours(2));
+        String key = cover.getKey();
+        return fileService.generatePresignedUrl(key, Duration.ofHours(2));
     }
 }
