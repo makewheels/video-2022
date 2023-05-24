@@ -28,9 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -205,6 +203,18 @@ public class FileService {
      */
     public String generatePresignedUrl(String key, Duration duration) {
         return ossService.generatePresignedUrl(key, duration);
+    }
+
+    /**
+     * 批量预签名下载文件
+     */
+    public Map<String, String> generatePresignedUrl(List<String> keyList, Duration duration) {
+        Map<String, String> map = new HashMap<>(keyList.size());
+        for (String key : keyList) {
+            String url = ossService.generatePresignedUrl(key, duration);
+            map.put(key, url);
+        }
+        return map;
     }
 
     /**

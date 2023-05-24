@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CoverService {
@@ -22,5 +25,18 @@ public class CoverService {
         if (cover == null) return null;
         String key = cover.getKey();
         return fileService.generatePresignedUrl(key, Duration.ofHours(2));
+    }
+
+    /**
+     * 批量生成预签名url
+     * key: coverId
+     * value: url
+     */
+    public Map<String, String> getSignedCoverUrl(List<String> coverIdList) {
+        List<Cover> coverList = coverRepository.getByIdList(coverIdList);
+        List<String> keyList = coverList.stream().map(Cover::getKey).collect(Collectors.toList());
+        Map<String, String> key2UrlMap = fileService.generatePresignedUrl(keyList, Duration.ofHours(2));
+        return coverList.stream().collect(Collectors.toMap(
+                Cover::getId, cover -> key2UrlMap.get(cover.getKey())));
     }
 }
