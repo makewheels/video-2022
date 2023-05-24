@@ -148,21 +148,22 @@ public class VideoService {
      */
     private List<VideoVO> getVideoList(String userId, int skip, int limit) {
         List<Video> videos = videoRepository.getVideosByUserId(userId, skip, limit);
-        List<VideoVO> itemList = new ArrayList<>(videos.size());
+        List<VideoVO> videoVOList = new ArrayList<>(videos.size());
         for (Video video : videos) {
-            VideoVO item = new VideoVO();
-            BeanUtils.copyProperties(video, item);
-            item.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-            YouTube youTube = video.getYouTube();
-            if (youTube != null) {
+            VideoVO videoVO = new VideoVO();
+            BeanUtils.copyProperties(video, videoVO);
+            String coverUrl = coverService.getSignedCoverUrl(video.getCoverId());
+            videoVO.setCoverUrl(coverUrl);
+            videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
+            if (video.isYoutube() && video.getYouTube() != null) {
+                YouTube youTube = video.getYouTube();
                 if (youTube.getPublishTime() != null) {
-                    item.setYoutubePublishTimeString(DateUtil.formatDateTime(youTube.getPublishTime()));
-
+                    videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(youTube.getPublishTime()));
                 }
             }
-            itemList.add(item);
+            videoVOList.add(videoVO);
         }
-        return itemList;
+        return videoVOList;
     }
 
     /**
