@@ -17,6 +17,7 @@ public class CoverService {
      * 根据coverId，生成带对象存储签名的url
      */
     public String getSignedCoverUrl(String coverId) {
+        if (coverId == null) return null;
         Cover cover = coverRepository.getById(coverId);
         if (cover == null) return null;
         String key = cover.getKey();
