@@ -1552,3 +1552,6 @@ RequestUtil获取request对象改造方案
 
 ## 2023年5月19日08:20:58
 抽出EnvironmentService，取消之前所有@Value注入
+
+## 2023年5月25日07:46:21
+改造登录拦截器，一个放token，一个拦截
