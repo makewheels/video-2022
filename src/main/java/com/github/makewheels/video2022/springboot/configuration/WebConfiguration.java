@@ -2,7 +2,7 @@ package com.github.makewheels.video2022.springboot.configuration;
 
 import com.github.makewheels.video2022.system.token.CheckTokenInterceptor;
 import com.github.makewheels.video2022.system.token.PutTokenInterceptor;
-import com.github.makewheels.video2022.requestlog.RequestLogInterceptor;
+import com.github.makewheels.video2022.system.requestlog.RequestLogInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
