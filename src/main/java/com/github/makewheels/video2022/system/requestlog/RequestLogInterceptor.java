@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.requestlog;
+package com.github.makewheels.video2022.system.requestlog;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
