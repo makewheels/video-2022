@@ -7,8 +7,8 @@ import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.etc.exception.VideoException;
 import com.github.makewheels.video2022.etc.response.ErrorCode;
 import com.github.makewheels.video2022.etc.response.Result;
-import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
@@ -29,6 +29,8 @@ import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -148,12 +150,15 @@ public class VideoService {
      */
     private List<VideoVO> getVideoList(String userId, int skip, int limit) {
         List<Video> videos = videoRepository.getVideosByUserId(userId, skip, limit);
+        // 获取封面url
+        List<String> coverIdList = videos.stream().map(Video::getCoverId).collect(Collectors.toList());
+        Map<String, String> coverId2UrlMap = coverService.getSignedCoverUrl(coverIdList);
+
         List<VideoVO> videoVOList = new ArrayList<>(videos.size());
         for (Video video : videos) {
             VideoVO videoVO = new VideoVO();
             BeanUtils.copyProperties(video, videoVO);
-            String coverUrl = coverService.getSignedCoverUrl(video.getCoverId());
-            videoVO.setCoverUrl(coverUrl);
+            videoVO.setCoverUrl(coverId2UrlMap.get(video.getCoverId()));
             videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
             if (video.isYoutube() && video.getYouTube() != null) {
                 YouTube youTube = video.getYouTube();
