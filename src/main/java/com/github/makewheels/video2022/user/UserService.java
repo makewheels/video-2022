@@ -33,6 +33,9 @@ public class UserService {
     @Resource
     private CacheService cacheService;
 
+    /**
+     * 根据登录token获取用户
+     */
     public User getUserByToken(String token) {
         //先看redis有没有
         User user = userRedisService.getUserByToken(token);
@@ -54,6 +57,9 @@ public class UserService {
         return null;
     }
 
+    /**
+     * 获取用户登录信息
+     */
     public User getUserByRequest(HttpServletRequest request) {
         //为了更简单的，兼容YouTube搬运海外服务器，获取上传凭证时的，用户校验，
         //获取token方式有两种，header和url参数
@@ -67,6 +73,9 @@ public class UserService {
         return getUserByToken(token);
     }
 
+    /**
+     * 请求验证码
+     */
     public void requestVerificationCode(@RequestParam String phone) {
         //如果redis里已经有了，直接返回
         VerificationCode verificationCode = userRedisService.getVerificationCode(phone);
@@ -86,6 +95,9 @@ public class UserService {
         userRedisService.setVerificationCode(phone, code);
     }
 
+    /**
+     * 提交验证码
+     */
     public User submitVerificationCode(@RequestParam String phone, @RequestParam String code) {
         VerificationCode verificationCode = userRedisService.getVerificationCode(phone);
         if (verificationCode == null) {
@@ -105,7 +117,7 @@ public class UserService {
             user = new User();
             user.setPhone(phone);
             user.setCreateTime(new Date());
-            log.info("创建新用户");
+            log.info("创建新用户 " + JSON.toJSONString(user));
         }
         //刷新token
         userRedisService.delUserByToken(user.getToken());
@@ -115,10 +127,12 @@ public class UserService {
         mongoTemplate.save(user);
         //登陆信息存入redis
         userRedisService.setUserByToken(user);
-        log.info(JSON.toJSONString(user));
         return user;
     }
 
+    /**
+     * 根据id查用户
+     */
     public User getUserById(String userId) {
         User user = userRepository.getById(userId);
         if (user != null) {
