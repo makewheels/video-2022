@@ -1,5 +1,8 @@
-package com.github.makewheels.video2022.interceptor;
+package com.github.makewheels.video2022.etc.configuration;
 
+import com.github.makewheels.video2022.etc.token.CheckTokenInterceptor;
+import com.github.makewheels.video2022.etc.token.PutTokenInterceptor;
+import com.github.makewheels.video2022.requestlog.RequestLogInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -9,13 +12,28 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfiguration implements WebMvcConfigurer {
 
     @Bean
-    public CheckTokenInterceptor getLoginInterceptor() {
+    public PutTokenInterceptor getPutTokenInterceptor() {
+        return new PutTokenInterceptor();
+    }
+
+    @Bean
+    public CheckTokenInterceptor getCheckTokenInterceptor() {
         return new CheckTokenInterceptor();
+    }
+
+    @Bean
+    public RequestLogInterceptor getRequestLogInterceptor() {
+        return new RequestLogInterceptor();
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(getLoginInterceptor())
+        // 放token
+        registry.addInterceptor(getPutTokenInterceptor())
+                .addPathPatterns("/**");
+
+        // 校验登录状态
+        registry.addInterceptor(getCheckTokenInterceptor())
                 .addPathPatterns("/save-token.html")
                 .addPathPatterns("/playlist/getMyPlaylistByPage")
                 .addPathPatterns("/video/create")
@@ -25,9 +43,11 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/video/updateInfo")
                 .addPathPatterns("/playlist/addPlaylistItem")
                 .addPathPatterns("/miniProgram/getShareQrCodeUrl")
-
                 .addPathPatterns("/video/getMyVideoList")
         ;
 
+        // 记录请求日志
+        registry.addInterceptor(getRequestLogInterceptor())
+                .addPathPatterns("/**");
     }
 }
