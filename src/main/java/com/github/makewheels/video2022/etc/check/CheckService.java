@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.etc.check;
 
-import com.github.makewheels.video2022.etc.exception.VideoException;
+import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
 import com.github.makewheels.video2022.playlist.item.request.add.AddMode;
 import com.github.makewheels.video2022.playlist.item.request.delete.DeleteMode;

@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.utils;
 
 import cn.hutool.core.util.RandomUtil;
-import com.github.makewheels.video2022.environment.EnvironmentService;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.redis.RedisKey;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

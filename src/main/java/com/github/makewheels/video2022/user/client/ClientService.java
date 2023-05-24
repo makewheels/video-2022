@@ -1,8 +1,8 @@
 package com.github.makewheels.video2022.user.client;
 
 import cn.hutool.json.JSONObject;
-import com.github.makewheels.video2022.etc.context.RequestUtil;
-import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.system.context.RequestUtil;
+import com.github.makewheels.video2022.system.response.Result;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
