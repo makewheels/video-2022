@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.watch;
 
-import com.github.makewheels.video2022.etc.context.RequestUtil;
-import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.system.context.RequestUtil;
+import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

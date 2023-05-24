@@ -3,7 +3,7 @@ package com.github.makewheels.video2022.transcode;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
-import com.github.makewheels.video2022.environment.EnvironmentService;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;

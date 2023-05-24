@@ -4,7 +4,7 @@ import cn.hutool.core.io.file.FileNameUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QuerySnapshotJobListResponseBody;
 import com.aliyun.mts20140618.models.SubmitSnapshotJobResponse;
-import com.github.makewheels.video2022.environment.EnvironmentService;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;

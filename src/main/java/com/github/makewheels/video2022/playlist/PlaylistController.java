@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.playlist;
 
-import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.playlist.item.PlayItemVO;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.playlist.item.request.add.AddPlayItemRequest;

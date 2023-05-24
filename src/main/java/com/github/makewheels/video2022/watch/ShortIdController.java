@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.watch;
 
-import com.github.makewheels.video2022.environment.EnvironmentService;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 

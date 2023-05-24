@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.watch.heartbeat;
 
-import com.github.makewheels.video2022.etc.response.Result;
+import com.github.makewheels.video2022.system.response.Result;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
