@@ -17,11 +17,11 @@ public class CloudFunctionTranscodeService {
     @Value("${aliyun.oss.internal-endpoint}")
     private String endpoint;
 
-    public String transcode(String inputKey, String outputDir,
-                            String videoId, String transcodeId, String jobId,
-                            String resolution, int width, int height,
-                            String videoCodec, String audioCodec,
-                            String quality, String callbackUrl) {
+    public String transcode(
+            String inputKey, String outputDir, String videoId, String transcodeId, String jobId,
+            String resolution, int width, int height, String videoCodec, String audioCodec,
+            String quality, String callbackUrl) {
+
         JSONObject request = new JSONObject();
         request.put("bucket", bucket);
         request.put("endpoint", endpoint);
