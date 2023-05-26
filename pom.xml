@@ -140,20 +140,26 @@
             <version>2.3.3</version>
         </dependency>
 
-        <!--阿里云视频转码-->
+        <!--阿里云MTS视频转码-->
         <dependency>
             <groupId>com.aliyun</groupId>
             <artifactId>mts20140618</artifactId>
             <version>3.3.56</version>
         </dependency>
 
-        <!--阿里云视频点播VOD-->
+        <!--阿里云 云函数-->
+<!--        <dependency>-->
+<!--            <groupId>com.aliyun</groupId>-->
+<!--            <artifactId>aliyun-java-sdk-fc</artifactId>-->
+<!--            <version>1.8.24</version>-->
+<!--        </dependency>-->
         <dependency>
-            <groupId>com.aliyun</groupId>
-            <artifactId>vod20170321</artifactId>
-            <version>2.16.12</version>
+            <groupId>com.aliyun.fc.runtime</groupId>
+            <artifactId>fc-java-core</artifactId>
+            <version>1.4.1</version>
         </dependency>
 
+        <!--百度云，用于发短信-->
         <dependency>
             <groupId>com.baidubce</groupId>
             <artifactId>bce-java-sdk</artifactId>
