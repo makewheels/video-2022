@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -196,15 +197,45 @@ public class FileService {
         FileMd5DTO fileMd5DTO = new FileMd5DTO();
         fileMd5DTO.setFileId(fileId);
         fileMd5DTO.setKey(file.getKey());
-        return md5CfService.getOssObjectMd5(fileMd5DTO);
+        md5CfService.getOssObjectMd5(fileMd5DTO);
+        return fileMd5DTO.getMd5();
+    }
+
+    /**
+     * 获取文件的md5
+     */
+    public String getMd5(File file) {
+        return getMd5(file.getId());
+    }
+
+    /**
+     * 批量获取文件的md5
+     * <p>
+     * 返回值：fileId -> md5
+     * 例如：646ea169aaac3166cd4e3594 -> 458a3b2992784ad3e3b7a511d25d5752
+     */
+    public Map<String, String> getMd5ByFileIdList(List<String> fileIdList) {
+        List<File> fileList = fileRepository.getByIds(fileIdList);
+        List<FileMd5DTO> fileMd5DTOList = new ArrayList<>(fileList.size());
+        for (File file : fileList) {
+            FileMd5DTO fileMd5DTO = new FileMd5DTO();
+            fileMd5DTO.setFileId(file.getId());
+            fileMd5DTO.setKey(file.getKey());
+            fileMd5DTOList.add(fileMd5DTO);
+        }
+        md5CfService.getOssObjectMd5(fileMd5DTOList);
+
+        return fileMd5DTOList.stream().collect(
+                Collectors.toMap(FileMd5DTO::getFileId, FileMd5DTO::getMd5));
     }
 
     /**
      * 批量获取文件的md5
      */
-//    public String getMd5(List<String> keyList) {
-//        return md5CfService.getOssObjectMd5(keyList);
-//    }
+    public Map<String, String> getMd5ByFileList(List<File> fileList) {
+        List<String> fileIdList = fileList.stream().map(File::getId).collect(Collectors.toList());
+        return getMd5ByFileIdList(fileIdList);
+    }
 
     /**
      * 删除文件
