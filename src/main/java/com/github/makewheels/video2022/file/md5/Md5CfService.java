@@ -8,7 +8,9 @@ import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,11 +41,16 @@ public class Md5CfService {
      * ]
      * }
      */
-    public String getOssObjectMd5(String key) {
+    public String getOssObjectMd5(FileMd5DTO fileMd5DTO) {
         Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("isCallbackEnable", false);
-        requestMap.put("keyList", new String[]{key});
 
+        List<FileMd5DTO> fileMd5DTOs = new ArrayList<>(1);
+        fileMd5DTOs.add(fileMd5DTO);
+        requestMap.put("isCallbackEnable", false);
+
+        requestMap.put("objectList", fileMd5DTOs);
+
+        // 发请求，调用云函数
         String url = environmentService.getAliyunCfUrlGetOssObjectMd5();
         String response = HttpUtil.post(url, JSON.toJSONString(requestMap));
         JSONObject jsonObject = JSONObject.parseObject(response);

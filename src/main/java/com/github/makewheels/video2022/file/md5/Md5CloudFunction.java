@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,15 +82,11 @@ public class Md5CloudFunction implements HttpRequestHandler {
     public void handleRequest(HttpServletRequest request, HttpServletResponse response, Context context)
             throws IOException {
         JSONObject body = getRequestBody(request);
-        List<String> keyList = getKeyList(body);
 
-        List<Map<String, String>> objectList = new ArrayList<>(keyList.size());
-        for (String key : keyList) {
-            String md5 = getMd5(key);
-            Map<String, String> objectMap = new HashMap<>();
-            objectMap.put("key", key);
-            objectMap.put("md5", md5);
-            objectList.add(objectMap);
+        List<FileMd5DTO> objectList = JSONArray.parseArray(body.getString("objectList"), FileMd5DTO.class);
+        for (FileMd5DTO fileMd5DTO : objectList) {
+            String md5 = getMd5(fileMd5DTO.getKey());
+            fileMd5DTO.setMd5(md5);
         }
 
         //返回结果

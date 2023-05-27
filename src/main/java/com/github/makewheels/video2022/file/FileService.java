@@ -7,6 +7,7 @@ import com.github.makewheels.video2022.file.access.FileAccessLogService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
+import com.github.makewheels.video2022.file.md5.FileMd5DTO;
 import com.github.makewheels.video2022.file.md5.Md5CfService;
 import com.github.makewheels.video2022.file.oss.OssService;
 import com.github.makewheels.video2022.system.context.Context;
@@ -190,8 +191,12 @@ public class FileService {
     /**
      * 获取文件的md5
      */
-    public String getMd5(String key) {
-        return md5CfService.getOssObjectMd5(key);
+    public String getMd5(String fileId) {
+        File file = fileRepository.getById(fileId);
+        FileMd5DTO fileMd5DTO = new FileMd5DTO();
+        fileMd5DTO.setFileId(fileId);
+        fileMd5DTO.setKey(file.getKey());
+        return md5CfService.getOssObjectMd5(fileMd5DTO);
     }
 
     /**
