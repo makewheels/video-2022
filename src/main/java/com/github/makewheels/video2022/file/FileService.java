@@ -3,15 +3,16 @@ package com.github.makewheels.video2022.file;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.*;
+import com.github.makewheels.video2022.file.access.FileAccessLogService;
+import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.file.constants.FileStatus;
+import com.github.makewheels.video2022.file.constants.FileType;
+import com.github.makewheels.video2022.file.md5.Md5CfService;
+import com.github.makewheels.video2022.file.oss.OssService;
 import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
-import com.github.makewheels.video2022.file.bean.File;
-import com.github.makewheels.video2022.file.constants.FileStatus;
-import com.github.makewheels.video2022.file.constants.FileType;
-import com.github.makewheels.video2022.file.access.FileAccessLogService;
-import com.github.makewheels.video2022.file.oss.OssService;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
@@ -43,6 +44,9 @@ public class FileService {
 
     @Resource
     private FileAccessLogService fileAccessLogService;
+
+    @Resource
+    private Md5CfService md5CfService;
 
     /**
      * 新建视频时创建文件
@@ -182,6 +186,20 @@ public class FileService {
     public List<OSSObjectSummary> findObjects(String prefix) {
         return ossService.listAllObjects(prefix);
     }
+
+    /**
+     * 获取文件的md5
+     */
+    public String getMd5(String key) {
+        return md5CfService.getOssObjectMd5(key);
+    }
+
+    /**
+     * 批量获取文件的md5
+     */
+//    public String getMd5(List<String> keyList) {
+//        return md5CfService.getOssObjectMd5(keyList);
+//    }
 
     /**
      * 删除文件
