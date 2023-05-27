@@ -39,14 +39,6 @@ public class Md5CloudFunction implements HttpRequestHandler {
     }
 
     /**
-     * 获取keyList
-     */
-    private List<String> getKeyList(JSONObject body) {
-        JSONArray keyListJSONArray = body.getJSONArray("keyList");
-        return JSONArray.parseArray(keyListJSONArray.toJSONString(), String.class);
-    }
-
-    /**
      * 云函数根据挂载的OSS文件计算MD5
      */
     private String getMd5(String key) {
@@ -83,7 +75,9 @@ public class Md5CloudFunction implements HttpRequestHandler {
             throws IOException {
         JSONObject body = getRequestBody(request);
 
-        List<FileMd5DTO> objectList = JSONArray.parseArray(body.getString("objectList"), FileMd5DTO.class);
+        List<FileMd5DTO> objectList = JSONArray.parseArray(
+                JSON.toJSONString(body.getJSONArray("objectList")),
+                FileMd5DTO.class);
         for (FileMd5DTO fileMd5DTO : objectList) {
             String md5 = getMd5(fileMd5DTO.getKey());
             fileMd5DTO.setMd5(md5);
