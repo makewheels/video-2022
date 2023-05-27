@@ -25,6 +25,9 @@ public class EnvironmentService {
     @Value("${server.port}")
     private Integer serverPort;
 
+    @Value("${aliyun.cf.video-2022.get-oss-object-md5.url}")
+    private String aliyunCfUrlGetOssObjectMd5;
+
     public String getInternalBaseUrl() {
         return internalBaseUrl;
     }
@@ -60,6 +63,9 @@ public class EnvironmentService {
         return serverPort;
     }
 
+    /**
+     * 环境判断
+     */
     public boolean isDevelopmentEnv() {
         return environment.equals(Environment.DEVELOPMENT);
     }
@@ -68,4 +74,7 @@ public class EnvironmentService {
         return environment.equals(Environment.PRODUCTION);
     }
 
+    public String getAliyunCfUrlGetOssObjectMd5() {
+        return aliyunCfUrlGetOssObjectMd5;
+    }
 }
