@@ -65,10 +65,10 @@ public class TranscodeCallbackService {
         updateVideoStatus(video);
 
         //保存m3u8文件
-        saveM3u8File(video, transcode);
+        File m3u8File = saveM3u8File(video, transcode);
 
         //保存对象存储中的ts文件
-        saveS3Files(video, transcode);
+        List<File> tsFiles = saveS3Files(video, transcode);
 
         //改变源视频对象存储storageClass
 //        changeOriginalFileStorageClass(video);
@@ -112,7 +112,7 @@ public class TranscodeCallbackService {
     /**
      * 保存m3u8文件
      */
-    private void saveM3u8File(Video video, Transcode transcode) {
+    private File saveM3u8File(Video video, Transcode transcode) {
         String m3u8Key = transcode.getM3u8Key();
 
         File m3u8File = new File();
@@ -133,6 +133,7 @@ public class TranscodeCallbackService {
         String m3u8Content = HttpUtil.get(m3u8FileUrl);
         transcode.setM3u8Content(m3u8Content);
         mongoTemplate.save(transcode);
+        return m3u8File;
     }
 
     /**
@@ -194,7 +195,7 @@ public class TranscodeCallbackService {
     /**
      * 转码完成后，更新对象存储ts碎片
      */
-    private void saveS3Files(Video video, Transcode transcode) {
+    private List<File> saveS3Files(Video video, Transcode transcode) {
         List<File> tsFiles = getTsFiles(video, transcode);
 
         //保存所有ts文件到数据库
@@ -216,6 +217,7 @@ public class TranscodeCallbackService {
         transcode.setMaxBitrate(maxBitrate);
 
         mongoTemplate.save(transcode);
+        return tsFiles;
     }
 
     /**
