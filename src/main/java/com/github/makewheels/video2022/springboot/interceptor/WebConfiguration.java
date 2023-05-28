@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.springboot.configuration;
+package com.github.makewheels.video2022.springboot.interceptor;
 
 import com.github.makewheels.video2022.springboot.interceptor.token.CheckTokenInterceptor;
 import com.github.makewheels.video2022.springboot.interceptor.token.PutTokenInterceptor;
@@ -47,7 +47,7 @@ public class WebConfiguration implements WebMvcConfigurer {
         ;
 
         // 记录请求日志
-        registry.addInterceptor(getRequestLogInterceptor())
-                .addPathPatterns("/**");
+//        registry.addInterceptor(getRequestLogInterceptor())
+//                .addPathPatterns("/**");
     }
 }
