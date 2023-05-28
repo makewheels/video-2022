@@ -1,5 +1,6 @@
-package com.github.makewheels.video2022.system.token;
+package com.github.makewheels.video2022.springboot.interceptor.token;
 
+import com.github.makewheels.video2022.springboot.interceptor.InterceptorOrder;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserService;
@@ -59,6 +60,6 @@ public class CheckTokenInterceptor implements HandlerInterceptor, Ordered {
 
     @Override
     public int getOrder() {
-        return 1002;
+        return InterceptorOrder.CHECK_TOKEN;
     }
 }

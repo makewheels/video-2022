@@ -1,5 +1,6 @@
-package com.github.makewheels.video2022.system.requestlog;
+package com.github.makewheels.video2022.springboot.interceptor.requestlog;
 
+import com.github.makewheels.video2022.springboot.interceptor.InterceptorOrder;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.Ordered;
@@ -23,6 +24,6 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
 
     @Override
     public int getOrder() {
-        return 1003;
+        return InterceptorOrder.REQUEST_LOG;
     }
 }
