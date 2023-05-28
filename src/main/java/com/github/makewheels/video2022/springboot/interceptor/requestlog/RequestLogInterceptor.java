@@ -4,11 +4,17 @@ import com.github.makewheels.video2022.springboot.interceptor.InterceptorOrder;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.Ordered;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 记录请求日志
@@ -16,10 +22,69 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 @Slf4j
 public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
-    @Override
-    public void afterCompletion(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response,
-                                @NotNull Object handler, Exception ex) {
+    @Resource
+    private MongoTemplate mongoTemplate;
 
+    /**
+     * 通过servlet request获取请求头map
+     */
+    private Map<String, Object> getHeaderMap(HttpServletRequest request) {
+        Map<String, Object> headerMap = new HashMap<>();
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String name = headerNames.nextElement();
+            String value = request.getHeader(name);
+            headerMap.put(name, value);
+        }
+        return headerMap;
+    }
+
+    @Override
+    public boolean preHandle(
+            HttpServletRequest servletRequest, @NotNull HttpServletResponse servletResponse,
+            @NotNull Object handler) {
+        // 创建 RequestLog 对象，设置请求开始时间
+        RequestLog requestLog = new RequestLog();
+        requestLog.setStartTime(new Date());
+
+        Request request = new Request();
+        request.setUrl(servletRequest.getRequestURL().toString());
+        request.setPath(servletRequest.getRequestURI());
+        request.setMethod(servletRequest.getMethod());
+        request.setQueryString(servletRequest.getQueryString());
+        Map<String, Object> headerMap = getHeaderMap(servletRequest);
+        request.setHeaderMap(headerMap);
+        request.setIp(servletRequest.getRemoteAddr());
+        request.setUserAgent(servletRequest.getHeader("User-Agent"));
+
+        requestLog.setRequest(request);
+
+        // 将 RequestLog 对象保存到 RequestLogContext 中
+        RequestLogContext.setRequestLog(requestLog);
+        return true;
+    }
+
+    @Override
+    public void afterCompletion(
+            @NotNull HttpServletRequest servletRequest, @NotNull HttpServletResponse servletResponse,
+            @NotNull Object handler, Exception ex) {
+        RequestLog requestLog = RequestLogContext.getRequestLog();
+        Response response = new Response();
+        response.setHttpStatus(servletResponse.getStatus());
+//        response.setBody(servletResponse.getContentAsString());
+
+        // 设置请求结束时间和响应对象
+        requestLog.setEndTime(new Date());
+        requestLog.setResponse(response);
+
+        // 计算请求耗时
+        long cost = requestLog.getEndTime().getTime() - requestLog.getStartTime().getTime();
+        requestLog.setCost(cost);
+
+        // 保存到数据库
+        mongoTemplate.save(requestLog);
+        // 释放ThreadLocal
+        RequestLogContext.removeRequestLog();
     }
 
     @Override
