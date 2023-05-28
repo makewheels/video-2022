@@ -1,5 +1,6 @@
-package com.github.makewheels.video2022.system.token;
+package com.github.makewheels.video2022.springboot.interceptor.token;
 
+import com.github.makewheels.video2022.springboot.interceptor.InterceptorOrder;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserService;
 import com.github.makewheels.video2022.user.bean.User;
@@ -36,6 +37,6 @@ public class PutTokenInterceptor implements HandlerInterceptor, Ordered {
 
     @Override
     public int getOrder() {
-        return 1001;
+        return InterceptorOrder.PUT_TOKEN;
     }
 }
