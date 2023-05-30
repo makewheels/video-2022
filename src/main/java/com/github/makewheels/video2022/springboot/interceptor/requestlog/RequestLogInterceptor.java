@@ -42,6 +42,7 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
         request.setUserAgent(RequestUtil.getUserAgent());
 
         requestLog.setRequest(request);
+        requestLog.setResponse(new Response());
 
         // 将 RequestLog 对象保存到 RequestLogContext 中
         RequestLogContext.setRequestLog(requestLog);
@@ -53,25 +54,27 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
             @NotNull HttpServletRequest servletRequest, @NotNull HttpServletResponse servletResponse,
             @NotNull Object handler, ModelAndView modelAndView) {
         RequestLog requestLog = RequestLogContext.getRequestLog();
-        Response response = new Response();
-        response.setHttpStatus(servletResponse.getStatus());
         // TODO 不知道怎么获取响应体
 
-        // 设置请求结束时间
-        requestLog.setEndTime(new Date());
-        requestLog.setResponse(response);
-
-        // 计算请求耗时
-        long cost = requestLog.getEndTime().getTime() - requestLog.getStartTime().getTime();
-        requestLog.setTimeCost(cost);
     }
 
     @Override
     public void afterCompletion(
             @NotNull HttpServletRequest servletRequest, @NotNull HttpServletResponse servletResponse,
             @NotNull Object handler, Exception ex) {
+
+        RequestLog requestLog = RequestLogContext.getRequestLog();
+        // 设置请求结束时间，计算请求耗时
+        requestLog.setEndTime(new Date());
+        long cost = requestLog.getEndTime().getTime() - requestLog.getStartTime().getTime();
+        requestLog.setTimeCost(cost);
+
+        Response response = requestLog.getResponse();
+        response.setHttpStatus(servletResponse.getStatus());
+
         // 保存到数据库
-        mongoTemplate.save(RequestLogContext.getRequestLog());
+        mongoTemplate.save(requestLog);
+
         // 释放ThreadLocal
         RequestLogContext.removeRequestLog();
     }
