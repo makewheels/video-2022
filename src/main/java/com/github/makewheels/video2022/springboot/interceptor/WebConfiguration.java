@@ -47,7 +47,7 @@ public class WebConfiguration implements WebMvcConfigurer {
         ;
 
         // 记录请求日志
-//        registry.addInterceptor(getRequestLogInterceptor())
-//                .addPathPatterns("/**");
+        registry.addInterceptor(getRequestLogInterceptor())
+                .addPathPatterns("/**");
     }
 }
