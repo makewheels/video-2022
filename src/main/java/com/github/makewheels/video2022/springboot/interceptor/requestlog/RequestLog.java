@@ -12,6 +12,8 @@ public class RequestLog {
     @Id
     private String id;
 
+    private String requestPath;
+
     private Request request;
     private Response response;
 

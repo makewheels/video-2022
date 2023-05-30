@@ -31,6 +31,7 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
         // 创建 RequestLog 对象，设置请求开始时间
         RequestLog requestLog = new RequestLog();
         requestLog.setStartTime(new Date());
+        requestLog.setRequestPath(servletRequest.getRequestURI());
 
         Request request = new Request();
         request.setUrl(servletRequest.getRequestURL().toString());
