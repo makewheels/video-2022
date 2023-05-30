@@ -57,7 +57,7 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
         response.setHttpStatus(servletResponse.getStatus());
         // TODO 不知道怎么获取响应体
 
-        // 设置请求结束时间和响应对象
+        // 设置请求结束时间
         requestLog.setEndTime(new Date());
         requestLog.setResponse(response);
 
