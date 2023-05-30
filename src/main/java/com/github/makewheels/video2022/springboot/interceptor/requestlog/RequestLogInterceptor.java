@@ -74,6 +74,10 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
         response.setHttpStatus(servletResponse.getStatus());
 
         // 保存到数据库
+        if (requestLog.getRequestPath().equals("/heartbeat/add")) {
+            RequestLogContext.removeRequestLog();
+            return;
+        }
         mongoTemplate.save(requestLog);
 
         // 释放ThreadLocal
