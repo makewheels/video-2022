@@ -1557,4 +1557,4 @@ RequestUtil获取request对象改造方案
 改造登录拦截器，一个放token，一个拦截
 
 ## 2023年5月28日10:15:56
-新增请求日志拦截器RequestLogInterceptor
+新增请求日志拦截器RequestLogInterceptor，保存请求记录，耗时
