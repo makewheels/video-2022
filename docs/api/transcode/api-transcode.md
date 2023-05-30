@@ -1,0 +1,39 @@
+
+## 5. 阿里云 云函数 ffmpeg 转码
+
+### ffprobe 获取视频信息
+```text
+POST https://ffprobe-video-transcode-gysmioluyt.cn-beijing.fcapp.run
+```
+传入
+```json
+{
+    "bucket": "video-2022-prod",
+    "region": "cn-beijing",
+    "endpoint": "oss-cn-beijing-internal.aliyuncs.com",
+    "inputKey": "test/demo-src.mp4",
+    "inputKey1": "videos/62565a16c3afe0646f9c67b9/6256a80e1273947edf8854c7/original/6256a80e1273947edf8854c7.webm"
+}
+```
+### 发起转码
+```text
+POST https://transcoe-master-video-transcode-pqrshwejna.cn-beijing.fcapp.run
+```
+```json
+{
+    "outputDir":"videos/62511690c3afe0646f9c670b/62626cff1fb6c600b2a7f14d/transcode/720p",
+    "videoId":"62626cff1fb6c600b2a7f14d",
+    "audioCodec":"aac",
+    "resolution":"720p",
+    "quality":"keep",
+    "bucket":"video-2022-prod",
+    "jobId":"829bb555d5b14123ad3cf129519701de",
+    "endpoint":"oss-cn-beijing-internal.aliyuncs.com",
+    "width":1280,
+    "callbackUrl":"https://videoplus.top/transcode/aliyunCloudFunctionTranscodeCallback",
+    "inputKey":"videos/62511690c3afe0646f9c670b/62626cff1fb6c600b2a7f14d/original/62626cff1fb6c600b2a7f14d.yv",
+    "transcodeId":"62626d7e1fb6c600b2a7f14e",
+    "height":720,
+    "videoCodec":"h264"
+}
+```
