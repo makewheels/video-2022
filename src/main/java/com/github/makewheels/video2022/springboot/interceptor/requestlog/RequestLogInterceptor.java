@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.springboot.interceptor.requestlog;
 import com.github.makewheels.video2022.springboot.interceptor.InterceptorOrder;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.Ordered;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -74,7 +75,8 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
         response.setHttpStatus(servletResponse.getStatus());
 
         // 保存到数据库
-        if (requestLog.getRequestPath().equals("/heartbeat/add")) {
+        if (StringUtils.equalsAny(servletRequest.getRequestURI(),
+                "/file/access", "/heartbeat/add")) {
             RequestLogContext.removeRequestLog();
             return;
         }
