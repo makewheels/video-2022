@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.system.context;
 
+import cn.hutool.core.io.IoUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import org.apache.commons.beanutils.BeanUtils;
@@ -10,6 +11,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -72,6 +75,21 @@ public class RequestUtil {
         return ((ServletRequestAttributes) requestAttributes).getResponse();
     }
 
+    /**
+     * 通过servlet request获取请求头map
+     */
+    public static Map<String, Object> getHeaderMap() {
+        HttpServletRequest request = getRequest();
+        Map<String, Object> headerMap = new HashMap<>();
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String name = headerNames.nextElement();
+            String value = request.getHeader(name);
+            headerMap.put(name, value);
+        }
+        return headerMap;
+    }
+
     public static HttpSession getSession() {
         return getRequest().getSession();
     }
@@ -91,4 +109,17 @@ public class RequestUtil {
     public static String getIp() {
         return getRequest().getRemoteAddr();
     }
+
+    /**
+     * 获取请求体
+     */
+    public static String getRequestBody() {
+        try {
+            return IoUtil.readUtf8(getRequest().getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

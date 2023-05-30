@@ -15,8 +15,8 @@ public class RequestLog {
     private Request request;
     private Response response;
 
-    private Long cost;
-    private Date startTime;
-    private Date endTime;
+    private Date startTime;  // 调用接口开始时间
+    private Date endTime;    // 调用接口结束时间
+    private Long timeCost;   // 调用接口耗时
 
 }

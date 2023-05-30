@@ -1,20 +1,19 @@
 package com.github.makewheels.video2022.springboot.interceptor.requestlog;
 
 import com.github.makewheels.video2022.springboot.interceptor.InterceptorOrder;
+import com.github.makewheels.video2022.system.context.RequestUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.Ordered;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 记录请求日志
@@ -24,20 +23,6 @@ import java.util.Map;
 public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
     @Resource
     private MongoTemplate mongoTemplate;
-
-    /**
-     * 通过servlet request获取请求头map
-     */
-    private Map<String, Object> getHeaderMap(HttpServletRequest request) {
-        Map<String, Object> headerMap = new HashMap<>();
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String name = headerNames.nextElement();
-            String value = request.getHeader(name);
-            headerMap.put(name, value);
-        }
-        return headerMap;
-    }
 
     @Override
     public boolean preHandle(
@@ -52,10 +37,9 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
         request.setPath(servletRequest.getRequestURI());
         request.setMethod(servletRequest.getMethod());
         request.setQueryString(servletRequest.getQueryString());
-        Map<String, Object> headerMap = getHeaderMap(servletRequest);
-        request.setHeaderMap(headerMap);
-        request.setIp(servletRequest.getRemoteAddr());
-        request.setUserAgent(servletRequest.getHeader("User-Agent"));
+        request.setHeaderMap(RequestUtil.getHeaderMap());
+        request.setIp(RequestUtil.getIp());
+        request.setUserAgent(RequestUtil.getUserAgent());
 
         requestLog.setRequest(request);
 
@@ -65,13 +49,13 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
     }
 
     @Override
-    public void afterCompletion(
+    public void postHandle(
             @NotNull HttpServletRequest servletRequest, @NotNull HttpServletResponse servletResponse,
-            @NotNull Object handler, Exception ex) {
+            @NotNull Object handler, ModelAndView modelAndView) {
         RequestLog requestLog = RequestLogContext.getRequestLog();
         Response response = new Response();
         response.setHttpStatus(servletResponse.getStatus());
-//        response.setBody(servletResponse.getContentAsString());
+        // TODO 不知道怎么获取响应体
 
         // 设置请求结束时间和响应对象
         requestLog.setEndTime(new Date());
@@ -79,10 +63,15 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
 
         // 计算请求耗时
         long cost = requestLog.getEndTime().getTime() - requestLog.getStartTime().getTime();
-        requestLog.setCost(cost);
+        requestLog.setTimeCost(cost);
+    }
 
+    @Override
+    public void afterCompletion(
+            @NotNull HttpServletRequest servletRequest, @NotNull HttpServletResponse servletResponse,
+            @NotNull Object handler, Exception ex) {
         // 保存到数据库
-        mongoTemplate.save(requestLog);
+        mongoTemplate.save(RequestLogContext.getRequestLog());
         // 释放ThreadLocal
         RequestLogContext.removeRequestLog();
     }

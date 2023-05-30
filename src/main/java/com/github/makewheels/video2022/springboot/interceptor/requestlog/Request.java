@@ -13,5 +13,5 @@ public class Request {
     private Map<String, Object> headerMap;
     private String ip;
     private String userAgent;
-
+    private String body;
 }
