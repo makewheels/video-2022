@@ -12,8 +12,6 @@ GET /user/requestVerificationCode
 | ----- | ------ | ----------- |
 | phone | 手机号 | 15695389361 |
 
-![](imgs/user-requestVerificationCode-RDM.jpg)
-
 ### 提交验证码
 
 ```
