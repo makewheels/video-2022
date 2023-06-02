@@ -14,10 +14,7 @@ urlEncode(base64(HmacSHA256(
 
 url中的参数，去掉sign字段，按字母排序 + "\n"
 
-body + "\n" +
-
-key
-
+body + "\n"
 )))
 #### 代码调用
 ```java
