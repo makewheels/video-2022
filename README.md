@@ -1,5 +1,3 @@
-# 视频讲解
-
 # 关键逻辑
 
 ## 上传
@@ -101,52 +99,22 @@ heartbeat保存当前进度，下次打开的时候，再调接口获取上次�
 
 [video 视频对象](docs/mongodb/video.md)
 
-
-
 # 其它设计
 
 ## 分包
 
-
-
 ## 登陆拦截器
 
-
-
 ## 密码
-
-
 
 ## 短连接
 
 ## 观看次数
 
 # TODOs
-
-https://shimo.im/docs/Ee32M5wMj1CejeA2/ 《2022.02.23 新点播功能联想 ideas 列表》，可复制链接后用石墨文档 App 打开
+[TodoList](docs/todo/todo-list.md)
 
 ## 播放器
-
-- [ ] 网页上传
-
-- [ ] 搬运YouTube
-
-- [ ] 一个好用的前端网页m3u8播放器
-
-- [ ] 截帧封面，截首帧就行
-
-- [ ] 时间跳转t=21
-
-- [ ] 多分辨率选择
-
-- [ ] 播放列表
-
-- [ ] 视频权限，public，unlist，private
-
-- [ ] 多种转码方式，客户端或者云ffmpeg转码，或者云api收费转码，最终汇聚到新建视频函数
-- [ ] 以720甚至480开始播放，根据网络情况自动升1080
-
-
 
 # 如何部署？
 
@@ -156,6 +124,7 @@ Redis
 
 application.props
 
+# Java 8 Stream Api Examples
 [Java 8 Stream Api Examples](docs/java8-stream-examples/java8-stream-examples.md)
 
 # 变更日志
