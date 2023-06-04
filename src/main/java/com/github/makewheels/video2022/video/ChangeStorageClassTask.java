@@ -38,7 +38,7 @@ public class ChangeStorageClassTask {
         log.info("删除任务，捞出这些要删除的视频: videoIds = " + JSON.toJSONString(videoIds));
         log.info("删除任务，捞出这些要删除的视频: videoTitles = " + JSON.toJSONString(videoTitles));
         for (Video video : videos) {
-            String transcodePath = PathUtil.getS3TranscodePrefix(video.getUserId(), video.getId());
+            String transcodePath = PathUtil.getS3TranscodePrefix(video.getUploaderId(), video.getId());
             //列举文件
             List<OSSObjectSummary> objects = fileService.findObjects(transcodePath);
             List<String> keys = objects.stream().map(OSSObjectSummary::getKey).collect(Collectors.toList());

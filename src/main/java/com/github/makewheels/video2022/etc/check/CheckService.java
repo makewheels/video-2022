@@ -71,7 +71,7 @@ public class CheckService {
         checkVideoExist(videoId);
         checkUserExist(userId);
 
-        String ownerId = cacheService.getVideo(videoId).getUserId();
+        String ownerId = cacheService.getVideo(videoId).getUploaderId();
         if (!ownerId.equals(userId)) {
             throw new VideoException("视频不属于user, videoId = " + videoId + ", " +
                     "ownerId = " + ownerId + ", userId = " + userId);

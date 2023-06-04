@@ -52,7 +52,7 @@ public class VideoRepository {
      * @return
      */
     public List<Video> getVideosByUserId(String userId, int skip, int limit) {
-        Query query = Query.query(Criteria.where("userId").is(userId))
+        Query query = Query.query(Criteria.where("uploaderId").is(userId))
                 //根据时间降序排列
                 .with(Sort.by(Sort.Direction.DESC, "createTime"))
                 .skip(skip)

@@ -118,7 +118,7 @@ public class VideoService {
             throw new VideoException(ErrorCode.VIDEO_NOT_EXIST);
         }
         //判断视频是否属于当前用户
-        if (!StringUtils.equals(userId, oldVideo.getUserId())) {
+        if (!StringUtils.equals(userId, oldVideo.getUploaderId())) {
             throw new VideoException(ErrorCode.VIDEO_AND_UPLOADER_NOT_MATCH);
         }
 

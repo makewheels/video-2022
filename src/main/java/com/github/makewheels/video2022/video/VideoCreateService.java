@@ -61,7 +61,7 @@ public class VideoCreateService {
         //创建 video
         Video video = new Video();
         createVideoDTO.setVideo(video);
-        video.setUserId(userId);
+        video.setUploaderId(userId);
 
         String videoType = createVideoDTO.getVideoType();
         video.setType(videoType);
