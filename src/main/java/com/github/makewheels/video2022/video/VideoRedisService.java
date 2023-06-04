@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.redis.RedisKey;
 import com.github.makewheels.video2022.redis.RedisService;
 import com.github.makewheels.video2022.redis.RedisTime;
-import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
+import com.github.makewheels.video2022.watch.watchinfo.WatchInfoVO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -14,13 +14,13 @@ public class VideoRedisService {
     @Resource
     private RedisService redisService;
 
-    public WatchInfo getWatchInfo(String watchId) {
+    public WatchInfoVO getWatchInfo(String watchId) {
         String json = (String) redisService.get(RedisKey.watchInfo(watchId));
-        return JSON.parseObject(json, WatchInfo.class);
+        return JSON.parseObject(json, WatchInfoVO.class);
     }
 
-    public void setWatchInfo(String watchId, WatchInfo watchInfo) {
+    public void setWatchInfo(String watchId, WatchInfoVO watchInfoVO) {
         redisService.set(RedisKey.watchInfo(watchId),
-                JSON.toJSONString(watchInfo), RedisTime.SIX_HOURS);
+                JSON.toJSONString(watchInfoVO), RedisTime.SIX_HOURS);
     }
 }

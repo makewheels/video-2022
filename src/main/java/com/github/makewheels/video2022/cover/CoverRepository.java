@@ -17,11 +17,14 @@ public class CoverRepository {
         return mongoTemplate.findById(id, Cover.class);
     }
 
-    /**
-     * 根据id批量查
-     */
     public List<Cover> getByIdList(List<String> idList) {
         return mongoTemplate.find(Query.query(Criteria.where("id").in(idList)), Cover.class);
+    }
+
+    public String getOssKey(String id) {
+        Query query = Query.query(Criteria.where("id").is(id));
+        query.fields().include("key");
+        return mongoTemplate.findOne(query, String.class);
     }
 
     public Cover getByJobId(String jobId) {

@@ -2,7 +2,7 @@ package com.github.makewheels.video2022.watch;
 
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.response.Result;
-import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
+import com.github.makewheels.video2022.watch.watchinfo.WatchInfoVO;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,7 +28,7 @@ public class WatchController {
      * 获取播放信息
      */
     @GetMapping("getWatchInfo")
-    public Result<WatchInfo> getWatchInfo(@RequestParam String watchId) {
+    public Result<WatchInfoVO> getWatchInfo(@RequestParam String watchId) {
         return watchService.getWatchInfo(RequestUtil.getContext(), watchId);
     }
 
