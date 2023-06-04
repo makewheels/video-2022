@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022.etc.check;
 
 import com.github.makewheels.video2022.file.FileRepository;
-import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
 import com.github.makewheels.video2022.playlist.item.request.add.AddMode;
 import com.github.makewheels.video2022.playlist.item.request.delete.DeleteMode;
@@ -9,6 +8,7 @@ import com.github.makewheels.video2022.playlist.item.request.move.MoveMode;
 import com.github.makewheels.video2022.playlist.list.bean.IdBean;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.redis.CacheService;
+import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.video.VideoRepository;
@@ -227,6 +227,22 @@ public class CheckService {
     public void checkFileExist(String fileId) {
         if (!fileRepository.isFileExist(fileId)) {
             throw new VideoException("文件不存在, fileId = " + fileId);
+        }
+    }
+
+    /**
+     * 检查文件属于用户
+     */
+    public void checkFileBelongsToUserHolder(String fileId) {
+        checkFileExist(fileId);
+        checkUserHolderExist();
+
+        String userHolderUserId = UserHolder.getUserId();
+        String fileUserId = fileRepository.getUserIdByFileId(fileId);
+
+        if (!StringUtils.equals(userHolderUserId, fileUserId)) {
+            throw new VideoException("文件和用户不匹配, " +
+                    "user = " + userHolderUserId + ", fileId = " + fileId);
         }
     }
 }
