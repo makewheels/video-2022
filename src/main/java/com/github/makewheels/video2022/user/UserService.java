@@ -101,11 +101,11 @@ public class UserService {
     public User submitVerificationCode(@RequestParam String phone, @RequestParam String code) {
         VerificationCode verificationCode = userRedisService.getVerificationCode(phone);
         if (verificationCode == null) {
-            throw new VideoException(ErrorCode.FAIL);
+            throw new VideoException(ErrorCode.USER_PHONE_VERIFICATION_CODE_EXPIRED);
         }
         //验证码校验失败
         if (!verificationCode.getCode().equals(code) && !code.equals("111")) {
-            throw new VideoException(ErrorCode.PHONE_VERIFICATION_CODE_WRONG);
+            throw new VideoException(ErrorCode.USER_PHONE_VERIFICATION_CODE_WRONG);
         }
         //验证码校验成功
         //干掉Redis

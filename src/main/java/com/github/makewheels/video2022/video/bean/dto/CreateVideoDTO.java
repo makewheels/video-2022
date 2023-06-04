@@ -13,6 +13,7 @@ public class CreateVideoDTO {
     private String originalFilename;
     private String youtubeUrl;
     private Long size;
+    private String ttl; // Time To Live 有效期
 
     // 后端service传递的参数
     private User user;

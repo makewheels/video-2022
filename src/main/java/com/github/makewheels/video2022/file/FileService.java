@@ -82,15 +82,21 @@ public class FileService {
     public Result<JSONObject> getUploadCredentials(String fileId) {
         User user = UserHolder.get();
         File file = fileRepository.getById(fileId);
+
         //如果文件不存在，或者token找不到用户
-        if (file == null || user == null) return Result.error(ErrorCode.FAIL);
+        if (file == null) return Result.error(ErrorCode.FILE_NOT_EXIST);
+        if (user == null) return Result.error(ErrorCode.USER_NOT_EXIST);
+
         //如果上传文件不属于该用户
-        if (!StringUtils.equals(user.getId(), file.getUserId())) return Result.error(ErrorCode.FAIL);
+        if (!StringUtils.equals(user.getId(), file.getUserId())) {
+            return Result.error(ErrorCode.FILE_AND_USER_NOT_MATCH);
+        }
+
         String key = file.getKey();
         //根据provider，获取上传凭证
         String provider = file.getProvider();
         JSONObject credentials = ossService.getUploadCredentials(key);
-        if (credentials == null) return Result.error(ErrorCode.FAIL);
+        if (credentials == null) return Result.error(ErrorCode.FILE_GENERATE_UPLOAD_CREDENTIALS_FAIL);
         credentials.put("provider", provider);
         log.info("生成上传凭证，fileId = " + fileId + " " + JSON.toJSONString(credentials));
         return Result.ok(credentials);
@@ -102,8 +108,13 @@ public class FileService {
     public Result<Void> uploadFinish(String fileId) {
         User user = UserHolder.get();
         File file = fileRepository.getById(fileId);
-        if (file == null) return Result.error(ErrorCode.FAIL);
-        if (!StringUtils.equals(user.getId(), file.getUserId())) return Result.error(ErrorCode.FAIL);
+
+        if (file == null) {
+            return Result.error(ErrorCode.FILE_NOT_EXIST);
+        }
+        if (!StringUtils.equals(user.getId(), file.getUserId())) {
+            return Result.error(ErrorCode.VIDEO_AND_UPLOADER_NOT_MATCH);
+        }
 
         String key = file.getKey();
         log.info("处理文件上传完成，fileId = " + fileId + ", key = " + key);

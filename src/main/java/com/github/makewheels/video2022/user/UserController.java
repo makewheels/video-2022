@@ -34,7 +34,7 @@ public class UserController {
         if (user != null) {
             return Result.ok(user);
         } else {
-            return Result.error(ErrorCode.TOKEN_WRONG);
+            return Result.error(ErrorCode.USER_TOKEN_WRONG);
         }
     }
 

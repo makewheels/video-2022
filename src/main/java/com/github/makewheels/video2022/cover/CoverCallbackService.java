@@ -41,7 +41,7 @@ public class CoverCallbackService {
     public Result<Void> youtubeUploadFinishCallback(String coverId) {
         Cover cover = mongoTemplate.findById(coverId, Cover.class);
         if (cover == null) {
-            return Result.error(ErrorCode.FAIL);
+            return Result.error(ErrorCode.COVER_NOT_EXIST);
         }
         String key = cover.getKey();
         //向对象存储确认文件存在
