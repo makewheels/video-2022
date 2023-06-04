@@ -8,7 +8,6 @@ import lombok.Data;
  */
 @Data
 public class MediaInfo {
-
     private Integer width;
     private Integer height;
     private String videoCodec;

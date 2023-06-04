@@ -16,6 +16,7 @@ import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
+import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
@@ -65,13 +66,14 @@ public class VideoService {
         // 返回给前端
         Video video = createVideoDTO.getVideo();
         File videoFile = createVideoDTO.getVideoFile();
+        Watch watch = video.getWatch();
 
         JSONObject response = new JSONObject();
         response.put("fileId", videoFile.getId());
         response.put("videoId", video.getId());
-        response.put("watchId", video.getWatchId());
-        response.put("watchUrl", video.getWatchUrl());
-        response.put("shortUrl", video.getShortUrl());
+        response.put("watchId", watch.getWatchId());
+        response.put("watchUrl", watch.getWatchUrl());
+        response.put("shortUrl", watch.getShortUrl());
         return response;
     }
 

@@ -169,9 +169,7 @@ public class TranscodeLauncher {
         mediaInfo.setResponse(JSONObject.parseObject(JSON.toJSONString(job)));
         SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties
                 properties = job.getProperties();
-        long duration = (long) (Double.parseDouble(properties.getDuration()) * 1000);
-        video.setDuration(duration);
-        mediaInfo.setDuration(duration);
+        mediaInfo.setDuration((long) (Double.parseDouble(properties.getDuration()) * 1000));
         mediaInfo.setHeight(Integer.parseInt(properties.getHeight()));
         mediaInfo.setWidth(Integer.parseInt(properties.getWidth()));
         mediaInfo.setBitrate((int) Double.parseDouble(properties.getBitrate()));

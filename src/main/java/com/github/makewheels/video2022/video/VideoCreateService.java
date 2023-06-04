@@ -14,6 +14,7 @@ import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.utils.ShortUrlService;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
+import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
@@ -81,22 +82,23 @@ public class VideoCreateService {
         String fileId = videoFile.getId();
         video.setOriginalFileId(fileId);
         String watchId = idService.nextShortId();
-        video.setWatchId(watchId);
+        Watch watch = video.getWatch();
+        watch.setWatchId(watchId);
         String watchUrl = environmentService.getInternalBaseUrl() + "/watch?v=" + watchId;
-        video.setWatchUrl(watchUrl);
+        watch.setWatchUrl(watchUrl);
 
         //本地开发环境shortUrl就是watchUrl
-        video.setShortUrl(watchUrl);
+        watch.setShortUrl(watchUrl);
 
         if (environmentService.isProductionEnv()) {
             String shortUrl = shortUrlService.getShortUrl(watchUrl);
-            video.setShortUrl(shortUrl);
+            watch.setShortUrl(shortUrl);
         }
 
         //设置过期时间
         long expireTimeInMillis = Duration.ofDays(30).toMillis();
         Date expireTime = new Date(System.currentTimeMillis() + expireTimeInMillis);
-        video.setExpireTime(expireTime);
+        video.getStorageStatus().setExpireTime(expireTime);
         mongoTemplate.save(video);
 
         return video;

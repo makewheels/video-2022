@@ -91,7 +91,7 @@ public class YoutubeService {
         body.put("key", file.getKey());
         body.put("provider", file.getProvider());
         body.put("fileId", file.getId());
-        body.put("watchId", video.getWatchId());
+        body.put("watchId", video.getWatch().getWatchId());
         body.put("videoId", video.getId());
 
         //获取文件上传凭证地址

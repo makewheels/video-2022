@@ -64,7 +64,7 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
      */
     private void iterateQueryAliyunTranscodeJob(Video video, Transcode transcode) {
         String jobId = transcode.getJobId();
-        long duration = video.getDuration();
+        long duration = video.getMediaInfo().getDuration();
         long startTime = System.currentTimeMillis();
 
         //轮询

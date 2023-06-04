@@ -50,7 +50,7 @@ public class NotificationService {
 
         String messageTitle = "观看记录: " + videoTitle;
         String markdownText = "# video: " + videoTitle + "\n\n" +
-                "# viewCount: " + video.getWatchCount() + "\n\n" +
+                "# viewCount: " + video.getWatch().getWatchCount() + "\n\n" +
                 "# 时间: " + DateUtil.formatDateTime(new Date()) + "\n\n" +
                 "# ip: " + ipInfo.getString("ip") + "\n\n" +
                 "# ipInfo: " + ipInfo.getString("province") + " "

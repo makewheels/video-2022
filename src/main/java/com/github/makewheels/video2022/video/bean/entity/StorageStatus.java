@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import java.util.Date;
 
 /**
- * 视频存储状态，可能过期删除或者在低频存储
+ * 视频是否删除信息
  */
 @Data
 public class StorageStatus {
@@ -17,4 +17,10 @@ public class StorageStatus {
     private Boolean isOriginalFileDeleted;      //源视频是否已删除
     private Boolean isTranscodeFilesDeleted;    //ts转码文件是否已删除
     private Date deleteTime;                    //什么时候删的
+
+    public StorageStatus() {
+        this.isOriginalFileDeleted = false;
+        this.isTranscodeFilesDeleted = false;
+        this.isPermanent = false;
+    }
 }
