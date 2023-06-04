@@ -15,7 +15,6 @@ import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.utils.IpService;
-import com.github.makewheels.video2022.video.VideoRedisService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.Watch;
@@ -53,8 +52,6 @@ public class WatchService {
     @Resource
     private CoverService coverService;
 
-    @Resource
-    private VideoRedisService videoRedisService;
     @Resource
     private CacheService cacheService;
     @Resource
@@ -162,10 +159,6 @@ public class WatchService {
         watchInfoVO.setMultivariantPlaylistUrl(environmentService.getInternalBaseUrl()
                 + "/watchController/getMultivariantPlaylist.m3u8?videoId=" + videoId
                 + "&clientId=" + context.getClientId() + "&sessionId=" + context.getSessionId());
-        //缓存redis，先判断视频状态：只有READY才放入缓存
-        if (video.isReady()) {
-            videoRedisService.setWatchInfo(watchId, watchInfoVO);
-        }
         return Result.ok(watchInfoVO);
     }
 
