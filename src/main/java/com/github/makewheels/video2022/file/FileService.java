@@ -16,7 +16,6 @@ import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.user.UserHolder;
-import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
@@ -93,10 +92,9 @@ public class FileService {
         }
 
         //根据provider，获取上传凭证
-        String provider = file.getProvider();
         JSONObject credentials = ossService.getUploadCredentials(file.getKey());
         if (credentials == null) return Result.error(ErrorCode.FILE_GENERATE_UPLOAD_CREDENTIALS_FAIL);
-        credentials.put("provider", provider);
+        credentials.put("provider", file.getProvider());
         log.info("生成上传凭证，fileId = " + fileId + " " + JSON.toJSONString(credentials));
         return Result.ok(credentials);
     }
@@ -105,24 +103,13 @@ public class FileService {
      * 通知文件上传完成，和对象存储服务器确认，改变数据库File状态
      */
     public Result<Void> uploadFinish(String fileId) {
-        String userId = UserHolder.getUserId();
         File file = fileRepository.getById(fileId);
-
-        if (file == null) {
-            return Result.error(ErrorCode.FILE_NOT_EXIST);
-        }
-        if (!StringUtils.equals(userId, file.getUserId())) {
-            return Result.error(ErrorCode.VIDEO_AND_UPLOADER_NOT_MATCH);
-        }
-
         String key = file.getKey();
         log.info("处理文件上传完成，fileId = " + fileId + ", key = " + key);
-
         OSSObject object = ossService.getObject(key);
         ObjectMetadata objectMetadata = object.getObjectMetadata();
         file.setSize(objectMetadata.getContentLength());
         file.setEtag(objectMetadata.getETag());
-
         file.setUploadTime(new Date());
         file.setStatus(FileStatus.READY);
         mongoTemplate.save(file);
@@ -140,7 +127,6 @@ public class FileService {
         String videoId = context.getVideoId();
         String clientId = context.getClientId();
         String sessionId = context.getSessionId();
-
 
         //异步保存访问File记录
         new Thread(() -> fileAccessLogService.saveAccessLog(
