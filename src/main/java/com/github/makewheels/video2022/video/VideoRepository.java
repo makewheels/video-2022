@@ -22,10 +22,6 @@ public class VideoRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    public boolean isVideoExist(String id) {
-        return mongoTemplate.exists(Query.query(Criteria.where("id").is(id)), Video.class);
-    }
-
     public Video getById(String id) {
         return mongoTemplate.findById(id, Video.class);
     }
@@ -38,6 +34,10 @@ public class VideoRepository {
         return getByIdList(idList).stream().collect(Collectors.toMap(Video::getId, Function.identity()));
     }
 
+    public boolean isVideoExist(String id) {
+        return mongoTemplate.exists(Query.query(Criteria.where("id").is(id)), Video.class);
+    }
+
     public Video getByWatchId(String watchId) {
         Query query = Query.query(Criteria.where(Watch.FIELD_NAME + ".watchId").is(watchId));
         return mongoTemplate.findOne(query, Video.class);
@@ -45,11 +45,6 @@ public class VideoRepository {
 
     /**
      * 根据userId分页获取视频列表
-     *
-     * @param userId
-     * @param skip
-     * @param limit
-     * @return
      */
     public List<Video> getVideosByUserId(String userId, int skip, int limit) {
         Query query = Query.query(Criteria.where("uploaderId").is(userId))
@@ -57,9 +52,6 @@ public class VideoRepository {
                 .with(Sort.by(Sort.Direction.DESC, "createTime"))
                 .skip(skip)
                 .limit(limit);
-//        query.fields().exclude("mediaInfo", "youtubeVideoInfo", "description",
-//                "originalFileId", "originalFileKey", " width", "height",
-//                "videoCodec", "audioCodec");
         return mongoTemplate.find(query, Video.class);
     }
 
