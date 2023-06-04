@@ -22,26 +22,29 @@ public class Video {
     private String id;
 
     @Indexed
-    private String userId;   // 上传者 uploaderId
+    private String userId;   // 上传者
     @Indexed
-    private String ownerId; // 所有者 ownerId
+    private String ownerId;  // 所有者
 
+    // 基本信息
     private String title;
     private String description;
-    private List<String> transcodeIds;  //转码id列表
 
     @Indexed
-    private String originalFileId;
+    private String type;        // 类型：是用户上传还是YouTube
     @Indexed
-    private String coverId;
+    private String provider;    // 它就是对象存储提供商，和file是一对一关系
+    @Indexed
+    private String status;      // 转码状态
 
+    // 关联id
+    private List<String> transcodeIds;  // 转码id列表
     @Indexed
-    private String type;        //类型：是用户上传还是YouTube
+    private String originalFileId; // 用户上传原始视频文件id
     @Indexed
-    private String provider;    //它就是对象存储提供商，和file是一对一关系
-    @Indexed
-    private String status;      //转码状态
+    private String coverId;  // 封面id
 
+    // 子类
     private YouTube youTube;               // YouTube视频信息
     private MediaInfo mediaInfo;           // 媒体信息
     private StorageStatus storageStatus;   // 删除信息
