@@ -3,6 +3,9 @@ package com.github.makewheels.video2022.video.bean.entity;
 import lombok.Data;
 import org.springframework.data.mongodb.core.index.Indexed;
 
+/**
+ * 视频播放信息
+ */
 @Data
 public class Watch {
     @Indexed
