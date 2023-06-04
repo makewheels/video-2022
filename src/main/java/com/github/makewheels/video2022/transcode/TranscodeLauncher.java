@@ -156,7 +156,6 @@ public class TranscodeLauncher {
     private void loadVideoMediaInfo(Video video) {
         String videoId = video.getId();
         String sourceKey = fileService.getKey(video.getOriginalFileId());
-        MediaInfo mediaInfo = video.getMediaInfo();
 
         log.info("通过阿里云MPS获取视频信息，videoId = {}, title = {}", videoId, video.getTitle());
         //获取视频媒体信息，确定只用阿里云mps，不用其它供应商
@@ -166,10 +165,13 @@ public class TranscodeLauncher {
         log.info("阿里云MPS获取视频媒体信息，jobId ={}，接口返回：{}", job.getJobId(), JSON.toJSONString(job));
 
         //设置mediaInfo
+        MediaInfo mediaInfo = video.getMediaInfo();
         mediaInfo.setResponse(JSONObject.parseObject(JSON.toJSONString(job)));
         SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJobProperties
                 properties = job.getProperties();
-        video.setDuration((long) (Double.parseDouble(properties.getDuration()) * 1000));
+        long duration = (long) (Double.parseDouble(properties.getDuration()) * 1000);
+        video.setDuration(duration);
+        mediaInfo.setDuration(duration);
         mediaInfo.setHeight(Integer.parseInt(properties.getHeight()));
         mediaInfo.setWidth(Integer.parseInt(properties.getWidth()));
         mediaInfo.setBitrate((int) Double.parseDouble(properties.getBitrate()));
@@ -177,10 +179,10 @@ public class TranscodeLauncher {
                 streams = properties.getStreams();
         mediaInfo.setVideoCodec(streams.getVideoStreamList().getVideoStream().get(0).getCodecName());
 
-        // 设置音频流，注意可能没有音频流
         List<SubmitMediaInfoJobResponseBody
                 .SubmitMediaInfoJobResponseBodyMediaInfoJobPropertiesStreamsAudioStreamListAudioStream>
                 audioStream = streams.getAudioStreamList().getAudioStream();
+        // 可能没有音频流，比如无人机拍的视频
         if (CollectionUtils.isNotEmpty(audioStream)) {
             mediaInfo.setAudioCodec(audioStream.get(0).getCodecName());
         }
