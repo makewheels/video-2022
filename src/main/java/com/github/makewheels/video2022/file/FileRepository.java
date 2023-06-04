@@ -21,4 +21,8 @@ public class FileRepository {
     public List<File> getByIds(List<String> ids) {
         return mongoTemplate.find(Query.query(Criteria.where("id").in(ids)), File.class);
     }
+
+    public boolean isFileExist(String fileId) {
+        return mongoTemplate.exists(Query.query(Criteria.where("id").is(fileId)), File.class);
+    }
 }
