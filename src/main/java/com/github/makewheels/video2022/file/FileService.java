@@ -164,6 +164,7 @@ public class FileService {
      */
     public String getKey(String fileId) {
         File file = fileRepository.getById(fileId);
+        if (file == null) return null;
         return file.getKey();
     }
 
@@ -185,12 +186,13 @@ public class FileService {
      * 获取多个文件信息
      * 因为阿里云没有批量查key接口，那就遍历一个一个查
      */
-    public List<OSSObject> getObjects(List<String> keys) {
-        List<OSSObject> objects = new ArrayList<>(keys.size());
+    public Map<String, OSSObject> getObjects(List<String> keys) {
+        Map<String, OSSObject> map = new HashMap<>(keys.size());
         for (String key : keys) {
-            ossService.getObject(key);
+            OSSObject object = ossService.getObject(key);
+            map.put(key, object);
         }
-        return objects;
+        return map;
     }
 
     /**
@@ -213,20 +215,13 @@ public class FileService {
     }
 
     /**
-     * 获取文件的md5
-     */
-    public String getMd5(File file) {
-        return getMd5(file.getId());
-    }
-
-    /**
      * 批量获取文件的md5
      * <p>
      * 返回值：fileId -> md5
      * 例如：646ea169aaac3166cd4e3594 -> 458a3b2992784ad3e3b7a511d25d5752
      */
-    public Map<String, String> getMd5ByFileIdList(List<String> fileIdList) {
-        List<File> fileList = fileRepository.getByIds(fileIdList);
+    public Map<String, String> getMd5ByFileIds(List<String> fileIds) {
+        List<File> fileList = fileRepository.getByIds(fileIds);
         List<FileMd5DTO> fileMd5DTOList = new ArrayList<>(fileList.size());
         for (File file : fileList) {
             FileMd5DTO fileMd5DTO = new FileMd5DTO();
@@ -238,14 +233,6 @@ public class FileService {
 
         return fileMd5DTOList.stream().collect(
                 Collectors.toMap(FileMd5DTO::getFileId, FileMd5DTO::getMd5));
-    }
-
-    /**
-     * 批量获取文件的md5
-     */
-    public Map<String, String> getMd5ByFileList(List<File> fileList) {
-        List<String> fileIdList = fileList.stream().map(File::getId).collect(Collectors.toList());
-        return getMd5ByFileIdList(fileIdList);
     }
 
     /**
@@ -287,20 +274,6 @@ public class FileService {
      */
     public void setObjectAcl(String key, CannedAccessControlList cannedAccessControlList) {
         ossService.setObjectAcl(key, cannedAccessControlList);
-    }
-
-    /**
-     * 改变object存储类型
-     */
-    public CopyObjectResult changeObjectStorageClass(String key, StorageClass storageClass) {
-        return ossService.changeObjectStorageClass(key, storageClass);
-    }
-
-    /**
-     * 取回object
-     */
-    public RestoreObjectResult restoreObject(String key) {
-        return ossService.restoreObject(key);
     }
 
 }
