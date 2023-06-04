@@ -152,7 +152,7 @@ public class WatchService {
         Video video = videoRepository.getByWatchId(watchId);
         if (video == null) {
             log.error("查不到这个video, watchId = " + watchId);
-            return Result.error(ErrorCode.FAIL);
+            return Result.error(ErrorCode.VIDEO_NOT_EXIST);
         }
         String videoId = video.getId();
         watchInfo = new WatchInfo();
