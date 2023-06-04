@@ -92,7 +92,7 @@ public class TranscodeCallbackService {
         String videoStatus;
         //如果是部分完成
         if (completeCount > 0 && completeCount < transcodeList.size()) {
-            videoStatus = VideoStatus.TRANSCODING_PARTLY_COMPLETED;
+            videoStatus = VideoStatus.TRANSCODING_PARTLY_COMPLETE;
         } else if (completeCount == transcodeList.size()) {
             //如果全部完成
             videoStatus = VideoStatus.READY;
@@ -207,7 +207,7 @@ public class TranscodeCallbackService {
 
         //计算transcode平均码率
         long tsTotalSize = tsFiles.stream().mapToLong(File::getSize).sum();
-        BigDecimal duration = new BigDecimal(video.getDuration() / 1000);
+        BigDecimal duration = new BigDecimal(video.getMediaInfo().getDuration() / 1000);
         transcode.setAverageBitrate(calculateBitrate(tsTotalSize, duration));
 
         //计算transcode最高码率

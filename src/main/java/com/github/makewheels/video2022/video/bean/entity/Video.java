@@ -22,63 +22,46 @@ public class Video {
     private String id;
 
     @Indexed
-    private String userId;   // 所有者 ownerId
-
-//    @Indexed
-//    private String uploader; //上传者
-
+    private String userId;   // 上传者 uploaderId
     @Indexed
-    private String watchId;
-    private String watchUrl;
-    private String shortUrl;
+    private String ownerId; // 所有者 ownerId
+
     private String title;
     private String description;
-    private Integer watchCount;         //观看次数
-    private Long duration;              //视频时长，单位毫秒
     private List<String> transcodeIds;  //转码id列表
 
     @Indexed
     private String originalFileId;
-
     @Indexed
     private String coverId;
 
-    private MediaInfo mediaInfo;    // 媒体信息
-
     @Indexed
-    private String type;  //类型：是用户上传还是YouTube
+    private String type;        //类型：是用户上传还是YouTube
     @Indexed
     private String provider;    //它就是对象存储提供商，和file是一对一关系
-
-    private YouTube youTube;
-
     @Indexed
-    private String status;     //转码状态
+    private String status;      //转码状态
+
+    private YouTube youTube;               // YouTube视频信息
+    private MediaInfo mediaInfo;           // 媒体信息
+    private StorageStatus storageStatus;   // 删除信息
+    private Watch watch;                   // 播放信息
+
     @Indexed
     private Date createTime;
     @Indexed
     private Date updateTime;
-
-    @Indexed
-    private Date expireTime;                    //过期时间
-    @Indexed
-    private Boolean isPermanent;                //是否是永久视频
-    private Boolean isOriginalFileDeleted;      //源视频是否已删除
-    private Boolean isTranscodeFilesDeleted;    //ts转码文件是否已删除
-    private Date deleteTime;                    //什么时候删的
 
     public Video() {
         this.createTime = new Date();
         this.updateTime = new Date();
         this.status = VideoStatus.CREATED;
         this.provider = ObjectStorageProvider.ALIYUN_OSS;
-        this.watchCount = 0;
-        this.isPermanent = false;
-        this.isOriginalFileDeleted = false;
-        this.isTranscodeFilesDeleted = false;
 
         this.youTube = new YouTube();
         this.mediaInfo = new MediaInfo();
+        this.storageStatus = new StorageStatus();
+        this.watch = new Watch();
     }
 
     @Override

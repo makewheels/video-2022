@@ -19,6 +19,7 @@ import com.github.makewheels.video2022.utils.IpService;
 import com.github.makewheels.video2022.video.VideoRedisService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
+import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -103,7 +104,8 @@ public class WatchService {
         if (videoStatus.equals(VideoStatus.READY)) {
             videoRepository.addWatchCount(videoId);
             //刷新Redis缓存
-            video.setWatchCount(video.getWatchCount() + 1);
+            Watch watch = video.getWatch();
+            watch.setWatchCount(watch.getWatchCount() + 1);
             cacheService.updateVideo(video);
         }
 
