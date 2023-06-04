@@ -4,14 +4,13 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
-import com.aliyun.oss.model.StorageClass;
 import com.github.makewheels.video2022.etc.ding.NotificationService;
-import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.redis.CacheService;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.utils.M3u8Util;
 import com.github.makewheels.video2022.video.bean.entity.Video;
@@ -218,14 +217,6 @@ public class TranscodeCallbackService {
 
         mongoTemplate.save(transcode);
         return tsFiles;
-    }
-
-    /**
-     * 改变源视频对象存储storageClass，为低频存储
-     */
-    private void changeOriginalFileStorageClass(Video video) {
-        String originalFileKey = fileService.getKey(video.getOriginalFileId());
-        fileService.changeObjectStorageClass(originalFileKey, StorageClass.IA);
     }
 
     /**
