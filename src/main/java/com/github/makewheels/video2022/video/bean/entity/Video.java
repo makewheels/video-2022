@@ -22,9 +22,9 @@ public class Video {
     private String id;
 
     @Indexed
-    private String userId;   // 上传者
+    private String uploaderId;   // 上传者
     @Indexed
-    private String ownerId;  // 所有者
+    private String ownerId;      // 所有者
 
     // 基本信息
     private String title;

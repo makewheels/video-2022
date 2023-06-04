@@ -120,7 +120,7 @@ public class TranscodeCallbackService {
         m3u8File.setType(FileType.TRANSCODE_M3U8);
         m3u8File.setVideoId(video.getId());
         m3u8File.setVideoType(video.getType());
-        m3u8File.setUserId(video.getUserId());
+        m3u8File.setUserId(video.getUploaderId());
 
         //获取m3u8文件内容
         OSSObject object = fileService.getObject(m3u8Key);
@@ -153,7 +153,7 @@ public class TranscodeCallbackService {
      */
     private List<File> getTsFiles(Video video, Transcode transcode) {
         String videoId = video.getId();
-        String userId = video.getUserId();
+        String userId = video.getUploaderId();
         String m3u8Content = transcode.getM3u8Content();
 
         //获取对象存储每一个文件

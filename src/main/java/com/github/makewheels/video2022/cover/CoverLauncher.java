@@ -142,7 +142,7 @@ public class CoverLauncher {
      */
     private void handleAliyunMpsCover(User user, Video video, Cover cover, File file) {
         String videoId = video.getId();
-        String targetKey = PathUtil.getS3VideoPrefix(video.getUserId(), videoId)
+        String targetKey = PathUtil.getS3VideoPrefix(video.getUploaderId(), videoId)
                 + "/cover/" + cover.getId() + ".jpg";
 
         String originalFileKey = fileService.getKey(video.getOriginalFileId());
