@@ -8,6 +8,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
  */
 @Data
 public class Watch {
+    public static final String FIELD_NAME = "watch";
+
     @Indexed
     private String watchId;
     private String watchUrl;

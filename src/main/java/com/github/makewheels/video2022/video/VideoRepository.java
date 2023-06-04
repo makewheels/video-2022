@@ -1,6 +1,8 @@
 package com.github.makewheels.video2022.video;
 
+import com.github.makewheels.video2022.video.bean.entity.StorageStatus;
 import com.github.makewheels.video2022.video.bean.entity.Video;
+import com.github.makewheels.video2022.video.bean.entity.Watch;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -37,7 +39,8 @@ public class VideoRepository {
     }
 
     public Video getByWatchId(String watchId) {
-        return mongoTemplate.findOne(Query.query(Criteria.where("watchId").is(watchId)), Video.class);
+        Query query = Query.query(Criteria.where(Watch.FIELD_NAME + ".watchId").is(watchId));
+        return mongoTemplate.findOne(query, Video.class);
     }
 
     /**
@@ -66,7 +69,7 @@ public class VideoRepository {
     public void addWatchCount(String videoId) {
         Query query = Query.query(Criteria.where("id").is(videoId));
         Update update = new Update();
-        update.inc("watch.watchCount");
+        update.inc(Watch.FIELD_NAME + ".watchCount");
         mongoTemplate.updateFirst(query, update, Video.class);
     }
 
@@ -74,9 +77,10 @@ public class VideoRepository {
      * 获取过期视频
      */
     public List<Video> getExpiredVideos(int skip, int limit) {
-        Query query = Query.query(Criteria.where("isPermanent").is(false)
-                        .and("expireTime").lt(new Date()))
-                .skip(skip).limit(limit);
+        Criteria criteria = Criteria.where(
+                        StorageStatus.FIELD_NAME + ".isPermanent").is(false)
+                .and(StorageStatus.FIELD_NAME + ".expireTime").lt(new Date());
+        Query query = Query.query(criteria).skip(skip).limit(limit);
         return mongoTemplate.find(query, Video.class);
     }
 }
