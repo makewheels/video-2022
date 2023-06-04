@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class WatchInfo {
+public class WatchInfoVO {
     private String videoId;
     private String coverUrl;
     private List<PlayUrl> playUrlList;

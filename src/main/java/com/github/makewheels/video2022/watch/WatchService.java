@@ -2,17 +2,16 @@ package com.github.makewheels.video2022.watch;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.cover.Cover;
-import com.github.makewheels.video2022.cover.CoverRepository;
+import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.etc.ding.NotificationService;
-import com.github.makewheels.video2022.system.environment.EnvironmentService;
-import com.github.makewheels.video2022.system.context.Context;
-import com.github.makewheels.video2022.system.context.RequestUtil;
-import com.github.makewheels.video2022.system.response.ErrorCode;
-import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.redis.CacheService;
+import com.github.makewheels.video2022.system.context.Context;
+import com.github.makewheels.video2022.system.context.RequestUtil;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
+import com.github.makewheels.video2022.system.response.ErrorCode;
+import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.utils.IpService;
@@ -21,7 +20,7 @@ import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
-import com.github.makewheels.video2022.watch.watchinfo.WatchInfo;
+import com.github.makewheels.video2022.watch.watchinfo.WatchInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -52,7 +51,7 @@ public class WatchService {
     @Resource
     private FileRepository fileRepository;
     @Resource
-    private CoverRepository coverRepository;
+    private CoverService coverService;
 
     @Resource
     private VideoRedisService videoRedisService;
@@ -144,38 +143,30 @@ public class WatchService {
     /**
      * 获取播放信息
      */
-    public Result<WatchInfo> getWatchInfo(Context context, String watchId) {
-        WatchInfo watchInfo = videoRedisService.getWatchInfo(watchId);
-        //如果已经存在缓存，直接返回
-        if (watchInfo != null) {
-            return Result.ok(watchInfo);
-        }
-        //如果没有缓存，查数据库，缓存，返回
+    public Result<WatchInfoVO> getWatchInfo(Context context, String watchId) {
         Video video = videoRepository.getByWatchId(watchId);
         if (video == null) {
-            log.error("查不到这个video, watchId = " + watchId);
+            log.warn("查不到这个video, watchId = " + watchId);
             return Result.error(ErrorCode.VIDEO_NOT_EXIST);
         }
         String videoId = video.getId();
-        watchInfo = new WatchInfo();
-        watchInfo.setVideoId(videoId);
+        WatchInfoVO watchInfoVO = new WatchInfoVO();
+        watchInfoVO.setVideoId(videoId);
         //通过videoId查找封面
-        Cover cover = coverRepository.getByVideoId(videoId);
-        if (cover != null) {
-            watchInfo.setCoverUrl(cover.getAccessUrl());
-        }
+        String coverUrl = coverService.getSignedCoverUrl(video.getCoverId());
+        watchInfoVO.setCoverUrl(coverUrl);
 
-        watchInfo.setVideoStatus(video.getStatus());
+        watchInfoVO.setVideoStatus(video.getStatus());
 
         //自适应m3u8地址
-        watchInfo.setMultivariantPlaylistUrl(environmentService.getInternalBaseUrl()
+        watchInfoVO.setMultivariantPlaylistUrl(environmentService.getInternalBaseUrl()
                 + "/watchController/getMultivariantPlaylist.m3u8?videoId=" + videoId
                 + "&clientId=" + context.getClientId() + "&sessionId=" + context.getSessionId());
         //缓存redis，先判断视频状态：只有READY才放入缓存
         if (video.isReady()) {
-            videoRedisService.setWatchInfo(watchId, watchInfo);
+            videoRedisService.setWatchInfo(watchId, watchInfoVO);
         }
-        return Result.ok(watchInfo);
+        return Result.ok(watchInfoVO);
     }
 
     /**
