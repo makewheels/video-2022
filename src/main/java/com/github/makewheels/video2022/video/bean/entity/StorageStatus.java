@@ -10,6 +10,8 @@ import java.util.Date;
  */
 @Data
 public class StorageStatus {
+    public static final String FIELD_NAME = "storageStatus";
+
     @Indexed
     private Date expireTime;                    //过期时间
     @Indexed
