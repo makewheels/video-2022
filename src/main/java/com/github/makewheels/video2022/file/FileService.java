@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.file;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.*;
+import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.file.access.FileAccessLogService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
@@ -50,6 +51,9 @@ public class FileService {
     @Resource
     private Md5CfService md5CfService;
 
+    @Resource
+    private CheckService checkService;
+
     /**
      * 新建视频时创建文件
      */
@@ -80,22 +84,17 @@ public class FileService {
      * 获取上传凭证
      */
     public Result<JSONObject> getUploadCredentials(String fileId) {
-        User user = UserHolder.get();
+        String userId = UserHolder.getUserId();
         File file = fileRepository.getById(fileId);
 
-        //如果文件不存在，或者token找不到用户
-        if (file == null) return Result.error(ErrorCode.FILE_NOT_EXIST);
-        if (user == null) return Result.error(ErrorCode.USER_NOT_EXIST);
-
         //如果上传文件不属于该用户
-        if (!StringUtils.equals(user.getId(), file.getUserId())) {
+        if (!StringUtils.equals(userId, file.getUserId())) {
             return Result.error(ErrorCode.FILE_AND_USER_NOT_MATCH);
         }
 
-        String key = file.getKey();
         //根据provider，获取上传凭证
         String provider = file.getProvider();
-        JSONObject credentials = ossService.getUploadCredentials(key);
+        JSONObject credentials = ossService.getUploadCredentials(file.getKey());
         if (credentials == null) return Result.error(ErrorCode.FILE_GENERATE_UPLOAD_CREDENTIALS_FAIL);
         credentials.put("provider", provider);
         log.info("生成上传凭证，fileId = " + fileId + " " + JSON.toJSONString(credentials));
@@ -106,20 +105,19 @@ public class FileService {
      * 通知文件上传完成，和对象存储服务器确认，改变数据库File状态
      */
     public Result<Void> uploadFinish(String fileId) {
-        User user = UserHolder.get();
+        String userId = UserHolder.getUserId();
         File file = fileRepository.getById(fileId);
 
         if (file == null) {
             return Result.error(ErrorCode.FILE_NOT_EXIST);
         }
-        if (!StringUtils.equals(user.getId(), file.getUserId())) {
+        if (!StringUtils.equals(userId, file.getUserId())) {
             return Result.error(ErrorCode.VIDEO_AND_UPLOADER_NOT_MATCH);
         }
 
         String key = file.getKey();
         log.info("处理文件上传完成，fileId = " + fileId + ", key = " + key);
 
-        //判断provider
         OSSObject object = ossService.getObject(key);
         ObjectMetadata objectMetadata = object.getObjectMetadata();
         file.setSize(objectMetadata.getContentLength());

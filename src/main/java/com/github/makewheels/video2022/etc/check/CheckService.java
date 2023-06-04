@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.etc.check;
 
+import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
 import com.github.makewheels.video2022.playlist.item.request.add.AddMode;
@@ -8,6 +9,7 @@ import com.github.makewheels.video2022.playlist.item.request.move.MoveMode;
 import com.github.makewheels.video2022.playlist.list.bean.IdBean;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.redis.CacheService;
+import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.constants.Visibility;
@@ -32,6 +34,8 @@ public class CheckService {
     private VideoRepository videoRepository;
     @Resource
     private PlaylistRepository playlistRepository;
+    @Resource
+    private FileRepository fileRepository;
 
     /**
      * 检查用户是否存在
@@ -39,6 +43,15 @@ public class CheckService {
     public void checkUserExist(String userId) {
         if (!userRepository.isUserExist(userId)) {
             throw new VideoException("用户不存在, userId = " + userId);
+        }
+    }
+
+    /**
+     * 检查用户是否存在当前请求线程
+     */
+    public void checkUserHolderExist() {
+        if (UserHolder.get() == null) {
+            throw new VideoException("用户UserHolder不存在");
         }
     }
 
@@ -205,6 +218,15 @@ public class CheckService {
     public void checkMoveMode(String moveMode) {
         if (!StringUtils.equalsAny(moveMode, MoveMode.ALL)) {
             throw new VideoException("mode不合法, mode = " + moveMode);
+        }
+    }
+
+    /**
+     * 检查文件是否存在
+     */
+    public void checkFileExist(String fileId) {
+        if (!fileRepository.isFileExist(fileId)) {
+            throw new VideoException("文件不存在, fileId = " + fileId);
         }
     }
 }
