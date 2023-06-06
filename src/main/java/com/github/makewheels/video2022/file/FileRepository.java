@@ -39,8 +39,12 @@ public class FileRepository {
      * 根据文件id查用户id
      */
     public String getUserIdByFileId(String fileId) {
-        Query query = Query.query(Criteria.where("id").is("fileId"));
+        Query query = Query.query(Criteria.where("id").is(fileId));
         query.fields().include("userId");
-        return mongoTemplate.findOne(query, String.class);
+        File file = mongoTemplate.findOne(query, File.class);
+        if (file != null) {
+            return file.getUserId();
+        }
+        return null;
     }
 }
