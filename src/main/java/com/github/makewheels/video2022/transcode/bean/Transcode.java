@@ -68,7 +68,7 @@ public class Transcode {
     public boolean isFinishStatus() {
         switch (provider) {
             case TranscodeProvider.ALIYUN_MPS:
-                return AliyunTranscodeStatus.isFinishedStatus(status);
+                return AliyunTranscodeStatus.isFinishStatus(status);
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 return CloudFunctionTranscodeStatus.isFinishedStatus(status);
         }
