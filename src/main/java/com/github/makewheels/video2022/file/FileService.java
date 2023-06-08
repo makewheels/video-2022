@@ -3,7 +3,6 @@ package com.github.makewheels.video2022.file;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.*;
-import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.file.access.FileAccessLogService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
@@ -49,9 +48,6 @@ public class FileService {
 
     @Resource
     private Md5CfService md5CfService;
-
-    @Resource
-    private CheckService checkService;
 
     /**
      * 新建视频时创建文件
@@ -113,6 +109,14 @@ public class FileService {
         file.setUploadTime(new Date());
         file.setStatus(FileStatus.READY);
         mongoTemplate.save(file);
+
+        // 异步获取文件md5
+        new Thread(() -> {
+            String md5 = getMd5(fileId);
+            file.setMd5(md5);
+            mongoTemplate.save(file);
+        }).start();
+
         return Result.ok();
     }
 

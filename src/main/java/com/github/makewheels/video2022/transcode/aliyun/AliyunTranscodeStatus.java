@@ -12,7 +12,7 @@ public class AliyunTranscodeStatus {
     /**
      * 判断：是不是，已结束的状态
      */
-    public static boolean isFinishedStatus(String jobStatus) {
+    public static boolean isFinishStatus(String jobStatus) {
         return StringUtils.equalsAny(jobStatus, TranscodeSuccess, TranscodeFail, TranscodeCancelled);
     }
 }

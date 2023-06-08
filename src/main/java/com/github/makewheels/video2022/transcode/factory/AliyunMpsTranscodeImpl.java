@@ -94,7 +94,7 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
             }
 
             //如果转码已完成，回调
-            if (AliyunTranscodeStatus.isFinishedStatus(jobStatus)) {
+            if (AliyunTranscodeStatus.isFinishStatus(jobStatus)) {
                 callback(jobId);
                 break;
             }
