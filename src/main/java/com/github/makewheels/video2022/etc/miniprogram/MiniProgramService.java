@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.etc.wechat;
+package com.github.makewheels.video2022.etc.miniprogram;
 
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;

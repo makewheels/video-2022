@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.etc.wechat;
+package com.github.makewheels.video2022.etc.miniprogram;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.system.response.Result;
