@@ -24,7 +24,11 @@ public class CoverRepository {
     public String getOssKey(String id) {
         Query query = Query.query(Criteria.where("id").is(id));
         query.fields().include("key");
-        return mongoTemplate.findOne(query, String.class);
+        Cover cover = mongoTemplate.findOne(query, Cover.class);
+        if (cover == null) {
+            return null;
+        }
+        return cover.getKey();
     }
 
     public Cover getByJobId(String jobId) {
