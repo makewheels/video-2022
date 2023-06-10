@@ -48,7 +48,7 @@ public class Md5CloudFunction implements HttpRequestHandler {
         String md5 = DigestUtil.md5Hex(file);
         log.info("计算MD5 = " + md5
                 + "，文件大小：" + FileUtil.readableFileSize(file)
-                + "耗时：" + (System.currentTimeMillis() - startTime) + "ms");
+                + "，耗时：" + (System.currentTimeMillis() - startTime) + "ms");
         return md5;
     }
 
