@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.video;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
@@ -17,6 +18,8 @@ import java.util.List;
 public class VideoController {
     @Resource
     private VideoService videoService;
+    @Resource
+    private CheckService checkService;
 
     /**
      * 预创建视频，主要是指定上传路径
@@ -50,6 +53,7 @@ public class VideoController {
      */
     @GetMapping("getVideoDetail")
     public Result<VideoVO> getVideoDetail(@RequestParam String videoId) {
+        checkService.checkVideoExist(videoId);
         VideoVO videoVO = videoService.getVideoDetail(videoId);
         return Result.ok(videoVO);
     }

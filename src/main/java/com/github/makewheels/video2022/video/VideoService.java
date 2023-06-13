@@ -20,6 +20,7 @@ import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
+import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -135,15 +136,27 @@ public class VideoService {
      * 获取视频详情
      */
     public VideoVO getVideoDetail(String videoId) {
-        Video video = cacheService.getVideo(videoId);
-        if (video == null) {
-            throw new VideoException(ErrorCode.VIDEO_NOT_EXIST);
-        }
+        Video video = videoRepository.getById(videoId);
         VideoVO videoVO = new VideoVO();
-        BeanUtils.copyProperties(video, videoVO);
-        videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-        videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYouTube().getPublishTime()));
+        videoVO.setId(video.getId());
+        videoVO.setUserId(video.getUploaderId());
+        videoVO.setType(video.getType());
+        videoVO.setStatus(video.getStatus());
+        videoVO.setTitle(video.getTitle());
+        videoVO.setDescription(video.getDescription());
         videoVO.setCoverUrl(coverService.getSignedCoverUrl(video.getCoverId()));
+        videoVO.setDuration(video.getMediaInfo().getDuration());
+        videoVO.setWatchCount(video.getWatch().getWatchCount());
+        videoVO.setWatchId(video.getWatch().getWatchId());
+        videoVO.setWatchUrl(video.getWatch().getWatchUrl());
+        videoVO.setShortUrl(video.getWatch().getShortUrl());
+
+        videoVO.setCreateTime(video.getCreateTime());
+        videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
+        if (VideoType.YOUTUBE.equals(video.getType())) {
+            videoVO.setYoutubePublishTime(video.getYouTube().getPublishTime());
+            videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYouTube().getPublishTime()));
+        }
         return videoVO;
     }
 
