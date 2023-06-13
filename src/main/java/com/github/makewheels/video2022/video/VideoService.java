@@ -4,19 +4,18 @@ import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.cover.CoverService;
-import com.github.makewheels.video2022.springboot.exception.VideoException;
-import com.github.makewheels.video2022.system.response.ErrorCode;
-import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.redis.CacheService;
+import com.github.makewheels.video2022.springboot.exception.VideoException;
+import com.github.makewheels.video2022.system.response.ErrorCode;
+import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
-import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
@@ -67,14 +66,13 @@ public class VideoService {
         // 返回给前端
         Video video = createVideoDTO.getVideo();
         File videoFile = createVideoDTO.getVideoFile();
-        Watch watch = video.getWatch();
 
         JSONObject response = new JSONObject();
         response.put("fileId", videoFile.getId());
         response.put("videoId", video.getId());
-        response.put("watchId", watch.getWatchId());
-        response.put("watchUrl", watch.getWatchUrl());
-        response.put("shortUrl", watch.getShortUrl());
+        response.put("watchId", video.getWatch().getWatchId());
+        response.put("watchUrl", video.getWatch().getWatchUrl());
+        response.put("shortUrl", video.getWatch().getShortUrl());
         return response;
     }
 

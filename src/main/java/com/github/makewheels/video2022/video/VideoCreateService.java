@@ -108,15 +108,14 @@ public class VideoCreateService {
      * 创建新视频
      */
     public void create(CreateVideoDTO createVideoDTO) {
-        User user = UserHolder.get();
-
+        // 新建video对象
         Video video = createVideo(createVideoDTO);
         String videoId = video.getId();
         File videoFile = createVideoDTO.getVideoFile();
 
         //更新file
         videoFile.setVideoId(videoId);
-        videoFile.setKey(PathUtil.getS3VideoPrefix(user.getId(), videoId)
+        videoFile.setKey(PathUtil.getS3VideoPrefix(UserHolder.getUserId(), videoId)
                 + "/original/" + videoId + "." + videoFile.getExtension());
         mongoTemplate.save(videoFile);
         log.info("新建文件：" + JSON.toJSONString(videoFile));
@@ -125,7 +124,7 @@ public class VideoCreateService {
 
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
         if (video.getType().equals(VideoType.YOUTUBE)) {
-            new Thread(() -> handleCreateYoutube(video, user, videoFile)).start();
+            new Thread(() -> handleCreateYoutube(video, UserHolder.get(), videoFile)).start();
         }
     }
 
