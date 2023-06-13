@@ -17,7 +17,8 @@ public class M3u8Util {
 
     /**
      * 获取ts时长
-     * 638e1d389cae0b13419384b6-00000.ts -> 5.338667
+     *
+     * @return 638e1d389cae0b13419384b6-00000.ts -> 5.338667
      */
     public static Map<String, BigDecimal> getTsTimeLengthMap(String m3u8Content) {
         String[] lines = m3u8Content.split("\n");
