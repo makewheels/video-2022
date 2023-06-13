@@ -173,8 +173,6 @@ public class WatchService {
                 Collectors.toMap(File::getFilename, Function.identity()));
 
         String m3u8Content = transcode.getM3u8Content();
-        //TODO 这里需要缓存，key是transcodeId，value是Transcode
-        //TODO 还需要一个 files缓存
 
         //拆解m3u8Content
         List<String> lines = Arrays.asList(m3u8Content.split("\n"));
