@@ -28,16 +28,16 @@ public class File {
 
     //ts视频碎片所属于哪一个转码，它的父亲
     @Indexed
-    private String transcodeId;
+    private String transcodeId;   // TODO 迁移到tsFile
     //ts碎片，转码所属于哪个分辨率
     @Indexed
-    private String resolution;
+    private String resolution;    // TODO 迁移到tsFile
     //ts碎片，在一个m3u8转码文件中的位置
     @Indexed
-    private Integer tsIndex;
+    private Integer tsIndex; // TODO 迁移到tsFile
 
     //ts碎片，视频码率
-    private Integer bitrate;
+    private Integer bitrate; // TODO 迁移到tsFile
 
     //原始文件名，只有用户上传的视频源文件才有
     private String originalFilename;
@@ -51,6 +51,7 @@ public class File {
     private String key;
     private String extension;
 
+    @Indexed
     private Long size;
     @Indexed
     private String etag;

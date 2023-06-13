@@ -34,6 +34,7 @@ public class WatchController {
 
     /**
      * 获取m3u8内容，里面是ts列表链接
+     * 需要以.m3u8结尾，播放器才能识别
      */
     @GetMapping("getM3u8Content.m3u8")
     public String getM3u8Content(@RequestParam String transcodeId, @RequestParam String resolution) {
@@ -42,6 +43,7 @@ public class WatchController {
 
     /**
      * 获取自适应m3u8列表
+     * 需要以.m3u8结尾，播放器才能识别
      */
     @GetMapping("getMultivariantPlaylist.m3u8")
     public String getMultivariantPlaylist() {

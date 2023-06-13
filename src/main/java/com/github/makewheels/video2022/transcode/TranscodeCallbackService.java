@@ -184,7 +184,9 @@ public class TranscodeCallbackService {
             file.setObjectInfo(ossFilenameMap.get(filename));
 
             //计算ts码率
-            file.setBitrate(calculateBitrate(file.getSize(), tsTimeLengthMap.get(filename)));
+            Long size = file.getSize();
+            BigDecimal timeLength = tsTimeLengthMap.get(filename);
+            file.setBitrate(calculateBitrate(size, timeLength));
 
             tsFiles.add(file);
         }
