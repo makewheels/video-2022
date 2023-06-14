@@ -6,7 +6,6 @@ import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
-import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.IdService;
@@ -40,8 +39,6 @@ public class VideoCreateService {
     private IdService idService;
     @Resource
     private FileService fileService;
-    @Resource
-    private CacheService cacheService;
     @Resource
     private CoverLauncher coverLauncher;
     @Resource
@@ -166,6 +163,6 @@ public class VideoCreateService {
         JSONObject snippet = youtubeVideoInfo.getJSONObject("snippet");
         video.setTitle(snippet.getString("title"));
         video.setDescription(snippet.getString("description"));
-        cacheService.updateVideo(video);
+        mongoTemplate.save(video);
     }
 }

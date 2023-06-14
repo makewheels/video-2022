@@ -10,7 +10,6 @@ import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
-import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.utils.M3u8Util;
@@ -48,8 +47,6 @@ public class TranscodeCallbackService {
     private TranscodeRepository transcodeRepository;
     @Resource
     private FileService fileService;
-    @Resource
-    private CacheService cacheService;
     @Resource
     private NotificationService notificationService;
     @Resource
@@ -108,7 +105,7 @@ public class TranscodeCallbackService {
         //更新videoStatus
         if (!StringUtils.equals(videoStatus, video.getStatus())) {
             video.setStatus(videoStatus);
-            cacheService.updateVideo(video);
+            mongoTemplate.save(video);
         }
     }
 

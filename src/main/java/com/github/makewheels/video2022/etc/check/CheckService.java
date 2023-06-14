@@ -7,7 +7,6 @@ import com.github.makewheels.video2022.playlist.item.request.delete.DeleteMode;
 import com.github.makewheels.video2022.playlist.item.request.move.MoveMode;
 import com.github.makewheels.video2022.playlist.list.bean.IdBean;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
-import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserRepository;
@@ -27,8 +26,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CheckService {
-    @Resource
-    private CacheService cacheService;
     @Resource
     private UserRepository userRepository;
     @Resource

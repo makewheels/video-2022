@@ -10,7 +10,6 @@ import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
-import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.PathUtil;
@@ -47,8 +46,6 @@ public class CoverLauncher {
     private AliyunMpsService aliyunMpsService;
     @Resource
     private CoverCallbackService coverCallbackService;
-    @Resource
-    private CacheService cacheService;
 
     /**
      * 发起截帧任务
@@ -93,7 +90,7 @@ public class CoverLauncher {
 
         //更新video
         video.setCoverId(cover.getId());
-        cacheService.updateVideo(video);
+        mongoTemplate.save(video);
     }
 
     /**

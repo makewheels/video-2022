@@ -6,7 +6,6 @@ import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.etc.ding.NotificationService;
 import com.github.makewheels.video2022.file.TsFileRepository;
 import com.github.makewheels.video2022.file.bean.TsFile;
-import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
@@ -49,14 +48,11 @@ public class WatchService {
     private TranscodeRepository transcodeRepository;
     @Resource
     private TsFileRepository tsFileRepository;
+
     @Resource
     private CoverService coverService;
-
-    @Resource
-    private CacheService cacheService;
     @Resource
     private NotificationService notificationService;
-
     @Resource
     private EnvironmentService environmentService;
 
@@ -102,7 +98,7 @@ public class WatchService {
             //刷新Redis缓存
             Watch watch = video.getWatch();
             watch.setWatchCount(watch.getWatchCount() + 1);
-            cacheService.updateVideo(video);
+            mongoTemplate.save(video);
         }
 
         //保存观看记录到数据库

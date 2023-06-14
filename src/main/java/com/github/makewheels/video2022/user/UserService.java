@@ -5,7 +5,6 @@ import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.system.response.ErrorCode;
-import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.bean.VerificationCode;
 import com.github.makewheels.video2022.utils.BaiduSmsService;
@@ -30,8 +29,6 @@ public class UserService {
     private MongoTemplate mongoTemplate;
     @Resource
     private UserRepository userRepository;
-    @Resource
-    private CacheService cacheService;
 
     /**
      * 根据登录token获取用户
