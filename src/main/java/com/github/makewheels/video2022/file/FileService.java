@@ -42,6 +42,8 @@ public class FileService {
 
     @Resource
     private FileRepository fileRepository;
+    @Resource
+    private TsFileRepository tsFileRepository;
 
     @Resource
     private FileAccessLogService fileAccessLogService;
@@ -54,8 +56,8 @@ public class FileService {
      */
     public File createVideoFile(CreateVideoDTO createVideoDTO) {
         File file = new File();
-        file.setType(FileType.ORIGINAL_VIDEO);
-        file.setUserId(createVideoDTO.getUser().getId());
+        file.setFileType(FileType.ORIGINAL_VIDEO);
+        file.setUploaderId(createVideoDTO.getUser().getId());
 
         file.setProvider(createVideoDTO.getVideo().getProvider());
         String videoType = createVideoDTO.getVideoType();
@@ -83,7 +85,7 @@ public class FileService {
         File file = fileRepository.getById(fileId);
 
         //如果上传文件不属于该用户
-        if (!StringUtils.equals(userId, file.getUserId())) {
+        if (!StringUtils.equals(userId, file.getUploaderId())) {
             return Result.error(ErrorCode.FILE_AND_USER_NOT_MATCH);
         }
 
@@ -107,7 +109,7 @@ public class FileService {
         file.setSize(objectMetadata.getContentLength());
         file.setEtag(objectMetadata.getETag());
         file.setUploadTime(new Date());
-        file.setStatus(FileStatus.READY);
+        file.setFileStatus(FileStatus.READY);
         mongoTemplate.save(file);
 
         // 异步获取文件md5
@@ -136,9 +138,9 @@ public class FileService {
         new Thread(() -> fileAccessLogService.saveAccessLog(
                 request, videoId, clientId, sessionId, resolution, fileId)).start();
 
-        String key = getKey(fileId);
+        String key = tsFileRepository.getKeyById(fileId);
         String url = generatePresignedUrl(key, Duration.ofHours(3));
-        response.setStatus(HttpServletResponse.SC_FOUND);
+        response.setStatus(302);
         try {
             response.sendRedirect(url);
         } catch (IOException e) {

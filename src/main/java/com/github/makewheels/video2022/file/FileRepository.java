@@ -40,10 +40,10 @@ public class FileRepository {
      */
     public String getUserIdByFileId(String fileId) {
         Query query = Query.query(Criteria.where("id").is(fileId));
-        query.fields().include("userId");
+        query.fields().include("uploaderId");
         File file = mongoTemplate.findOne(query, File.class);
         if (file != null) {
-            return file.getUserId();
+            return file.getUploaderId();
         }
         return null;
     }

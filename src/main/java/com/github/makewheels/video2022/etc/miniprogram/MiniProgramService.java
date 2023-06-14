@@ -85,10 +85,10 @@ public class MiniProgramService {
 
         //创建File对象
         File file = new File();
-        file.setType(FileType.QR_CODE);
+        file.setFileType(FileType.QR_CODE);
         file.setVideoType(video.getType());
         file.setVideoId(videoId);
-        file.setUserId(user.getId());
+        file.setUploaderId(user.getId());
         mongoTemplate.save(file);
 
         String key = PathUtil.getS3VideoPrefix(user.getId(), videoId)

@@ -16,8 +16,8 @@ public class Watch {
     private String shortUrl;
     private Integer watchCount;         //观看次数
 
-    private Boolean isPlayShowUploadTime; // 前端播放器是否显示上传时间
-    private Boolean isPlayShowWatchCount; // 前端播放器是否显示观看次数
+    private Boolean showUploadTime; // 前端播放器是否显示上传时间
+    private Boolean showWatchCount; // 前端播放器是否显示观看次数
 
     public Watch() {
         this.watchCount = 0;

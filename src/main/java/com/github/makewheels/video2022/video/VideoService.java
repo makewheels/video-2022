@@ -90,7 +90,7 @@ public class VideoService {
         File file = mongoTemplate.findById(video.getOriginalFileId(), File.class);
         if (file == null) throw new VideoException(ErrorCode.FILE_NOT_EXIST);
 
-        if (!file.getStatus().equals(FileStatus.READY)) throw new VideoException(ErrorCode.FILE_NOT_READY);
+        if (!file.getFileStatus().equals(FileStatus.READY)) throw new VideoException(ErrorCode.FILE_NOT_READY);
 
         //更新视频为正在转码状态
         video.setStatus(VideoStatus.TRANSCODING);

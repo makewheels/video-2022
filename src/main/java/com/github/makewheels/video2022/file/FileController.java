@@ -49,6 +49,8 @@ public class FileController {
 
     /**
      * 访问文件
+     * TODO 访问文件应该区分类型，是ts，还是cover，会进入不同的repository查询，
+     * 也能把封面权限改为private，所有文件访问都从应用服务器转发到阿里云OSS
      */
     @GetMapping("access")
     public Result<Void> access(

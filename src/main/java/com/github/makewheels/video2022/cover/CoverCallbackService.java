@@ -122,7 +122,7 @@ public class CoverCallbackService {
 
         OSSObject object = fileService.getObject(key);
         file.setObjectInfo(object);
-        file.setStatus(FileStatus.READY);
+        file.setFileStatus(FileStatus.READY);
         mongoTemplate.save(file);
     }
 }

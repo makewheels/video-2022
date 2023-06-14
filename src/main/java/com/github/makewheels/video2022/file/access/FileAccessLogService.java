@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.file.access;
 
-import com.github.makewheels.video2022.file.bean.File;
-import com.github.makewheels.video2022.file.FileRepository;
+import com.github.makewheels.video2022.file.TsFileRepository;
+import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import org.springframework.beans.BeanUtils;
@@ -17,7 +17,7 @@ public class FileAccessLogService {
     @Resource
     private MongoTemplate mongoTemplate;
     @Resource
-    private FileRepository fileRepository;
+    private TsFileRepository tsFileRepository;
     @Resource
     private TranscodeRepository transcodeRepository;
 
@@ -27,24 +27,24 @@ public class FileAccessLogService {
     public void saveAccessLog(
             HttpServletRequest request, String videoId, String clientId, String sessionId,
             String resolution, String fileId) {
-        File file = fileRepository.getById(fileId);
-        String transcodeId = file.getTranscodeId();
+        TsFile tsFile = tsFileRepository.getById(fileId);
+        String transcodeId = tsFile.getTranscodeId();
         Transcode transcode = transcodeRepository.getById(transcodeId);
 
-        FileAccessLog log = new FileAccessLog();
-        BeanUtils.copyProperties(file, log);
-        log.setId(null);
-        log.setFileId(file.getId());
-        log.setFileType(file.getType());
+        FileAccessLog accessLog = new FileAccessLog();
+        BeanUtils.copyProperties(tsFile, accessLog);
+        accessLog.setId(null);
+        accessLog.setFileId(tsFile.getId());
+        accessLog.setFileType(tsFile.getFileType());
 
-        log.setClientId(clientId);
-        log.setSessionId(sessionId);
-        log.setTranscodeId(transcode.getId());
-        log.setResolution(transcode.getResolution());
-        log.setCreateTime(new Date());
+        accessLog.setClientId(clientId);
+        accessLog.setSessionId(sessionId);
+        accessLog.setTranscodeId(transcode.getId());
+        accessLog.setResolution(transcode.getResolution());
+        accessLog.setCreateTime(new Date());
         //TODO 拿不到ip
-        log.setIp(request.getRemoteAddr());
+        accessLog.setIp(request.getRemoteAddr());
 
-        mongoTemplate.save(log);
+        mongoTemplate.save(accessLog);
     }
 }
