@@ -42,9 +42,6 @@ public class FileRepository {
         Query query = Query.query(Criteria.where("id").is(fileId));
         query.fields().include("uploaderId");
         File file = mongoTemplate.findOne(query, File.class);
-        if (file != null) {
-            return file.getUploaderId();
-        }
-        return null;
+        return file != null ? file.getUploaderId() : null;
     }
 }
