@@ -179,6 +179,7 @@ public class WatchService {
             String url = environmentService.getInternalBaseUrl() + "/file/access?"
                     + "resolution=" + transcode.getResolution()
                     + "&tsIndex=" + fileMap.get(filename).getTsIndex()
+                    + "&fileType=" + tsFile.getFileType()
                     + "&videoId=" + context.getVideoId()
                     + "&clientId=" + context.getClientId()
                     + "&sessionId=" + context.getSessionId()
