@@ -12,6 +12,7 @@ import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.video.VideoRepository;
+import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.Visibility;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -71,7 +72,8 @@ public class CheckService {
         checkVideoExist(videoId);
         checkUserExist(userId);
 
-        String ownerId = cacheService.getVideo(videoId).getUploaderId();
+        Video video = videoRepository.getById(videoId);
+        String ownerId = video.getUploaderId();
         if (!ownerId.equals(userId)) {
             throw new VideoException("视频不属于user, videoId = " + videoId + ", " +
                     "ownerId = " + ownerId + ", userId = " + userId);

@@ -1,8 +1,7 @@
 package com.github.makewheels.video2022.redis;
 
-import com.alibaba.fastjson.JSON;
-import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.playlist.item.PlayItem;
+import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.entity.Video;
@@ -39,30 +38,6 @@ public class CacheService {
             return RedisKey.playlistItemCache(id);
         }
         return null;
-    }
-
-    /**
-     * 通用获取指定class对象方法
-     */
-    private <T> T getByClass(Class<T> clazz, String id) {
-        //先从redis获取key
-        String redisKey = getRedisKey(clazz, id);
-        String json = redisService.getForString(redisKey);
-        T instance = JSON.parseObject(json, clazz);
-
-        //如果redis没获取到，从mongo查出来，缓存到redis
-        if (instance == null) {
-            instance = mongoTemplate.findById(id, clazz);
-            //如果从数据库里查到了，缓存到redis
-            if (instance != null) {
-                redisService.set(redisKey, JSON.toJSONString(instance), RedisTime.SIX_HOURS);
-            }
-        }
-        return instance;
-    }
-
-    public Video getVideo(String id) {
-        return getByClass(Video.class, id);
     }
 
     public void updateVideo(Video video) {

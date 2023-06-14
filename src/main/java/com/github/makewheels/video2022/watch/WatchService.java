@@ -95,7 +95,7 @@ public class WatchService {
             return Result.ok();
         }
 
-        Video video = cacheService.getVideo(videoId);
+        Video video = videoRepository.getById(videoId);
         //增加video观看次数
         if (videoStatus.equals(VideoStatus.READY)) {
             videoRepository.addWatchCount(videoId);
@@ -217,7 +217,7 @@ public class WatchService {
         String clientId = context.getClientId();
         String sessionId = context.getSessionId();
 
-        Video video = cacheService.getVideo(videoId);
+        Video video = videoRepository.getById(videoId);
         List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("#EXTM3U\n");
