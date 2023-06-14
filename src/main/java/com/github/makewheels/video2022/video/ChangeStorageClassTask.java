@@ -3,12 +3,12 @@ package com.github.makewheels.video2022.video;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.file.FileService;
-import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.entity.StorageStatus;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -27,7 +27,7 @@ public class ChangeStorageClassTask {
     @Resource
     private FileService fileService;
     @Resource
-    private CacheService cacheService;
+    private MongoTemplate mongoTemplate;
 
     //    @Scheduled(cron = "")
     public void run() {
@@ -50,7 +50,7 @@ public class ChangeStorageClassTask {
             StorageStatus storageStatus = video.getStorageStatus();
             storageStatus.setIsTranscodeFilesDeleted(true);
             storageStatus.setDeleteTime(new Date());
-            cacheService.updateVideo(video);
+            mongoTemplate.save(video);
         }
     }
 }

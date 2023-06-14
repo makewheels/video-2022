@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
-import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.transcode.contants.Resolution;
@@ -44,8 +43,6 @@ public class TranscodeLauncher {
     private AliyunMpsService aliyunMpsService;
     @Resource
     private TranscodeFactory transcodeFactory;
-    @Resource
-    private CacheService cacheService;
 
     private boolean isResolutionOverThanTarget(int width, int height, String resolution) {
         switch (resolution) {
@@ -138,7 +135,7 @@ public class TranscodeLauncher {
         transcodeIds.add(transcodeId);
         video.setTranscodeIds(transcodeIds);
 
-        cacheService.updateVideo(video);
+        mongoTemplate.save(video);
 
         //发起转码
         String transcodeProvider = transcode.getProvider();
@@ -194,7 +191,7 @@ public class TranscodeLauncher {
         loadVideoMediaInfo(video);
 
         //更新video
-        cacheService.updateVideo(video);
+        mongoTemplate.save(video);
 
         //发起转码
         MediaInfo mediaInfo = video.getMediaInfo();

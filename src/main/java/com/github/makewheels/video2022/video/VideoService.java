@@ -7,7 +7,6 @@ import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
-import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
@@ -53,8 +52,6 @@ public class VideoService {
 
     @Resource
     private VideoRepository videoRepository;
-    @Resource
-    private CacheService cacheService;
 
     /**
      * 创建新视频
@@ -94,7 +91,7 @@ public class VideoService {
 
         //更新视频为正在转码状态
         video.setStatus(VideoStatus.TRANSCODING);
-        cacheService.updateVideo(video);
+        mongoTemplate.save(video);
 
         //创建子线程发起转码，先给前端返回结果
         new Thread(() -> transcodeLauncher.transcodeVideo(user, video)).start();
@@ -123,7 +120,7 @@ public class VideoService {
 
         oldVideo.setTitle(newVideo.getTitle());
         oldVideo.setDescription(newVideo.getDescription());
-        cacheService.updateVideo(oldVideo);
+        mongoTemplate.save(oldVideo);
 
         log.info("更新视频信息：videoId = {}, title = {}, description = {}",
                 videoId, oldVideo.getTitle(), oldVideo.getDescription());
