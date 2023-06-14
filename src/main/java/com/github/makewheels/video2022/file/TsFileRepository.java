@@ -26,11 +26,7 @@ public class TsFileRepository {
         Query query = Query.query(Criteria.where("id").is(id));
         query.fields().include("key");
         TsFile tsFile = mongoTemplate.findOne(query, TsFile.class);
-        if (tsFile != null) {
-            return tsFile.getKey();
-        }
-        return null;
+        return tsFile != null ? tsFile.getKey() : null;
     }
-
 
 }

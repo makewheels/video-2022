@@ -25,10 +25,7 @@ public class CoverRepository {
         Query query = Query.query(Criteria.where("id").is(id));
         query.fields().include("key");
         Cover cover = mongoTemplate.findOne(query, Cover.class);
-        if (cover == null) {
-            return null;
-        }
-        return cover.getKey();
+        return cover != null ? cover.getKey() : null;
     }
 
     public Cover getByJobId(String jobId) {
