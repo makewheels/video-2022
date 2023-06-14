@@ -5,14 +5,14 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.OSSObject;
-import com.github.makewheels.video2022.system.response.Result;
-import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileType;
-import com.github.makewheels.video2022.redis.CacheService;
+import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.PathUtil;
+import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -34,7 +34,7 @@ public class MiniProgramService {
     @Resource
     private FileService fileService;
     @Resource
-    private CacheService cacheService;
+    private VideoRepository videoRepository;
     @Resource
     private MongoTemplate mongoTemplate;
 
@@ -81,7 +81,7 @@ public class MiniProgramService {
      */
     public Result<JSONObject> getShareQrCodeUrl(String videoId) {
         User user = UserHolder.get();
-        Video video = cacheService.getVideo(videoId);
+        Video video = videoRepository.getById(videoId);
 
         //创建File对象
         File file = new File();
