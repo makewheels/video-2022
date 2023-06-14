@@ -251,7 +251,7 @@ key是OSS的key，value还是之前的对象
 
 ```java
 //反向更新transcode的ts文件id列表
-transcode.setTsFileIds(tsFiles.stream().map(File::getId).collect(Collectors.toList()));
+transcode.setTsFileIds(tsFileFiles.stream().map(File::getId).collect(Collectors.toList()));
 ```
 
 
@@ -262,7 +262,7 @@ transcode.setTsFileIds(tsFiles.stream().map(File::getId).collect(Collectors.toLi
 
 所以我们需要从一堆File对象的list里找出id的list
 
-**List< File> tsFiles**
+**List< File> tsFileFiles**
 
 ```java
 [
@@ -399,7 +399,7 @@ transcode.setTsFileIds(tsFiles.stream().map(File::getId).collect(Collectors.toLi
 
 ```java
 //计算transcode平均码率
-long tsTotalSize = tsFiles.stream().mapToLong(File::getSize).sum();
+long tsTotalSize = tsFileFiles.stream().mapToLong(File::getSize).sum();
 BigDecimal duration = new BigDecimal(video.getDuration() / 1000);
 transcode.setAverageBitrate(calculateBitrate(tsTotalSize, duration));
 ```
@@ -462,7 +462,7 @@ BANDWIDTH
 
 ```java
 //计算transcode最高码率
-Integer maxBitrate = tsFiles.stream()
+Integer maxBitrate = tsFileFiles.stream()
     .max(Comparator.comparing(File::getBitrate)).get().getBitrate();
 transcode.setMaxBitrate(maxBitrate);
 ```

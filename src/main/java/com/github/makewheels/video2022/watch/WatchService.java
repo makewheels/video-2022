@@ -4,8 +4,8 @@ import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.etc.ding.NotificationService;
-import com.github.makewheels.video2022.file.FileRepository;
-import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.file.TsFileRepository;
+import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.redis.CacheService;
 import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.context.RequestUtil;
@@ -48,7 +48,7 @@ public class WatchService {
     @Resource
     private TranscodeRepository transcodeRepository;
     @Resource
-    private FileRepository fileRepository;
+    private TsFileRepository tsFileRepository;
     @Resource
     private CoverService coverService;
 
@@ -168,9 +168,9 @@ public class WatchService {
     public String getM3u8Content(Context context, String transcodeId, String resolution) {
         Transcode transcode = transcodeRepository.getById(transcodeId);
         //找到transcode对应的tsFiles
-        List<File> files = fileRepository.getByIds(transcode.getTsFileIds());
-        Map<String, File> fileMap = files.stream().collect(
-                Collectors.toMap(File::getFilename, Function.identity()));
+        List<TsFile> tsFiles = tsFileRepository.getByIds(transcode.getTsFileIds());
+        Map<String, TsFile> fileMap = tsFiles.stream().collect(
+                Collectors.toMap(TsFile::getFilename, Function.identity()));
 
         String m3u8Content = transcode.getM3u8Content();
 
@@ -179,14 +179,14 @@ public class WatchService {
         for (int i = 0; i < lines.size(); i++) {
             String filename = lines.get(i);
             if (StringUtils.startsWith(filename, "#")) continue;
-            File file = fileMap.get(filename);
+            TsFile tsFile = fileMap.get(filename);
             String url = environmentService.getInternalBaseUrl() + "/file/access?"
                     + "resolution=" + transcode.getResolution()
                     + "&tsIndex=" + fileMap.get(filename).getTsIndex()
                     + "&videoId=" + context.getVideoId()
                     + "&clientId=" + context.getClientId()
                     + "&sessionId=" + context.getSessionId()
-                    + "&fileId=" + file.getId()
+                    + "&fileId=" + tsFile.getId()
                     + "&timestamp=" + System.currentTimeMillis()
                     + "&nonce=" + IdUtil.nanoId()
                     + "&sign=" + IdUtil.simpleUUID();

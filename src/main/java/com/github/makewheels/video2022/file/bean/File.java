@@ -22,30 +22,15 @@ public class File {
     @Id
     private String id;
     @Indexed
-    private String userId;
+    private String uploaderId;
     @Indexed
     private String videoId;
 
-    //ts视频碎片所属于哪一个转码，它的父亲
-    @Indexed
-    private String transcodeId;   // TODO 迁移到tsFile
-    //ts碎片，转码所属于哪个分辨率
-    @Indexed
-    private String resolution;    // TODO 迁移到tsFile
-    //ts碎片，在一个m3u8转码文件中的位置
-    @Indexed
-    private Integer tsIndex; // TODO 迁移到tsFile
-
-    //ts碎片，视频码率
-    private Integer bitrate; // TODO 迁移到tsFile
-
-    //原始文件名，只有用户上传的视频源文件才有
+    //原始文件名，只有 fileType = ORIGINAL_VIDEO 才有
     private String originalFilename;
     // 63627b7e66445c2fe81c648a.mp4
     private String filename;
-
-    @Indexed
-    private String type;
+    private String fileType;
 
     // videos/62511690c3afe0646f9c670b/63627b7e66445c2fe81c648a/original/63627b7e66445c2fe81c648a.mp4
     private String key;
@@ -59,27 +44,23 @@ public class File {
     private String md5;
     private String acl;
 
-    @Indexed
     private String provider;
-    @Indexed
     private String videoType;
     @Indexed
     private String storageClass;
-
-    @Indexed
-    private String status;
+    private String fileStatus;
     @Indexed
     private Date createTime;
     @Indexed
     private Date uploadTime;
 
     @Indexed
-    private Boolean isDeleted;
+    private Boolean deleted;
 
     public File() {
         this.createTime = new Date();
-        this.isDeleted = false;
-        this.status = FileStatus.CREATED;
+        this.deleted = false;
+        this.fileStatus = FileStatus.CREATED;
         this.provider = ObjectStorageProvider.ALIYUN_OSS;
     }
 

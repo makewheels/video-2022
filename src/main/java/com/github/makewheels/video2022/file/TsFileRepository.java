@@ -14,10 +14,23 @@ public class TsFileRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    /**
-     * 根据id批量查文件
-     */
+    public TsFile getById(String id) {
+        return mongoTemplate.findById(id, TsFile.class);
+    }
+
     public List<TsFile> getByIds(List<String> ids) {
         return mongoTemplate.find(Query.query(Criteria.where("id").in(ids)), TsFile.class);
     }
+
+    public String getKeyById(String id) {
+        Query query = Query.query(Criteria.where("id").is(id));
+        query.fields().include("key");
+        TsFile tsFile = mongoTemplate.findOne(query, TsFile.class);
+        if (tsFile != null) {
+            return tsFile.getKey();
+        }
+        return null;
+    }
+
+
 }

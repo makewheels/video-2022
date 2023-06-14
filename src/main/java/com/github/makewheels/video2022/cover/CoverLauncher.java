@@ -65,10 +65,10 @@ public class CoverLauncher {
 
         //创建file和cover对象
         File file = new File();
-        file.setStatus(FileStatus.CREATED);
-        file.setUserId(userId);
+        file.setFileStatus(FileStatus.CREATED);
+        file.setUploaderId(userId);
         file.setVideoId(videoId);
-        file.setType(FileType.COVER);
+        file.setFileType(FileType.COVER);
         file.setVideoType(videoType);
         mongoTemplate.save(file);
 
