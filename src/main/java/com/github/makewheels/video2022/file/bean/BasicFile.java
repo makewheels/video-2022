@@ -13,26 +13,26 @@ import java.util.Date;
 @Setter
 public class BasicFile {
     @Indexed
-    private String filename;    // 63627b7e66445c2fe81c648a.mp4
-    private String fileType;
+    protected String filename;    // 63627b7e66445c2fe81c648a.mp4
+    protected String fileType;
 
     @Indexed
-    private String key;   // videos/62670b/6362648a/original/638a.mp4
-    private String extension;
+    protected String key;   // videos/62670b/6362648a/original/638a.mp4
+    protected String extension;
     @Indexed
-    private Long size;
+    protected Long size;
     @Indexed
-    private String etag;
+    protected String etag;
     @Indexed
-    private String md5;
-    private String acl;
-    private String provider;
-    private String storageClass;
+    protected String md5;
+    protected String acl;
+    protected String provider;
+    protected String storageClass;
 
     @Indexed
-    private Date createTime;
+    protected Date createTime;
     @Indexed
-    private Date uploadTime;
-    private Boolean deleted;
+    protected Date uploadTime;
+    protected Boolean deleted;
 
 }
