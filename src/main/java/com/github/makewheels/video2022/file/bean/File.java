@@ -46,7 +46,6 @@ public class File {
 
     private String provider;
     private String videoType;
-    @Indexed
     private String storageClass;
     private String fileStatus;
     @Indexed
@@ -54,7 +53,6 @@ public class File {
     @Indexed
     private Date uploadTime;
 
-    @Indexed
     private Boolean deleted;
 
     public File() {

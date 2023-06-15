@@ -51,7 +51,7 @@ public class PlaylistService {
         // 校验
         checkService.checkPlaylistOwner(playlistId, userId);
         String visibility = updatePlaylistRequest.getVisibility();
-        checkService.checkVisibility(visibility);
+        checkService.checkVideoVisibility(visibility);
 
         Playlist playlist = playlistRepository.getPlaylist(playlistId);
         log.info("准备更新播放列表, 更新前playlist = {}", JSON.toJSONString(playlist));

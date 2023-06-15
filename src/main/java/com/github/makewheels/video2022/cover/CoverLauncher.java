@@ -4,12 +4,11 @@ import cn.hutool.core.io.file.FileNameUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.QuerySnapshotJobListResponseBody;
 import com.aliyun.mts20140618.models.SubmitSnapshotJobResponse;
-import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
-import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.PathUtil;
@@ -51,7 +50,6 @@ public class CoverLauncher {
      * 发起截帧任务
      * 如果是youtube搬运视频，向海外服务器发起请求
      * 如果用户自己上传的视频：
-     * 如果文件在百度对象存储，用百度截图
      * 如果文件在阿里云对象存储，用云函数
      */
     public void createCover(User user, Video video) {
@@ -62,7 +60,6 @@ public class CoverLauncher {
 
         //创建file和cover对象
         File file = new File();
-        file.setFileStatus(FileStatus.CREATED);
         file.setUploaderId(userId);
         file.setVideoId(videoId);
         file.setFileType(FileType.COVER);

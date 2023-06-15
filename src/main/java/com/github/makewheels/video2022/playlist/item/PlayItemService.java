@@ -54,7 +54,7 @@ public class PlayItemService {
         // 校验
         checkService.checkPlaylistOwner(playlistId, UserHolder.getUserId());
         checkService.checkVideoNotBelongToPlaylist(playlistId, addPlayItemRequest.getVideoIdList());
-        checkService.checkAddMode(addPlayItemRequest.getAddMode());
+        checkService.checkPlaylistAddMode(addPlayItemRequest.getAddMode());
 
         // 执行添加
         addPlayItemService.addVideoToPlaylist(addPlayItemRequest);
@@ -95,7 +95,7 @@ public class PlayItemService {
         // 校验
         checkService.checkPlaylistOwner(playlistId, UserHolder.getUserId());
         checkService.checkVideoBelongToPlaylist(playlistId, movePlayItemRequest.getVideoId());
-        checkService.checkMoveMode(moveMode);
+        checkService.checkPlaylistItemMoveMode(moveMode);
 
         // 执行移动
         log.info("移动视频在播放列表中的位置, movePlayItemRequest = {}",

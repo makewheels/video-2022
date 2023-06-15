@@ -17,6 +17,7 @@ import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.constants.VideoType;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -111,14 +112,6 @@ public class FileService {
         file.setUploadTime(new Date());
         file.setFileStatus(FileStatus.READY);
         mongoTemplate.save(file);
-
-        // 异步获取文件md5
-        new Thread(() -> {
-            String md5 = getMd5(fileId);
-            file.setMd5(md5);
-            mongoTemplate.save(file);
-        }).start();
-
         return Result.ok();
     }
 
@@ -126,7 +119,8 @@ public class FileService {
      * 访问文件：重定向到阿里云对象存储
      */
     public Result<Void> access(
-            Context context, String resolution, String fileId, String timestamp, String nonce, String sign) {
+            Context context, String resolution, String fileId,
+            String timestamp, String nonce, String sign) {
         HttpServletRequest request = RequestUtil.getRequest();
         HttpServletResponse response = RequestUtil.getResponse();
 
@@ -205,6 +199,17 @@ public class FileService {
     }
 
     /**
+     * 获取文件的md5
+     */
+    public String getMd5(File file) {
+        FileMd5DTO fileMd5DTO = new FileMd5DTO();
+        fileMd5DTO.setFileId(file.getId());
+        fileMd5DTO.setKey(file.getKey());
+        md5CfService.getOssObjectMd5(fileMd5DTO);
+        return fileMd5DTO.getMd5();
+    }
+
+    /**
      * 批量获取文件的md5
      * <p>
      * 返回值：fileId -> md5
@@ -228,16 +233,25 @@ public class FileService {
     /**
      * 删除文件
      */
-    public VoidResult deleteObject(String key) {
-        return ossService.deleteObject(key);
+    public void deleteFile(File file) {
+        log.info("删除文件，fileId = " + file.getId() + ", key = " + file.getKey());
+        ossService.deleteObject(file.getKey());
+        file.setDeleted(true);
+        mongoTemplate.save(file);
     }
 
     /**
-     * 删除文件
+     * 批量删除文件
      */
-    public List<String> deleteObjects(List<String> keys) {
-        DeleteObjectsResult deleteObjectsResult = ossService.deleteObjects(keys);
-        return deleteObjectsResult.getDeletedObjects();
+    public void deleteFiles(List<File> fileList) {
+        List<String> keyList = Lists.transform(fileList, File::getKey);
+        List<String> fileIds = Lists.transform(fileList, File::getId);
+        log.info("批量删除文件，fileIds = " + JSON.toJSONString(fileIds));
+        ossService.deleteAllObjects(keyList);
+        for (File file : fileList) {
+            file.setDeleted(true);
+        }
+        mongoTemplate.save(fileList);
     }
 
     /**

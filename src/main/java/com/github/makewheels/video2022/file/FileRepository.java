@@ -44,4 +44,11 @@ public class FileRepository {
         File file = mongoTemplate.findOne(query, File.class);
         return file != null ? file.getUploaderId() : null;
     }
+
+    /**
+     * 根据md5查文件
+     */
+    public File getByMd5(String md5) {
+        return mongoTemplate.findOne(Query.query(Criteria.where("md5").is(md5)), File.class);
+    }
 }

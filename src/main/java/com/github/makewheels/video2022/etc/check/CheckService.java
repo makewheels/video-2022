@@ -1,6 +1,9 @@
 package com.github.makewheels.video2022.etc.check;
 
+import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.file.FileRepository;
+import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
 import com.github.makewheels.video2022.playlist.item.request.add.AddMode;
 import com.github.makewheels.video2022.playlist.item.request.delete.DeleteMode;
@@ -12,6 +15,7 @@ import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
+import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.Visibility;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -59,6 +63,24 @@ public class CheckService {
     public void checkVideoExist(String videoId) {
         if (!videoRepository.isVideoExist(videoId)) {
             throw new VideoException("视频不存在, videoId = " + videoId);
+        }
+    }
+
+    /**
+     * 检查视频是已就绪状态
+     */
+    public void checkVideoIsReady(Video video) {
+        if (VideoStatus.isNotReady(video.getStatus())) {
+            throw new VideoException("视频未就绪, video = " + JSON.toJSONString(video));
+        }
+    }
+
+    /**
+     * 检查视频是未就绪状态
+     */
+    public void checkVideoIsNotReady(Video video) {
+        if (VideoStatus.isReady(video.getStatus())) {
+            throw new VideoException("视频已就绪, video = " + JSON.toJSONString(video));
         }
     }
 
@@ -187,7 +209,7 @@ public class CheckService {
     /**
      * 检查visibility是否合法
      */
-    public void checkVisibility(String visibility) {
+    public void checkVideoVisibility(String visibility) {
         if (!StringUtils.equalsAny(visibility, Visibility.ALL)) {
             throw new VideoException("visibility不合法, visibility = " + visibility);
         }
@@ -196,7 +218,7 @@ public class CheckService {
     /**
      * 检查addMode是否合法
      */
-    public void checkAddMode(String addMode) {
+    public void checkPlaylistAddMode(String addMode) {
         if (!StringUtils.equalsAny(addMode, AddMode.ALL)) {
             throw new VideoException("addMode不合法, addMode = " + addMode);
         }
@@ -214,7 +236,7 @@ public class CheckService {
     /**
      * 检查moveMode是否合法
      */
-    public void checkMoveMode(String moveMode) {
+    public void checkPlaylistItemMoveMode(String moveMode) {
         if (!StringUtils.equalsAny(moveMode, MoveMode.ALL)) {
             throw new VideoException("mode不合法, mode = " + moveMode);
         }
@@ -226,6 +248,15 @@ public class CheckService {
     public void checkFileExist(String fileId) {
         if (!fileRepository.isFileExist(fileId)) {
             throw new VideoException("文件不存在, fileId = " + fileId);
+        }
+    }
+
+    /**
+     * 检查文件是否就绪
+     */
+    public void checkFileIsReady(File file) {
+        if (!FileStatus.READY.equals(file.getFileStatus())) {
+            throw new VideoException("文件未准备好, fileId = " + file.getId());
         }
     }
 
