@@ -16,6 +16,7 @@ import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
 import lombok.extern.slf4j.Slf4j;
+import org.mortbay.util.ajax.JSON;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -144,16 +145,21 @@ public class OssService {
      * 删除文件
      */
     public VoidResult deleteObject(String key) {
+        log.info("阿里云OSS删除文件: key = " + key);
         return getClient().deleteObject(bucket, key);
     }
 
     /**
-     * 删除文件
+     * 批量删除文件
+     * TODO 需要分页
      */
-    public DeleteObjectsResult deleteObjects(List<String> keys) {
+    public DeleteObjectsResult deleteAllObjects(List<String> keys) {
+        log.info("阿里云OSS批量删除文件: 请求keys = " + JSON.toString(keys));
         DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucket);
         deleteObjectsRequest.setKeys(keys);
-        return getClient().deleteObjects(deleteObjectsRequest);
+        DeleteObjectsResult deleteObjectsResult = getClient().deleteObjects(deleteObjectsRequest);
+        log.info("阿里云OSS批量删除文件: 响应deleteObjectsResult = " + JSON.toString(deleteObjectsResult));
+        return deleteObjectsResult;
     }
 
     /**

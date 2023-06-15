@@ -2,22 +2,19 @@ package com.github.makewheels.video2022.video;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.cover.CoverService;
+import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
-import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
-import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
-import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -39,10 +36,6 @@ public class VideoService {
     private MongoTemplate mongoTemplate;
 
     @Resource
-    private TranscodeLauncher transcodeLauncher;
-    @Resource
-    private CoverLauncher coverLauncher;
-    @Resource
     private CoverService coverService;
 
     @Resource
@@ -52,6 +45,10 @@ public class VideoService {
 
     @Resource
     private VideoRepository videoRepository;
+    @Resource
+    private OriginFileService originFileService;
+    @Resource
+    private CheckService checkService;
 
     /**
      * 创建新视频
@@ -74,31 +71,22 @@ public class VideoService {
     }
 
     /**
-     * 原始文件上传完成，开始转码
+     * 用户上传视频文件后，开始处理的总入口
      */
     public void originalFileUploadFinish(String videoId) {
-        User user = UserHolder.get();
-        //查数据库，找到video
+        // 检查视频
+        checkService.checkVideoExist(videoId);
         Video video = videoRepository.getById(videoId);
+        checkService.checkVideoIsNotReady(video);
 
-        //校验
-        if (video == null) throw new VideoException(ErrorCode.VIDEO_NOT_EXIST);
-
-        File file = mongoTemplate.findById(video.getOriginalFileId(), File.class);
-        if (file == null) throw new VideoException(ErrorCode.FILE_NOT_EXIST);
-
-        if (!file.getFileStatus().equals(FileStatus.READY)) throw new VideoException(ErrorCode.FILE_NOT_READY);
-
-        //更新视频为正在转码状态
-        video.setStatus(VideoStatus.TRANSCODING);
-        mongoTemplate.save(video);
+        // 检查原始文件
+        String fileId = video.getOriginalFileId();
+        checkService.checkFileExist(fileId);
+        File file = mongoTemplate.findById(fileId, File.class);
+        checkService.checkFileIsReady(file);
 
         //创建子线程发起转码，先给前端返回结果
-        new Thread(() -> transcodeLauncher.transcodeVideo(user, video)).start();
-        //封面：如果是youtube视频，之前创建的时候已经搬运封面了，用户上传视频要截帧
-        if (!video.isYoutube()) {
-            new Thread(() -> coverLauncher.createCover(user, video)).start();
-        }
+        new Thread(() -> originFileService.onOriginFileUploadFinish(videoId)).start();
     }
 
     /**
@@ -204,4 +192,5 @@ public class VideoService {
         String originalFileKey = fileService.getKey(video.getOriginalFileId());
         return fileService.generatePresignedUrl(originalFileKey, Duration.ofHours(2));
     }
+
 }
