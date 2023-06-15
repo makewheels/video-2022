@@ -7,7 +7,8 @@ import com.aliyun.oss.model.ObjectMetadata;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -15,10 +16,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
-@Data
+@Getter
+@Setter
 @Document
 @JsonIgnoreProperties("objectInfo")
-public class File {
+public class File extends BasicFile {
     @Id
     private String id;
     @Indexed
@@ -26,40 +28,21 @@ public class File {
     @Indexed
     private String videoId;
 
-    //原始文件名，只有 fileType = ORIGINAL_VIDEO 才有
+    // 用户上传的原始文件名，只有 fileType = ORIGINAL_VIDEO 才有
     private String originalFilename;
-    // 63627b7e66445c2fe81c648a.mp4
-    private String filename;
-    private String fileType;
 
-    // videos/62511690c3afe0646f9c670b/63627b7e66445c2fe81c648a/original/63627b7e66445c2fe81c648a.mp4
-    private String key;
-    private String extension;
-
-    @Indexed
-    private Long size;
-    @Indexed
-    private String etag;
-    @Indexed
-    private String md5;
-    private String acl;
-
-    private String provider;
     private String videoType;
-    private String storageClass;
     private String fileStatus;
-    @Indexed
-    private Date createTime;
-    @Indexed
-    private Date uploadTime;
 
-    private Boolean deleted;
+    private Boolean hasLink;
+    private String linkFileId;
+    private String linkFileKey;
 
     public File() {
-        this.createTime = new Date();
-        this.deleted = false;
-        this.fileStatus = FileStatus.CREATED;
-        this.provider = ObjectStorageProvider.ALIYUN_OSS;
+        createTime = new Date();
+        deleted = false;
+        fileStatus = FileStatus.CREATED;
+        provider = ObjectStorageProvider.ALIYUN_OSS;
     }
 
     @Override
@@ -69,7 +52,7 @@ public class File {
 
     public void setObjectInfo(OSSObject object) {
         String key = object.getKey();
-        this.key = key;
+        super.key = key;
         ObjectMetadata metadata = object.getObjectMetadata();
         etag = metadata.getETag();
         size = metadata.getContentLength();
@@ -81,7 +64,7 @@ public class File {
 
     public void setObjectInfo(OSSObjectSummary objectSummary) {
         String key = objectSummary.getKey();
-        this.key = key;
+        super.key = key;
         etag = objectSummary.getETag();
         size = objectSummary.getSize();
         filename = FilenameUtils.getName(key);
