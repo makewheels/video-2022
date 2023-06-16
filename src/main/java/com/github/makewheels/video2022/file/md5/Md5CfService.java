@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
  * }
  */
 @Service
+@Slf4j
 public class Md5CfService {
     @Resource
     private EnvironmentService environmentService;
@@ -69,9 +71,11 @@ public class Md5CfService {
         Map<String, Object> requestMap = new HashMap<>();
         requestMap.put("isCallbackEnable", false);
         requestMap.put("objectList", Lists.newArrayList(fileMd5DTO));
+        log.info("调用阿里云云函数获取OSS文件MD5，请求参数：{}", JSON.toJSONString(requestMap));
 
         // 调用云函数
         JSONObject response = callCloudFunction(requestMap);
+        log.info("调调用阿里云云函数获取OSS文件MD5，响应：{}", response.toJSONString());
         List<FileMd5DTO> fileMd5DTOList = getObjectList(response);
 
         // 设置md5返回

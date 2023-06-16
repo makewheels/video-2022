@@ -234,7 +234,7 @@ public class FileService {
      * 删除文件
      */
     public void deleteFile(File file) {
-        log.info("删除文件，fileId = " + file.getId() + ", key = " + file.getKey());
+        log.info("FileService 删除文件，fileId = " + file.getId() + ", key = " + file.getKey());
         ossService.deleteObject(file.getKey());
         file.setDeleted(true);
         mongoTemplate.save(file);
@@ -246,7 +246,7 @@ public class FileService {
     public void deleteFiles(List<File> fileList) {
         List<String> keyList = Lists.transform(fileList, File::getKey);
         List<String> fileIds = Lists.transform(fileList, File::getId);
-        log.info("批量删除文件，fileIds = " + JSON.toJSONString(fileIds));
+        log.info("FileService 批量删除文件，fileIds = " + JSON.toJSONString(fileIds));
         ossService.deleteAllObjects(keyList);
         for (File file : fileList) {
             file.setDeleted(true);

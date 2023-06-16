@@ -1,9 +1,11 @@
 package com.github.makewheels.video2022.file;
 
 import com.github.makewheels.video2022.file.bean.File;
+import com.mongodb.client.result.UpdateResult;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
@@ -50,5 +52,14 @@ public class FileRepository {
      */
     public File getByMd5(String md5) {
         return mongoTemplate.findOne(Query.query(Criteria.where("md5").is(md5)), File.class);
+    }
+
+    /**
+     * 更新md5
+     */
+    public UpdateResult updateMd5(String id, String md5) {
+        Query query = Query.query(Criteria.where("id").is(id));
+        Update update = new Update().set("md5", md5);
+        return mongoTemplate.updateFirst(query, update, File.class);
     }
 }
