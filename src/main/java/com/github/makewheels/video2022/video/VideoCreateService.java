@@ -77,7 +77,7 @@ public class VideoCreateService {
         createVideoDTO.setVideoFile(videoFile);
 
         String fileId = videoFile.getId();
-        video.setOriginalFileId(fileId);
+        video.setRawFileId(fileId);
         String watchId = idService.nextShortId();
         Watch watch = video.getWatch();
         watch.setWatchId(watchId);
@@ -112,8 +112,8 @@ public class VideoCreateService {
 
         //更新file
         videoFile.setVideoId(videoId);
-        videoFile.setKey(PathUtil.getS3VideoPrefix(UserHolder.getUserId(), videoId)
-                + "/original/" + videoId + "." + videoFile.getExtension());
+        videoFile.setKey(PathUtil.getRawFilePrefix(UserHolder.getUserId(), videoId)
+                + videoId + "." + videoFile.getExtension());
         mongoTemplate.save(videoFile);
         log.info("新建文件：" + JSON.toJSONString(videoFile));
 

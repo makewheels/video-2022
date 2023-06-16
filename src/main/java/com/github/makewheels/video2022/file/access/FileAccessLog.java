@@ -33,7 +33,7 @@ public class FileAccessLog {
     // 63627b7e66445c2fe81c648a.mp4
     private String filename;
 
-    // videos/62511690c3afe0646f9c670b/63627b7e66445c2fe81c648a/original/63627b7e66445c2fe81c648a.mp4
+    // videos/62511690c3afe0646f9c670b/63627b7e66445c2fe81c648a/raw/63627b7e66445c2fe81c648a.mp4
     private String key;
 
     private Long size;

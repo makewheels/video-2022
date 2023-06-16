@@ -118,7 +118,7 @@ public class CoverLauncher {
         //更新file
         file.setKey(key);
         file.setExtension(extension);
-        file.setOriginalFilename(FileNameUtil.getName(downloadUrl));
+        file.setRawFilename(FileNameUtil.getName(downloadUrl));
         file.setProvider(videoProvider);
         file.setVideoType(video.getType());
         mongoTemplate.save(file);
@@ -139,8 +139,8 @@ public class CoverLauncher {
         String targetKey = PathUtil.getS3VideoPrefix(video.getUploaderId(), videoId)
                 + "/cover/" + cover.getId() + ".jpg";
 
-        String originalFileKey = fileService.getKey(video.getOriginalFileId());
-        SubmitSnapshotJobResponse response = aliyunMpsService.submitSnapshotJob(originalFileKey, targetKey);
+        String rawFileKey = fileService.getKey(video.getRawFileId());
+        SubmitSnapshotJobResponse response = aliyunMpsService.submitSnapshotJob(rawFileKey, targetKey);
         String jobId = response.getBody().getSnapshotJob().getId();
 
         //调一次阿里云接口，查询一次status，更新到数据库的cover

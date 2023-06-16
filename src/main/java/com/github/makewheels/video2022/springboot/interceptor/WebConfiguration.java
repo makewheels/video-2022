@@ -38,7 +38,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/playlist/getMyPlaylistByPage")
                 .addPathPatterns("/video/create")
                 .addPathPatterns("/file/getUploadCredentials")
-                .addPathPatterns("/video/originalFileUploadFinish")
+                .addPathPatterns("/video/rawFileUploadFinish")
                 .addPathPatterns("/file/uploadFinish")
                 .addPathPatterns("/video/updateInfo")
                 .addPathPatterns("/playlist/addPlaylistItem")

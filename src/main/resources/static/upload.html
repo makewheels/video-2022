@@ -125,16 +125,16 @@
     // 监听选中文件
     input_file.onchange = () => {
         const selectedFile = input_file.files[0];
-        let originalFilename = selectedFile.name;
+        let rawFilename = selectedFile.name;
         let size = selectedFile.size;
-        input_title.value = originalFilename.substring(0, originalFilename.lastIndexOf("."));
-        createVideo(originalFilename, size, "USER_UPLOAD");
+        input_title.value = rawFilename.substring(0, rawFilename.lastIndexOf("."));
+        createVideo(rawFilename, size, "USER_UPLOAD");
     }
 
     //创建视频
-    function createVideo(originalFilename, size, videoType) {
+    function createVideo(rawFilename, size, videoType) {
         axios.post("/video/create", {
-            originalFilename: originalFilename,
+            rawFilename: rawFilename,
             size: size,
             videoType: videoType
         }, {
@@ -228,7 +228,7 @@
             headers: {"token": localStorage.token}
         }).then(function (res) {
             //通知视频 源文件上传完成
-            axios.get("/video/originalFileUploadFinish?videoId=" + videoId, {
+            axios.get("/video/rawFileUploadFinish?videoId=" + videoId, {
                 headers: {"token": localStorage.token}
             }).then(function (res) {
                 text_progress.innerText = "上传已完成";

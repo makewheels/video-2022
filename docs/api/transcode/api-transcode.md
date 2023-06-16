@@ -12,7 +12,7 @@ POST https://ffprobe-video-transcode-gysmioluyt.cn-beijing.fcapp.run
     "region": "cn-beijing",
     "endpoint": "oss-cn-beijing-internal.aliyuncs.com",
     "inputKey": "test/demo-src.mp4",
-    "inputKey1": "videos/62565a16c3afe0646f9c67b9/6256a80e1273947edf8854c7/original/6256a80e1273947edf8854c7.webm"
+    "inputKey1": "videos/62565a16c3afe0646f9c67b9/6256a80e1273947edf8854c7/raw/6256a80e1273947edf8854c7.webm"
 }
 ```
 ### 发起转码
@@ -31,7 +31,7 @@ POST https://transcoe-master-video-transcode-pqrshwejna.cn-beijing.fcapp.run
     "endpoint":"oss-cn-beijing-internal.aliyuncs.com",
     "width":1280,
     "callbackUrl":"https://videoplus.top/transcode/aliyunCloudFunctionTranscodeCallback",
-    "inputKey":"videos/62511690c3afe0646f9c670b/62626cff1fb6c600b2a7f14d/original/62626cff1fb6c600b2a7f14d.yv",
+    "inputKey":"videos/62511690c3afe0646f9c670b/62626cff1fb6c600b2a7f14d/raw/62626cff1fb6c600b2a7f14d.yv",
     "transcodeId":"62626d7e1fb6c600b2a7f14e",
     "height":720,
     "videoCodec":"h264"
