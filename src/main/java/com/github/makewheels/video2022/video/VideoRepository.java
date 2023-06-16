@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.video;
 import com.github.makewheels.video2022.video.bean.entity.StorageStatus;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.Watch;
+import com.mongodb.client.result.UpdateResult;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -32,6 +33,15 @@ public class VideoRepository {
 
     public Map<String, Video> getMapByIdList(List<String> idList) {
         return getByIdList(idList).stream().collect(Collectors.toMap(Video::getId, Function.identity()));
+    }
+
+    /**
+     * 更新status
+     */
+    public UpdateResult updateStatus(String id, String status) {
+        Query query = Query.query(Criteria.where("id").is(id));
+        Update update = new Update().set("status", status);
+        return mongoTemplate.updateFirst(query, update, Video.class);
     }
 
     public boolean isVideoExist(String id) {
