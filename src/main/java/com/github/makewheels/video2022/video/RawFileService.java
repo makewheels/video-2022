@@ -62,13 +62,19 @@ public class RawFileService {
         // TODO 创建视频和播放视频链接有影响
         File md5OldFile = fileRepository.getByMd5(md5);
         if (md5OldFile != null) {
+            String oldFileId = md5OldFile.getId();
+            String newFileId = uploadNewFile.getId();
             log.info("用户上传原始文件md5已存在, 用户上传文件id = {}, 老的已存在文件id = {}, md5 = {}",
-                    uploadNewFile.getId(), md5OldFile.getId(), md5);
+                    newFileId, oldFileId, md5);
 //            fileService.deleteFile(uploadNewFile);
             // TODO 放链接
-
+            uploadNewFile.setHasLink(true);
+            uploadNewFile.setLinkFileId(oldFileId);
+            uploadNewFile.setLinkFileKey(md5OldFile.getKey());
+            mongoTemplate.save(uploadNewFile);
         }
 
+        // 发起转码
         User user = userRepository.getById(video.getUploaderId());
         transcodeLauncher.transcodeVideo(user, video);
         //封面：如果是youtube视频，之前创建的时候已经搬运封面了，用户上传视频要截帧

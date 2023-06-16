@@ -51,7 +51,10 @@ public class FileRepository {
      * 根据md5查文件
      */
     public File getByMd5(String md5) {
-        return mongoTemplate.findOne(Query.query(Criteria.where("md5").is(md5)), File.class);
+        Query query = Query.query(Criteria.where("md5").is(md5)
+                // 如果文件已删除，重新上传保留文件
+                .and("deleted").is(false));
+        return mongoTemplate.findOne(query, File.class);
     }
 
     /**

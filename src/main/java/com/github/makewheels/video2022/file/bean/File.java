@@ -34,7 +34,7 @@ public class File extends BasicFile {
     private String videoType;
     private String fileStatus;
 
-    private Boolean hasLink;
+    private Boolean hasLink;  // 是否md5重复，链接到另一个文件
     private String linkFileId;
     private String linkFileKey;
 
@@ -43,6 +43,7 @@ public class File extends BasicFile {
         deleted = false;
         fileStatus = FileStatus.CREATED;
         provider = ObjectStorageProvider.ALIYUN_OSS;
+        hasLink = false;
     }
 
     @Override
