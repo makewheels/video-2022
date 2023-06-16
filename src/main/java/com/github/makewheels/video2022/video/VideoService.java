@@ -46,7 +46,7 @@ public class VideoService {
     @Resource
     private VideoRepository videoRepository;
     @Resource
-    private OriginFileService originFileService;
+    private RawFileService rawFileService;
     @Resource
     private CheckService checkService;
 
@@ -73,20 +73,20 @@ public class VideoService {
     /**
      * 用户上传视频文件后，开始处理的总入口
      */
-    public void originalFileUploadFinish(String videoId) {
+    public void rawFileUploadFinish(String videoId) {
         // 检查视频
         checkService.checkVideoExist(videoId);
         Video video = videoRepository.getById(videoId);
         checkService.checkVideoIsNotReady(video);
 
         // 检查原始文件
-        String fileId = video.getOriginalFileId();
+        String fileId = video.getRawFileId();
         checkService.checkFileExist(fileId);
         File file = mongoTemplate.findById(fileId, File.class);
         checkService.checkFileIsReady(file);
 
         //创建子线程发起转码，先给前端返回结果
-        new Thread(() -> originFileService.onOriginFileUploadFinish(videoId)).start();
+        new Thread(() -> rawFileService.onRawFileUploadFinish(videoId)).start();
     }
 
     /**
@@ -187,10 +187,10 @@ public class VideoService {
     /**
      * 获取原始文件下载地址
      */
-    public String getOriginalFileDownloadUrl(String videoId) {
+    public String getRawFileDownloadUrl(String videoId) {
         Video video = videoRepository.getById(videoId);
-        String originalFileKey = fileService.getKey(video.getOriginalFileId());
-        return fileService.generatePresignedUrl(originalFileKey, Duration.ofHours(2));
+        String rawFileKey = fileService.getKey(video.getRawFileId());
+        return fileService.generatePresignedUrl(rawFileKey, Duration.ofHours(2));
     }
 
 }

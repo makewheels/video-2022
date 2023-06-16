@@ -17,7 +17,7 @@ public class BasicFile {
     protected String fileType;
 
     @Indexed
-    protected String key;   // videos/62670b/6362648a/original/638a.mp4
+    protected String key;   // videos/62670b/6362648a/raw/638a.mp4
     protected String extension;
     @Indexed
     protected Long size;

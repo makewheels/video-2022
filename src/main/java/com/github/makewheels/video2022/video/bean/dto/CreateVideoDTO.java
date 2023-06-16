@@ -10,7 +10,7 @@ import lombok.Data;
 public class CreateVideoDTO {
     // 请求参数
     private String videoType;
-    private String originalFilename;
+    private String rawFilename;
     private String youtubeUrl;
     private Long size;
     private String ttl; // Time To Live 有效期

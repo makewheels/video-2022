@@ -33,9 +33,9 @@ public class VideoController {
     /**
      * 原始文件上传完成
      */
-    @GetMapping("originalFileUploadFinish")
-    public Result<Void> originalFileUploadFinish(@RequestParam String videoId) {
-        videoService.originalFileUploadFinish(videoId);
+    @GetMapping("rawFileUploadFinish")
+    public Result<Void> rawFileUploadFinish(@RequestParam String videoId) {
+        videoService.rawFileUploadFinish(videoId);
         return Result.ok();
     }
 
@@ -69,9 +69,9 @@ public class VideoController {
     /**
      * 获取原始文件下载地址
      */
-    @GetMapping("getOriginalFileDownloadUrl")
-    public Result<JSONObject> getOriginalFileDownloadUrl(@RequestParam String videoId) {
-        String url = videoService.getOriginalFileDownloadUrl(videoId);
+    @GetMapping("getRawFileDownloadUrl")
+    public Result<JSONObject> getRawFileDownloadUrl(@RequestParam String videoId) {
+        String url = videoService.getRawFileDownloadUrl(videoId);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("url", url);
         return Result.ok(jsonObject);

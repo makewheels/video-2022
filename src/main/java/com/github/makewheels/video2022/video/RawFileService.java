@@ -18,7 +18,7 @@ import javax.annotation.Resource;
  * 原始文件服务
  */
 @Service
-public class OriginFileService {
+public class RawFileService {
     @Resource
     private MongoTemplate mongoTemplate;
     @Resource
@@ -39,9 +39,9 @@ public class OriginFileService {
     /**
      * 用户上传视频文件后，开始处理的总入口
      */
-    public void onOriginFileUploadFinish(String videoId) {
+    public void onRawFileUploadFinish(String videoId) {
         Video video = videoRepository.getById(videoId);
-        File uploadNewFile = fileRepository.getById(video.getOriginalFileId());
+        File uploadNewFile = fileRepository.getById(video.getRawFileId());
 
         // 更新视频为正在转码状态
         video.setStatus(VideoStatus.TRANSCODING);

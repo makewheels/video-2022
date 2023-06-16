@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * "objectList": [
  * {
  * "fileId": "646ea169aaac3166cd4e3594",
- * "key": "videos/64598761fab9341c488c38f7/646401931286d141d607bb22/original/646401931286d141d607bb22.mp4"
+ * "key": "videos/64598761fab9341c488c38f7/646401931286d141d607bb22/raw/646401931286d141d607bb22.mp4"
  * }
  * ]
  * }
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * "objectList": [
  * {
  * "fileId": "646ea169aaac3166cd4e3594",
- * "key": "videos/64598761fab9341c488c38f7/646401931286d141d607bb22/original/646401931286d141d607bb22.mp4",
+ * "key": "videos/64598761fab9341c488c38f7/646401931286d141d607bb22/raw/646401931286d141d607bb22.mp4",
  * "md5": "458a3b2992784ad3e3b7a511d25d5752"
  * }
  * ]

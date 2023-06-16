@@ -100,8 +100,8 @@ public class TranscodeLauncher {
         transcode.setUserId(userId);
         transcode.setVideoId(videoId);
         transcode.setResolution(targetResolution);
-        String originalFileKey = fileService.getKey(video.getOriginalFileId());
-        transcode.setSourceKey(originalFileKey);
+        String rawFileKey = fileService.getKey(video.getRawFileId());
+        transcode.setSourceKey(rawFileKey);
 
         //决定用谁转码
         String transcodeProvider = getTranscodeProvider(video, targetResolution);
@@ -152,7 +152,7 @@ public class TranscodeLauncher {
      */
     private void loadVideoMediaInfo(Video video) {
         String videoId = video.getId();
-        String sourceKey = fileService.getKey(video.getOriginalFileId());
+        String sourceKey = fileService.getKey(video.getRawFileId());
 
         log.info("通过阿里云MPS获取视频信息，videoId = {}, title = {}", videoId, video.getTitle());
         //获取视频媒体信息，确定只用阿里云mps，不用其它供应商

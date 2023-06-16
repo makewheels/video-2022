@@ -57,7 +57,7 @@ public class FileService {
      */
     public File createVideoFile(CreateVideoDTO createVideoDTO) {
         File file = new File();
-        file.setFileType(FileType.ORIGINAL_VIDEO);
+        file.setFileType(FileType.RAW_VIDEO);
         file.setUploaderId(createVideoDTO.getUser().getId());
 
         file.setProvider(createVideoDTO.getVideo().getProvider());
@@ -66,9 +66,9 @@ public class FileService {
 
         //原始文件名和后缀
         if (videoType.equals(VideoType.USER_UPLOAD)) {
-            String originalFilename = createVideoDTO.getOriginalFilename();
-            file.setOriginalFilename(originalFilename);
-            file.setExtension(FilenameUtils.getExtension(originalFilename).toLowerCase());
+            String rawFilename = createVideoDTO.getRawFilename();
+            file.setRawFilename(rawFilename);
+            file.setExtension(FilenameUtils.getExtension(rawFilename).toLowerCase());
         } else if (videoType.equals(VideoType.YOUTUBE)) {
             //由于海外服务器获取拓展名太慢，所以移到后面的子线程中进行
             file.setExtension("webm");

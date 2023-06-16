@@ -70,8 +70,7 @@ public class TranscodeCallbackService {
         //保存对象存储中的ts文件
         saveS3Files(video, transcode);
 
-        //改变源视频对象存储storageClass
-//        changeOriginalFileStorageClass(video);
+        // TODO 改变源视频对象存储storageClass
 
         //发钉钉消息
         sendDing(video);

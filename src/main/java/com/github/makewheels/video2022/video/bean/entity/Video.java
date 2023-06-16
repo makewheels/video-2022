@@ -40,7 +40,7 @@ public class Video {
     // 关联id
     private List<String> transcodeIds;  // 转码id列表
     @Indexed
-    private String originalFileId; // 用户上传原始视频文件id
+    private String rawFileId; // 用户上传原始视频文件id
     @Indexed
     private String coverId;  // 封面id
 

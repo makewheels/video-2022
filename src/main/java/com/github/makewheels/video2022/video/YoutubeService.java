@@ -106,7 +106,7 @@ public class YoutubeService {
 
         //通知业务原始文件上传完成回调地址
         body.put("businessUploadFinishCallbackUrl", environmentService.getCallbackUrl(
-                "/video/originalFileUploadFinish?"
+                "/video/rawFileUploadFinish?"
                         + "videoId=" + video.getId() + "&token=" + user.getToken()));
 
         log.info("提交搬运视频任务，body = " + body.toJSONString());

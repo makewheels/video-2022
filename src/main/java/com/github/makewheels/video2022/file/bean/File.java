@@ -28,8 +28,8 @@ public class File extends BasicFile {
     @Indexed
     private String videoId;
 
-    // 用户上传的原始文件名，只有 fileType = ORIGINAL_VIDEO 才有
-    private String originalFilename;
+    // 用户上传的原始文件名，只有 fileType = RAW_VIDEO 才有
+    private String rawFilename;
 
     private String videoType;
     private String fileStatus;
