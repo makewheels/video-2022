@@ -15,6 +15,7 @@ import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.service.VideoReadyService;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -196,8 +197,7 @@ public class TranscodeCallbackService {
         mongoTemplate.insertAll(tsFiles);
 
         //反向更新transcode的ts文件id列表
-        List<String> tsFileIds = tsFiles.stream().map(TsFile::getId).collect(Collectors.toList());
-        transcode.setTsFileIds(tsFileIds);
+        transcode.setTsFileIds(Lists.transform(tsFiles, TsFile::getId));
 
         //计算transcode平均码率
         long tsTotalSize = tsFiles.stream().mapToLong(TsFile::getSize).sum();
