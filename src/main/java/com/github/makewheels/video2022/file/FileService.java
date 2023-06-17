@@ -10,17 +10,15 @@ import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.file.md5.FileMd5DTO;
 import com.github.makewheels.video2022.file.md5.Md5CfService;
 import com.github.makewheels.video2022.file.oss.OssService;
+import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.response.ErrorCode;
-import com.github.makewheels.video2022.system.response.Result;
-import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -81,27 +79,21 @@ public class FileService {
     /**
      * 获取上传凭证
      */
-    public Result<JSONObject> getUploadCredentials(String fileId) {
-        String userId = UserHolder.getUserId();
+    public JSONObject getUploadCredentials(String fileId) {
         File file = fileRepository.getById(fileId);
-
-        //如果上传文件不属于该用户
-        if (!StringUtils.equals(userId, file.getUploaderId())) {
-            return Result.error(ErrorCode.FILE_AND_USER_NOT_MATCH);
-        }
-
-        //根据provider，获取上传凭证
         JSONObject credentials = ossService.getUploadCredentials(file.getKey());
-        if (credentials == null) return Result.error(ErrorCode.FILE_GENERATE_UPLOAD_CREDENTIALS_FAIL);
+        if (credentials == null) {
+            throw new VideoException(ErrorCode.FILE_GENERATE_UPLOAD_CREDENTIALS_FAIL);
+        }
         credentials.put("provider", file.getProvider());
         log.info("生成上传凭证, fileId = " + fileId + ", " + JSON.toJSONString(credentials));
-        return Result.ok(credentials);
+        return credentials;
     }
 
     /**
      * 通知文件上传完成，和对象存储服务器确认，改变数据库File状态
      */
-    public Result<Void> uploadFinish(String fileId) {
+    public void uploadFinish(String fileId) {
         File file = fileRepository.getById(fileId);
         String key = file.getKey();
         log.info("FileService 处理文件上传完成, fileId = " + fileId + ", key = " + key);
@@ -112,13 +104,12 @@ public class FileService {
         file.setUploadTime(new Date());
         file.setFileStatus(FileStatus.READY);
         mongoTemplate.save(file);
-        return Result.ok();
     }
 
     /**
      * 访问文件：重定向到阿里云对象存储
      */
-    public Result<Void> access(
+    public void access(
             Context context, String resolution, String fileId,
             String timestamp, String nonce, String sign) {
         HttpServletRequest request = RequestUtil.getRequest();
@@ -140,7 +131,6 @@ public class FileService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return Result.ok();
     }
 
     /**
