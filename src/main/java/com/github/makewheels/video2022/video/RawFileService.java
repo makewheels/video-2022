@@ -9,6 +9,7 @@ import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
+import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,7 @@ public class RawFileService {
     public void onRawFileUploadFinish(String videoId) {
         Video newVideo = videoRepository.getById(videoId);
         File newFile = fileRepository.getById(newVideo.getRawFileId());
-        log.info("用户原始文件上传完成，进入开始处理总入口, videoId = {}，uploadNewFile = {} ", videoId, newFile.getId());
+        log.info("用户原始文件上传完成，进入开始处理总入口, videoId = {}, uploadNewFile = {} ", videoId, newFile.getId());
 
         // 更新视频为正在转码状态
         newVideo.setStatus(VideoStatus.PREPARE_TRANSCODING);
@@ -90,7 +91,7 @@ public class RawFileService {
             User user = userRepository.getById(newVideo.getUploaderId());
             transcodeLauncher.transcodeVideo(user, newVideo);
             //封面：如果是youtube视频，之前创建的时候已经搬运封面了，用户上传视频要截帧
-            if (!newVideo.isYoutube()) {
+            if (!VideoType.YOUTUBE.equals(newVideo.getStatus())) {
                 coverLauncher.createCover(user, newVideo);
             }
         }

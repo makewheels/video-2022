@@ -75,7 +75,7 @@ public class TranscodeCallbackService {
         //发钉钉消息
         sendDing(video);
 
-        if (video.isReady()) {
+        if (VideoStatus.READY.equals(video.getStatus())) {
             log.info("视频已就绪, videoId = {}, title = {}", videoId, video.getTitle());
         }
     }
@@ -224,7 +224,7 @@ public class TranscodeCallbackService {
      * 如果视频已就绪，发送钉钉消息
      */
     private void sendDing(Video video) {
-        if (video.isReady() && environmentService.isProductionEnv()) {
+        if (VideoStatus.READY.equals(video.getStatus()) && environmentService.isProductionEnv()) {
             notificationService.sendVideoReadyMessage(video);
         }
     }
