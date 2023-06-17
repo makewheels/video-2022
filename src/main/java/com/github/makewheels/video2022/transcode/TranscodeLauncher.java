@@ -189,24 +189,18 @@ public class TranscodeLauncher {
     public void transcodeVideo(User user, Video video) {
         //加载媒体信息mediaInfo
         loadVideoMediaInfo(video);
-
-        //更新video
         mongoTemplate.save(video);
 
         //发起转码
-        MediaInfo mediaInfo = video.getMediaInfo();
-        Integer width = mediaInfo.getWidth();
-        Integer height = mediaInfo.getHeight();
-
+        Integer width = video.getMediaInfo().getWidth();
+        Integer height = video.getMediaInfo().getHeight();
         //720p
         if (width * height > 854 * 480) {
             transcodeSingleResolution(user, video, Resolution.R_720P);
         }
-
         //1080p
         if (width * height > 1280 * 720) {
             transcodeSingleResolution(user, video, Resolution.R_1080P);
         }
-
     }
 }
