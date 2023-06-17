@@ -97,7 +97,7 @@ public class TranscodeCallbackService {
         //更新videoStatus
         if (!StringUtils.equals(videoStatus, video.getStatus())) {
             video.setStatus(videoStatus);
-            mongoTemplate.save(video);
+            videoRepository.updateStatus(video.getId(), videoStatus);
         }
     }
 
