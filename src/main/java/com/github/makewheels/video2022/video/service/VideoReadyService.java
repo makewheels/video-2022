@@ -37,7 +37,7 @@ public class VideoReadyService {
         //发钉钉消息
         sendDing(video);
 
-        // 如果不是link，那就是第一次上传，把OSS源文件改为低频存储
+        // 如果不是link，那就是第一次上传，把OSS视频源文件改为低频存储
         if (!video.getLink().getHasLink()) {
             fileService.changeStorageClass(video.getRawFileId(), StorageClass.IA.toString());
         }
