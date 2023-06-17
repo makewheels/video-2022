@@ -13,6 +13,7 @@ import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.utils.M3u8Util;
+import com.github.makewheels.video2022.video.VideoReadyService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
@@ -51,6 +52,8 @@ public class TranscodeCallbackService {
     private NotificationService notificationService;
     @Resource
     private EnvironmentService environmentService;
+    @Resource
+    private VideoReadyService videoReadyService;
 
     /**
      * 当有一个转码job完成时回调
@@ -70,13 +73,11 @@ public class TranscodeCallbackService {
         //保存对象存储中的ts文件
         saveS3Files(video, transcode);
 
-        // TODO 改变源视频对象存储storageClass
-
         //发钉钉消息
         sendDing(video);
 
         if (VideoStatus.READY.equals(video.getStatus())) {
-            log.info("视频已就绪, videoId = {}, title = {}", videoId, video.getTitle());
+            videoReadyService.onVideoReady(video.getId());
         }
     }
 
