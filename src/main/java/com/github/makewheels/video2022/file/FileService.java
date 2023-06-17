@@ -23,7 +23,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
@@ -109,22 +108,20 @@ public class FileService {
     /**
      * 访问文件：重定向到阿里云对象存储
      */
-    public void access(
-            Context context, String resolution, String fileId,
-            String timestamp, String nonce, String sign) {
-        HttpServletRequest request = RequestUtil.getRequest();
-        HttpServletResponse response = RequestUtil.getResponse();
-
+    public void access(Context context, String resolution, String fileId, String timestamp,
+                       String nonce, String sign) {
         String videoId = context.getVideoId();
         String clientId = context.getClientId();
         String sessionId = context.getSessionId();
 
-        //异步保存访问File记录
+        // 异步保存访问File记录
         new Thread(() -> fileAccessLogService.saveAccessLog(
-                request, videoId, clientId, sessionId, resolution, fileId)).start();
+                RequestUtil.getRequest(), videoId, clientId, sessionId, resolution, fileId)).start();
 
+        // 设置返回结果
         String key = tsFileRepository.getKeyById(fileId);
         String url = generatePresignedUrl(key, Duration.ofHours(3));
+        HttpServletResponse response = RequestUtil.getResponse();
         response.setStatus(302);
         try {
             response.sendRedirect(url);
@@ -264,10 +261,23 @@ public class FileService {
     }
 
     /**
-     * 设置对象权限
+     * 改变对象权限
      */
-    public void setObjectAcl(String key, CannedAccessControlList cannedAccessControlList) {
-        ossService.setObjectAcl(key, cannedAccessControlList);
+    public void changeObjectAcl(String fileId, String acl) {
+        File file = fileRepository.getById(fileId);
+        file.setAcl(acl);
+        ossService.setObjectAcl(file.getKey(), CannedAccessControlList.parse(acl));
+        mongoTemplate.save(file);
+    }
+
+    /**
+     * 改变存储类型
+     */
+    public void changeStorageClass(String fileId, String storageClass){
+        File file = fileRepository.getById(fileId);
+        file.setStorageClass(storageClass);
+        ossService.changeObjectStorageClass(file.getKey(), StorageClass.parse(storageClass));
+        mongoTemplate.save(file);
     }
 
 }

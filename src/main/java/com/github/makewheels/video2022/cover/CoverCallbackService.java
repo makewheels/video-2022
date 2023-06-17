@@ -3,14 +3,13 @@ package com.github.makewheels.video2022.cover;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.mts20140618.models.QuerySnapshotJobListResponseBody;
 import com.aliyun.oss.model.CannedAccessControlList;
-import com.aliyun.oss.model.OSSObject;
-import com.github.makewheels.video2022.system.response.ErrorCode;
-import com.github.makewheels.video2022.system.response.Result;
-import com.github.makewheels.video2022.file.constants.FileStatus;
-import com.github.makewheels.video2022.file.oss.OssService;
-import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.file.constants.FileStatus;
+import com.github.makewheels.video2022.file.oss.OssService;
+import com.github.makewheels.video2022.system.response.ErrorCode;
+import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import lombok.extern.slf4j.Slf4j;
@@ -118,10 +117,9 @@ public class CoverCallbackService {
 
         //更改封面的OSS权限为公开读
         file.setAcl(CannedAccessControlList.PublicRead.toString());
-        fileService.setObjectAcl(key, CannedAccessControlList.PublicRead);
+        fileService.changeObjectAcl(file.getId(), CannedAccessControlList.PublicRead.toString());
 
-        OSSObject object = fileService.getObject(key);
-        file.setObjectInfo(object);
+        file.setObjectInfo(fileService.getObject(key));
         file.setFileStatus(FileStatus.READY);
         mongoTemplate.save(file);
     }
