@@ -74,10 +74,18 @@ public class RawFileService {
             newVideo.getLink().setHasLink(true);
             newVideo.getLink().setLinkVideoId(oldFile.getVideoId());
             log.info("设置视频链接, oldVideoId = {}, newVideoId = {}", oldFile.getVideoId(), newVideo.getId());
+
+            // 设置transcodeId
+            Video oldVideo = videoRepository.getById(oldFile.getVideoId());
+            newVideo.setTranscodeIds(oldVideo.getTranscodeIds());
             mongoTemplate.save(newVideo);
 
             // 删除新上传的OSS文件
             fileService.deleteFile(newFile);
+
+            // 更新视频为就绪状态
+            newVideo.setStatus(VideoStatus.READY);
+            videoRepository.updateStatus(videoId, VideoStatus.READY);
         } else {
             // 发起转码
             User user = userRepository.getById(newVideo.getUploaderId());
