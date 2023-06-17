@@ -38,7 +38,8 @@ public class RawFileService {
 
     @Resource
     private FileService fileService;
-
+    @Resource
+    private VideoReadyService videoReadyService;
 
     /**
      * 用户上传视频文件后，开始处理的总入口
@@ -78,6 +79,8 @@ public class RawFileService {
             // 设置transcodeId
             Video oldVideo = videoRepository.getById(oldFile.getVideoId());
             newVideo.setTranscodeIds(oldVideo.getTranscodeIds());
+            newVideo.setCoverId(oldVideo.getCoverId());
+            newVideo.setOwnerId(oldVideo.getOwnerId());
             mongoTemplate.save(newVideo);
 
             // 删除新上传的OSS文件
@@ -86,6 +89,9 @@ public class RawFileService {
             // 更新视频为就绪状态
             newVideo.setStatus(VideoStatus.READY);
             videoRepository.updateStatus(videoId, VideoStatus.READY);
+
+            // 视频就绪
+            videoReadyService.onVideoReady(newVideo.getId());
         } else {
             // 发起转码
             User user = userRepository.getById(newVideo.getUploaderId());
