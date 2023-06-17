@@ -6,6 +6,7 @@ import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
+import com.github.makewheels.video2022.video.service.VideoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 

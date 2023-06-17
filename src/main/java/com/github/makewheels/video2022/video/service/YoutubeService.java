@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.video;
+package com.github.makewheels.video2022.video.service;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;

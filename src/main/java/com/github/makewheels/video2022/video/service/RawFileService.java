@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.video;
+package com.github.makewheels.video2022.video.service;
 
 import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.file.FileRepository;
@@ -7,9 +7,11 @@ import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.transcode.TranscodeLauncher;
 import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.user.bean.User;
+import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
+import com.github.makewheels.video2022.video.service.VideoReadyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;

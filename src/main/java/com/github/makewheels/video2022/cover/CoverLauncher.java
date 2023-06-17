@@ -12,7 +12,7 @@ import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.PathUtil;
-import com.github.makewheels.video2022.video.YoutubeService;
+import com.github.makewheels.video2022.video.service.YoutubeService;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
