@@ -4,19 +4,17 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
-import com.github.makewheels.video2022.etc.ding.NotificationService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
-import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.utils.M3u8Util;
-import com.github.makewheels.video2022.video.VideoReadyService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
+import com.github.makewheels.video2022.video.service.VideoReadyService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,10 +47,6 @@ public class TranscodeCallbackService {
     @Resource
     private FileService fileService;
     @Resource
-    private NotificationService notificationService;
-    @Resource
-    private EnvironmentService environmentService;
-    @Resource
     private VideoReadyService videoReadyService;
 
     /**
@@ -73,9 +67,7 @@ public class TranscodeCallbackService {
         //保存对象存储中的ts文件
         saveS3Files(video, transcode);
 
-        //发钉钉消息
-        sendDing(video);
-
+        // 回调视频就绪
         if (VideoStatus.READY.equals(video.getStatus())) {
             videoReadyService.onVideoReady(video.getId());
         }
@@ -219,15 +211,6 @@ public class TranscodeCallbackService {
 
         mongoTemplate.save(transcode);
         return tsFiles;
-    }
-
-    /**
-     * 如果视频已就绪，发送钉钉消息
-     */
-    private void sendDing(Video video) {
-        if (VideoStatus.READY.equals(video.getStatus()) && environmentService.isProductionEnv()) {
-            notificationService.sendVideoReadyMessage(video);
-        }
     }
 
 }

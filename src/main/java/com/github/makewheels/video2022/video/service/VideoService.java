@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.video;
+package com.github.makewheels.video2022.video.service;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -11,6 +11,7 @@ import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
+import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;

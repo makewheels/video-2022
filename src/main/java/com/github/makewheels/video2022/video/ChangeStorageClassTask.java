@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.video;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.video.bean.entity.Video;
+import com.github.makewheels.video2022.video.service.VideoService;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
