@@ -75,7 +75,7 @@ public class Md5CfService {
 
         // 调用云函数
         JSONObject response = callCloudFunction(requestMap);
-        log.info("调调用阿里云云函数获取OSS文件MD5，响应：{}", response.toJSONString());
+        log.info("调用阿里云云函数获取OSS文件MD5，响应：{}", response.toJSONString());
         List<FileMd5DTO> fileMd5DTOList = getObjectList(response);
 
         // 设置md5返回

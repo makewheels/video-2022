@@ -3,7 +3,6 @@ package com.github.makewheels.video2022.video.bean.entity;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
-import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -74,11 +73,4 @@ public class Video {
         return JSON.toJSONString(this);
     }
 
-    public boolean isYoutube() {
-        return VideoType.YOUTUBE.equals(this.type);
-    }
-
-    public boolean isReady() {
-        return VideoStatus.READY.equals(this.status);
-    }
 }

@@ -156,7 +156,7 @@ public class VideoService {
             BeanUtils.copyProperties(video, videoVO);
             videoVO.setCoverUrl(coverId2UrlMap.get(video.getCoverId()));
             videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-            if (video.isYoutube() && video.getYouTube() != null) {
+            if (VideoType.YOUTUBE.equals(video.getStatus()) && video.getYouTube() != null) {
                 YouTube youTube = video.getYouTube();
                 if (youTube.getPublishTime() != null) {
                     videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(youTube.getPublishTime()));
