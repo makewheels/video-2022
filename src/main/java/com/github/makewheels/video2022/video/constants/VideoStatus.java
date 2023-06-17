@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public interface VideoStatus {
     String CREATED = "CREATED";
+    String PREPARE_TRANSCODING= "PREPARE_TRANSCODING";
     String TRANSCODING = "TRANSCODING";
     String TRANSCODING_PARTLY_COMPLETE = "TRANSCODING_PARTLY_COMPLETED";
     String READY = "READY";

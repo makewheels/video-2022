@@ -44,41 +44,40 @@ public class RawFileService {
      */
     public void onRawFileUploadFinish(String videoId) {
         Video newVideo = videoRepository.getById(videoId);
-        File uploadNewFile = fileRepository.getById(newVideo.getRawFileId());
+        File newFile = fileRepository.getById(newVideo.getRawFileId());
         log.info("用户原始文件上传完成，进入开始处理总入口，videoId = {}，uploadNewFile = {}, videoTitle = {}",
-                videoId, uploadNewFile.getId(), newVideo.getTitle());
+                videoId, newFile.getId(), newVideo.getTitle());
 
         // 更新视频为正在转码状态
-        newVideo.setStatus(VideoStatus.TRANSCODING);
-        videoRepository.updateStatus(videoId, VideoStatus.TRANSCODING);
+        newVideo.setStatus(VideoStatus.PREPARE_TRANSCODING);
+        videoRepository.updateStatus(videoId, VideoStatus.PREPARE_TRANSCODING);
 
         // 同步调用阿里云云函数，获取文件md5
-        String md5 = fileService.getMd5(uploadNewFile);
-        uploadNewFile.setMd5(md5);
-        fileRepository.updateMd5(uploadNewFile.getId(), md5);
+        String md5 = fileService.getMd5(newFile);
+        newFile.setMd5(md5);
+        fileRepository.updateMd5(newFile.getId(), md5);
 
         // TODO 如果文件已存在，删除，放链接。
         // TODO 注意：task任务删除文件要考虑视频有效期
         // TODO 创建视频和播放视频链接有影响
-        File md5OldFile = fileRepository.getByMd5(md5);
-        if (md5OldFile != null) {
+        File oldFile = fileRepository.getByMd5(md5);
+        if (oldFile != null) {
             log.info("用户上传原始文件md5已存在, 用户上传文件id = {}, 老的已存在文件id = {}, md5 = {}",
-                    uploadNewFile.getId(), md5OldFile.getId(), md5);
-//            fileService.deleteFile(uploadNewFile);
+                    newFile.getId(), oldFile.getId(), md5);
             // 设置file链接
-            uploadNewFile.setHasLink(true);
-            uploadNewFile.setLinkFileId(md5OldFile.getId());
-            uploadNewFile.setLinkFileKey(md5OldFile.getKey());
-            mongoTemplate.save(uploadNewFile);
+            newFile.setHasLink(true);
+            newFile.setLinkFileId(oldFile.getId());
+            newFile.setLinkFileKey(oldFile.getKey());
+            mongoTemplate.save(newFile);
 
             // 不再发起转码，设置视频链接
             newVideo.getLink().setHasLink(true);
-            newVideo.getLink().setLinkVideoId(md5OldFile.getVideoId());
-            log.info("设置视频链接, oldVideoId = {}, newVideoId = {}", md5OldFile.getVideoId(), newVideo.getId());
+            newVideo.getLink().setLinkVideoId(oldFile.getVideoId());
+            log.info("设置视频链接, oldVideoId = {}, newVideoId = {}", oldFile.getVideoId(), newVideo.getId());
             mongoTemplate.save(newVideo);
 
             // 删除新上传的OSS文件
-            fileService.deleteFile(uploadNewFile);
+            fileService.deleteFile(newFile);
         } else {
             // 发起转码
             User user = userRepository.getById(newVideo.getUploaderId());
