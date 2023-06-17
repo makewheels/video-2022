@@ -35,7 +35,8 @@ public class FileController {
     @GetMapping("getUploadCredentials")
     public Result<JSONObject> getUploadCredentials(@RequestParam String fileId) {
         checkService.checkFileBelongsToUserHolder(fileId);
-        return fileService.getUploadCredentials(fileId);
+        JSONObject uploadCredentials = fileService.getUploadCredentials(fileId);
+        return Result.ok(uploadCredentials);
     }
 
     /**
@@ -44,7 +45,8 @@ public class FileController {
     @GetMapping("uploadFinish")
     public Result<Void> uploadFinish(@RequestParam String fileId) {
         checkService.checkFileBelongsToUserHolder(fileId);
-        return fileService.uploadFinish(fileId);
+        fileService.uploadFinish(fileId);
+        return Result.ok();
     }
 
     /**
@@ -56,7 +58,8 @@ public class FileController {
     public Result<Void> access(
             @RequestParam String resolution, @RequestParam String fileId, @RequestParam String timestamp,
             @RequestParam String nonce, @RequestParam String sign) {
-        return fileService.access(RequestUtil.getContext(), resolution, fileId, timestamp, nonce, sign);
+        fileService.access(RequestUtil.getContext(), resolution, fileId, timestamp, nonce, sign);
+        return Result.ok();
     }
 
 }
