@@ -18,7 +18,7 @@ public class CreateVideoDTO {
     // 后端service传递的参数
     private User user;
     private Video video;
-    private File videoFile;
+    private File rawFile;
 
     @Override
     public String toString() {

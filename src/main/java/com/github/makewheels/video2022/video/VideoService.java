@@ -57,12 +57,10 @@ public class VideoService {
         // 调用createService
         videoCreateService.create(createVideoDTO);
 
-        // 返回给前端
+        // 返回前端
         Video video = createVideoDTO.getVideo();
-        File videoFile = createVideoDTO.getVideoFile();
-
         JSONObject response = new JSONObject();
-        response.put("fileId", videoFile.getId());
+        response.put("fileId", createVideoDTO.getRawFile().getId());
         response.put("videoId", video.getId());
         response.put("watchId", video.getWatch().getWatchId());
         response.put("watchUrl", video.getWatch().getWatchUrl());
