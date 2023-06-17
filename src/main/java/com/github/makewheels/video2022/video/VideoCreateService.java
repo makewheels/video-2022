@@ -116,9 +116,9 @@ public class VideoCreateService {
         rawFile.setKey(PathUtil.getRawFilePrefix(UserHolder.getUserId(), videoId)
                 + "/" + rawFile.getId() + "." + rawFile.getExtension());
         mongoTemplate.save(rawFile);
-        log.info("新建文件：" + JSON.toJSONString(rawFile));
+        log.info("新建文件: " + JSON.toJSONString(rawFile));
 
-        log.info("新建视频：" + JSON.toJSONString(video));
+        log.info("新建视频: " + JSON.toJSONString(video));
 
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
         if (video.getType().equals(VideoType.YOUTUBE)) {

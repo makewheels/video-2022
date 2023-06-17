@@ -94,7 +94,7 @@ public class FileService {
         JSONObject credentials = ossService.getUploadCredentials(file.getKey());
         if (credentials == null) return Result.error(ErrorCode.FILE_GENERATE_UPLOAD_CREDENTIALS_FAIL);
         credentials.put("provider", file.getProvider());
-        log.info("生成上传凭证，fileId = " + fileId + " " + JSON.toJSONString(credentials));
+        log.info("生成上传凭证, fileId = " + fileId + ", " + JSON.toJSONString(credentials));
         return Result.ok(credentials);
     }
 

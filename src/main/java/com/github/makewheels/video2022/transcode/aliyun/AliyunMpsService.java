@@ -121,7 +121,7 @@ public class AliyunMpsService {
      * 查询转码job
      */
     public QueryJobListResponse queryTranscodeJob(String jobIds) {
-        log.info("查询阿里云转码作业，jobIds = " + jobIds);
+        log.info("查询阿里云转码作业, jobIds = " + jobIds);
         try {
             return getClient().queryJobList(new QueryJobListRequest().setJobIds(jobIds));
         } catch (Exception e) {

@@ -55,12 +55,12 @@ public class RawFileService {
         // 同步调用阿里云云函数，获取文件md5
         String md5 = fileService.getMd5(newFile);
         newFile.setMd5(md5);
-        fileRepository.updateMd5(newFile.getId(), md5);
 
         // TODO 如果文件已存在，删除，放链接。
         // TODO 注意：task任务删除文件要考虑视频有效期
         // TODO 创建视频和播放视频链接有影响
         File oldFile = fileRepository.getByMd5(md5);
+        fileRepository.updateMd5(newFile.getId(), md5);
         if (oldFile != null) {
             log.info("用户上传原始文件md5已存在, 用户上传文件id = {}, 老的已存在文件id = {}, md5 = {}",
                     newFile.getId(), oldFile.getId(), md5);
