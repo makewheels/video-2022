@@ -15,14 +15,14 @@ public class StorageStatus {
     @Indexed
     private Date expireTime;                    //过期时间
     @Indexed
-    private Boolean isPermanent;                //是否是永久视频
-    private Boolean isRawFileDeleted;      //源视频是否已删除
-    private Boolean isTranscodeFilesDeleted;    //ts转码文件是否已删除
+    private Boolean permanent;                //是否是永久视频
+    private Boolean rawFileDeleted;      //源视频是否已删除
+    private Boolean transcodeFilesDeleted;    //ts转码文件是否已删除
     private Date deleteTime;                    //什么时候删的
 
     public StorageStatus() {
-        this.isRawFileDeleted = false;
-        this.isTranscodeFilesDeleted = false;
-        this.isPermanent = false;
+        this.rawFileDeleted = false;
+        this.transcodeFilesDeleted = false;
+        this.permanent = false;
     }
 }
