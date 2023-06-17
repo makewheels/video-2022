@@ -49,6 +49,7 @@ public class Video {
     private MediaInfo mediaInfo;           // 媒体信息
     private StorageStatus storageStatus;   // 删除信息
     private Watch watch;                   // 播放信息
+    private Link link;                     // 视频链接
 
     @Indexed
     private Date createTime;
@@ -65,6 +66,7 @@ public class Video {
         this.mediaInfo = new MediaInfo();
         this.storageStatus = new StorageStatus();
         this.watch = new Watch();
+        this.link = new Link();
     }
 
     @Override

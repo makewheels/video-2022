@@ -99,6 +99,6 @@ public class IdService {
     public String getVideoId() {
         String id = nextLongId();
         String result = Long.toString(Long.parseLong(id), 16).toUpperCase();
-        return "VID" + getEnvironmentPrefix() + result;
+        return "V" + getEnvironmentPrefix() + result;
     }
 }
