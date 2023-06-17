@@ -104,7 +104,7 @@ public class FileService {
     public Result<Void> uploadFinish(String fileId) {
         File file = fileRepository.getById(fileId);
         String key = file.getKey();
-        log.info("处理文件上传完成，fileId = " + fileId + ", key = " + key);
+        log.info("FileService 处理文件上传完成, fileId = " + fileId + ", key = " + key);
         OSSObject object = ossService.getObject(key);
         ObjectMetadata objectMetadata = object.getObjectMetadata();
         file.setSize(objectMetadata.getContentLength());

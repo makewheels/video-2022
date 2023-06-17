@@ -74,7 +74,7 @@ public class VideoCreateService {
 
         //创建 video file
         File videoFile = fileService.createVideoFile(createVideoDTO);
-        createVideoDTO.setVideoFile(videoFile);
+        createVideoDTO.setRawFile(videoFile);
 
         String fileId = videoFile.getId();
         video.setRawFileId(fileId);
@@ -108,20 +108,21 @@ public class VideoCreateService {
         // 新建video对象
         Video video = createVideo(createVideoDTO);
         String videoId = video.getId();
-        File videoFile = createVideoDTO.getVideoFile();
+        File rawFile = createVideoDTO.getRawFile();
+        createVideoDTO.setRawFile(rawFile);
 
         //更新file
-        videoFile.setVideoId(videoId);
-        videoFile.setKey(PathUtil.getRawFilePrefix(UserHolder.getUserId(), videoId)
-                + "/" + videoId + "." + videoFile.getExtension());
-        mongoTemplate.save(videoFile);
-        log.info("新建文件：" + JSON.toJSONString(videoFile));
+        rawFile.setVideoId(videoId);
+        rawFile.setKey(PathUtil.getRawFilePrefix(UserHolder.getUserId(), videoId)
+                + "/" + rawFile.getId() + "." + rawFile.getExtension());
+        mongoTemplate.save(rawFile);
+        log.info("新建文件：" + JSON.toJSONString(rawFile));
 
         log.info("新建视频：" + JSON.toJSONString(video));
 
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
         if (video.getType().equals(VideoType.YOUTUBE)) {
-            new Thread(() -> handleCreateYoutube(video, UserHolder.get(), videoFile)).start();
+            new Thread(() -> handleCreateYoutube(video, UserHolder.get(), rawFile)).start();
         }
     }
 

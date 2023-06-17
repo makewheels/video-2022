@@ -45,8 +45,7 @@ public class RawFileService {
     public void onRawFileUploadFinish(String videoId) {
         Video newVideo = videoRepository.getById(videoId);
         File newFile = fileRepository.getById(newVideo.getRawFileId());
-        log.info("用户原始文件上传完成，进入开始处理总入口，videoId = {}，uploadNewFile = {}, videoTitle = {}",
-                videoId, newFile.getId(), newVideo.getTitle());
+        log.info("用户原始文件上传完成，进入开始处理总入口, videoId = {}，uploadNewFile = {} ", videoId, newFile.getId());
 
         // 更新视频为正在转码状态
         newVideo.setStatus(VideoStatus.PREPARE_TRANSCODING);
