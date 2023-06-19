@@ -86,7 +86,7 @@ public class MiniProgramService {
         //创建File对象
         File file = new File();
         file.setFileType(FileType.QR_CODE);
-        file.setVideoType(video.getType());
+        file.setVideoType(video.getVideoType());
         file.setVideoId(videoId);
         file.setUploaderId(user.getId());
         mongoTemplate.save(file);

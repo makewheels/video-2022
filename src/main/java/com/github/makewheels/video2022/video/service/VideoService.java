@@ -122,7 +122,7 @@ public class VideoService {
         VideoVO videoVO = new VideoVO();
         videoVO.setId(video.getId());
         videoVO.setUserId(video.getUploaderId());
-        videoVO.setType(video.getType());
+        videoVO.setType(video.getVideoType());
         videoVO.setStatus(video.getStatus());
         videoVO.setTitle(video.getTitle());
         videoVO.setDescription(video.getDescription());
@@ -135,7 +135,7 @@ public class VideoService {
 
         videoVO.setCreateTime(video.getCreateTime());
         videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-        if (VideoType.YOUTUBE.equals(video.getType())) {
+        if (VideoType.YOUTUBE.equals(video.getVideoType())) {
             videoVO.setYoutubePublishTime(video.getYouTube().getPublishTime());
             videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(video.getYouTube().getPublishTime()));
         }
