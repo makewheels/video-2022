@@ -30,7 +30,7 @@ public class Video {
     private String description;
 
     @Indexed
-    private String type;        // 类型：是用户上传还是YouTube
+    private String videoType;        // 类型：是用户上传还是YouTube
     @Indexed
     private String provider;    // 它就是对象存储提供商，和file是一对一关系
     @Indexed

@@ -113,7 +113,7 @@ public class TranscodeCallbackService {
         m3u8File.setKey(m3u8Key);
         m3u8File.setFileType(FileType.TRANSCODE_M3U8);
         m3u8File.setVideoId(video.getId());
-        m3u8File.setVideoType(video.getType());
+        m3u8File.setVideoType(video.getVideoType());
         m3u8File.setUploaderId(video.getUploaderId());
 
         //获取m3u8文件内容
@@ -170,7 +170,7 @@ public class TranscodeCallbackService {
             tsFile.setFileType(FileType.TRANSCODE_TS);
             tsFile.setUploaderId(video.getUploaderId());
             tsFile.setVideoId(videoId);
-            tsFile.setVideoType(video.getType());
+            tsFile.setVideoType(video.getVideoType());
             tsFile.setTranscodeId(transcode.getId());
             tsFile.setResolution(transcode.getResolution());
             tsFile.setTsIndex(i);

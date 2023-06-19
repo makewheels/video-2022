@@ -61,7 +61,7 @@ public class VideoCreateService {
         video.setUploaderId(userId);
 
         String videoType = createVideoDTO.getVideoType();
-        video.setType(videoType);
+        video.setVideoType(videoType);
 
         //YouTube
         if (videoType.equals(VideoType.YOUTUBE)) {
@@ -121,7 +121,7 @@ public class VideoCreateService {
         log.info("新建视频: " + JSON.toJSONString(video));
 
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
-        if (video.getType().equals(VideoType.YOUTUBE)) {
+        if (video.getVideoType().equals(VideoType.YOUTUBE)) {
             new Thread(() -> handleCreateYoutube(video, UserHolder.get(), rawFile)).start();
         }
     }

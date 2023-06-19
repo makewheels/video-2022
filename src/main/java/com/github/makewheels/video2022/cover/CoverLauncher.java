@@ -56,7 +56,7 @@ public class CoverLauncher {
         String userId = user.getId();
         String videoId = video.getId();
         String videoProvider = video.getProvider();
-        String videoType = video.getType();
+        String videoType = video.getVideoType();
 
         //创建file和cover对象
         File file = new File();
@@ -120,7 +120,7 @@ public class CoverLauncher {
         file.setExtension(extension);
         file.setRawFilename(FileNameUtil.getName(downloadUrl));
         file.setProvider(videoProvider);
-        file.setVideoType(video.getType());
+        file.setVideoType(video.getVideoType());
         mongoTemplate.save(file);
 
         //发起请求，搬运youtube封面
