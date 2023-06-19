@@ -36,12 +36,12 @@ public class Video {
     @Indexed
     private String status;      // 转码状态
 
-    // 关联id
-    private List<String> transcodeIds;  // 转码id列表
     @Indexed
     private String rawFileId; // 用户上传原始视频文件id
     @Indexed
     private String coverId;  // 封面id
+    // 关联id
+    private List<String> transcodeIds;  // 转码id列表
 
     // 子类
     private YouTube youTube;               // YouTube视频信息
