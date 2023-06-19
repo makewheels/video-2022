@@ -21,5 +21,7 @@ public class Watch {
 
     public Watch() {
         this.watchCount = 0;
+        this.showUploadTime = true;
+        this.showWatchCount = true;
     }
 }
