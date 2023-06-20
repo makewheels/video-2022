@@ -60,6 +60,7 @@ public class RawFileService {
 
         // TODO 如果文件已存在，删除，放链接。
         // TODO 注意：task任务删除文件要考虑视频有效期
+        // TODO 注意：需要判断阿里云OSS是否存在
         // TODO 创建视频和播放视频链接有影响
         File oldFile = fileRepository.getByMd5(md5);
         fileRepository.updateMd5(newFile.getId(), md5);
