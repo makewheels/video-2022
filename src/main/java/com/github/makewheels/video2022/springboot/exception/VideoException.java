@@ -17,4 +17,9 @@ public class VideoException extends RuntimeException {
         super(message);
         this.errorCode = ErrorCode.FAIL;
     }
+
+    public VideoException(ErrorCode errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
+    }
 }

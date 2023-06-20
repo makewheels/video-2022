@@ -9,7 +9,6 @@ import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
-import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
@@ -138,10 +137,6 @@ public class WatchService {
      */
     public Result<WatchInfoVO> getWatchInfo(Context context, String watchId) {
         Video video = videoRepository.getByWatchId(watchId);
-        if (video == null) {
-            log.warn("查不到这个video, watchId = " + watchId);
-            return Result.error(ErrorCode.VIDEO_NOT_EXIST);
-        }
         String videoId = video.getId();
         WatchInfoVO watchInfoVO = new WatchInfoVO();
         watchInfoVO.setVideoId(videoId);

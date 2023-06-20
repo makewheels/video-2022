@@ -11,6 +11,7 @@ import com.github.makewheels.video2022.playlist.item.request.move.MoveMode;
 import com.github.makewheels.video2022.playlist.list.bean.IdBean;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import com.github.makewheels.video2022.springboot.exception.VideoException;
+import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.video.VideoRepository;
@@ -44,7 +45,7 @@ public class CheckService {
      */
     public void checkUserExist(String userId) {
         if (!userRepository.isUserExist(userId)) {
-            throw new VideoException("用户不存在, userId = " + userId);
+            throw new VideoException(ErrorCode.USER_NOT_EXIST, "用户不存在, userId = " + userId);
         }
     }
 
@@ -53,7 +54,7 @@ public class CheckService {
      */
     public void checkUserHolderExist() {
         if (UserHolder.get() == null) {
-            throw new VideoException("用户UserHolder不存在");
+            throw new VideoException(ErrorCode.USER_NOT_LOGIN, "用户UserHolder不存在");
         }
     }
 
@@ -62,7 +63,16 @@ public class CheckService {
      */
     public void checkVideoExist(String videoId) {
         if (!videoRepository.isVideoExist(videoId)) {
-            throw new VideoException("视频不存在, videoId = " + videoId);
+            throw new VideoException(ErrorCode.VIDEO_NOT_EXIST, "视频不存在, videoId = " + videoId);
+        }
+    }
+
+    /**
+     * 检查watchId是否存在
+     */
+    public void checkWatchIdExist(String watchId) {
+        if (!videoRepository.isWatchIdExist(watchId)) {
+            throw new VideoException(ErrorCode.VIDEO_NOT_EXIST, "视频watchId不存在, watchId = " + watchId);
         }
     }
 
@@ -71,7 +81,8 @@ public class CheckService {
      */
     public void checkVideoIsReady(Video video) {
         if (VideoStatus.isNotReady(video.getStatus())) {
-            throw new VideoException("视频未就绪, video = " + JSON.toJSONString(video));
+            throw new VideoException(ErrorCode.VIDEO_NOT_READY,
+                    "视频未就绪, video = " + JSON.toJSONString(video));
         }
     }
 
@@ -80,7 +91,8 @@ public class CheckService {
      */
     public void checkVideoIsNotReady(Video video) {
         if (VideoStatus.isReady(video.getStatus())) {
-            throw new VideoException("视频已就绪, video = " + JSON.toJSONString(video));
+            throw new VideoException(ErrorCode.VIDEO_IS_READY,
+                    "视频已就绪, video = " + JSON.toJSONString(video));
         }
     }
 
@@ -94,8 +106,8 @@ public class CheckService {
         Video video = videoRepository.getById(videoId);
         String ownerId = video.getUploaderId();
         if (!ownerId.equals(userId)) {
-            throw new VideoException("视频不属于user, videoId = " + videoId + ", " +
-                    "ownerId = " + ownerId + ", userId = " + userId);
+            throw new VideoException(ErrorCode.VIDEO_AND_UPLOADER_NOT_MATCH, "视频不属于user, " +
+                    "videoId = " + videoId + ", ownerId = " + ownerId + ", userId = " + userId);
         }
     }
 
@@ -105,9 +117,11 @@ public class CheckService {
     public void checkPlaylistExist(String playlistId) {
         Playlist playlist = playlistRepository.getPlaylist(playlistId);
         if (playlist == null) {
-            throw new VideoException("播放列表不存在, playlistId = " + playlistId);
+            throw new VideoException(ErrorCode.PLAYLIST_NOT_EXIST,
+                    "播放列表不存在, playlistId = " + playlistId);
         } else if (playlist.getIsDelete()) {
-            throw new VideoException("播放列表已删除, playlistId = " + playlistId);
+            throw new VideoException(ErrorCode.PLAYLIST_DELETED,
+                    "播放列表已删除, playlistId = " + playlistId);
         }
     }
 
@@ -120,8 +134,9 @@ public class CheckService {
 
         String ownerId = playlistRepository.getPlaylist(playlistId).getOwnerId();
         if (!ownerId.equals(userId)) {
-            throw new VideoException("playlist不属于user, playlistId = " + playlistId + ", " +
-                    "ownerId = " + ownerId + ", userId = " + userId);
+            throw new VideoException(ErrorCode.PLAYLIST_AND_USER_NOT_MATCH,
+                    "playlist不属于user, playlistId = " + playlistId
+                            + ", ownerId = " + ownerId + ", userId = " + userId);
         }
     }
 
@@ -130,12 +145,14 @@ public class CheckService {
 
         Playlist playlist = playlistRepository.getPlaylist(playlistId);
         if (playlist == null) {
-            throw new VideoException("播放列表不存在, playlistId = " + playlistId);
+            throw new VideoException(ErrorCode.PLAYLIST_NOT_EXIST,
+                    "播放列表不存在, playlistId = " + playlistId);
         }
         String ownerId = playlist.getOwnerId();
         if (!ownerId.equals(userId)) {
-            throw new VideoException("playlist不属于user, playlistId = " + playlistId + ", " +
-                    "ownerId = " + ownerId + ", userId = " + userId);
+            throw new VideoException(ErrorCode.PLAYLIST_AND_USER_NOT_MATCH,
+                    "playlist不属于user, playlistId = " + playlistId
+                            + ", ownerId = " + ownerId + ", userId = " + userId);
         }
 
         if (!playlist.getIsDelete()) {
@@ -247,7 +264,7 @@ public class CheckService {
      */
     public void checkFileExist(String fileId) {
         if (!fileRepository.isFileExist(fileId)) {
-            throw new VideoException("文件不存在, fileId = " + fileId);
+            throw new VideoException(ErrorCode.FILE_NOT_EXIST, "文件不存在, fileId = " + fileId);
         }
     }
 
@@ -256,7 +273,7 @@ public class CheckService {
      */
     public void checkFileIsReady(File file) {
         if (!FileStatus.READY.equals(file.getFileStatus())) {
-            throw new VideoException("文件未准备好, fileId = " + file.getId());
+            throw new VideoException(ErrorCode.FILE_NOT_READY, "文件未就绪, fileId = " + file.getId());
         }
     }
 
@@ -271,8 +288,8 @@ public class CheckService {
         String fileUserId = fileRepository.getUserIdByFileId(fileId);
 
         if (!StringUtils.equals(userHolderUserId, fileUserId)) {
-            throw new VideoException("文件和用户不匹配, " +
-                    "user = " + userHolderUserId + ", fileId = " + fileId);
+            throw new VideoException(ErrorCode.FILE_AND_USER_NOT_MATCH,
+                    "文件和用户不匹配, user = " + userHolderUserId + ", fileId = " + fileId);
         }
     }
 }
