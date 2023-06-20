@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.watch;
 
+import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfoVO;
@@ -15,6 +16,8 @@ import javax.annotation.Resource;
 public class WatchController {
     @Resource
     private WatchService watchService;
+    @Resource
+    private CheckService checkService;
 
     /**
      * 增加观看记录
@@ -29,6 +32,7 @@ public class WatchController {
      */
     @GetMapping("getWatchInfo")
     public Result<WatchInfoVO> getWatchInfo(@RequestParam String watchId) {
+        checkService.checkWatchIdExist(watchId);
         return watchService.getWatchInfo(RequestUtil.getContext(), watchId);
     }
 

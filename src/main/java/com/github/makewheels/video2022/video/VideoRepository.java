@@ -48,6 +48,13 @@ public class VideoRepository {
         return mongoTemplate.exists(Query.query(Criteria.where("id").is(id)), Video.class);
     }
 
+    /**
+     * watchId是否存在
+     */
+    public boolean isWatchIdExist(String watchId) {
+        return mongoTemplate.exists(Query.query(Criteria.where(Watch.FIELD_NAME + ".watchId").is(watchId)), Video.class);
+    }
+
     public Video getByWatchId(String watchId) {
         Query query = Query.query(Criteria.where(Watch.FIELD_NAME + ".watchId").is(watchId));
         return mongoTemplate.findOne(query, Video.class);
