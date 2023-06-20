@@ -13,7 +13,9 @@ import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
+import com.github.makewheels.video2022.video.bean.dto.UpdateWatchSettingsDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
+import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.constants.VideoType;
@@ -192,4 +194,18 @@ public class VideoService {
         return fileService.generatePresignedUrl(rawFileKey, Duration.ofHours(2));
     }
 
+    /**
+     * 更新watch的播放设置
+     */
+    public void updateWatchSettings(UpdateWatchSettingsDTO updateWatchSettingsDTO) {
+        Video video = videoRepository.getById(updateWatchSettingsDTO.getVideoId());
+        Watch watch = video.getWatch();
+        if (updateWatchSettingsDTO.getShowWatchCount() != null) {
+            watch.setShowWatchCount(updateWatchSettingsDTO.getShowWatchCount());
+        }
+        if (updateWatchSettingsDTO.getShowUploadTime() != null) {
+            watch.setShowUploadTime(updateWatchSettingsDTO.getShowUploadTime());
+        }
+        mongoTemplate.save(video);
+    }
 }

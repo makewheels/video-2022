@@ -1,6 +1,5 @@
 package com.github.makewheels.video2022.video.bean.entity;
 
-import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.Data;
@@ -66,11 +65,6 @@ public class Video {
         this.storageStatus = new StorageStatus();
         this.watch = new Watch();
         this.link = new Link();
-    }
-
-    @Override
-    public String toString() {
-        return JSON.toJSONString(this);
     }
 
 }

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
+import com.github.makewheels.video2022.video.bean.dto.UpdateWatchSettingsDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.service.VideoService;
@@ -76,5 +77,15 @@ public class VideoController {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("url", url);
         return Result.ok(jsonObject);
+    }
+
+    /**
+     * 更新播放设置
+     */
+    @PostMapping("updateWatchSettings")
+    public Result<Void> updateWatchSettings(@RequestBody UpdateWatchSettingsDTO updateWatchSettingsDTO) {
+        checkService.checkVideoExist(updateWatchSettingsDTO.getVideoId());
+        videoService.updateWatchSettings(updateWatchSettingsDTO);
+        return Result.ok();
     }
 }
