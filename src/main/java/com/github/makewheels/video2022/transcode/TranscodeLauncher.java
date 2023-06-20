@@ -150,7 +150,7 @@ public class TranscodeLauncher {
     /**
      * 加载媒体信息mediaInfo
      */
-    private void loadVideoMediaInfo(Video video) {
+    private void loadMediaInfoIntoVideo(Video video) {
         String videoId = video.getId();
         String sourceKey = fileService.getKey(video.getRawFileId());
 
@@ -188,7 +188,7 @@ public class TranscodeLauncher {
      */
     public void transcodeVideo(User user, Video video) {
         //加载媒体信息mediaInfo
-        loadVideoMediaInfo(video);
+        loadMediaInfoIntoVideo(video);
         mongoTemplate.save(video);
 
         //发起转码
