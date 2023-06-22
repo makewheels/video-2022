@@ -23,6 +23,9 @@
 
     <!--    <script src="https://logjs.site/version/2.0.0beta/log.min.js"></script>-->
 
+    <!--引入我的js和css-->
+    <link href="watch/css/watch.css" rel="stylesheet">
+    <script src="watch/js/common.js" type="text/javascript" charset="utf-8"></script>
 </head>
 
 <body>
@@ -48,67 +51,6 @@
         <!--        </div>-->
     </div>
 </div>
-
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
-        margin: 0;
-        padding: 0;
-    }
-
-    .video-item {
-        background-color: #fff;
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        margin: 6px;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-    }
-
-    .video-item.active {
-        background-color: #eee;
-    }
-
-    .video-thumbnail {
-        width: 120px;
-        height: 80px;
-        margin-right: 20px;
-    }
-
-    .video-info {
-        flex-grow: 1;
-    }
-
-    .video-title {
-        font-size: 18px;
-        margin-bottom: 10px;
-    }
-
-    .video-meta {
-        font-size: 14px;
-        color: #999;
-        display: flex;
-        align-items: center;
-        margin-bottom: 5px;
-    }
-
-    .video-meta span {
-        margin-right: 5px;
-    }
-
-    .play-icon {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        background-image: url('https://img.icons8.com/ios-filled/50/000000/play-button-circled.png');
-        background-size: cover;
-        margin-right: 5px;
-    }
-
-</style>
-
 <script>
     // log.init({ sendAddress: 'https://www.xxx.com/xxx' });
 
@@ -121,31 +63,6 @@
     let player;
 
     let playerElement = document.getElementById("player-con");
-
-    //获取url路径中的参数
-    function getUrlVariable(key) {
-        const query = window.location.search.substring(1);
-        const vars = query.split("&");
-        for (let i = 0; i < vars.length; i++) {
-            const pair = vars[i].split("=");
-            if (pair[0] === key) {
-                return pair[1];
-            }
-        }
-        return false;
-    }
-
-    //判断是否是pc端
-    function isPC() {
-        let userAgent = navigator.userAgent;
-        let mobileAgents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
-        for (let i = 0; i < mobileAgents.length; i++) {
-            if (userAgent.indexOf(mobileAgents[i]) > 0) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     //根据url开始播放，如果换播放器，需要改这里
     function playByM3u8UrlAndTime(m3u8Url, time) {
@@ -183,7 +100,7 @@
 
     //加载视频
     function loadVideo() {
-        watchId = getUrlVariable("v");
+        watchId = common.getUrlVariable("v");
         //获取播放地址
         axios.get('/watchController/getWatchInfo?watchId=' + watchId
             + '&clientId=' + localStorage.clientId
@@ -225,7 +142,7 @@
         //视频组件宽度
         playerElement.style.width = "98%";
         //pc端自动网页全屏
-        if (isPC()) {
+        if (common.isPC()) {
             playerElement.style.height = (window.innerHeight - 30) + "px";
         }
 
@@ -259,7 +176,7 @@
 
     //加载播放列表
     function loadPlaylist(videoId) {
-        const playlistId = getUrlVariable('list');
+        const playlistId = common.getUrlVariable('list');
         if (!playlistId) {
             return;
         }

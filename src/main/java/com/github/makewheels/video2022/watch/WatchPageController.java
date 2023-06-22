@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class WatchPageController {
     @RequestMapping("/watch")
     public String watch() {
-        return "watch-hls";
+        return "watch";
     }
 }
