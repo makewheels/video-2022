@@ -116,7 +116,8 @@ public class FileService {
 
         // 异步保存访问File记录
         new Thread(() -> fileAccessLogService.saveAccessLog(
-                RequestUtil.getRequest(), videoId, clientId, sessionId, resolution, fileId)).start();
+                RequestUtil.getRequest(), videoId, clientId, sessionId, resolution, fileId))
+                .start();
 
         // 设置返回结果
         String key = tsFileRepository.getKeyById(fileId);
@@ -273,7 +274,7 @@ public class FileService {
     /**
      * 改变存储类型
      */
-    public void changeStorageClass(String fileId, String storageClass){
+    public void changeStorageClass(String fileId, String storageClass) {
         File file = fileRepository.getById(fileId);
         file.setStorageClass(storageClass);
         ossService.changeObjectStorageClass(file.getKey(), StorageClass.parse(storageClass));

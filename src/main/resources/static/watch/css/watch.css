@@ -1,0 +1,56 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+.video-item {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    margin: 6px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.video-item.active {
+    background-color: #eee;
+}
+
+.video-thumbnail {
+    width: 120px;
+    height: 80px;
+    margin-right: 20px;
+}
+
+.video-info {
+    flex-grow: 1;
+}
+
+.video-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.video-meta {
+    font-size: 14px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.video-meta span {
+    margin-right: 5px;
+}
+
+.play-icon {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background-image: url('https://img.icons8.com/ios-filled/50/000000/play-button-circled.png');
+    background-size: cover;
+    margin-right: 5px;
+}
