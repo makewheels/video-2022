@@ -71,7 +71,7 @@ public class CheckService {
     /**
      * 校验创建视频请求参数
      */
-    public void checkCreateVideoDTO(CreateVideoDTO createVideoDTO){
+    public void checkCreateVideoDTO(CreateVideoDTO createVideoDTO) {
         if (StringUtils.isEmpty(createVideoDTO.getRawFilename())) {
             throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL,
                     "视频创建参数，原始文件名rawFilename为空");
@@ -79,6 +79,10 @@ public class CheckService {
         if (StringUtils.isEmpty(createVideoDTO.getVideoType())) {
             throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL,
                     "视频创建参数，视频类型videoType为空");
+        }
+        if (createVideoDTO.getSize() == null || createVideoDTO.getSize() == 0) {
+            throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL,
+                    "视频创建参数，视频类型size为空");
         }
     }
 
