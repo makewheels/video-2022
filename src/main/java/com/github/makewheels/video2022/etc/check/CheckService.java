@@ -82,7 +82,7 @@ public class CheckService {
         }
         if (createVideoDTO.getSize() == null || createVideoDTO.getSize() == 0) {
             throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL,
-                    "视频创建参数，视频类型size为空");
+                    "视频创建参数，原始文件大小size为空");
         }
     }
 
