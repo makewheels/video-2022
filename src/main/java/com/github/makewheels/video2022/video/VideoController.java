@@ -28,6 +28,7 @@ public class VideoController {
      */
     @PostMapping("create")
     public Result<JSONObject> create(@RequestBody CreateVideoDTO createVideoDTO) {
+        checkService.checkCreateVideoDTO(createVideoDTO);
         JSONObject response = videoService.create(createVideoDTO);
         return Result.ok(response, "视频已创建");
     }

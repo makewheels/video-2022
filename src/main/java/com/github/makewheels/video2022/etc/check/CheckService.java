@@ -15,6 +15,7 @@ import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.video.VideoRepository;
+import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.Visibility;
@@ -64,6 +65,20 @@ public class CheckService {
     public void checkVideoExist(String videoId) {
         if (!videoRepository.isVideoExist(videoId)) {
             throw new VideoException(ErrorCode.VIDEO_NOT_EXIST, "视频不存在, videoId = " + videoId);
+        }
+    }
+
+    /**
+     * 校验创建视频请求参数
+     */
+    public void checkCreateVideoDTO(CreateVideoDTO createVideoDTO){
+        if (StringUtils.isEmpty(createVideoDTO.getRawFilename())) {
+            throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL,
+                    "视频创建参数，原始文件名rawFilename为空");
+        }
+        if (StringUtils.isEmpty(createVideoDTO.getVideoType())) {
+            throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL,
+                    "视频创建参数，视频类型videoType为空");
         }
     }
 
