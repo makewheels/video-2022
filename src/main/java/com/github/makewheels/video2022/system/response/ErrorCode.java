@@ -28,15 +28,15 @@ public enum ErrorCode {
     PLAYLIST_AND_USER_NOT_MATCH(53, "播放列表和用户不匹配"),
     ;
 
-    private final int code;
+    private final Integer code;
     private final String message;
 
-    ErrorCode(int code, String message) {
+    ErrorCode(Integer code, String message) {
         this.code = code;
         this.message = message;
     }
 
-    public int getCode() {
+    public Integer getCode() {
         return code;
     }
 

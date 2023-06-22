@@ -61,7 +61,8 @@ public class GlobalExceptionHandler {
         ExceptionLog exceptionLog = new ExceptionLog();
         if (exception instanceof VideoException) {
             VideoException videoException = (VideoException) exception;
-            exceptionLog.setErrorCode(videoException.getErrorCode());
+            exceptionLog.setSystemErrorCode(videoException.getErrorCode().getCode());
+            exceptionLog.setSystemErrorMessage(videoException.getErrorCode().getMessage());
         }
         exceptionLog.setExceptionMessage(exception.getMessage());
         exceptionLog.setExceptionStackTrace(ExceptionUtils.getStackTrace(exception));
