@@ -63,6 +63,7 @@ public class GlobalExceptionHandler {
             VideoException videoException = (VideoException) exception;
             exceptionLog.setErrorCode(videoException.getErrorCode());
         }
+        exceptionLog.setExceptionMessage(exception.getMessage());
         exceptionLog.setExceptionStackTrace(ExceptionUtils.getStackTrace(exception));
 
         //保存到数据库
