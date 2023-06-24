@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
+import com.github.makewheels.video2022.video.bean.dto.UpdateVideoInfoDTO;
 import com.github.makewheels.video2022.video.bean.dto.UpdateWatchSettingsDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
@@ -46,8 +47,8 @@ public class VideoController {
      * 更新video信息
      */
     @PostMapping("updateInfo")
-    public Result<Video> updateInfo(@RequestBody Video newVideo) {
-        Video video = videoService.updateVideo(newVideo);
+    public Result<Video> updateInfo(@RequestBody UpdateVideoInfoDTO updateVideoInfoDTO) {
+        Video video = videoService.updateVideo(updateVideoInfoDTO);
         return Result.ok(video);
     }
 

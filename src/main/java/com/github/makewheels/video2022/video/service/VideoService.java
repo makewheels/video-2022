@@ -13,6 +13,7 @@ import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
+import com.github.makewheels.video2022.video.bean.dto.UpdateVideoInfoDTO;
 import com.github.makewheels.video2022.video.bean.dto.UpdateWatchSettingsDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.Watch;
@@ -93,10 +94,10 @@ public class VideoService {
     /**
      * 更新视频信息
      */
-    public Video updateVideo(Video newVideo) {
+    public Video updateVideo(UpdateVideoInfoDTO updateVideoInfoDTO) {
         User user = UserHolder.get();
         String userId = user.getId();
-        String videoId = newVideo.getId();
+        String videoId = updateVideoInfoDTO.getVideoId();
         Video oldVideo = videoRepository.getById(videoId);
         //判断视频是否存在
         if (oldVideo == null) {
@@ -107,8 +108,8 @@ public class VideoService {
             throw new VideoException(ErrorCode.VIDEO_AND_UPLOADER_NOT_MATCH);
         }
 
-        oldVideo.setTitle(newVideo.getTitle());
-        oldVideo.setDescription(newVideo.getDescription());
+        oldVideo.setTitle(updateVideoInfoDTO.getTitle());
+        oldVideo.setDescription(updateVideoInfoDTO.getDescription());
         mongoTemplate.save(oldVideo);
 
         log.info("更新视频信息：videoId = {}, title = {}, description = {}",
