@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.watch;
 
 import com.github.makewheels.video2022.etc.check.CheckService;
+import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfoVO;
@@ -24,6 +25,9 @@ public class WatchController {
      */
     @GetMapping("addWatchLog")
     public Result<Void> addWatchLog(@RequestParam String videoStatus) {
+        Context context = RequestUtil.getContext();
+        String videoId = context.getVideoId();
+        checkService.checkVideoExist(videoId);
         return watchService.addWatchLog(RequestUtil.getContext(), videoStatus);
     }
 
