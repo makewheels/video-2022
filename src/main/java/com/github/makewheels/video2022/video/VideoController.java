@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.video;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.system.response.Result;
+import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.dto.UpdateVideoInfoDTO;
 import com.github.makewheels.video2022.video.bean.dto.UpdateWatchSettingsDTO;
@@ -48,6 +49,8 @@ public class VideoController {
      */
     @PostMapping("updateInfo")
     public Result<Video> updateInfo(@RequestBody UpdateVideoInfoDTO updateVideoInfoDTO) {
+        checkService.checkVideoExist(updateVideoInfoDTO.getId());
+        checkService.checkVideoBelongsToUser(updateVideoInfoDTO.getId(), UserHolder.getUserId());
         Video video = videoService.updateVideo(updateVideoInfoDTO);
         return Result.ok(video);
     }
@@ -86,7 +89,7 @@ public class VideoController {
      */
     @PostMapping("updateWatchSettings")
     public Result<Void> updateWatchSettings(@RequestBody UpdateWatchSettingsDTO updateWatchSettingsDTO) {
-        checkService.checkVideoExist(updateWatchSettingsDTO.getVideoId());
+        checkService.checkVideoExist(updateWatchSettingsDTO.getId());
         videoService.updateWatchSettings(updateWatchSettingsDTO);
         return Result.ok();
     }

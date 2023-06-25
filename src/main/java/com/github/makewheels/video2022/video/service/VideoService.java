@@ -6,11 +6,8 @@ import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
-import com.github.makewheels.video2022.springboot.exception.VideoException;
-import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.user.UserHolder;
-import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.dto.UpdateVideoInfoDTO;
@@ -21,7 +18,6 @@ import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -95,26 +91,16 @@ public class VideoService {
      * 更新视频信息
      */
     public Video updateVideo(UpdateVideoInfoDTO updateVideoInfoDTO) {
-        User user = UserHolder.get();
-        String userId = user.getId();
-        String videoId = updateVideoInfoDTO.getVideoId();
-        Video oldVideo = videoRepository.getById(videoId);
-        //判断视频是否存在
-        if (oldVideo == null) {
-            throw new VideoException(ErrorCode.VIDEO_NOT_EXIST);
-        }
-        //判断视频是否属于当前用户
-        if (!StringUtils.equals(userId, oldVideo.getUploaderId())) {
-            throw new VideoException(ErrorCode.VIDEO_AND_UPLOADER_NOT_MATCH);
-        }
+        String videoId = updateVideoInfoDTO.getId();
+        Video video = videoRepository.getById(videoId);
 
-        oldVideo.setTitle(updateVideoInfoDTO.getTitle());
-        oldVideo.setDescription(updateVideoInfoDTO.getDescription());
-        mongoTemplate.save(oldVideo);
+        video.setTitle(updateVideoInfoDTO.getTitle());
+        video.setDescription(updateVideoInfoDTO.getDescription());
+        mongoTemplate.save(video);
 
         log.info("更新视频信息：videoId = {}, title = {}, description = {}",
-                videoId, oldVideo.getTitle(), oldVideo.getDescription());
-        return oldVideo;
+                videoId, video.getTitle(), video.getDescription());
+        return video;
     }
 
     /**
@@ -199,7 +185,7 @@ public class VideoService {
      * 更新watch的播放设置
      */
     public void updateWatchSettings(UpdateWatchSettingsDTO updateWatchSettingsDTO) {
-        Video video = videoRepository.getById(updateWatchSettingsDTO.getVideoId());
+        Video video = videoRepository.getById(updateWatchSettingsDTO.getId());
         Watch watch = video.getWatch();
         if (updateWatchSettingsDTO.getShowWatchCount() != null) {
             watch.setShowWatchCount(updateWatchSettingsDTO.getShowWatchCount());

@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 public class UpdateVideoInfoDTO {
-    private String videoId;
+    private String id;
     private String title;
     private String description;
 }
