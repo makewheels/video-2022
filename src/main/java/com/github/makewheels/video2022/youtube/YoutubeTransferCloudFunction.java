@@ -12,7 +12,7 @@ import java.io.IOException;
  * 阿里云云函数：搬运YouTube视频
  */
 @Slf4j
-public class YoutubeCloudFunction implements HttpRequestHandler {
+public class YoutubeTransferCloudFunction implements HttpRequestHandler {
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response, Context context)
