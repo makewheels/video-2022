@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.fc.runtime.Context;
 import com.aliyun.fc.runtime.HttpRequestHandler;
+import com.github.makewheels.video2022.system.context.RequestUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,15 +29,6 @@ import java.util.Map;
 public class Md5CloudFunction implements HttpRequestHandler {
     // OSS挂载路径
     private final static String OSS_MOUNT_PATH = "/mnt/oss";
-
-    /**
-     * 获取请求body
-     */
-    private JSONObject getRequestBody(HttpServletRequest request) throws IOException {
-        JSONObject body = JSON.parseObject(IoUtil.readUtf8(request.getInputStream()));
-        log.info("请求body = " + body.toJSONString());
-        return body;
-    }
 
     /**
      * 云函数根据挂载的OSS文件计算MD5
@@ -73,7 +65,8 @@ public class Md5CloudFunction implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response, Context context)
             throws IOException {
-        JSONObject body = getRequestBody(request);
+        JSONObject body = RequestUtil.servletToRequestJSONObject(request);
+        log.info("请求body = " + body.toJSONString());
 
         List<FileMd5DTO> objectList = JSONArray.parseArray(
                 JSON.toJSONString(body.getJSONArray("objectList")),
