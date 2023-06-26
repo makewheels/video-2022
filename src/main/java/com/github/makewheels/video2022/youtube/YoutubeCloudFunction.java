@@ -17,6 +17,9 @@ public class YoutubeCloudFunction implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response, Context context)
             throws IOException {
+        // 调用Google接口
+        // 使用yt-dlp下载
+        // 上传到北京OSS
 
     }
 
