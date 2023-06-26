@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.system.context;
 
 import cn.hutool.core.io.IoUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import org.apache.commons.beanutils.BeanUtils;
@@ -116,6 +117,18 @@ public class RequestUtil {
     public static String getRequestBody() {
         try {
             return IoUtil.readUtf8(getRequest().getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 获取请求body
+     */
+    public static JSONObject servletToRequestJSONObject(HttpServletRequest request) {
+        try {
+            return JSON.parseObject(IoUtil.readUtf8(request.getInputStream()));
         } catch (IOException e) {
             e.printStackTrace();
         }
