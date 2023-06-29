@@ -3,8 +3,8 @@ package com.github.makewheels.video2022.transcode;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.mts20140618.models.SubmitMediaInfoJobResponseBody;
-import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.transcode.contants.Resolution;
@@ -100,7 +100,7 @@ public class TranscodeLauncher {
         transcode.setUserId(userId);
         transcode.setVideoId(videoId);
         transcode.setResolution(targetResolution);
-        String rawFileKey = fileService.getKey(video.getRawFileId());
+        String rawFileKey = fileService.getKeyByFileId(video.getRawFileId());
         transcode.setSourceKey(rawFileKey);
 
         //决定用谁转码
@@ -152,7 +152,7 @@ public class TranscodeLauncher {
      */
     private void loadMediaInfoIntoVideo(Video video) {
         String videoId = video.getId();
-        String sourceKey = fileService.getKey(video.getRawFileId());
+        String sourceKey = fileService.getKeyByFileId(video.getRawFileId());
 
         log.info("通过阿里云MPS获取视频信息，videoId = {}, title = {}", videoId, video.getTitle());
         //获取视频媒体信息，确定只用阿里云mps，不用其它供应商

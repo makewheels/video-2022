@@ -177,7 +177,7 @@ public class VideoService {
      */
     public String getRawFileDownloadUrl(String videoId) {
         Video video = videoRepository.getById(videoId);
-        String rawFileKey = fileService.getKey(video.getRawFileId());
+        String rawFileKey = fileService.getKeyByFileId(video.getRawFileId());
         return fileService.generatePresignedUrl(rawFileKey, Duration.ofHours(2));
     }
 

@@ -50,7 +50,7 @@ public class RawFileService {
         File newFile = fileRepository.getById(newVideo.getRawFileId());
         log.info("用户原始文件上传完成，进入开始处理总入口, videoId = {}, uploadNewFile = {} ", videoId, newFile.getId());
 
-        // 更新视频为正在转码状态
+        // 更新视频为 [准备转码] 状态
         newVideo.setStatus(VideoStatus.PREPARE_TRANSCODING);
         videoRepository.updateStatus(videoId, VideoStatus.PREPARE_TRANSCODING);
 
@@ -98,6 +98,11 @@ public class RawFileService {
             // 发起转码
             User user = userRepository.getById(newVideo.getUploaderId());
             transcodeLauncher.transcodeVideo(user, newVideo);
+
+            // 更新视频为 [正在转码] 状态
+            newVideo.setStatus(VideoStatus.TRANSCODING);
+            videoRepository.updateStatus(videoId, VideoStatus.TRANSCODING);
+
             //封面：如果是youtube视频，之前创建的时候已经搬运封面了，用户上传视频要截帧
             if (!VideoType.YOUTUBE.equals(newVideo.getStatus())) {
                 coverLauncher.createCover(user, newVideo);

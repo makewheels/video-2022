@@ -139,7 +139,7 @@ public class CoverLauncher {
         String targetKey = PathUtil.getS3VideoPrefix(video.getUploaderId(), videoId)
                 + "/cover/" + cover.getId() + ".jpg";
 
-        String rawFileKey = fileService.getKey(video.getRawFileId());
+        String rawFileKey = fileService.getKeyByFileId(video.getRawFileId());
         SubmitSnapshotJobResponse response = aliyunMpsService.submitSnapshotJob(rawFileKey, targetKey);
         String jobId = response.getBody().getSnapshotJob().getId();
 
