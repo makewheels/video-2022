@@ -134,7 +134,7 @@ public class FileService {
     /**
      * 通过id获取对象存储的key
      */
-    public String getKey(String fileId) {
+    public String getKeyByFileId(String fileId) {
         File file = fileRepository.getById(fileId);
         if (file == null) return null;
         return file.getKey();
