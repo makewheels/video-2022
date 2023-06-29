@@ -175,6 +175,13 @@ public class FileService {
     }
 
     /**
+     * 对象存储文件key是否存在
+     */
+    public boolean doesOSSObjectExist(String key) {
+        return ossService.doesObjectExist(key);
+    }
+
+    /**
      * 获取文件的md5
      */
     public String getMd5(String fileId) {

@@ -46,7 +46,7 @@ public class CoverCallbackService {
         //向对象存储确认文件存在
         String coverProvider = cover.getProvider();
         if (StringUtils.equalsAny(coverProvider, CoverProvider.ALIYUN_CLOUD_FUNCTION, CoverProvider.ALIYUN_MPS)) {
-            if (!ossService.doesObjectExist(key)) {
+            if (!fileService.doesOSSObjectExist(key)) {
                 return Result.error(ErrorCode.FILE_NOT_EXIST);
             }
         }
