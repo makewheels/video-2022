@@ -52,7 +52,7 @@ public class FileRepository {
      */
     public File getByMd5(String md5) {
         Query query = Query.query(Criteria.where("md5").is(md5)
-                // 如果文件已删除，重新上传保留文件
+                // 只要未删除的
                 .and("deleted").is(false));
         return mongoTemplate.findOne(query, File.class);
     }

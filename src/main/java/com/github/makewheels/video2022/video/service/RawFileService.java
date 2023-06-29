@@ -43,6 +43,27 @@ public class RawFileService {
     private VideoReadyService videoReadyService;
 
     /**
+     * 判断用户上传的原始文件是否存在
+     */
+    private boolean isFileMd5Exist(String md5) {
+        File oldFile = fileRepository.getByMd5(md5);
+        // 如果数据库没查到这个md5，认为不存在
+        if (oldFile == null) {
+            return false;
+        }
+        // 如果在数据库查到这个md5了，再向OSS确认是否存在
+        return fileService.doesOSSObjectExist(oldFile.getKey());
+    }
+
+    /**
+     * 更新视频状态
+     */
+    private void updateVideoStatus(Video video, String status) {
+        video.setStatus(status);
+        videoRepository.updateStatus(video.getId(), status);
+    }
+
+    /**
      * 用户上传视频文件后，开始处理的总入口
      */
     public void onRawFileUploadFinish(String videoId) {
@@ -51,21 +72,19 @@ public class RawFileService {
         log.info("用户原始文件上传完成，进入开始处理总入口, videoId = {}, uploadNewFile = {} ", videoId, newFile.getId());
 
         // 更新视频为 [准备转码] 状态
-        newVideo.setStatus(VideoStatus.PREPARE_TRANSCODING);
-        videoRepository.updateStatus(videoId, VideoStatus.PREPARE_TRANSCODING);
+        updateVideoStatus(newVideo, VideoStatus.PREPARE_TRANSCODING);
 
         // 同步调用阿里云云函数，获取文件md5
         String md5 = fileService.getMd5(newFile);
         newFile.setMd5(md5);
 
-        // TODO 如果文件已存在，删除，放链接。
-        // TODO 注意：task任务删除文件要考虑视频有效期
-        // TODO 注意：需要判断阿里云OSS是否存在
         // TODO 创建视频和播放视频链接有影响
-        File oldFile = fileRepository.getByMd5(md5);
-        fileRepository.updateMd5(newFile.getId(), md5);
-        if (oldFile != null) {
-            log.info("用户上传原始文件md5已存在, 用户上传文件id = {}, 老的已存在文件id = {}, md5 = {}",
+
+        if (isFileMd5Exist(md5)) {
+            fileRepository.updateMd5(newFile.getId(), md5);
+            File oldFile = fileRepository.getByMd5(md5);
+
+            log.info("用户上传原始文件md5已存在, 用户上传新文件id = {}, 老的已存在文件id = {}, md5 = {}",
                     newFile.getId(), oldFile.getId(), md5);
             // 设置file链接
             newFile.setHasLink(true);
@@ -88,20 +107,20 @@ public class RawFileService {
             // 删除新上传的OSS文件
             fileService.deleteFile(newFile);
 
-            // 更新视频为就绪状态
-            newVideo.setStatus(VideoStatus.READY);
-            videoRepository.updateStatus(videoId, VideoStatus.READY);
+            // 更新视频为 [就绪] 状态
+            updateVideoStatus(newVideo, VideoStatus.READY);
 
-            // 视频就绪
+            // 视频就绪回调
             videoReadyService.onVideoReady(newVideo.getId());
         } else {
+            fileRepository.updateMd5(newFile.getId(), md5);
+
             // 发起转码
             User user = userRepository.getById(newVideo.getUploaderId());
             transcodeLauncher.transcodeVideo(user, newVideo);
 
             // 更新视频为 [正在转码] 状态
-            newVideo.setStatus(VideoStatus.TRANSCODING);
-            videoRepository.updateStatus(videoId, VideoStatus.TRANSCODING);
+            updateVideoStatus(newVideo, VideoStatus.TRANSCODING);
 
             //封面：如果是youtube视频，之前创建的时候已经搬运封面了，用户上传视频要截帧
             if (!VideoType.YOUTUBE.equals(newVideo.getStatus())) {
