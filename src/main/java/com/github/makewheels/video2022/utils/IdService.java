@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.utils;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.redis.RedisKey;
@@ -96,9 +97,24 @@ public class IdService {
         return "";
     }
 
-    public String getVideoId() {
-        String id = nextLongId();
-        String result = Long.toString(Long.parseLong(id), 16).toUpperCase();
-        return "V" + getEnvironmentPrefix() + result;
+    public synchronized String getUserId() {
+        return "u_" + IdUtil.objectId();
     }
+
+    public synchronized String getVideoId() {
+        return "v_" + IdUtil.objectId();
+    }
+
+    public synchronized String getTranscodeId() {
+        return "tr_" + IdUtil.objectId();
+    }
+
+    public synchronized String getFileId() {
+        return "f_" + IdUtil.objectId();
+    }
+
+    public synchronized String getTsFileId() {
+        return "tsf_" + IdUtil.objectId();
+    }
+
 }
