@@ -73,7 +73,7 @@ public class UserService {
     /**
      * 请求验证码
      */
-    public void requestVerificationCode(@RequestParam String phone) {
+    public void requestVerificationCode(String phone) {
         //如果redis里已经有了，直接返回
         VerificationCode verificationCode = userRedisService.getVerificationCode(phone);
         if (verificationCode != null) {
@@ -95,7 +95,7 @@ public class UserService {
     /**
      * 提交验证码
      */
-    public User submitVerificationCode(@RequestParam String phone, @RequestParam String code) {
+    public User submitVerificationCode(String phone, String code) {
         VerificationCode verificationCode = userRedisService.getVerificationCode(phone);
         if (verificationCode == null) {
             throw new VideoException(ErrorCode.USER_PHONE_VERIFICATION_CODE_EXPIRED);
