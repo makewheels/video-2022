@@ -10,6 +10,7 @@ import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
+import com.github.makewheels.video2022.utils.IdService;
 import com.github.makewheels.video2022.utils.M3u8Util;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
@@ -21,6 +22,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -49,6 +51,9 @@ public class TranscodeCallbackService {
     private FileService fileService;
     @Resource
     private VideoReadyService videoReadyService;
+
+    @Resource
+    private IdService idService;
 
     /**
      * 当有一个转码job完成时回调
@@ -109,6 +114,7 @@ public class TranscodeCallbackService {
         String m3u8Key = transcode.getM3u8Key();
 
         File m3u8File = new File();
+        m3u8File.setId(idService.getFileId());
         m3u8File.setFileStatus(FileStatus.READY);
         m3u8File.setKey(m3u8Key);
         m3u8File.setFileType(FileType.TRANSCODE_M3U8);
@@ -119,13 +125,15 @@ public class TranscodeCallbackService {
         //获取m3u8文件内容
         OSSObject object = fileService.getObject(m3u8Key);
         m3u8File.setObjectInfo(object);
-        log.info("保存m3u8File: {}", JSON.toJSONString(m3u8File));
-        mongoTemplate.save(m3u8File);
 
         String m3u8FileUrl = fileService.generatePresignedUrl(m3u8Key, Duration.ofMinutes(10));
         String m3u8Content = HttpUtil.get(m3u8FileUrl);
         transcode.setM3u8Content(m3u8Content);
+
+        Assert.notNull(m3u8File.getId(), "m3u8File id is null");
+        log.info("保存m3u8File: " + JSON.toJSONString(m3u8File));
         mongoTemplate.save(transcode);
+
         return m3u8File;
     }
 
@@ -145,8 +153,7 @@ public class TranscodeCallbackService {
     /**
      * 生成阿里云对象存储中的ts文件
      */
-    private List<TsFile> getTsFiles(Video video, Transcode transcode) {
-        String videoId = video.getId();
+    private List<TsFile> createTsFiles(Video video, Transcode transcode) {
         String m3u8Content = transcode.getM3u8Content();
 
         //获取对象存储每一个文件
@@ -165,11 +172,12 @@ public class TranscodeCallbackService {
         for (int i = 0; i < filenames.size(); i++) {
             String filename = filenames.get(i);
             TsFile tsFile = new TsFile();
+            tsFile.setId(idService.getTsFileId());
             tsFile.setFileStatus(FileStatus.READY);
 
             tsFile.setFileType(FileType.TRANSCODE_TS);
             tsFile.setUploaderId(video.getUploaderId());
-            tsFile.setVideoId(videoId);
+            tsFile.setVideoId(video.getId());
             tsFile.setVideoType(video.getVideoType());
             tsFile.setTranscodeId(transcode.getId());
             tsFile.setResolution(transcode.getResolution());
@@ -190,7 +198,7 @@ public class TranscodeCallbackService {
      * 转码完成后，更新对象存储ts碎片
      */
     private List<TsFile> saveS3Files(Video video, Transcode transcode) {
-        List<TsFile> tsFiles = getTsFiles(video, transcode);
+        List<TsFile> tsFiles = createTsFiles(video, transcode);
 
         //保存所有ts文件到数据库
         log.info("保存tsFiles, 总共 {} 个", tsFiles.size());
@@ -199,12 +207,12 @@ public class TranscodeCallbackService {
         //反向更新transcode的ts文件id列表
         transcode.setTsFileIds(Lists.transform(tsFiles, TsFile::getId));
 
-        //计算transcode平均码率
+        //计算平均码率
         long tsTotalSize = tsFiles.stream().mapToLong(TsFile::getSize).sum();
         BigDecimal duration = new BigDecimal(video.getMediaInfo().getDuration() / 1000);
         transcode.setAverageBitrate(calculateBitrate(tsTotalSize, duration));
 
-        //计算transcode最高码率
+        //计算最高码率
         Integer maxBitrate = tsFiles.stream()
                 .max(Comparator.comparing(TsFile::getBitrate)).get().getBitrate();
         transcode.setMaxBitrate(maxBitrate);

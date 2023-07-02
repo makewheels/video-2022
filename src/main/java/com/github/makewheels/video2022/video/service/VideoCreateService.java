@@ -57,6 +57,7 @@ public class VideoCreateService {
 
         //创建 video
         Video video = new Video();
+        video.setId(idService.getVideoId());
         createVideoDTO.setVideo(video);
         video.setUploaderId(userId);
 

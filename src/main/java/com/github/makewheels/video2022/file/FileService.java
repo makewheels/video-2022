@@ -14,6 +14,7 @@ import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.response.ErrorCode;
+import com.github.makewheels.video2022.utils.IdService;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import com.google.common.collect.Lists;
@@ -49,11 +50,15 @@ public class FileService {
     @Resource
     private Md5CfService md5CfService;
 
+    @Resource
+    private IdService idService;
+
     /**
      * 新建视频时创建文件
      */
     public File createVideoFile(CreateVideoDTO createVideoDTO) {
         File file = new File();
+        file.setId(idService.getFileId());
         file.setFileType(FileType.RAW_VIDEO);
         file.setUploaderId(createVideoDTO.getUser().getId());
 

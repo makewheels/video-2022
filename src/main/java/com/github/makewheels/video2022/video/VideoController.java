@@ -40,6 +40,7 @@ public class VideoController {
      */
     @GetMapping("rawFileUploadFinish")
     public Result<Void> rawFileUploadFinish(@RequestParam String videoId) {
+        checkService.checkVideoExist(videoId);
         videoService.rawFileUploadFinish(videoId);
         return Result.ok();
     }
