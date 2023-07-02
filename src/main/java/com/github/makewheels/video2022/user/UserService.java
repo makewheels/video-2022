@@ -8,6 +8,7 @@ import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.bean.VerificationCode;
 import com.github.makewheels.video2022.utils.BaiduSmsService;
+import com.github.makewheels.video2022.utils.IdService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -29,6 +30,8 @@ public class UserService {
     private MongoTemplate mongoTemplate;
     @Resource
     private UserRepository userRepository;
+    @Resource
+    private IdService idService;
 
     /**
      * 根据登录token获取用户
@@ -112,6 +115,7 @@ public class UserService {
         //不存在，创建新用户
         if (user == null) {
             user = new User();
+            user.setId(idService.getUserId());
             user.setPhone(phone);
             user.setCreateTime(new Date());
             log.info("创建新用户 " + JSON.toJSONString(user));
