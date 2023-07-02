@@ -12,6 +12,7 @@ import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
 import com.github.makewheels.video2022.transcode.factory.TranscodeFactory;
 import com.github.makewheels.video2022.transcode.factory.TranscodeService;
 import com.github.makewheels.video2022.user.bean.User;
+import com.github.makewheels.video2022.utils.IdService;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.bean.entity.MediaInfo;
 import com.github.makewheels.video2022.video.bean.entity.Video;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -43,6 +45,8 @@ public class TranscodeLauncher {
     private AliyunMpsService aliyunMpsService;
     @Resource
     private TranscodeFactory transcodeFactory;
+    @Resource
+    private IdService idService;
 
     private boolean isResolutionOverThanTarget(int width, int height, String resolution) {
         switch (resolution) {
@@ -97,6 +101,7 @@ public class TranscodeLauncher {
 
         //新建transcode对象，保存到数据库
         Transcode transcode = new Transcode();
+        transcode.setId(idService.getTranscodeId());
         transcode.setUserId(userId);
         transcode.setVideoId(videoId);
         transcode.setResolution(targetResolution);
@@ -107,9 +112,8 @@ public class TranscodeLauncher {
         String transcodeProvider = getTranscodeProvider(video, targetResolution);
         transcode.setProvider(transcodeProvider);
 
-        //保存MongoDB，得到id
-        mongoTemplate.save(transcode);
         String transcodeId = transcode.getId();
+        Assert.notNull(transcodeId, "transcodeId is null");
 
         //设置m3u8 url
         String m3u8Key = PathUtil.getS3VideoPrefix(userId, videoId)

@@ -73,7 +73,6 @@ public class VideoService {
      */
     public void rawFileUploadFinish(String videoId) {
         // 检查视频
-        checkService.checkVideoExist(videoId);
         Video video = videoRepository.getById(videoId);
         checkService.checkVideoIsNotReady(video);
 
