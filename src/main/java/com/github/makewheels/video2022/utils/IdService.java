@@ -106,7 +106,11 @@ public class IdService {
     }
 
     public synchronized String getTranscodeId() {
-        return "tr_" + IdUtil.objectId();
+        return "t_" + IdUtil.objectId();
+    }
+
+    public synchronized String getCoverId() {
+        return "c_" + IdUtil.objectId();
     }
 
     public synchronized String getFileId() {
