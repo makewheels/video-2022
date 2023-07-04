@@ -11,6 +11,7 @@ import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.user.bean.User;
+import com.github.makewheels.video2022.utils.IdService;
 import com.github.makewheels.video2022.utils.PathUtil;
 import com.github.makewheels.video2022.video.service.YoutubeService;
 import com.github.makewheels.video2022.video.bean.entity.Video;
@@ -45,6 +46,8 @@ public class CoverLauncher {
     private AliyunMpsService aliyunMpsService;
     @Resource
     private CoverCallbackService coverCallbackService;
+    @Resource
+    private IdService idService;
 
     /**
      * 发起截帧任务
@@ -67,6 +70,7 @@ public class CoverLauncher {
         mongoTemplate.save(file);
 
         Cover cover = new Cover();
+        cover.setId(idService.getCoverId());
         cover.setCreateTime(new Date());
         cover.setUserId(userId);
         cover.setVideoId(videoId);
