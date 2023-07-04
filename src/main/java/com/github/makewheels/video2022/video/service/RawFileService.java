@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.video.service;
 
+import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.file.FileService;
@@ -101,12 +102,12 @@ public class RawFileService {
         newFile.setHasLink(true);
         newFile.setLinkFileId(oldFile.getId());
         newFile.setLinkFileKey(oldFile.getKey());
+        log.info("链接newFile = " + JSON.toJSONString(newFile));
         mongoTemplate.save(newFile);
         // 删除新上传的OSS文件
         fileService.deleteFile(newFile);
 
         // 链接 video
-        log.info("设置视频链接, oldVideoId = {}, newVideoId = {}", oldFile.getVideoId(), newVideo.getId());
         newVideo.getLink().setHasLink(true);
         String oldVideoId = oldFile.getVideoId();
         newVideo.getLink().setLinkVideoId(oldVideoId);
@@ -114,6 +115,7 @@ public class RawFileService {
         newVideo.setTranscodeIds(oldVideo.getTranscodeIds());
         newVideo.setCoverId(oldVideo.getCoverId());
         newVideo.setOwnerId(oldVideo.getOwnerId());
+        log.info("链接 newVideo = " + JSON.toJSONString(newVideo));
         mongoTemplate.save(newVideo);
 
         // 更新视频为 [就绪] 状态
