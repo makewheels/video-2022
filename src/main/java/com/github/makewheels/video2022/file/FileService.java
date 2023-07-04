@@ -24,6 +24,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
@@ -120,8 +121,9 @@ public class FileService {
         String sessionId = context.getSessionId();
 
         // 异步保存访问File记录
+        HttpServletRequest request = RequestUtil.getRequest();
         new Thread(() -> fileAccessLogService.saveAccessLog(
-                RequestUtil.getRequest(), videoId, clientId, sessionId, resolution, fileId))
+                request, videoId, clientId, sessionId, resolution, fileId))
                 .start();
 
         // 设置返回结果
