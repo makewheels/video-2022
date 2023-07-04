@@ -69,7 +69,7 @@ public class RawFileService {
     public void onRawFileUploadFinish(String videoId) {
         Video newVideo = videoRepository.getById(videoId);
         File newFile = fileRepository.getById(newVideo.getRawFileId());
-        log.info("用户原始文件上传完成，进入开始处理总入口, videoId = {}, uploadNewFile = {} ", videoId, newFile.getId());
+        log.info("用户原始文件上传完成，进入开始处理总入口, videoId = {}, newFileId = {} ", videoId, newFile.getId());
 
         // 更新视频为 [准备转码] 状态
         updateVideoStatus(newVideo, VideoStatus.PREPARE_TRANSCODING);
@@ -78,54 +78,64 @@ public class RawFileService {
         String md5 = fileService.getMd5(newFile);
         newFile.setMd5(md5);
 
-        // TODO 创建视频和播放视频链接有影响
-
-        if (isFileMd5Exist(md5)) {
-            fileRepository.updateMd5(newFile.getId(), md5);
-            File oldFile = fileRepository.getByMd5(md5);
-
-            log.info("用户上传原始文件md5已存在, 用户上传新文件id = {}, 老的已存在文件id = {}, md5 = {}",
-                    newFile.getId(), oldFile.getId(), md5);
-            // 设置file链接
-            newFile.setHasLink(true);
-            newFile.setLinkFileId(oldFile.getId());
-            newFile.setLinkFileKey(oldFile.getKey());
-            mongoTemplate.save(newFile);
-
-            // 不再发起转码，设置视频链接
-            newVideo.getLink().setHasLink(true);
-            newVideo.getLink().setLinkVideoId(oldFile.getVideoId());
-            log.info("设置视频链接, oldVideoId = {}, newVideoId = {}", oldFile.getVideoId(), newVideo.getId());
-
-            // 设置transcodeId
-            Video oldVideo = videoRepository.getById(oldFile.getVideoId());
-            newVideo.setTranscodeIds(oldVideo.getTranscodeIds());
-            newVideo.setCoverId(oldVideo.getCoverId());
-            newVideo.setOwnerId(oldVideo.getOwnerId());
-            mongoTemplate.save(newVideo);
-
-            // 删除新上传的OSS文件
-            fileService.deleteFile(newFile);
-
-            // 更新视频为 [就绪] 状态
-            updateVideoStatus(newVideo, VideoStatus.READY);
-
-            // 视频就绪回调
-            videoReadyService.onVideoReady(newVideo.getId());
+        // md5是否存在
+        boolean fileMd5Exist = isFileMd5Exist(md5);
+        File oldFile = fileRepository.getByMd5(md5);
+        fileRepository.updateMd5(newFile.getId(), md5);
+        if (fileMd5Exist) {
+            // 如果文件md5已存在，创建链接
+            createLink(newVideo, newFile, oldFile);
         } else {
-            fileRepository.updateMd5(newFile.getId(), md5);
+            // 如果是新文件，发起转码
+            launchTranscode(newVideo);
+        }
+    }
 
-            // 发起转码
-            User user = userRepository.getById(newVideo.getUploaderId());
-            transcodeLauncher.transcodeVideo(user, newVideo);
+    /**
+     * 原文件已存在，创建链接
+     */
+    private void createLink(Video newVideo, File newFile, File oldFile) {
+        log.info("用户上传原始文件md5已存在, 用户上传新文件id = {}, 老的已存在文件id = {}, md5 = {}",
+                newFile.getId(), oldFile.getId(), newFile.getMd5());
+        // 链接 file
+        newFile.setHasLink(true);
+        newFile.setLinkFileId(oldFile.getId());
+        newFile.setLinkFileKey(oldFile.getKey());
+        mongoTemplate.save(newFile);
+        // 删除新上传的OSS文件
+        fileService.deleteFile(newFile);
 
-            // 更新视频为 [正在转码] 状态
-            updateVideoStatus(newVideo, VideoStatus.TRANSCODING);
+        // 链接 video
+        log.info("设置视频链接, oldVideoId = {}, newVideoId = {}", oldFile.getVideoId(), newVideo.getId());
+        newVideo.getLink().setHasLink(true);
+        String oldVideoId = oldFile.getVideoId();
+        newVideo.getLink().setLinkVideoId(oldVideoId);
+        Video oldVideo = videoRepository.getById(oldVideoId);
+        newVideo.setTranscodeIds(oldVideo.getTranscodeIds());
+        newVideo.setCoverId(oldVideo.getCoverId());
+        newVideo.setOwnerId(oldVideo.getOwnerId());
+        mongoTemplate.save(newVideo);
 
-            //封面：如果是youtube视频，之前创建的时候已经搬运封面了，用户上传视频要截帧
-            if (!VideoType.YOUTUBE.equals(newVideo.getStatus())) {
-                coverLauncher.createCover(user, newVideo);
-            }
+        // 更新视频为 [就绪] 状态
+        updateVideoStatus(newVideo, VideoStatus.READY);
+        // 视频就绪回调
+        videoReadyService.onVideoReady(newVideo.getId());
+    }
+
+    /**
+     * 原文件不存在，发起转码
+     */
+    private void launchTranscode(Video newVideo) {
+        // 更新视频为 [正在转码] 状态
+        updateVideoStatus(newVideo, VideoStatus.TRANSCODING);
+
+        // 发起转码
+        User user = userRepository.getById(newVideo.getUploaderId());
+        transcodeLauncher.transcodeVideo(user, newVideo);
+
+        //封面：如果是youtube视频，之前创建的时候已经搬运封面了，用户上传视频要截帧
+        if (!VideoType.YOUTUBE.equals(newVideo.getStatus())) {
+            coverLauncher.createCover(user, newVideo);
         }
     }
 }

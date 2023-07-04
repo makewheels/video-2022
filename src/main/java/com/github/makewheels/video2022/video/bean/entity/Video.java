@@ -22,14 +22,14 @@ public class Video {
     @Indexed
     private String uploaderId;   // 上传者
     @Indexed
-    private String ownerId;      // 所有者
+    private String ownerId;      // 所有者，就是第一次上传原文件md5的人
 
     // 基本信息
     private String title;
     private String description;
 
     @Indexed
-    private String videoType;        // 类型：是用户上传还是YouTube
+    private String videoType;        // 类型：是用户上传还是YouTube搬运
     @Indexed
     private String provider;    // 它就是对象存储提供商，和file是一对一关系
     @Indexed
@@ -38,7 +38,7 @@ public class Video {
     @Indexed
     private String rawFileId; // 用户上传原始视频文件id
     @Indexed
-    private String coverId;  // 封面id
+    private String coverId;   // 封面id
     // 关联id
     private List<String> transcodeIds;  // 转码id列表
 
