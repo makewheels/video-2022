@@ -244,7 +244,7 @@
             </build>
         </profile>
 
-        <!--云函数-->
+        <!-- video-2022 云函数 北京基础服务 -->
         <profile>
             <id>assembly</id>
             <build>
