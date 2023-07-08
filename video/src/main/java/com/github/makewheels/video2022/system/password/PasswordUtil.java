@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.system.password;
 
 import cn.hutool.core.io.FileUtil;
-import com.github.makewheels.video2022.Video2022Application;
+import com.github.makewheels.video2022.VideoApplication;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class PasswordUtil {
         } else if (env.equals("prod")) {
             path = "passwords-prod.properties";
         }
-        return Video2022Application.class.getResourceAsStream("/" + path);
+        return VideoApplication.class.getResourceAsStream("/" + path);
     }
 
     /**
