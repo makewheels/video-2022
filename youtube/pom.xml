@@ -30,12 +30,6 @@
             <version>${spring.boot.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-            <version>${spring.boot.version}</version>
-        </dependency>
-
         <!--Spring Cloud 需要指定版本，springboot启动会校验版本兼容性-->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
