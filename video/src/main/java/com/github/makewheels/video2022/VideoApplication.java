@@ -6,10 +6,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-public class Video2022Application {
+public class VideoApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(Video2022Application.class, args);
+        SpringApplication.run(VideoApplication.class, args);
     }
 
 }
