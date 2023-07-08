@@ -1,3 +1,3 @@
 FROM registry.cn-hongkong.aliyuncs.com/b4/video-2022-youtube-base-image:1.0
-COPY youtube/target/youtube-0.0.1-SNAPSHOT.jar app.jar
+COPY ${WORKSPACE}youtube/target/youtube-0.0.1-SNAPSHOT.jar app.jar
 ENTRYPOINT ["java","-jar","/app.jar",">>","/log.txt"]
