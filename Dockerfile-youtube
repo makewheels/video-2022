@@ -1,0 +1,5 @@
+FROM registry.cn-hongkong.aliyuncs.com/b4/video-2022-youtube-base-image:1.0
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} app.jar
+
+ENTRYPOINT ["java","-jar","-Dspring.profiles.active=prod","/app.jar",">>","/log.txt"]
