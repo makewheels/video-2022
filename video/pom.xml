@@ -11,10 +11,6 @@
     <artifactId>video</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <spring.boot.version>2.7.11</spring.boot.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
