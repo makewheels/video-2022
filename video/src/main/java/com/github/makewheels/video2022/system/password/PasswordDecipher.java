@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022.system.password;
 
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.Ordered;
@@ -25,7 +24,7 @@ public class PasswordDecipher implements BeanFactoryPostProcessor, Ordered {
     }
 
     @Override
-    public void postProcessBeanFactory(@NotNull ConfigurableListableBeanFactory beanFactory) {
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
         MutablePropertySources propertySources = environment.getPropertySources();
 
         String springProfileActive = environment.getProperty("spring.profiles.active");
