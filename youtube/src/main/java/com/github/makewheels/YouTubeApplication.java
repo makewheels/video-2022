@@ -1,7 +1,11 @@
 package com.github.makewheels;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
 public class YouTubeApplication {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        SpringApplication.run(YouTubeApplication.class, args);
     }
 }
