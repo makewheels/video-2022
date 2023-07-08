@@ -6,7 +6,6 @@ import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserService;
 import com.github.makewheels.video2022.user.bean.User;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -31,8 +30,8 @@ public class CheckTokenInterceptor implements HandlerInterceptor, Ordered {
 
     @Override
     public boolean preHandle(
-            @NotNull HttpServletRequest request, @NotNull HttpServletResponse response,
-            @NotNull Object handler) throws IOException, URISyntaxException {
+            HttpServletRequest request, HttpServletResponse response,
+            Object handler) throws IOException, URISyntaxException {
         //通过token获取User
         User user = userService.getUserByRequest(request);
 
@@ -53,8 +52,8 @@ public class CheckTokenInterceptor implements HandlerInterceptor, Ordered {
 
     @Override
     public void afterCompletion(
-            @NotNull HttpServletRequest request, @NotNull HttpServletResponse response,
-            @NotNull Object handler, Exception e) {
+            HttpServletRequest request, HttpServletResponse response,
+            Object handler, Exception e) {
         UserHolder.remove();
     }
 

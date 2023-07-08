@@ -4,7 +4,6 @@ import com.github.makewheels.video2022.springboot.interceptor.InterceptorOrder;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.Ordered;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
@@ -14,6 +13,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -27,8 +27,8 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
 
     @Override
     public boolean preHandle(
-            HttpServletRequest servletRequest, @NotNull HttpServletResponse servletResponse,
-            @NotNull Object handler) {
+            HttpServletRequest servletRequest, HttpServletResponse servletResponse,
+            Object handler) {
         // 创建 RequestLog 对象，设置请求开始时间
         RequestLog requestLog = new RequestLog();
         requestLog.setStartTime(new Date());
