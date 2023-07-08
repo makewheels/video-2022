@@ -1,3 +1,4 @@
 FROM registry.cn-hongkong.aliyuncs.com/b4/video-2022-youtube-base-image:latest
 COPY youtube-0.0.1-SNAPSHOT.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+#ENTRYPOINT ["java","-jar","/app.jar"]
+ENTRYPOINT ["java","-version"]
