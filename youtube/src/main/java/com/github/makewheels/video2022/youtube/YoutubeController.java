@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022.youtube;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.YoutubeService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
