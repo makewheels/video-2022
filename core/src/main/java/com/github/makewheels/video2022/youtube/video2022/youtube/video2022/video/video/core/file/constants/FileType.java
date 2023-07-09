@@ -1,0 +1,12 @@
+package com.github.makewheels.video2022.youtube.video2022.youtube.video2022.video.video.core.file.constants;
+
+/**
+ * 文件类型
+ */
+public interface FileType {
+    String RAW_VIDEO = "RAW_VIDEO";
+    String COVER = "COVER";
+    String TRANSCODE_M3U8 = "TRANSCODE_M3U8";
+    String TRANSCODE_TS = "TRANSCODE_TS";
+    String QR_CODE = "QR_CODE";
+}
