@@ -13,7 +13,6 @@ import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -25,8 +24,6 @@ import java.util.List;
 @Service
 @Slf4j
 public class YoutubeService {
-    @Value("${youtube-work-dir}")
-    private String youtubeWorkDir;
 
     @Resource
     private AliyunOssService aliyunOssService;
@@ -92,8 +89,8 @@ public class YoutubeService {
         //拿文件拓展名
         String extension = FileNameUtil.extName(key);
         //下载视频
-        File file = new File(youtubeWorkDir, "transfer/" + missionId + "-" + videoId + "/"
-                + youtubeVideoId + "." + extension);
+        File file = new File(FileUtil.createTempFile(), "/transfer/" + missionId + "-"
+                + videoId + "/" + youtubeVideoId + "." + extension);
         log.info("webmFile = " + file.getAbsolutePath());
         String downloadCmd =
 //                "yt-dlp -S vcodec:h264,acodec:aac,res:1080 -o "
@@ -209,7 +206,8 @@ public class YoutubeService {
         //开子线程进行任务，先给前端返回
         new Thread(() -> {
             //下载
-            File file = new File(youtubeWorkDir, "download/" + missionId + "/" + FileNameUtil.getName(key));
+            File file = new File(FileUtil.createTempFile(), "/download/" + missionId + "/"
+                    + FileNameUtil.getName(key));
             HttpUtil.downloadFile(body.getString("downloadUrl"), file);
 
             uploadAndCallback(file, body.getString("provider"),

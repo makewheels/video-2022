@@ -78,6 +78,13 @@
             <artifactId>google-api-services-youtube</artifactId>
             <version>v3-rev20210915-1.32.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+
     </dependencies>
 
     <profiles>
