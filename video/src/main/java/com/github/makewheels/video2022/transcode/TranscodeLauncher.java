@@ -116,8 +116,8 @@ public class TranscodeLauncher {
         Assert.notNull(transcodeId, "transcodeId is null");
 
         //设置m3u8 url
-        String m3u8Key = PathUtil.getS3VideoPrefix(userId, videoId)
-                + "/transcode/" + targetResolution + "/" + transcodeId + ".m3u8";
+        String m3u8Key = PathUtil.getS3TranscodePrefix(userId, videoId)
+                + "/" + transcodeId + "/" + transcodeId + "-" + targetResolution + ".m3u8";
         transcode.setM3u8Key(m3u8Key);
         mongoTemplate.save(transcode);
         return transcode;
