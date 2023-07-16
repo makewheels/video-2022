@@ -46,14 +46,25 @@ public class RawFileService {
     /**
      * 判断用户上传的原始文件是否存在
      */
-    private boolean isFileMd5Exist(String md5) {
+    private boolean isOriginMd5VideoExist(String md5) {
         File oldFile = fileRepository.getByMd5(md5);
         // 如果数据库没查到这个md5，认为不存在
         if (oldFile == null) {
             return false;
         }
         // 如果在数据库查到这个md5了，再向OSS确认是否存在
-        return fileService.doesOSSObjectExist(oldFile.getKey());
+        if (fileService.doesOSSObjectExist(oldFile.getKey())) {
+            return false;
+        }
+        // 校验原视频已就绪
+        Video video = videoRepository.getById(oldFile.getVideoId());
+        if (video == null) {
+            return false;
+        }
+        if (!video.getStatus().equals(VideoStatus.READY)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -80,10 +91,10 @@ public class RawFileService {
         newFile.setMd5(md5);
 
         // md5是否存在
-        boolean fileMd5Exist = isFileMd5Exist(md5);
+        boolean isOriginMd5VideoExist = isOriginMd5VideoExist(md5);
         File oldFile = fileRepository.getByMd5(md5);
         fileRepository.updateMd5(newFile.getId(), md5);
-        if (fileMd5Exist) {
+        if (isOriginMd5VideoExist) {
             // 如果文件md5已存在，创建链接
             createLink(newVideo, newFile, oldFile);
         } else {
