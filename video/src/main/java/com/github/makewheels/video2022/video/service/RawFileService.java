@@ -1,6 +1,5 @@
 package com.github.makewheels.video2022.video.service;
 
-import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.cover.CoverLauncher;
 import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.file.FileService;
@@ -13,7 +12,6 @@ import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -24,8 +22,6 @@ import javax.annotation.Resource;
 @Service
 @Slf4j
 public class RawFileService {
-    @Resource
-    private MongoTemplate mongoTemplate;
     @Resource
     private VideoRepository videoRepository;
     @Resource
@@ -42,29 +38,8 @@ public class RawFileService {
     private FileService fileService;
     @Resource
     private VideoReadyService videoReadyService;
-
-    /**
-     * 判断用户上传的原始文件是否存在
-     */
-    private boolean isOriginMd5VideoExist(String md5) {
-        File oldFile = fileRepository.getByMd5(md5);
-        // 如果数据库没查到这个md5，认为不存在
-        if (oldFile == null) {
-            return false;
-        }
-
-        // 如果OSS不存在，则认为不存在
-        if (!fileService.doesOSSObjectExist(oldFile.getKey())) {
-            return false;
-        }
-
-        // 校验原视频已就绪
-        Video video = videoRepository.getById(oldFile.getVideoId());
-        if (video == null) {
-            return false;
-        }
-        return video.getStatus().equals(VideoStatus.READY);
-    }
+    @Resource
+    private LinkService linkService;
 
     /**
      * 更新视频状态
@@ -80,7 +55,8 @@ public class RawFileService {
     public void onRawFileUploadFinish(String videoId) {
         Video newVideo = videoRepository.getById(videoId);
         File newFile = fileRepository.getById(newVideo.getRawFileId());
-        log.info("用户原始文件上传完成，进入开始处理总入口, videoId = {}, newFileId = {} ", videoId, newFile.getId());
+        log.info("用户原始文件上传完成，进入开始处理总入口, videoId = {}, newFileId = {} ",
+                videoId, newFile.getId());
 
         // 更新视频为 [准备转码] 状态
         updateVideoStatus(newVideo, VideoStatus.PREPARE_TRANSCODING);
@@ -90,48 +66,23 @@ public class RawFileService {
         newFile.setMd5(md5);
 
         // md5是否存在
-        boolean isOriginMd5VideoExist = isOriginMd5VideoExist(md5);
+        boolean isOriginMd5VideoExist = linkService.isOriginMd5VideoExist(md5);
         File oldFile = fileRepository.getByMd5(md5);
         fileRepository.updateMd5(newFile.getId(), md5);
         if (isOriginMd5VideoExist) {
-            // 如果文件md5已存在，创建链接
-            createLink(newVideo, newFile, oldFile);
+            // 如果原文件已存在，创建链接
+            linkService.createFileAndVideoLink(newVideo, newFile, oldFile);
+            // 删除新上传的OSS文件
+            fileService.deleteFile(newFile);
+
+            // 更新视频为 [就绪] 状态
+            updateVideoStatus(newVideo, VideoStatus.READY);
+            // 视频就绪回调
+            videoReadyService.onVideoReady(newVideo.getId());
         } else {
             // 如果是新文件，发起转码
             launchTranscode(newVideo);
         }
-    }
-
-    /**
-     * 原文件已存在，创建链接
-     */
-    private void createLink(Video newVideo, File newFile, File oldFile) {
-        log.info("用户上传原始文件md5已存在, 用户上传新文件id = {}, 老的已存在文件id = {}, md5 = {}",
-                newFile.getId(), oldFile.getId(), newFile.getMd5());
-        // 链接 file
-        newFile.setHasLink(true);
-        newFile.setLinkFileId(oldFile.getId());
-        newFile.setLinkFileKey(oldFile.getKey());
-        log.info("链接newFile = " + JSON.toJSONString(newFile));
-        mongoTemplate.save(newFile);
-        // 删除新上传的OSS文件
-        fileService.deleteFile(newFile);
-
-        // 链接 video
-        newVideo.getLink().setHasLink(true);
-        String oldVideoId = oldFile.getVideoId();
-        newVideo.getLink().setLinkVideoId(oldVideoId);
-        Video oldVideo = videoRepository.getById(oldVideoId);
-        newVideo.setTranscodeIds(oldVideo.getTranscodeIds());
-        newVideo.setCoverId(oldVideo.getCoverId());
-        newVideo.setOwnerId(oldVideo.getOwnerId());
-        log.info("链接 newVideo = " + JSON.toJSONString(newVideo));
-        mongoTemplate.save(newVideo);
-
-        // 更新视频为 [就绪] 状态
-        updateVideoStatus(newVideo, VideoStatus.READY);
-        // 视频就绪回调
-        videoReadyService.onVideoReady(newVideo.getId());
     }
 
     /**
