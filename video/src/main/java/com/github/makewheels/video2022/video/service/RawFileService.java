@@ -139,6 +139,7 @@ public class RawFileService {
      * 原文件不存在，发起转码
      */
     private void launchTranscode(Video newVideo) {
+        log.info("原始文件不存在, 开始转码, newVideoId = " + newVideo.getId());
         // 更新视频为 [正在转码] 状态
         updateVideoStatus(newVideo, VideoStatus.TRANSCODING);
 
