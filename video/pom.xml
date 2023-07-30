@@ -38,6 +38,11 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
             <version>${spring.boot.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>6.1.10.RELEASE</version>
+        </dependency>
         <!--RocketMQ-->
         <!-- <dependency>-->
         <!--     <groupId>org.apache.rocketmq</groupId>-->
