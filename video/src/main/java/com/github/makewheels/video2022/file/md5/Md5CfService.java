@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * <p>
  * 示例请求：
  * {
- * "isCallbackEnable": false,
+ * "callback": false,
  * "objectList": [
  * {
  * "fileId": "646ea169aaac3166cd4e3594",
@@ -86,7 +86,7 @@ public class Md5CfService {
     public void getOssObjectMd5(List<FileMd5DTO> fileMd5DTOList) {
         // 组装请求参数
         Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("isCallbackEnable", false);
+        requestMap.put("callback", false);
         requestMap.put("objectList", fileMd5DTOList);
 
         // 调用云函数
