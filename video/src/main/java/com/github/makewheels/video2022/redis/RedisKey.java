@@ -16,10 +16,6 @@ public class RedisKey {
     private static final String INCREASE_SHORT_ID = ROOT + ":increaseShortId";
     private static final String INCREASE_LONG_ID = ROOT + ":increaseLongId";
 
-    public static String watchInfo(String watchId) {
-        return VIDEO + ":watchInfo:" + watchId;
-    }
-
     public static String ip(String ip) {
         return ROOT + ":ip:" + ip;
     }
@@ -30,26 +26,6 @@ public class RedisKey {
 
     public static String token(String token) {
         return USER + ":token:" + token;
-    }
-
-    public static String userCache(String id) {
-        return USER + ":id:" + id;
-    }
-
-    public static String videoCache(String id) {
-        return VIDEO + ":id:" + id;
-    }
-
-    public static String transcodeCache(String id) {
-        return TRANSCODE + ":id:" + id;
-    }
-
-    public static String playlistCache(String id) {
-        return PLAYLIST + ":id:" + id;
-    }
-
-    public static String playlistItemCache(String id) {
-        return PLAYLIST_ITEM + ":id:" + id;
     }
 
     public static String increaseShortId() {
