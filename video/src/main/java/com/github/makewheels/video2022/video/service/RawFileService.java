@@ -52,19 +52,18 @@ public class RawFileService {
         if (oldFile == null) {
             return false;
         }
-        // 如果在数据库查到这个md5了，再向OSS确认是否存在
-        if (fileService.doesOSSObjectExist(oldFile.getKey())) {
+
+        // 如果OSS不存在，则认为不存在
+        if (!fileService.doesOSSObjectExist(oldFile.getKey())) {
             return false;
         }
+
         // 校验原视频已就绪
         Video video = videoRepository.getById(oldFile.getVideoId());
         if (video == null) {
             return false;
         }
-        if (!video.getStatus().equals(VideoStatus.READY)) {
-            return false;
-        }
-        return true;
+        return video.getStatus().equals(VideoStatus.READY);
     }
 
     /**
