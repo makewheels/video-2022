@@ -88,10 +88,10 @@ public class VideoCreateService {
         //本地开发环境shortUrl就是watchUrl
         watch.setShortUrl(watchUrl);
 
-        if (environmentService.isProductionEnv()) {
-            String shortUrl = shortUrlService.getShortUrl(watchUrl);
-            watch.setShortUrl(shortUrl);
-        }
+//        if (environmentService.isProductionEnv()) {
+//            String shortUrl = shortUrlService.getShortUrl(watchUrl);
+//            watch.setShortUrl(shortUrl);
+//        }
 
         //设置过期时间
         long expireTimeInMillis = Duration.ofDays(30).toMillis();
