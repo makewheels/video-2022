@@ -7,7 +7,6 @@ import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
-import com.github.makewheels.video2022.file.oss.OssService;
 import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
@@ -26,8 +25,6 @@ public class CoverCallbackService {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    @Resource
-    private OssService ossService;
     @Resource
     private AliyunMpsService aliyunMpsService;
     @Resource

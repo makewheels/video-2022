@@ -152,20 +152,20 @@
         axios.get('/video/getVideoDetail?videoId=' + videoId)
             .then(function (res) {
                 let data = res.data.data;
-                // document.getElementById("htmlTitle").innerText = data.title;
+                document.getElementById("htmlTitle").innerText = data.title;
                 document.getElementById("div_title").innerText = data.title;
 <!--                document.getElementById("watchCount").innerText = "观看次数：" + data.watchCount;-->
                 document.getElementById("description").innerText = data.description;
 
-                //发布时间：
-                //如果是用户自己上传的视频，使用create time
-                //如果是youtube搬运视频，使用publish time
-                // let createTime = document.getElementById("createTime");
-                // if (data.type === "USER_UPLOAD") {
-                //     createTime.innerText = "发布时间：" + data.createTimeString;
-                // } else if (data.type === "YOUTUBE") {
-                //     createTime.innerText = "发布时间：" + data.youtubePublishTimeString;
-                // }
+                // 发布时间：
+                // 如果是用户自己上传的视频，使用create time
+                // 如果是youtube搬运视频，使用publish time
+                let createTime = document.getElementById("createTime");
+                if (data.type === "USER_UPLOAD") {
+                    createTime.innerText = "发布时间：" + data.createTimeString;
+                } else if (data.type === "YOUTUBE") {
+                    createTime.innerText = "发布时间：" + data.youtubePublishTimeString;
+                }
             });
     }
 
