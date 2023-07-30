@@ -69,7 +69,7 @@ public class Md5CfService {
     public void getOssObjectMd5(FileMd5DTO fileMd5DTO) {
         // 组装请求参数
         Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("isCallbackEnable", false);
+        requestMap.put("callback", false);
         requestMap.put("objectList", Lists.newArrayList(fileMd5DTO));
         log.info("调用阿里云云函数获取OSS文件MD5，请求参数：{}", JSON.toJSONString(requestMap));
 
