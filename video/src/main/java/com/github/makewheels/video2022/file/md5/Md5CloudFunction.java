@@ -52,7 +52,7 @@ public class Md5CloudFunction implements HttpRequestHandler {
         String result = JSON.toJSONString(resultMap);
         log.info("响应结果：" + result);
         // 同步返回
-        if (!body.getBoolean("isCallbackEnable")) {
+        if (!body.getBoolean("callback")) {
             response.setHeader("Content-Type", "application/json");
             IoUtil.writeUtf8(response.getOutputStream(), true, result);
             return;
