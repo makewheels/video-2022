@@ -15,7 +15,7 @@ public class HealthCheckController {
     @GetMapping("healthCheck")
     public String healthCheck() {
         HttpServletRequest request = RequestUtil.getRequest();
-        log.info("healthCheck-" + DateUtil.formatDateTime(new Date()) + "-" + request.getRequestURL());
+        log.info("healthCheck---" + DateUtil.formatDateTime(new Date()) + "-" + request.getRequestURL());
         return "ok " + System.currentTimeMillis();
     }
 }
