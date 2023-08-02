@@ -4,6 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.file.FileRepository;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.transcode.TranscodeRepository;
+import com.github.makewheels.video2022.transcode.bean.Transcode;
+import com.github.makewheels.video2022.transcode.contants.TranscodeStatus;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
@@ -12,6 +15,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 源文件md5相同，链接服务
@@ -27,28 +31,45 @@ public class LinkService {
     private VideoRepository videoRepository;
     @Resource
     private FileService fileService;
+    @Resource
+    private TranscodeRepository transcodeRepository;
 
     /**
      * 判断用户上传的原始文件md5是否存在
      */
-    public boolean isOriginMd5VideoExist(String md5) {
+    public boolean isOriginVideoExist(String md5) {
+        // 原始文件md5是否存在
         File oldFile = fileRepository.getByMd5(md5);
-        // 如果数据库没查到这个md5，认为不存在
         if (oldFile == null) {
             return false;
         }
 
-        // 如果OSS不存在，则认为不存在
+        // 原始文件在OSS是否存在
         if (!fileService.doesOSSObjectExist(oldFile.getKey())) {
             return false;
         }
 
-        // 校验原视频已就绪
+        // 原视频是否就绪
         Video video = videoRepository.getById(oldFile.getVideoId());
-        if (video == null) {
+        if (video == null || !video.getStatus().equals(VideoStatus.READY)) {
             return false;
         }
-        return video.getStatus().equals(VideoStatus.READY);
+
+        // 转码是否存在
+        List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
+        for (Transcode transcode : transcodeList) {
+            // transcode状态是否就绪
+            if (!TranscodeStatus.isFinishStatus(transcode.getStatus())) {
+                return false;
+            }
+            // transcode的m3u8文件在OSS是否存在
+            if (!fileService.doesOSSObjectExist(transcode.getM3u8Key())) {
+                return false;
+            }
+        }
+
+        // 通过以上所有校验，认为存在
+        return true;
     }
 
     /**
