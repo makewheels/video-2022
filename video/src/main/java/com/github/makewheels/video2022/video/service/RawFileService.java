@@ -66,7 +66,7 @@ public class RawFileService {
         newFile.setMd5(md5);
 
         // md5是否存在
-        boolean isOriginMd5VideoExist = linkService.isOriginMd5VideoExist(md5);
+        boolean isOriginMd5VideoExist = linkService.isOriginVideoExist(md5);
         File oldFile = fileRepository.getByMd5(md5);
         fileRepository.updateMd5(newFile.getId(), md5);
         if (isOriginMd5VideoExist) {
