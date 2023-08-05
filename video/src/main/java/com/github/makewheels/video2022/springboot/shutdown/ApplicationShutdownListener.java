@@ -17,10 +17,6 @@ public class ApplicationShutdownListener implements ApplicationListener<ContextC
     @Override
     public void onApplicationEvent(ContextClosedEvent event) {
         log.info("SpringBoot 关闭了 shutdown");
-        try {
-            ossService.shutdownClient();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        ossService.shutdownClient();
     }
 }
