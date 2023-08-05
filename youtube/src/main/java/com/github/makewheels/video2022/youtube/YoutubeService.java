@@ -121,7 +121,7 @@ public class YoutubeService {
         if (file.exists()) {
             log.info("file exist = " + file.getAbsolutePath());
         } else {
-            log.info("file NOT exist = " + file.getAbsolutePath());
+            log.error("file NOT exist = " + file.getAbsolutePath());
         }
 
         if (!file.exists()) {
