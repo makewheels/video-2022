@@ -18,6 +18,7 @@ import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
+import com.github.makewheels.video2022.video.constants.VideoType;
 import com.github.makewheels.video2022.video.constants.Visibility;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -72,17 +73,21 @@ public class CheckService {
      * 校验创建视频请求参数
      */
     public void checkCreateVideoDTO(CreateVideoDTO createVideoDTO) {
-        if (StringUtils.isEmpty(createVideoDTO.getRawFilename())) {
-            throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL,
-                    "视频创建参数，原始文件名rawFilename为空");
-        }
         if (StringUtils.isEmpty(createVideoDTO.getVideoType())) {
             throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL,
                     "视频创建参数，视频类型videoType为空");
         }
-        if (createVideoDTO.getSize() == null || createVideoDTO.getSize() == 0) {
-            throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL,
-                    "视频创建参数，原始文件大小size为空");
+
+        // 用户上传视频
+        if (createVideoDTO.getVideoType().equals(VideoType.USER_UPLOAD)) {
+            if (StringUtils.isEmpty(createVideoDTO.getRawFilename())) {
+                throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL,
+                        "视频创建参数，原始文件名rawFilename为空");
+            }
+            if (createVideoDTO.getSize() == null || createVideoDTO.getSize() == 0) {
+                throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL,
+                        "视频创建参数，原始文件大小size为空");
+            }
         }
     }
 
