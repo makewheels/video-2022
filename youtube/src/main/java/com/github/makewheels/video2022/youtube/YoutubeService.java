@@ -116,6 +116,13 @@ public class YoutubeService {
         //咋办呢，本质上是，对象存储上传后缀不对，但是先不解决后缀不对的问题，先让他能正常上传，
         // 这里先判断一下，file存不存在，如果存在继续上传对象存储，
         //如果file.exist()==false则把file改为mkv文件，具体代码就是该目录第一个文件
+
+        if (file.exists()) {
+            log.info("file存在 " + file.getAbsolutePath());
+        } else {
+            log.info("file不存在" + file.getAbsolutePath());
+        }
+
         if (!file.exists()) {
             file = FileUtil.loopFiles(file.getParentFile()).get(0);
         }
@@ -209,16 +216,16 @@ public class YoutubeService {
         String missionId = body.getString("missionId");
         //阿里云云函数已经是异步调用，不再启用子线程
 //        new Thread(() -> {
-            //下载
-            File file = new File(FileUtil.createTempFile(), "/download/" + missionId + "/"
-                    + FileNameUtil.getName(key));
-            HttpUtil.downloadFile(body.getString("downloadUrl"), file);
+        //下载
+        File file = new File(FileUtil.createTempFile(), "/download/" + missionId + "/"
+                + FileNameUtil.getName(key));
+        HttpUtil.downloadFile(body.getString("downloadUrl"), file);
 
-            uploadAndCallback(file, body.getString("provider"),
-                    body.getString("getUploadCredentialsUrl"),
-                    body.getString("fileUploadFinishCallbackUrl"),
-                    body.getString("businessUploadFinishCallbackUrl")
-            );
+        uploadAndCallback(file, body.getString("provider"),
+                body.getString("getUploadCredentialsUrl"),
+                body.getString("fileUploadFinishCallbackUrl"),
+                body.getString("businessUploadFinishCallbackUrl")
+        );
 //        }).start();
 
         JSONObject jsonObject = new JSONObject();
