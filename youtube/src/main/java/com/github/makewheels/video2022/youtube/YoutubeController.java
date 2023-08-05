@@ -16,9 +16,11 @@ public class YoutubeController {
 
     @GetMapping("getFileExtension")
     public JSONObject getFileExtension(@RequestParam String youtubeVideoId) {
+        log.info("getFileExtension: 请求youtubeVideoId = " + youtubeVideoId);
         String extension = youtubeService.getFileExtension(youtubeVideoId);
         JSONObject response = new JSONObject();
         response.put("extension", extension);
+        log.info("getFileExtension: 返回response = " + JSON.toJSONString(response));
         return response;
     }
 
