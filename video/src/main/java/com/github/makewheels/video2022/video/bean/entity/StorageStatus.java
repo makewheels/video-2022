@@ -23,6 +23,7 @@ public class StorageStatus {
     public StorageStatus() {
         this.rawFileDeleted = false;
         this.transcodeFilesDeleted = false;
-        this.permanent = false;
+        // 默认永久保存
+        this.permanent = true;
     }
 }

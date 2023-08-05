@@ -3,9 +3,9 @@ package com.github.makewheels.video2022.video.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
-import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.IdService;
@@ -21,7 +21,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -78,8 +77,7 @@ public class VideoCreateService {
         File videoFile = fileService.createVideoFile(createVideoDTO);
         createVideoDTO.setRawFile(videoFile);
 
-        String fileId = videoFile.getId();
-        video.setRawFileId(fileId);
+        video.setRawFileId(videoFile.getId());
         String watchId = idService.nextShortId();
         Watch watch = video.getWatch();
         watch.setWatchId(watchId);
@@ -95,9 +93,11 @@ public class VideoCreateService {
 //        }
 
         //设置过期时间
-        long expireTimeInMillis = Duration.ofDays(30).toMillis();
-        Date expireTime = new Date(System.currentTimeMillis() + expireTimeInMillis);
-        video.getStorageStatus().setExpireTime(expireTime);
+//        long expireTimeInMillis = Duration.ofDays(30).toMillis();
+//        Date expireTime = new Date(System.currentTimeMillis() + expireTimeInMillis);
+//        video.getStorageStatus().setExpireTime(expireTime);
+
+        //保存video到数据库
         mongoTemplate.save(video);
 
         return video;
