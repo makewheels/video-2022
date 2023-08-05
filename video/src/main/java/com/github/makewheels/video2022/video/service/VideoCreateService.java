@@ -60,14 +60,15 @@ public class VideoCreateService {
         video.setId(idService.getVideoId());
         createVideoDTO.setVideo(video);
         video.setUploaderId(userId);
+        video.setOwnerId(userId);
 
         String videoType = createVideoDTO.getVideoType();
         video.setVideoType(videoType);
 
         //YouTube
         if (videoType.equals(VideoType.YOUTUBE)) {
-            String youtubeUrl = createVideoDTO.getYoutubeUrl();
             YouTube youTube = new YouTube();
+            String youtubeUrl = createVideoDTO.getYoutubeUrl();
             youTube.setUrl(youtubeUrl);
             youTube.setVideoId(youtubeService.getYoutubeVideoIdByUrl(youtubeUrl));
             video.setYouTube(youTube);
