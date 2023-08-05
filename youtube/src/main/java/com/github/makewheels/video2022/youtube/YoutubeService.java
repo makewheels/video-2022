@@ -118,9 +118,9 @@ public class YoutubeService {
         //如果file.exist()==false则把file改为mkv文件，具体代码就是该目录第一个文件
 
         if (file.exists()) {
-            log.info("file存在 " + file.getAbsolutePath());
+            log.info("file exist = " + file.getAbsolutePath());
         } else {
-            log.info("file不存在" + file.getAbsolutePath());
+            log.info("file NOT exist = " + file.getAbsolutePath());
         }
 
         if (!file.exists()) {
