@@ -171,7 +171,11 @@ public class YoutubeService {
         String youtubeVideoId = body.getString("youtubeVideoId");
         //开始下载
         log.info("开始下载: youtubeVideoId = " + youtubeVideoId);
-        new Thread(() -> downloadYoutubeVideo(body)).start();
+
+//        new Thread(() -> downloadYoutubeVideo(body)).start();
+        // 改成了阿里云云函数，已经是异步调用，不再启用子线程
+        downloadYoutubeVideo(body);
+
         //提前先返回播放地址
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("missionId", missionId);
