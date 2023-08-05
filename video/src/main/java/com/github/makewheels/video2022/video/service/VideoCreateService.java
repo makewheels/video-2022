@@ -82,7 +82,7 @@ public class VideoCreateService {
         String watchId = idService.nextShortId();
         Watch watch = video.getWatch();
         watch.setWatchId(watchId);
-        String watchUrl = environmentService.getInternalBaseUrl() + "/watch?v=" + watchId;
+        String watchUrl = environmentService.getInternalBaseUrl() + "/w?v=" + watchId;
         watch.setWatchUrl(watchUrl);
 
         //本地开发环境shortUrl就是watchUrl
