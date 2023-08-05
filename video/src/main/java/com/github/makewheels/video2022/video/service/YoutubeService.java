@@ -110,8 +110,8 @@ public class YoutubeService {
                         + "videoId=" + video.getId() + "&token=" + user.getToken()));
 
         log.info("提交搬运视频任务，body = " + body.toJSONString());
-        String json = HttpUtil.post(environmentService.getYoutubeServiceUrl() + "/youtube/transferVideo",
-                body.toJSONString());
+        String json = HttpUtil.post(environmentService.getYoutubeServiceUrl()
+                + "/youtube/transferVideo", body.toJSONString());
         log.info("提交搬运视频任务，海外服务器返回：" + json);
         return JSONObject.parseObject(json);
     }
@@ -135,7 +135,7 @@ public class YoutubeService {
         //文件上传完成回调地址
         body.put("fileUploadFinishCallbackUrl", environmentService.getCallbackUrl(
                 "/file/uploadFinish?"
-                + "fileId=" + file.getId() + "&token=" + user.getToken()));
+                        + "fileId=" + file.getId() + "&token=" + user.getToken()));
 
         //通知业务原始文件上传完成回调地址
         body.put("businessUploadFinishCallbackUrl", businessUploadFinishCallbackUrl);
