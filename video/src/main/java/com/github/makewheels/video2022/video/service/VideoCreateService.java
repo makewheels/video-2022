@@ -123,8 +123,9 @@ public class VideoCreateService {
         log.info("新建视频: " + JSON.toJSONString(video));
 
         //如果是搬运YouTube视频，多一个步骤，通知海外服务器
+        User user = UserHolder.get();
         if (video.getVideoType().equals(VideoType.YOUTUBE)) {
-            new Thread(() -> handleCreateYoutube(video, UserHolder.get(), rawFile)).start();
+            new Thread(() -> handleCreateYoutube(video, user, rawFile)).start();
         }
     }
 
