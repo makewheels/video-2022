@@ -207,8 +207,8 @@ public class YoutubeService {
     public JSONObject transferFile(JSONObject body) {
         String key = body.getString("key");
         String missionId = body.getString("missionId");
-        //开子线程进行任务，先给前端返回
-        new Thread(() -> {
+        //阿里云云函数已经是异步调用，不再启用子线程
+//        new Thread(() -> {
             //下载
             File file = new File(FileUtil.createTempFile(), "/download/" + missionId + "/"
                     + FileNameUtil.getName(key));
@@ -219,7 +219,7 @@ public class YoutubeService {
                     body.getString("fileUploadFinishCallbackUrl"),
                     body.getString("businessUploadFinishCallbackUrl")
             );
-        }).start();
+//        }).start();
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("missionId", missionId);

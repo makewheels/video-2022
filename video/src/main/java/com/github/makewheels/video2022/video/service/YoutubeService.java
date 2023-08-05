@@ -147,9 +147,12 @@ public class YoutubeService {
         body.put("businessUploadFinishCallbackUrl", businessUploadFinishCallbackUrl);
 
         log.info("提交搬运文件任务，body = " + body.toJSONString());
-        String json = HttpUtil.post(
-                environmentService.getYoutubeServiceUrl() + "/youtube/transferFile",
-                body.toJSONString());
+        String url = environmentService.getYoutubeServiceUrl() + "/youtube/transferFile";
+        String json = HttpUtil.createPost(url)
+                // 异步调用
+                .header("X-Fc-Invocation-Type", "Async")
+                .body(body.toJSONString())
+                .execute().body();
         log.info("提交搬运文件任务，海外服务器返回：" + json);
         return JSONObject.parseObject(json);
     }
