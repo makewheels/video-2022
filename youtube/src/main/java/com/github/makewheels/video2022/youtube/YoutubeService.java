@@ -98,7 +98,8 @@ public class YoutubeService {
                 "yt-dlp -o " + file.getAbsolutePath() + " " + youtubeVideoId;
         log.info("downloadCmd = " + downloadCmd);
         executeAndPrint(downloadCmd);
-        log.info("下载完成 " + file.getName());
+        executeAndPrint(downloadCmd);
+        log.info("download finish fileName = " + file.getName());
 
         //2022年4月15日12:35:43
         //这里发现个问题，yt-dlp获取后缀永远是webm，但是实际文件后缀可能是mkv，这会导致上传的时候找不到文件
