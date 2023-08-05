@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022.watch;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -16,8 +15,4 @@ public class WatchPageController {
         return "watch";
     }
 
-    @RequestMapping("/{watchId}")
-    public String pathVariable(@PathVariable String watchId) {
-        return "watch";
-    }
 }
