@@ -115,8 +115,7 @@ public class VideoCreateService {
 
         //更新file
         rawFile.setVideoId(videoId);
-        rawFile.setKey(PathUtil.getRawFilePrefix(UserHolder.getUserId(), videoId)
-                + "/" + rawFile.getId() + "." + rawFile.getExtension());
+        rawFile.setKey(PathUtil.getRawFilePrefix(video, rawFile));
         mongoTemplate.save(rawFile);
         log.info("新建文件: " + JSON.toJSONString(rawFile));
 
