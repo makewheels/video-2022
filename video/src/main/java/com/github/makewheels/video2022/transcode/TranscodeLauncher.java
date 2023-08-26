@@ -13,7 +13,7 @@ import com.github.makewheels.video2022.transcode.factory.TranscodeFactory;
 import com.github.makewheels.video2022.transcode.factory.TranscodeService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.IdService;
-import com.github.makewheels.video2022.utils.PathUtil;
+import com.github.makewheels.video2022.utils.OssPathUtil;
 import com.github.makewheels.video2022.video.bean.entity.MediaInfo;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoCodec;
@@ -116,9 +116,7 @@ public class TranscodeLauncher {
         Assert.notNull(transcodeId, "transcodeId is null");
 
         //设置m3u8 url
-        String m3u8Key = PathUtil.getS3TranscodePrefix(userId, videoId)
-                + "/" + transcodeId + "/" + transcodeId + "-" + targetResolution + ".m3u8";
-        transcode.setM3u8Key(m3u8Key);
+        transcode.setM3u8Key(OssPathUtil.getM3u8Key(video, transcode));
         mongoTemplate.save(transcode);
         return transcode;
     }

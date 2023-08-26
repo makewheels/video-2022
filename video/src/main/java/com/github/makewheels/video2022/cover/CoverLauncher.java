@@ -12,10 +12,10 @@ import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.IdService;
-import com.github.makewheels.video2022.utils.PathUtil;
-import com.github.makewheels.video2022.video.service.YoutubeService;
+import com.github.makewheels.video2022.utils.OssPathUtil;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoType;
+import com.github.makewheels.video2022.video.service.YoutubeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -63,6 +63,7 @@ public class CoverLauncher {
 
         //创建file和cover对象
         File file = new File();
+        file.setId(idService.getFileId());
         file.setUploaderId(userId);
         file.setVideoId(videoId);
         file.setFileType(FileType.COVER);
@@ -80,7 +81,8 @@ public class CoverLauncher {
 
         //判断类型
         //如果是youtube搬运
-        if (videoType.equals(VideoType.YOUTUBE) && videoProvider.equals(ObjectStorageProvider.ALIYUN_OSS)) {
+        if (videoType.equals(VideoType.YOUTUBE)
+                && videoProvider.equals(ObjectStorageProvider.ALIYUN_OSS)) {
             handleYoutubeCover(user, video, cover, file);
             //如果是用户自己上传
         } else if (videoType.equals(VideoType.USER_UPLOAD)) {
@@ -98,8 +100,6 @@ public class CoverLauncher {
      * 生成封面：youtube搬运
      */
     private void handleYoutubeCover(User user, Video video, Cover cover, File file) {
-        String userId = user.getId();
-        String videoId = video.getId();
         String coverId = cover.getId();
         String videoProvider = video.getProvider();
         cover.setProvider(CoverProvider.YOUTUBE);
@@ -110,17 +110,16 @@ public class CoverLauncher {
         //设置cover
         String extension = FileNameUtil.extName(downloadUrl);
         cover.setExtension(extension);
-        String key = PathUtil.getS3VideoPrefix(userId, videoId)
-                + "/cover/" + coverId + "." + extension;
-        cover.setKey(key);
+        String coverKey = OssPathUtil.getCoverKey(video, cover, file);
+        cover.setKey(coverKey);
         if (videoProvider.equals(ObjectStorageProvider.ALIYUN_OSS)) {
-            cover.setAccessUrl(aliyunOssAccessBaseUrl + key);
+            cover.setAccessUrl(aliyunOssAccessBaseUrl + coverKey);
         }
         //更新cover
         mongoTemplate.save(cover);
 
         //更新file
-        file.setKey(key);
+        file.setKey(coverKey);
         file.setExtension(extension);
         file.setRawFilename(FileNameUtil.getName(downloadUrl));
         file.setProvider(videoProvider);
@@ -139,9 +138,8 @@ public class CoverLauncher {
      * 生成封面：阿里云 MPS
      */
     private void handleAliyunMpsCover(User user, Video video, Cover cover, File file) {
-        String videoId = video.getId();
-        String targetKey = PathUtil.getS3VideoPrefix(video.getUploaderId(), videoId)
-                + "/cover/" + cover.getId() + ".jpg";
+        cover.setExtension("jpg");
+        String targetKey = OssPathUtil.getCoverKey(video, cover, file);
 
         String rawFileKey = fileService.getKeyByFileId(video.getRawFileId());
         SubmitSnapshotJobResponse response = aliyunMpsService.submitSnapshotJob(rawFileKey, targetKey);
@@ -151,13 +149,13 @@ public class CoverLauncher {
         QuerySnapshotJobListResponseBody.QuerySnapshotJobListResponseBodySnapshotJobListSnapshotJob
                 job = aliyunMpsService.simpleQueryOneJob(jobId);
         String jobStatus = job.getState();
-        log.info("截图任务已提交: videoId = {}, jobId = {}, title = {}", videoId, jobId, video.getTitle());
+        log.info("截图任务已提交: videoId = {}, jobId = {}, title = {}",
+                video.getId(), jobId, video.getTitle());
 
         //更新cover
         cover.setJobId(jobId);
         cover.setStatus(jobStatus);
         cover.setKey(targetKey);
-        cover.setExtension("jpg");
         cover.setAccessUrl(aliyunOssAccessBaseUrl + targetKey);
         mongoTemplate.save(cover);
 

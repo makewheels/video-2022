@@ -6,7 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 
-@SpringBootTest
+@SpringBootTest(classes = VideoApplication.class)
 public class TestId {
     @Resource
     private IdService idService;
@@ -14,7 +14,7 @@ public class TestId {
     @Test
     public void test() {
         for (int i = 0; i < 50; i++) {
-            System.out.println(idService.getVideoId());
+            System.out.println(idService.nextLongId());
         }
     }
 }

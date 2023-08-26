@@ -9,7 +9,7 @@ import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.IdService;
-import com.github.makewheels.video2022.utils.PathUtil;
+import com.github.makewheels.video2022.utils.OssPathUtil;
 import com.github.makewheels.video2022.utils.ShortUrlService;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
@@ -115,7 +115,7 @@ public class VideoCreateService {
 
         //更新file
         rawFile.setVideoId(videoId);
-        rawFile.setKey(PathUtil.getRawFilePrefix(video, rawFile));
+        rawFile.setKey(OssPathUtil.getRawFileKey(video, rawFile));
         mongoTemplate.save(rawFile);
         log.info("新建文件: " + JSON.toJSONString(rawFile));
 

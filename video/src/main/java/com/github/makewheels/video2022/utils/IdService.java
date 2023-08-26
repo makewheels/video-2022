@@ -1,8 +1,6 @@
 package com.github.makewheels.video2022.utils;
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
-import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.redis.RedisKey;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -21,8 +19,6 @@ import java.time.ZoneOffset;
 @Service
 @Slf4j
 public class IdService {
-    @Resource
-    private EnvironmentService environmentService;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
@@ -88,37 +84,32 @@ public class IdService {
         return result;
     }
 
-    public String getEnvironmentPrefix() {
-        if (environmentService.isProductionEnv()) {
-            return "P";
-        } else if (environmentService.isDevelopmentEnv()) {
-            return "D";
-        }
-        return "";
+    private synchronized String getCommonId() {
+        return nextLongId();
     }
 
     public synchronized String getUserId() {
-        return "u_" + IdUtil.objectId();
+        return "user_" + getCommonId();
     }
 
     public synchronized String getVideoId() {
-        return "v_" + IdUtil.objectId();
+        return "video_" + getCommonId();
     }
 
     public synchronized String getTranscodeId() {
-        return "t_" + IdUtil.objectId();
+        return "transcode_" + getCommonId();
     }
 
     public synchronized String getCoverId() {
-        return "c_" + IdUtil.objectId();
+        return "cover_" + getCommonId();
     }
 
     public synchronized String getFileId() {
-        return "f_" + IdUtil.objectId();
+        return "file_" + getCommonId();
     }
 
     public synchronized String getTsFileId() {
-        return "tsf_" + IdUtil.objectId();
+        return "ts_" + getCommonId();
     }
 
 }
