@@ -11,7 +11,7 @@ import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
-import com.github.makewheels.video2022.utils.PathUtil;
+import com.github.makewheels.video2022.utils.OssPathUtil;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,8 +91,7 @@ public class MiniProgramService {
         file.setUploaderId(user.getId());
         mongoTemplate.save(file);
 
-        String key = PathUtil.getS3VideoPrefix(user.getId(), videoId)
-                + "/qrcode/" + file.getId() + ".jpg";
+        String key = OssPathUtil.getVideoPrefix(video) + "/qrcode/" + file.getId() + ".jpg";
         mongoTemplate.save(file);
 
         //上传阿里云OSS
