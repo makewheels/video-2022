@@ -89,27 +89,27 @@ public class IdService {
     }
 
     public synchronized String getUserId() {
-        return "user_" + getCommonId();
+        return "u_" + getCommonId();
     }
 
     public synchronized String getVideoId() {
-        return "video_" + getCommonId();
+        return "v_" + getCommonId();
     }
 
     public synchronized String getTranscodeId() {
-        return "transcode_" + getCommonId();
+        return "tr_" + getCommonId();
     }
 
     public synchronized String getCoverId() {
-        return "cover_" + getCommonId();
+        return "c_" + getCommonId();
     }
 
     public synchronized String getFileId() {
-        return "file_" + getCommonId();
+        return "f_" + getCommonId();
     }
 
     public synchronized String getTsFileId() {
-        return "ts_" + getCommonId();
+        return "f_ts_" + getCommonId();
     }
 
 }
