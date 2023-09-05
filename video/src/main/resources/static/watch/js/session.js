@@ -1,27 +1,17 @@
-var session = {
-    //clientId
-    handleClientId: function() {
-        if (localStorage.getItem("clientId") != null) {
-            onHandleIdsFinished();
-            return;
-        }
-        axios.get('//' + document.domain + ':' + location.port + '/client/requestClientId')
-            .then(function (res) {
-                localStorage.clientId = res.data.data.clientId;
-                onHandleIdsFinished();
-            });
-    },
+function handleClientId() {
+  // 实现handleClientId函数的代码
+  const clientId = localStorage.getItem("clientId");
+  if (clientId == null) {
+    // 处理获取clientId的逻辑
+  }
+}
 
-    //sessionId
-    handleSessionId: function() {
-        if (sessionStorage.getItem("sessionId") != null) {
-            onHandleIdsFinished();
-            return;
-        }
-        axios.get('//' + document.domain + ':' + location.port + '/session/requestSessionId')
-            .then(function (res) {
-                sessionStorage.sessionId = res.data.data.sessionId;
-                onHandleIdsFinished();
-            });
-    }
-};
+function handleSessionId() {
+  // 实现handleSessionId函数的代码
+  const sessionId = sessionStorage.getItem("sessionId");
+  if (sessionId == null) {
+    // 处理获取sessionId的逻辑
+  }
+}
+
+export { handleClientId, handleSessionId };
