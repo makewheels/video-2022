@@ -1,6 +1,24 @@
-FROM centos/python-38-centos7
-RUN yum -y update
-RUN yum install -y java-11-openjdk epel-release python3-pip ffmpeg clang gcc make wget \
-    openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel
+FROM centos:7
 
+# 更新系统包
+RUN yum -y update && yum clean all
+
+# 安装所需的软件包
+RUN yum install -y java-11-openjdk epel-release python3-pip ffmpeg clang gcc make wget \
+    openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel && yum clean all
+
+# 下载并安装 Python 3.7.11
+RUN cd /usr/src && \
+    wget https://www.python.org/ftp/python/3.7.11/Python-3.7.11.tgz && \
+    tar xzf Python-3.7.11.tgz && \
+    cd Python-3.7.11 && \
+    ./configure --enable-optimizations && \
+    make altinstall && \
+    rm /usr/src/Python-3.7.11.tgz && \
+    python3.7 -V
+
+# 升级 pip 到最新版本
+RUN pip3 install --upgrade pip
+
+# 安装 yt-dlp
 RUN pip3 install -i https://mirrors.aliyun.com/pypi/simple/ yt-dlp
