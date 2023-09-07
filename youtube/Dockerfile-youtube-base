@@ -1,5 +1,4 @@
 FROM centos:8
-RUN yum -y update
 RUN yum install -y java-11-openjdk epel-release python3-pip ffmpeg clang gcc make wget zlib-devel
 RUN python3 --version
 RUN pip3 install -i https://mirrors.aliyun.com/pypi/simple/ yt-dlp
