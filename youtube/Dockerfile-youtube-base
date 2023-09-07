@@ -4,7 +4,7 @@ FROM centos:7
 RUN yum -y update && yum clean all
 
 # 安装所需的软件包
-RUN yum install -y java-11-openjdk epel-release python3-pip ffmpeg clang gcc make wget \
+RUN yum install -y java-11-openjdk epel-release python3-pip ffmpeg clang gcc make wget vim \
     openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel && yum clean all
 
 # 下载并安装 Python 3.7.11
