@@ -3,7 +3,7 @@ FROM centos:7
 # 更新系统包并安装所需软件包
 RUN yum -y update && \
     yum install -y java-11-openjdk epel-release ffmpeg clang gcc make wget curl vim \
-    openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel python3-pip && \
+    openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel&& \
     yum clean all
 
 # 下载安装 Python3
@@ -16,10 +16,10 @@ RUN yum -y remove python3 && \
     make altinstall && \
     rm /usr/src/Python-3.10.13.tgz && \
     python3.10 -V && \
-    ln -s /usr/local/bin/python3.10 /usr/bin/python3
+    ln -s /usr/local/bin/python3.10 /usr/bin/python3 && \
 
 # 升级 pip 到最新版本
-RUN pip3 install --upgrade pip
+RUN pip3.10 install --upgrade pip
 
 # 安装 yt-dlp
-RUN pip3 install yt-dlp
+RUN pip3.10 install yt-dlp
