@@ -8,6 +8,7 @@ import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -24,31 +25,23 @@ public class YoutubeService {
 
     /**
      * 获取文件拓展名
-     *
-     * @param youtubeVideoId
-     * @return
      */
     public String getFileExtension(String youtubeVideoId) {
 //        String json = HttpUtil.get(youtubeServiceUrl + "/youtube/getFileExtension" +
 //                "?youtubeVideoId=" + youtubeVideoId);
 //        return JSONObject.parseObject(json).getString("extension");
-        //2022年4月15日12:54:27
-        //因为发现yt-dlp总是返回webm，但实际上可能是mkv，就先统一叫做，yv吧，就是youtube video
-        return "yv";
+        return "webm";
     }
 
     /**
      * 给 YouTube url，返回视频id
-     *
-     * @param youtubeUrl
-     * @return
      */
     public String getYoutubeVideoIdByUrl(String youtubeUrl) {
         URI uri = null;
         try {
             uri = new URI(youtubeUrl);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         if (uri == null) return null;
         String host = uri.getHost();
@@ -96,18 +89,15 @@ public class YoutubeService {
 
         //获取文件上传凭证地址
         body.put("getUploadCredentialsUrl", environmentService.getCallbackUrl(
-                "/file/getUploadCredentials?"
-                        + "fileId=" + file.getId() + "&token=" + user.getToken()));
+                "/file/getUploadCredentials?fileId=" + file.getId() + "&token=" + user.getToken()));
 
         //文件上传完成回调地址
         body.put("fileUploadFinishCallbackUrl", environmentService.getCallbackUrl(
-                "/file/uploadFinish?"
-                        + "fileId=" + file.getId() + "&token=" + user.getToken()));
+                "/file/uploadFinish?fileId=" + file.getId() + "&token=" + user.getToken()));
 
         //通知业务原始文件上传完成回调地址
         body.put("businessUploadFinishCallbackUrl", environmentService.getCallbackUrl(
-                "/video/rawFileUploadFinish?"
-                        + "videoId=" + video.getId() + "&token=" + user.getToken()));
+                "/video/rawFileUploadFinish?videoId=" + video.getId() + "&token=" + user.getToken()));
 
         log.info("提交搬运视频任务，body = " + body.toJSONString());
 
@@ -125,7 +115,8 @@ public class YoutubeService {
     /**
      * 搬运文件到国内对象存储
      */
-    public JSONObject transferFile(User user, File file, String downloadUrl, String businessUploadFinishCallbackUrl) {
+    public JSONObject transferFile(
+            User user, File file, String downloadUrl, String businessUploadFinishCallbackUrl) {
         JSONObject body = new JSONObject();
         body.put("missionId", IdUtil.nanoId());
         body.put("key", file.getKey());
@@ -135,13 +126,11 @@ public class YoutubeService {
 
         //获取文件上传凭证地址
         body.put("getUploadCredentialsUrl", environmentService.getCallbackUrl(
-                "/file/getUploadCredentials?" +
-                        "fileId=" + file.getId() + "&token=" + user.getToken()));
+                "/file/getUploadCredentials?fileId=" + file.getId() + "&token=" + user.getToken()));
 
         //文件上传完成回调地址
         body.put("fileUploadFinishCallbackUrl", environmentService.getCallbackUrl(
-                "/file/uploadFinish?"
-                        + "fileId=" + file.getId() + "&token=" + user.getToken()));
+                "/file/uploadFinish?fileId=" + file.getId() + "&token=" + user.getToken()));
 
         //通知业务原始文件上传完成回调地址
         body.put("businessUploadFinishCallbackUrl", businessUploadFinishCallbackUrl);
