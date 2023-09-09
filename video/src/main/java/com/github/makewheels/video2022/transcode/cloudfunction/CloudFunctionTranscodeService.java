@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class CloudFunctionTranscodeService {
-    @Value("${aliyun.oss.bucket}")
+    @Value("${aliyun.oss.video.bucket}")
     private String bucket;
-    @Value("${aliyun.oss.internal-endpoint}")
+    @Value("${aliyun.oss.video.internal-endpoint}")
     private String endpoint;
 
     public String transcode(
