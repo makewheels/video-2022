@@ -17,6 +17,7 @@ RUN cd /usr/src && \
     make altinstall && \
     rm /usr/src/Python-3.7.11.tgz && \
     python3.7 -V
+RUN ln -s /usr/local/bin/python3.7 /usr/bin/python3
 
 # 升级 pip 到最新版本
 RUN python3.7 -m pip install --upgrade pip
