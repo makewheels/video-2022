@@ -17,7 +17,6 @@ RUN cd /usr/src &&  \
     ./config -t && \
     make && \
     make install
-#    openssl version
 
 # 安装 python3
 RUN yum -y remove python3 && \
@@ -39,4 +38,5 @@ RUN yum localinstall -y --nogpgcheck https://download1.rpmfusion.org/free/el/rpm
     ffmpeg -version
 
 # 安装 yt-dlp
-RUN pip3.10 install yt-dlp
+RUN pip3.10 install yt-dlp && \
+    yt-dlp --version
