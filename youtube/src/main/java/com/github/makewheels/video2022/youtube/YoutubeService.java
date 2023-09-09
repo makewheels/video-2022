@@ -119,8 +119,9 @@ public class YoutubeService {
         //咋办呢，本质上是，对象存储上传后缀不对，但是先不解决后缀不对的问题，先让他能正常上传，
         //这里先判断file存不存在，如果不存在，遍历文件夹获取第一个文件，上传对象存储
 
-        if (!file.exists()) {
+        if (file.exists()) {
             log.info("file exist = " + file.getAbsolutePath());
+            log.info("file size = " + FileUtil.readableFileSize(file));
         } else {
             List<File> loopFiles = FileUtil.loopFiles(file.getParentFile());
             Assert.notEmpty(loopFiles, "file NOT exist = " + file.getAbsolutePath());
