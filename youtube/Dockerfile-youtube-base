@@ -19,7 +19,8 @@ RUN cd /usr/src && \
     python3.7 -V
 
 # 升级 pip 到最新版本
+RUN python3.7 -m pip install --upgrade pip
 RUN pip3 install --upgrade pip
 
 # 安装 yt-dlp
-RUN pip3 install -i https://mirrors.aliyun.com/pypi/simple/ yt-dlp
+RUN pip3 install yt-dlp
