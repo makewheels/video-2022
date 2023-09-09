@@ -15,8 +15,8 @@ RUN yum -y remove python3 && \
     ./configure --enable-optimizations && \
     make altinstall && \
     rm /usr/src/Python-3.11.5.tgz && \
-    python3.11.5 -V && \
-    ln -s /usr/local/bin/python3.11.5 /usr/bin/python3
+    python3.11 -V && \
+    ln -s /usr/local/bin/python3.11 /usr/bin/python3
 
 # 升级 pip 到最新版本
 RUN pip3 install --upgrade pip
