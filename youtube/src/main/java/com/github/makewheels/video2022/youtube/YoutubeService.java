@@ -210,6 +210,7 @@ public class YoutubeService {
         File file = new File(FileUtil.createTempFile(), "/download/" + missionId + "/"
                 + FileNameUtil.getName(key));
         log.info("开始下载文件, 文件路径 = " + file.getAbsolutePath());
+        FileUtil.mkParentDirs(file);
         HttpUtil.downloadFile(body.getString("downloadUrl"), file);
 
         uploadAndCallback(file, body.getString("provider"),
