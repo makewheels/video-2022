@@ -8,6 +8,7 @@ RUN yum install -y java-11-openjdk epel-release python3-pip ffmpeg clang gcc mak
     openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel && yum clean all
 
 # 下载并安装 Python 3.7.11
+RUN yum -y remove python3
 RUN cd /usr/src && \
     wget https://www.python.org/ftp/python/3.7.11/Python-3.7.11.tgz && \
     tar xzf Python-3.7.11.tgz && \
