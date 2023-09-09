@@ -3,16 +3,15 @@ FROM centos:7
 # 定义Python版本号作为ARG变量
 ARG PYTHON_VERSION=3.11
 
-# 更新系统包
-RUN yum -y update && yum clean all
-
-# 安装所需的软件包
-RUN yum install -y java-11-openjdk epel-release ffmpeg clang gcc make wget vim \
-    openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel && yum clean all
+# 更新系统包并安装所需软件包
+RUN yum -y update && \
+    yum install -y java-11-openjdk epel-release ffmpeg clang gcc make wget vim \
+    openssl-devel bzip2-devel libffi-devel zlib-devel xz-devel python3-pip && \
+    yum clean all
 
 # 下载安装 Python3
-RUN yum -y remove python3
-RUN cd /usr/src && \
+RUN yum -y remove python3 && \
+    cd /usr/src && \
     wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
     tar xzf Python-${PYTHON_VERSION}.tgz && \
     cd Python-${PYTHON_VERSION} && \
@@ -23,7 +22,6 @@ RUN cd /usr/src && \
     ln -s /usr/local/bin/python${PYTHON_VERSION} /usr/bin/python3
 
 # 升级 pip 到最新版本
-RUN yum install python3-pip
 RUN pip3 install --upgrade pip
 
 # 安装 yt-dlp
