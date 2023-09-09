@@ -1,8 +1,5 @@
 FROM centos:7
 
-# 定义Python版本号作为ARG变量
-ARG PYTHON_VERSION=3.11
-
 # 更新系统包并安装所需软件包
 RUN yum -y update && \
     yum install -y java-11-openjdk epel-release ffmpeg clang gcc make wget vim \
@@ -12,14 +9,14 @@ RUN yum -y update && \
 # 下载安装 Python3
 RUN yum -y remove python3 && \
     cd /usr/src && \
-    wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
-    tar xzf Python-${PYTHON_VERSION}.tgz && \
-    cd Python-${PYTHON_VERSION} && \
+    wget https://www.python.org/ftp/python/3.11.5/Python-3.11.5.tgz && \
+    tar xzf Python-3.11.5.tgz && \
+    cd Python-3.11.5 && \
     ./configure --enable-optimizations && \
     make altinstall && \
-    rm /usr/src/Python-${PYTHON_VERSION}.tgz && \
-    python${PYTHON_VERSION} -V && \
-    ln -s /usr/local/bin/python${PYTHON_VERSION} /usr/bin/python3
+    rm /usr/src/Python-3.11.5.tgz && \
+    python3.11.5 -V && \
+    ln -s /usr/local/bin/python3.11.5 /usr/bin/python3
 
 # 升级 pip 到最新版本
 RUN pip3 install --upgrade pip
