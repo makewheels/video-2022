@@ -8,6 +8,7 @@ import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.common.comm.Protocol;
 import com.aliyun.oss.model.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -75,7 +76,7 @@ public class AliyunOssService {
                 // 跳过已经上传的分片。
                 inputStream.skip(startPosition);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(ExceptionUtils.getStackTrace(e));
             }
             UploadPartRequest uploadPartRequest = new UploadPartRequest(bucket, key);
             uploadPartRequest.setUploadId(uploadId);
