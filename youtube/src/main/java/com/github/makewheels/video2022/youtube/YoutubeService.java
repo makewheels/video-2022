@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.io.*;
@@ -119,13 +120,11 @@ public class YoutubeService {
         //这里先判断file存不存在，如果不存在，遍历文件夹获取第一个文件，上传对象存储
 
         if (!file.exists()) {
-            file = FileUtil.loopFiles(file.getParentFile()).get(0);
-        }
-
-        if (file.exists()) {
             log.info("file exist = " + file.getAbsolutePath());
         } else {
-            log.error("file NOT exist = " + file.getAbsolutePath());
+            List<File> loopFiles = FileUtil.loopFiles(file.getParentFile());
+            Assert.notEmpty(loopFiles, "file NOT exist = " + file.getAbsolutePath());
+            file = loopFiles.get(0);
         }
 
         uploadAndCallback(file, body.getString("provider"),
@@ -133,7 +132,6 @@ public class YoutubeService {
                 body.getString("fileUploadFinishCallbackUrl"),
                 body.getString("businessUploadFinishCallbackUrl")
         );
-
     }
 
     /**

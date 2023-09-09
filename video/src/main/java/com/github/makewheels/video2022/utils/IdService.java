@@ -41,7 +41,7 @@ public class IdService {
 
         // 生成随机数
         String random = RandomUtil.randomNumbers(randomLength);
-        log.info("生成id: " + timeUnit + "-" + serialNumber + "-" + random);
+        log.debug("生成id: " + timeUnit + "-" + serialNumber + "-" + random);
 
         // 拼接返回
         return timeUnit + serialNumber + random;
@@ -79,7 +79,7 @@ public class IdService {
         String result = Long.toString(decimal, Character.MAX_RADIX).toUpperCase();
 
         String format = timestamp + "-" + increaseId + "-" + random;
-        log.info("生成id：format = {}, result = {}", format, result);
+        log.debug("生成id：format = {}, result = {}", format, result);
 
         return result;
     }
