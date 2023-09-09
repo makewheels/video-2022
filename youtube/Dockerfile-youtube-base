@@ -19,7 +19,7 @@ RUN yum -y remove python3 && \
     ln -s /usr/local/bin/python3.10 /usr/bin/python3
 
 # 升级 pip 到最新版本
-RUN pip3.10 install --upgrade pip
+RUN pip3.10 install --trusted-host pypi.org --upgrade pip
 
 # 安装 yt-dlp
 RUN pip3.10 install yt-dlp
