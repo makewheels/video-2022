@@ -1,13 +1,13 @@
 FROM centos:7
 
-# 更新系统包并安装所需软件包
+# 更新并安装所需软件包
 RUN yum -y update && \
     yum install -y java-11-openjdk ffmpeg wget curl vim clang gcc make epel-release \
     openssl-devel openssl11-devel bzip2-devel libffi-devel zlib-devel xz-devel ncurses-devel \
     sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel && \
     yum clean all
 
-# 安装openssl
+# 安装 openssl
 RUN cd /usr/src &&  \
     wget https://www.openssl.org/source/openssl-1.1.1n.tar.gz --no-check-certificate && \
     tar -zxvf openssl-1.1.1n.tar.gz && \
@@ -18,7 +18,7 @@ RUN cd /usr/src &&  \
     make install && \
     openssl version
 
-# 下载安装 Python3
+# 安装 python3
 RUN yum -y remove python3 && \
     cd /usr/src && \
     wget https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tgz && \
@@ -29,10 +29,8 @@ RUN yum -y remove python3 && \
     rm -rf /usr/src/Python-3.10.13.tgz && \
     python3.10 -V && \
     ln -s /usr/local/bin/python3.10 /usr/bin/python3 && \
-    python3 -V
-
-# 升级 pip 到最新版本
-RUN pip3.10 install --upgrade pip
+    python3 -V && \
+    pip3.10 install --upgrade pip
 
 # 安装 yt-dlp
 RUN pip3.10 install yt-dlp
