@@ -5,6 +5,7 @@ RUN yum -y update && \
     yum install -y java-11-openjdk ffmpeg wget curl vim clang gcc make epel-release \
     openssl-devel openssl11-devel bzip2-devel libffi-devel zlib-devel xz-devel ncurses-devel \
     sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel && \
+    yum groupinstall -y "Development Tools" && \
     yum clean all
 
 # 安装 openssl
