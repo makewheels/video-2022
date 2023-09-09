@@ -9,14 +9,14 @@ RUN yum -y update && \
 # 下载安装 Python3
 RUN yum -y remove python3 && \
     cd /usr/src && \
-    wget https://www.python.org/ftp/python/3.11.5/Python-3.11.5.tgz && \
-    tar xzf Python-3.11.5.tgz && \
-    cd Python-3.11.5 && \
+    wget https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tgz && \
+    tar xzf Python-3.10.13.tgz && \
+    cd Python-3.10.13 && \
     ./configure --enable-optimizations && \
     make altinstall && \
-    rm /usr/src/Python-3.11.5.tgz && \
-    python3.11 -V && \
-    ln -s /usr/local/bin/python3.11 /usr/bin/python3
+    rm /usr/src/Python-3.10.13.tgz && \
+    python3.10 -V && \
+    ln -s /usr/local/bin/python3.10 /usr/bin/python3
 
 # 升级 pip 到最新版本
 RUN pip3 install --upgrade pip
