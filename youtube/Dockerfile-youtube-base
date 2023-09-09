@@ -2,7 +2,7 @@ FROM centos:7
 
 # 更新系统包并安装所需软件包
 RUN yum -y update && \
-    yum install -y java-11-openjdk epel-release ffmpeg clang gcc make wget curl vim \
+    yum install -y java-11-openjdk ffmpeg wget curl vim clang gcc make epel-release \
     openssl-devel openssl11-devel bzip2-devel libffi-devel zlib-devel xz-devel ncurses-devel \
     sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel && \
     yum clean all
