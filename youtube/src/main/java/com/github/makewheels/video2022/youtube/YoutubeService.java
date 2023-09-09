@@ -13,6 +13,7 @@ import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,7 +39,7 @@ public class YoutubeService {
                 log.info(line);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -73,7 +74,7 @@ public class YoutubeService {
             VideoListResponse response = request.execute();
             return JSONObject.parseObject(JSON.toJSONString(response.getItems().get(0)));
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         return null;
     }
@@ -115,8 +116,11 @@ public class YoutubeService {
         //-rw-r--r-- 1 root root 422932253 3月   5 04:17 1otF0N6surM.mkv
         //
         //咋办呢，本质上是，对象存储上传后缀不对，但是先不解决后缀不对的问题，先让他能正常上传，
-        // 这里先判断一下，file存不存在，如果存在继续上传对象存储，
-        //如果file.exist()==false则把file改为mkv文件，具体代码就是该目录第一个文件
+        //这里先判断file存不存在，如果不存在，遍历文件夹获取第一个文件，上传对象存储
+
+        if (!file.exists()) {
+            file = FileUtil.loopFiles(file.getParentFile()).get(0);
+        }
 
         if (file.exists()) {
             log.info("file exist = " + file.getAbsolutePath());
@@ -124,9 +128,6 @@ public class YoutubeService {
             log.error("file NOT exist = " + file.getAbsolutePath());
         }
 
-        if (!file.exists()) {
-            file = FileUtil.loopFiles(file.getParentFile()).get(0);
-        }
         uploadAndCallback(file, body.getString("provider"),
                 body.getString("getUploadCredentialsUrl"),
                 body.getString("fileUploadFinishCallbackUrl"),
@@ -180,8 +181,6 @@ public class YoutubeService {
         //开始下载
         log.info("开始下载: youtubeVideoId = " + youtubeVideoId);
 
-//        new Thread(() -> downloadYoutubeVideo(body)).start();
-        // 改成了阿里云云函数，已经是异步调用，不再启用子线程
         downloadYoutubeVideo(body);
 
         //提前先返回播放地址
@@ -199,14 +198,14 @@ public class YoutubeService {
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         } catch (GeneralSecurityException | IOException e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         if (httpTransport == null) return null;
-        return new YouTube.Builder(httpTransport, JacksonFactory.getDefaultInstance(), null)
+        return new YouTube.Builder(httpTransport,
+                JacksonFactory.getDefaultInstance(), null)
                 .setApplicationName("API code samples")
                 .build();
     }
-
 
     /**
      * 根据url搬运文件
@@ -215,9 +214,6 @@ public class YoutubeService {
     public JSONObject transferFile(JSONObject body) {
         String key = body.getString("key");
         String missionId = body.getString("missionId");
-        //阿里云云函数已经是异步调用，不再启用子线程
-//        new Thread(() -> {
-        //下载
         File file = new File(FileUtil.createTempFile(), "/download/" + missionId + "/"
                 + FileNameUtil.getName(key));
         HttpUtil.downloadFile(body.getString("downloadUrl"), file);
@@ -227,7 +223,6 @@ public class YoutubeService {
                 body.getString("fileUploadFinishCallbackUrl"),
                 body.getString("businessUploadFinishCallbackUrl")
         );
-//        }).start();
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("missionId", missionId);
