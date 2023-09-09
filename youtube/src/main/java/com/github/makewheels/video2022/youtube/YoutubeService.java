@@ -136,12 +136,6 @@ public class YoutubeService {
 
     /**
      * 上传对象存储，并且回调
-     *
-     * @param file
-     * @param provider
-     * @param getUploadCredentialsUrl
-     * @param fileUploadFinishCallbackUrl
-     * @param businessUploadFinishCallbackUrl
      */
     private void uploadAndCallback(
             File file, String provider, String getUploadCredentialsUrl,
