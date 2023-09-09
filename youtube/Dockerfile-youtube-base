@@ -7,18 +7,29 @@ RUN yum -y update && \
     sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel && \
     yum clean all
 
+# 安装openssl
+RUN cd /usr/src &&  \
+    wget https://www.openssl.org/source/openssl-1.1.1n.tar.gz --no-check-certificate && \
+    tar -zxvf openssl-1.1.1n.tar.gz && \
+    cd openssl-1.1.1n && \
+    ./config --prefix=/usr/local/openssl && \
+    ./config -t && \
+    make && \
+    make install && \
+    openssl version
+
 # 下载安装 Python3
 RUN yum -y remove python3 && \
     cd /usr/src && \
     wget https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tgz && \
-    tar xzf Python-3.10.13.tgz && \
+    tar -zxvf Python-3.10.13.tgz && \
     cd Python-3.10.13 && \
-    sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure && \
-    ./configure --enable-optimizations && \
+    ./configure -C --with-openssl=/usr/local/openssl --with-openssl-rpath=auto && \
     make altinstall && \
-    rm /usr/src/Python-3.10.13.tgz && \
+    rm -rf /usr/src/Python-3.10.13.tgz && \
     python3.10 -V && \
-    ln -s /usr/local/bin/python3.10 /usr/bin/python3
+    ln -s /usr/local/bin/python3.10 /usr/bin/python3 && \
+    python3 -V
 
 # 升级 pip 到最新版本
 RUN pip3.10 install --upgrade pip
