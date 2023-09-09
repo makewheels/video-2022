@@ -14,8 +14,7 @@
 
     <!--阿里云播放器-->
     <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.13.2/skins/default/aliplayer-min.css"/>
-    <script type="text/javascript" charset="utf-8"
-            src="https://g.alicdn.com/de/prismplayer/2.13.2/aliplayer-min.js"></script>
+    <script src="https://g.alicdn.com/de/prismplayer/2.13.2/aliplayer-min.js"></script>
 
     <!--mui-->
     <link href="https://production-bucket.oss-cn-beijing.aliyuncs.com/dist/mui/mui-3.7.1.min.css" rel="stylesheet">
@@ -236,12 +235,12 @@
                 //发布时间：
                 //如果是用户自己上传的视频，使用create time
                 //如果是youtube搬运视频，使用publish time
-                // let createTime = document.getElementById("createTime");
-                // if (data.type === "USER_UPLOAD") {
-                //     createTime.innerText = "发布时间：" + data.createTimeString;
-                // } else if (data.type === "YOUTUBE") {
-                //     createTime.innerText = "发布时间：" + data.youtubePublishTimeString;
-                // }
+                let createTime = document.getElementById("createTime");
+                if (data.type === "USER_UPLOAD") {
+                    createTime.innerText = "发布时间：" + data.createTimeString;
+                } else if (data.type === "YOUTUBE") {
+                    createTime.innerText = "发布时间：" + data.youtubePublishTimeString;
+                }
             });
     }
 
