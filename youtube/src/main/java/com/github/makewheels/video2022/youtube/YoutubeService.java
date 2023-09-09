@@ -13,6 +13,7 @@ import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -91,8 +92,8 @@ public class YoutubeService {
         //拿文件拓展名
         String extension = FileNameUtil.extName(key);
         //下载视频
-        File file = new File(FileUtil.createTempFile(), "/transfer/" + missionId + "-"
-                + videoId + "/" + youtubeVideoId + "." + extension);
+        File file = new File(FileUtils.getTempDirectory(),
+                "/transfer/" + missionId + "-" + videoId + "/" + youtubeVideoId + "." + extension);
         log.info("webmFile = " + file.getAbsolutePath());
         String downloadCmd =
 //                "yt-dlp -S vcodec:h264,acodec:aac,res:1080 -o "
@@ -207,8 +208,8 @@ public class YoutubeService {
     public JSONObject transferFile(JSONObject body) {
         String key = body.getString("key");
         String missionId = body.getString("missionId");
-        File file = new File(FileUtil.createTempFile(), "/download/" + missionId + "/"
-                + FileNameUtil.getName(key));
+        File file = new File(FileUtils.getTempDirectory(),
+                "/download/" + missionId + "/" + FileNameUtil.getName(key));
         log.info("开始下载文件, 文件路径 = " + file.getAbsolutePath());
         FileUtil.mkParentDirs(file);
         HttpUtil.downloadFile(body.getString("downloadUrl"), file);
