@@ -21,7 +21,7 @@ RUN yum -y remove python3 && \
     ln -s /usr/local/bin/python3.10 /usr/bin/python3
 
 # 升级 pip 到最新版本
-RUN pip3.10 install -i https://mirrors.aliyun.com/pypi/simple/ --upgrade pip
+RUN pip3.10 install --upgrade pip
 
 # 安装 yt-dlp
-RUN pip3.10 install -i https://mirrors.aliyun.com/pypi/simple/ yt-dlp
+RUN pip3.10 install yt-dlp
