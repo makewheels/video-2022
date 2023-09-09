@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class AliyunMpsService {
-    @Value("${aliyun.oss.bucket}")
+    @Value("${aliyun.oss.video.bucket}")
     private String bucket;
 
     @Value("${aliyun.mps.accessKeyId}")

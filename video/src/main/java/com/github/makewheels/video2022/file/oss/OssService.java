@@ -29,13 +29,13 @@ import java.util.List;
 @Service
 @Slf4j
 public class OssService {
-    @Value("${aliyun.oss.bucket}")
+    @Value("${aliyun.oss.video.bucket}")
     private String bucket;
-    @Value("${aliyun.oss.endpoint}")
+    @Value("${aliyun.oss.video.endpoint}")
     private String endpoint;
-    @Value("${aliyun.oss.accessKeyId}")
+    @Value("${aliyun.oss.video.accessKeyId}")
     private String accessKeyId;
-    @Value("${aliyun.oss.secretKey}")
+    @Value("${aliyun.oss.video.secretKey}")
     private String secretKey;
 
     private OSS ossClient;

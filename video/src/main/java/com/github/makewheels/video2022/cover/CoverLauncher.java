@@ -32,7 +32,7 @@ import java.util.Date;
 public class CoverLauncher {
     @Resource
     private EnvironmentService environmentService;
-    @Value("${aliyun.oss.accessBaseUrl}")
+    @Value("${aliyun.oss.video.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
 
     @Resource
