@@ -29,7 +29,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class OssService {
+public class OssVideoService extends AliyunOssService {
     @Value("${aliyun.oss.video.bucket}")
     private String bucket;
     @Value("${aliyun.oss.video.endpoint}")
