@@ -16,6 +16,7 @@ import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.mortbay.util.ajax.JSON;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -78,7 +79,7 @@ public class OssService {
         try {
             response = client.getAcsResponse(request);
         } catch (ClientException e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
 
         JSONObject credentials = new JSONObject();
@@ -102,7 +103,7 @@ public class OssService {
         try {
             getClient().putObject(bucket, key, inputStream);
         } catch (Throwable e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         return null;
     }
