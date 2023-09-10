@@ -15,6 +15,18 @@ import java.util.List;
 
 /**
  * oss清单解析
+ * {
+ *     "creationTimestamp": "1694305241",
+ *     "destinationBucket": "oss-data-bucket",
+ *     "fileFormat": "CSV",
+ *     "fileSchema": "Bucket, Key, Size, StorageClass, LastModifiedDate, ETag, IsMultipartUploaded, EncryptionStatus",
+ *     "files": [{
+ *             "MD5checksum": "5FC695B803A384A2FAA01D747C405FD1",
+ *             "key": "video-2022-dev/inventory/video-2022-dev/inventory-rule/data/2a755fbb-b920-4347-b99b-add10258972e.csv.gz",
+ *             "size": 12586}],
+ *     "sourceBucket": "video-2022-dev",
+ *     "version": "2019-09-01"
+ * }
  */
 @Service
 public class OssInventoryParser {
