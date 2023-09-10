@@ -9,7 +9,7 @@ import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.file.md5.FileMd5DTO;
 import com.github.makewheels.video2022.file.md5.Md5CfService;
-import com.github.makewheels.video2022.file.oss.OssService;
+import com.github.makewheels.video2022.file.oss.OssVideoService;
 import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.context.RequestUtil;
@@ -39,7 +39,7 @@ public class FileService {
     @Resource
     private MongoTemplate mongoTemplate;
     @Resource
-    private OssService ossService;
+    private OssVideoService ossVideoService;
 
     @Resource
     private FileRepository fileRepository;
@@ -87,7 +87,7 @@ public class FileService {
      */
     public JSONObject getUploadCredentials(String fileId) {
         File file = fileRepository.getById(fileId);
-        JSONObject credentials = ossService.getUploadCredentials(file.getKey());
+        JSONObject credentials = ossVideoService.getUploadCredentials(file.getKey());
         if (credentials == null) {
             throw new VideoException(ErrorCode.FILE_GENERATE_UPLOAD_CREDENTIALS_FAIL);
         }
@@ -103,7 +103,7 @@ public class FileService {
         File file = fileRepository.getById(fileId);
         String key = file.getKey();
         log.info("FileService 处理文件上传完成, fileId = " + fileId + ", key = " + key);
-        OSSObject object = ossService.getObject(key);
+        OSSObject object = ossVideoService.getObject(key);
         ObjectMetadata objectMetadata = object.getObjectMetadata();
         file.setSize(objectMetadata.getContentLength());
         file.setEtag(objectMetadata.getETag());
@@ -152,14 +152,14 @@ public class FileService {
      * 上传文件
      */
     public PutObjectResult putObject(String key, InputStream inputStream) {
-        return ossService.putObject(key, inputStream);
+        return ossVideoService.putObject(key, inputStream);
     }
 
     /**
      * 获取单个文件
      */
     public OSSObject getObject(String key) {
-        return ossService.getObject(key);
+        return ossVideoService.getObject(key);
     }
 
     /**
@@ -169,7 +169,7 @@ public class FileService {
     public Map<String, OSSObject> getObjects(List<String> keys) {
         Map<String, OSSObject> map = new HashMap<>(keys.size());
         for (String key : keys) {
-            OSSObject object = ossService.getObject(key);
+            OSSObject object = ossVideoService.getObject(key);
             map.put(key, object);
         }
         return map;
@@ -179,14 +179,14 @@ public class FileService {
      * 按照prefix查找文件
      */
     public List<OSSObjectSummary> findObjects(String prefix) {
-        return ossService.listAllObjects(prefix);
+        return ossVideoService.listAllObjects(prefix);
     }
 
     /**
      * 对象存储文件key是否存在
      */
     public boolean doesOSSObjectExist(String key) {
-        return ossService.doesObjectExist(key);
+        return ossVideoService.doesObjectExist(key);
     }
 
     /**
@@ -238,7 +238,7 @@ public class FileService {
      */
     public void deleteFile(File file) {
         log.info("FileService 删除文件，fileId = " + file.getId() + ", key = " + file.getKey());
-        ossService.deleteObject(file.getKey());
+        ossVideoService.deleteObject(file.getKey());
         file.setDeleted(true);
         mongoTemplate.save(file);
     }
@@ -250,7 +250,7 @@ public class FileService {
         List<String> keyList = Lists.transform(fileList, File::getKey);
         List<String> fileIds = Lists.transform(fileList, File::getId);
         log.info("FileService 批量删除文件，fileIds = " + JSON.toJSONString(fileIds));
-        ossService.deleteAllObjects(keyList);
+        ossVideoService.deleteAllObjects(keyList);
         for (File file : fileList) {
             file.setDeleted(true);
         }
@@ -261,7 +261,7 @@ public class FileService {
      * 预签名下载文件
      */
     public String generatePresignedUrl(String key, Duration duration) {
-        return ossService.generatePresignedUrl(key, duration);
+        return ossVideoService.generatePresignedUrl(key, duration);
     }
 
     /**
@@ -270,7 +270,7 @@ public class FileService {
     public Map<String, String> generatePresignedUrl(List<String> keyList, Duration duration) {
         Map<String, String> map = new HashMap<>(keyList.size());
         for (String key : keyList) {
-            String url = ossService.generatePresignedUrl(key, duration);
+            String url = ossVideoService.generatePresignedUrl(key, duration);
             map.put(key, url);
         }
         return map;
@@ -282,7 +282,7 @@ public class FileService {
     public void changeObjectAcl(String fileId, String acl) {
         File file = fileRepository.getById(fileId);
         file.setAcl(acl);
-        ossService.setObjectAcl(file.getKey(), CannedAccessControlList.parse(acl));
+        ossVideoService.setObjectAcl(file.getKey(), CannedAccessControlList.parse(acl));
         mongoTemplate.save(file);
     }
 
@@ -292,7 +292,7 @@ public class FileService {
     public void changeStorageClass(String fileId, String storageClass) {
         File file = fileRepository.getById(fileId);
         file.setStorageClass(storageClass);
-        ossService.changeObjectStorageClass(file.getKey(), StorageClass.parse(storageClass));
+        ossVideoService.changeObjectStorageClass(file.getKey(), StorageClass.parse(storageClass));
         mongoTemplate.save(file);
     }
 
