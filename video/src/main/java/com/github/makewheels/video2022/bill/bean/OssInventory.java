@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.bill;
+package com.github.makewheels.video2022.bill.bean;
 
 import lombok.Data;
 
