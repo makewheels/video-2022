@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.bill;
+package com.github.makewheels.video2022.bill.bean;
 
 import lombok.Data;
 
@@ -37,5 +37,5 @@ public class OssLog {
     private String storageClass;
     private String targetStorageClass;
     private String transmissionAccelerationAccessPoint;
-    private String accessKeyID;
+    private String accessKeyId;
 }
