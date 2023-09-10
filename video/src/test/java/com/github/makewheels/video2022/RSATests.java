@@ -2,7 +2,7 @@ package com.github.makewheels.video2022;
 
 import cn.hutool.core.io.FileUtil;
 import com.github.makewheels.video2022.system.password.RSAUtil;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -18,7 +18,7 @@ public class RSATests {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void encrypt() {
         String plain = "";
         System.out.println("plainText = " + plain);
@@ -31,7 +31,7 @@ public class RSATests {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void decrypt() {
         String cipher = "";
         System.out.println("cipher = " + cipher);
