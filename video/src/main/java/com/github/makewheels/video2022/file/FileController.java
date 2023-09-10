@@ -34,9 +34,8 @@ public class FileController {
      */
     @GetMapping("getUploadCredentials")
     public Result<JSONObject> getUploadCredentials(@RequestParam String fileId) {
-        checkService.checkFileBelongsToUserHolder(fileId);
-        JSONObject uploadCredentials = fileService.getUploadCredentials(fileId);
-        return Result.ok(uploadCredentials);
+//        checkService.checkFileBelongsToUserHolder(fileId);
+        return Result.ok(fileService.getUploadCredentials(fileId));
     }
 
     /**
