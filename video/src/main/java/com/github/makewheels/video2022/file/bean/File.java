@@ -40,6 +40,7 @@ public class File extends BasicFile {
 
     public File() {
         createTime = new Date();
+        updateTime = new Date();
         deleted = false;
         fileStatus = FileStatus.CREATED;
         provider = ObjectStorageProvider.ALIYUN_OSS;

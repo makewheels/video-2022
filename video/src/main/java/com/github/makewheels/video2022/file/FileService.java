@@ -240,6 +240,8 @@ public class FileService {
         log.info("FileService 删除文件，fileId = " + file.getId() + ", key = " + file.getKey());
         ossVideoService.deleteObject(file.getKey());
         file.setDeleted(true);
+        file.setDeleteTime(new Date());
+        file.setUpdateTime(new Date());
         mongoTemplate.save(file);
     }
 
