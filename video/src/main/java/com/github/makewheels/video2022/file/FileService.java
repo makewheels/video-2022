@@ -107,7 +107,7 @@ public class FileService {
         ObjectMetadata objectMetadata = object.getObjectMetadata();
         file.setSize(objectMetadata.getContentLength());
         file.setEtag(objectMetadata.getETag());
-        file.setUploadTime(new Date());
+        file.setUploadTime(objectMetadata.getLastModified());
         file.setFileStatus(FileStatus.READY);
         mongoTemplate.save(file);
     }
