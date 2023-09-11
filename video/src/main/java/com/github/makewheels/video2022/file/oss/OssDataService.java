@@ -42,6 +42,36 @@ public class OssDataService extends AliyunOssService {
 
     /**
      * 按照prefix查找，分页遍历，列举所有文件
+     * <a href="https://help.aliyun.com/zh/oss/developer-reference/listobjectsv2">ListObjectsV2</a>
+     * <a href="https://error-center.aliyun.com/api/Oss/2019-05-17/ListObjectsV2">ListObjectsV2</a>
+     * {
+     *   "ListBucketResult": {
+     *     "Name": "oss-data-bucket",
+     *     "Prefix": "video-2022-prod/inventory/video-2022-prod/inventory-rule/2023-06-07",
+     *     "MaxKeys": "100",
+     *     "Delimiter": "",
+     *     "IsTruncated": "false",
+     *     "Contents": [
+     *       {
+     *         "Key": "video-2022-prod/inventory/video-2022-prod/inventory-rule/2023-06-07T16-04Z/manifest.checksum",
+     *         "LastModified": "2023-06-07T16:04:46.000Z",
+     *         "ETag": "\"3E9EE5FC88034DF1489E0C6B283BAFCE\"",
+     *         "Type": "Normal",
+     *         "Size": "32",
+     *         "StorageClass": "Standard"
+     *       },
+     *       {
+     *         "Key": "video-2022-prod/inventory/video-2022-prod/inventory-rule/2023-06-07T16-04Z/manifest.json",
+     *         "LastModified": "2023-06-07T16:04:46.000Z",
+     *         "ETag": "\"9CD5D7632E6BF479A5FC592462D7025F\"",
+     *         "Type": "Normal",
+     *         "Size": "530",
+     *         "StorageClass": "Standard"
+     *       }
+     *     ],
+     *     "KeyCount": "2"
+     *   }
+     * }
      */
     public List<OSSObjectSummary> listAllObjects(String prefix) {
         List<OSSObjectSummary> objects = new ArrayList<>();

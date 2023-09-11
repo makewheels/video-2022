@@ -1,9 +1,8 @@
-package com.github.makewheels.video2022.bill.parser;
+package com.github.makewheels.video2022.file.oss.osslog;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSON;
-import com.github.makewheels.video2022.bill.bean.OssLog;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -16,7 +15,7 @@ import java.util.List;
  * oss日志解析
  */
 @Service
-public class OssLogParser {
+public class OssLogService {
     public List<OssLog> parse(File file) {
         List<String> lines = FileUtil.readLines(file, StandardCharsets.UTF_8);
         List<OssLog> ossLogList = new ArrayList<>(lines.size());
@@ -62,7 +61,7 @@ public class OssLogParser {
     public static void main(String[] args) {
         File file = new File("C:\\Users\\thedoflin\\Downloads\\" +
                 "video-2022-prod2023-09-06-09-00-00-0001");
-        List<OssLog> ossLogList = new OssLogParser().parse(file);
+        List<OssLog> ossLogList = new OssLogService().parse(file);
         for (OssLog ossLog : ossLogList) {
             System.out.println(JSON.toJSONString(ossLog, true));
         }
