@@ -30,9 +30,14 @@ public class BasicFile {
     protected String storageClass;
 
     @Indexed
+    protected Date uploadTime;
+    @Indexed
+    protected Date deleteTime;
+    @Indexed
     protected Date createTime;
     @Indexed
-    protected Date uploadTime;
+    protected Date updateTime;
+
     protected Boolean deleted;
 
 }
