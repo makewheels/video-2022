@@ -2,7 +2,7 @@ package com.github.makewheels.video2022.video;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
-import com.github.makewheels.video2022.utils.FilepathUtils;
+import com.github.makewheels.video2022.utils.ProjectPathUtils;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -19,7 +19,7 @@ public class TestUpload {
     private WebDriver webDriver;
 
     public WebDriver startChrome() {
-        System.setProperty("webdriver.chrome.driver", FilepathUtils.getChromeDriver().getAbsolutePath());
+        System.setProperty("webdriver.chrome.driver", ProjectPathUtils.getChromeDriver().getAbsolutePath());
         ChromeOptions options = new ChromeOptions();
         // https://stackoverflow.com/questions/75678572
         options.addArguments("--remote-allow-origins=*");

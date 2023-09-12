@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.transcode.factory;
 
 import cn.hutool.core.util.IdUtil;
-import com.github.makewheels.video2022.system.environment.EnvironmentService;
+import com.github.makewheels.video2022.etc.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.TranscodeCallbackService;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;

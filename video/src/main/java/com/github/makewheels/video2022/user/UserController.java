@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.user;
 
-import com.github.makewheels.video2022.system.response.ErrorCode;
-import com.github.makewheels.video2022.system.response.Result;
+import com.github.makewheels.video2022.etc.system.response.ErrorCode;
+import com.github.makewheels.video2022.etc.system.response.Result;
 import com.github.makewheels.video2022.user.bean.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

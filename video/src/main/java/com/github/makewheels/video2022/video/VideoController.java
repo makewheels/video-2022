@@ -2,7 +2,7 @@ package com.github.makewheels.video2022.video;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.etc.check.CheckService;
-import com.github.makewheels.video2022.system.response.Result;
+import com.github.makewheels.video2022.etc.system.response.Result;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.dto.UpdateVideoInfoDTO;

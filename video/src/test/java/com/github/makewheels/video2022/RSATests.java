@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022;
 
 import cn.hutool.core.io.FileUtil;
-import com.github.makewheels.video2022.system.password.RSAUtil;
+import com.github.makewheels.video2022.etc.system.password.RSAUtil;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
