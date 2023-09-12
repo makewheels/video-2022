@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022;
 
-import com.github.makewheels.video2022.utils.SignUtil;
+import com.github.makewheels.video2022.archive.SignUtil;
 import org.junit.jupiter.api.Test;
 
 /**

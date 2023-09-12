@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.etc.ding.DingService;
 import com.github.makewheels.video2022.etc.ding.NotificationService;
 import com.github.makewheels.video2022.etc.ding.RobotType;
-import com.github.makewheels.video2022.system.context.RequestUtil;
+import com.github.makewheels.video2022.etc.system.context.RequestUtil;
 import com.github.makewheels.video2022.utils.IpService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;

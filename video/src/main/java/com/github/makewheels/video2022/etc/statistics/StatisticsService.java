@@ -3,7 +3,7 @@ package com.github.makewheels.video2022.etc.statistics;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.system.response.Result;
+import com.github.makewheels.video2022.etc.system.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.stereotype.Service;

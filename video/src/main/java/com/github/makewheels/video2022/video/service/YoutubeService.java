@@ -3,7 +3,7 @@ package com.github.makewheels.video2022.video.service;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.system.environment.EnvironmentService;
+import com.github.makewheels.video2022.etc.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.entity.Video;

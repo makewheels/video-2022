@@ -8,7 +8,7 @@ import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
-import com.github.makewheels.video2022.system.environment.EnvironmentService;
+import com.github.makewheels.video2022.etc.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.IdService;

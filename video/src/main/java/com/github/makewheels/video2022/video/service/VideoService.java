@@ -6,7 +6,7 @@ import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
-import com.github.makewheels.video2022.system.response.Result;
+import com.github.makewheels.video2022.etc.system.response.Result;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
