@@ -75,12 +75,15 @@ public class OssInventoryService {
      * "version": "2019-09-01"
      * }
      */
-    public List<String> getInventoryKeys(String manifestKey) {
+    public List<String> getInventoryGzFileKeys(String manifestKey) {
+        log.info("获取清单GZ压缩文件的key, manifestKey = " + manifestKey);
         String json = ossDataService.getObjectContent(manifestKey);
         JSONObject manifest = JSON.parseObject(json);
-        return manifest.getJSONArray("files").stream()
+        List<String> gzFileKeys = manifest.getJSONArray("files").stream()
                 .map(e -> ((JSONObject) e).getString("key"))
                 .collect(Collectors.toList());
+        log.info("获取到清单GZ压缩文件的key, gzFileKeys = " + JSON.toJSONString(gzFileKeys));
+        return gzFileKeys;
     }
 
     /**
@@ -89,17 +92,21 @@ public class OssInventoryService {
     public List<File> getCsvFiles(List<String> gzKeys) {
         List<File> csvFiles = new ArrayList<>(gzKeys.size());
         for (String gzKey : gzKeys) {
+            String csvFilename = FilenameUtils.getName(gzKey).replace(".gz", "");
             // 下载gz文件
-            File gzFile = new File(FileUtils.getTempDirectory(), FilenameUtils.getName(gzKey));
+            File gzFile = new File(FileUtils.getTempDirectory(), csvFilename + ".gz");
+            ossDataService.downloadFile(gzKey, gzFile);
+            log.info("下载gz文件到本地: " + gzFile.getAbsolutePath());
             // 解压gz文件
             CompressUtil.createExtractor(StandardCharsets.UTF_8, gzFile)
                     .extract(gzFile.getParentFile());
-            // TODO 怎么找到csv文件
-            File csvFile = new File(gzFile.getParentFile(), "data.csv");
+            File csvFile = new File(gzFile.getParentFile(), csvFilename);
+            log.info("解压gz文件变成csv: " + csvFile.getAbsolutePath());
             gzFile.delete();
+            log.info("删除gz文件: " + gzFile.getAbsolutePath());
             csvFiles.add(csvFile);
         }
-
+        log.info("返回csv文件列表: " + JSON.toJSONString(csvFiles));
         return csvFiles;
     }
 
@@ -108,6 +115,7 @@ public class OssInventoryService {
      * <a href="https://doc.hutool.cn/pages/CsvUtil">hutool读取CSV文档</a>
      */
     public List<OssInventory> parseFileToInventory(File file) {
+        log.info("解析CSV " + file.getAbsolutePath());
         CsvData data = CsvUtil.getReader().read(file);
         List<OssInventory> inventoryList = new ArrayList<>(data.getRowCount());
         for (CsvRow row : data.getRows()) {
@@ -122,7 +130,20 @@ public class OssInventoryService {
             inventory.setEncryptionStatus(Boolean.parseBoolean(row.get(7)));
             inventoryList.add(inventory);
         }
+        log.info("总共解析出inventoryList.size = " + inventoryList.size());
         return inventoryList;
+    }
+
+    public void generate(Date date) {
+        String manifestKey = this.getManifestKey(date);
+        List<String> inventoryGzFileKeys = this.getInventoryGzFileKeys(manifestKey);
+        List<File> csvFiles = this.getCsvFiles(inventoryGzFileKeys);
+        List<OssInventory> inventoryList = new ArrayList<>();
+        for (File csvFile : csvFiles) {
+            inventoryList.addAll(parseFileToInventory(csvFile));
+            csvFile.delete();
+        }
+
     }
 
 }
