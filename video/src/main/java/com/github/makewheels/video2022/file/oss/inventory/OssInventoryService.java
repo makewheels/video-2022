@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.file.oss.inventory;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.text.csv.CsvData;
 import cn.hutool.core.text.csv.CsvRow;
 import cn.hutool.core.text.csv.CsvUtil;
@@ -16,7 +17,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import sun.util.calendar.ZoneInfo;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 /**
@@ -46,7 +47,7 @@ public class OssInventoryService {
     private String getManifestKey(Date date) {
         log.info("获取manifest.json的key, 传入的时间 = " + DateUtil.formatDateTime(date));
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        simpleDateFormat.setTimeZone(ZoneInfo.getTimeZone("UTC"));
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         String utcDate = simpleDateFormat.format(date);
         List<OSSObjectSummary> ossObjectList
                 = ossDataService.listAllObjects(inventoryPrefix + "/" + utcDate);
@@ -144,6 +145,14 @@ public class OssInventoryService {
             csvFile.delete();
         }
 
+    }
+
+    public static void main(String[] args) {
+        String json = FileUtil.readUtf8String(new File(
+                "D:\\2023.09.14 数据比赛\\prep_c_train_data\\data\\tables.json"));
+        String jsonString = JSON.toJSONString(JSON.parseArray(json), true);
+        FileUtil.writeUtf8String(jsonString, new File(
+                "D:\\2023.09.14 数据比赛\\prep_c_train_data\\data\\tables1.json"));
     }
 
 }
