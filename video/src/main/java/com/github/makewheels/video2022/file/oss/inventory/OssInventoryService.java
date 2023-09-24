@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022.file.oss.inventory;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.text.csv.CsvData;
 import cn.hutool.core.text.csv.CsvRow;
 import cn.hutool.core.text.csv.CsvUtil;
@@ -43,6 +42,7 @@ public class OssInventoryService {
 
     /**
      * 获取manifest.json的key
+     * 按前缀日期匹配，所以传入的时间是，北京时间的零点
      */
     private String getManifestKey(Date date) {
         log.info("获取manifest.json的key, 传入的时间 = " + DateUtil.formatDateTime(date));
@@ -61,20 +61,16 @@ public class OssInventoryService {
     /**
      * 获取清单文件的key
      * {
-     * "creationTimestamp": "1694305241",
-     * "destinationBucket": "oss-data-bucket",
-     * "fileFormat": "CSV",
-     * "fileSchema": "Bucket, Key, Size, StorageClass, LastModifiedDate, ETag,
-     * IsMultipartUploaded, EncryptionStatus",
-     * "files": [{
-     * "MD5checksum": "5FC695B803A384A2FAA01D747C405FD1",
-     * "key": "video-2022-dev/inventory/video-2022-dev/inventory-rule
-     * /data/2a755fbb-b920-4347-b99b-add10258972e.csv.gz",
-     * "size": 12586
-     * }],
-     * "sourceBucket": "video-2022-dev",
-     * "version": "2019-09-01"
-     * }
+     *     "creationTimestamp": "1694448644",
+     *     "destinationBucket": "oss-data-bucket",
+     *     "fileFormat": "CSV",
+     *     "fileSchema": "Bucket, Key, Size, StorageClass, LastModifiedDate, ETag, IsMultipartUploaded, EncryptionStatus",
+     *     "files": [{
+     *             "MD5checksum": "5FC695B803A384A2FAA01D747C405FD1",
+     *             "key": "video-2022-dev/inventory/video-2022-dev/inventory-rule/data/fc581f25-2ab5-4f11-a88a-5a74ec15241f.csv.gz",
+     *             "size": 12586}],
+     *     "sourceBucket": "video-2022-dev",
+     *     "version": "2019-09-01"}
      */
     public List<String> getInventoryGzFileKeys(String manifestKey) {
         log.info("获取清单GZ压缩文件的key, manifestKey = " + manifestKey);
@@ -135,7 +131,10 @@ public class OssInventoryService {
         return inventoryList;
     }
 
-    public void generate(Date date) {
+    /**
+     * 获取清单
+     */
+    public List<OssInventory> getInventory(Date date) {
         String manifestKey = this.getManifestKey(date);
         List<String> inventoryGzFileKeys = this.getInventoryGzFileKeys(manifestKey);
         List<File> csvFiles = this.getCsvFiles(inventoryGzFileKeys);
@@ -144,15 +143,6 @@ public class OssInventoryService {
             inventoryList.addAll(parseFileToInventory(csvFile));
             csvFile.delete();
         }
-
+        return inventoryList;
     }
-
-    public static void main(String[] args) {
-        String json = FileUtil.readUtf8String(new File(
-                "D:\\2023.09.14 数据比赛\\prep_c_train_data\\data\\tables.json"));
-        String jsonString = JSON.toJSONString(JSON.parseArray(json), true);
-        FileUtil.writeUtf8String(jsonString, new File(
-                "D:\\2023.09.14 数据比赛\\prep_c_train_data\\data\\tables1.json"));
-    }
-
 }
