@@ -1,7 +1,9 @@
-package com.github.makewheels.video2022.oss.inventory;
+package com.github.makewheels.video2022.oss.inventory.bean;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
@@ -10,7 +12,11 @@ import java.util.Date;
  * <a href="https://help.aliyun.com/zh/oss/user-guide/when-inventories-take-effect">清单</a>
  */
 @Data
-public class OssInventory {
+@Document
+public class OssInventoryItem {
+    @Id
+    private String id;
+
     private String bucketName;
     @Indexed
     private String objectName;
@@ -24,11 +30,15 @@ public class OssInventory {
 
     // 清单生成时间，单位秒，对应阿里云提供的json文件里的creationTimestamp字段
     @Indexed
-    private Date inventoryGenerationTime;
+    private Date aliyunGenerationTime;
+    @Indexed
     private Integer inventoryGenerationDate;   // 清单生成日期
 
-    @Indexed
     private Date createTime;
-    @Indexed
     private Date updateTime;
+
+    public OssInventoryItem() {
+        this.createTime = new Date();
+        this.updateTime = new Date();
+    }
 }

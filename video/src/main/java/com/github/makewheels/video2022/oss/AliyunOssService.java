@@ -31,6 +31,7 @@ import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
 import com.google.common.collect.Lists;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.mortbay.util.ajax.JSON;
@@ -44,6 +45,7 @@ import java.util.List;
 
 @Slf4j
 public class AliyunOssService {
+    @Getter
     protected String bucket;
     protected String endpoint;
     protected String accessKeyId;
@@ -189,7 +191,7 @@ public class AliyunOssService {
      * 获取临时下载链接
      */
     private String getTempDownloadUrl(String key) {
-        return this.generatePresignedUrl(key, Duration.ofMinutes(5));
+        return this.generatePresignedUrl(key, Duration.ofHours(1));
     }
 
     /**
