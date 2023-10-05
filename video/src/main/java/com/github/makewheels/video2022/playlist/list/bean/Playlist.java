@@ -26,7 +26,7 @@ public class Playlist {
     @Indexed
     private String visibility;
     @Indexed
-    private Boolean isDelete = false;
+    private Boolean deleted = false;
     @Indexed
     private Date createTime;
     @Indexed

@@ -71,7 +71,7 @@ public class PlaylistService {
         String userId = UserHolder.getUserId();
         checkService.checkPlaylistOwner(playlistId, userId);
         Playlist playlist = playlistRepository.getPlaylist(playlistId);
-        playlist.setIsDelete(true);
+        playlist.setDeleted(true);
         playlistRepository.save(playlist);
         log.info("删除播放列表, playlist = {}", JSON.toJSONString(playlist));
     }
@@ -83,7 +83,7 @@ public class PlaylistService {
         String userId = UserHolder.getUserId();
         checkService.checkPlaylistCanDelete(playlistId, userId);
         Playlist playlist = playlistRepository.getPlaylist(playlistId);
-        playlist.setIsDelete(false);
+        playlist.setDeleted(false);
         playlistRepository.save(playlist);
         log.info("恢复播放列表, playlist = {}", JSON.toJSONString(playlist));
     }
