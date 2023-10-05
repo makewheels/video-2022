@@ -6,7 +6,7 @@ import cn.hutool.core.text.csv.CsvData;
 import cn.hutool.core.text.csv.CsvRow;
 import cn.hutool.core.text.csv.CsvUtil;
 import cn.hutool.core.util.URLUtil;
-import cn.hutool.extra.compress.CompressUtil;
+import cn.hutool.core.util.ZipUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.OSSObjectSummary;
@@ -24,7 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -97,6 +98,7 @@ public class OssInventoryService {
 
     /**
      * 获取csv文件
+     * <a href="https://doc.hutool.cn/pages/ZipUtil/">压缩工具-ZipUtil</a>
      */
     public List<File> getCsvFiles(List<String> gzKeys) {
         List<File> csvFiles = new ArrayList<>(gzKeys.size());
@@ -105,10 +107,14 @@ public class OssInventoryService {
             // 下载gz文件
             File gzFile = new File(FileUtils.getTempDirectory(), csvFilename + ".gz");
             ossDataService.downloadFile(gzKey, gzFile);
-            log.info("下载gz文件到本地: " + gzFile.getAbsolutePath());
+            log.info("下载gz文件到本地，文件大小: " + FileUtil.readableFileSize(gzFile)
+                    + "，文件路径: " + gzFile.getAbsolutePath());
             // 解压gz文件
-            CompressUtil.createExtractor(StandardCharsets.UTF_8, gzFile)
-                    .extract(gzFile.getParentFile());
+            try {
+                ZipUtil.unGzip(new FileInputStream(gzFile));
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
             File csvFile = new File(gzFile.getParentFile(), csvFilename);
             log.info("解压gz文件变成csv: " + csvFile.getAbsolutePath());
             FileUtil.del(gzFile);
@@ -150,6 +156,7 @@ public class OssInventoryService {
         // 获取快照，解析出inventoryItemList
         String manifestKey = this.getManifestKey(date);
         JSONObject manifest = JSON.parseObject(ossDataService.getObjectContent(manifestKey));
+        log.info("获取到清单文件的内容, manifest = " + JSON.toJSONString(manifest));
         List<String> gzFileKeys = this.getInventoryGzFileKeys(manifest);
         List<File> csvFiles = this.getCsvFiles(gzFileKeys);
         List<OssInventoryItem> inventoryItemList = new ArrayList<>();

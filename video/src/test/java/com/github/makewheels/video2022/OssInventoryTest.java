@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.oss.inventory.OssInventoryService;
 import com.github.makewheels.video2022.oss.inventory.bean.GenerateInventoryDTO;
@@ -21,8 +22,9 @@ public class OssInventoryTest {
      * 获取快照
      */
     @Test
-    public void getGenerateInventoryDTO() {
-        GenerateInventoryDTO generateInventoryDTO = ossInventoryService.getGenerateInventoryDTO(new Date());
+    public void getInventory() {
+        Date date = DateUtil.parse("2023-10-04 15:30:00");
+        GenerateInventoryDTO generateInventoryDTO = ossInventoryService.getGenerateInventoryDTO(date);
         System.out.println(JSON.toJSONString(generateInventoryDTO));
     }
 
