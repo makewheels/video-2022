@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.file.oss.inventory;
+package com.github.makewheels.video2022.oss.inventory;
 
 import lombok.Data;
 import org.springframework.data.mongodb.core.index.Indexed;

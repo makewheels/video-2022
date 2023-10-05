@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.file.oss;
+package com.github.makewheels.video2022.oss;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
@@ -9,13 +9,28 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.common.comm.Protocol;
 import com.aliyun.oss.internal.OSSHeaders;
-import com.aliyun.oss.model.*;
+import com.aliyun.oss.model.CannedAccessControlList;
+import com.aliyun.oss.model.CopyObjectRequest;
+import com.aliyun.oss.model.CopyObjectResult;
+import com.aliyun.oss.model.DeleteObjectsRequest;
+import com.aliyun.oss.model.DeleteObjectsResult;
+import com.aliyun.oss.model.ListObjectsV2Request;
+import com.aliyun.oss.model.ListObjectsV2Result;
+import com.aliyun.oss.model.OSSObject;
+import com.aliyun.oss.model.OSSObjectSummary;
+import com.aliyun.oss.model.OSSSymlink;
+import com.aliyun.oss.model.ObjectMetadata;
+import com.aliyun.oss.model.PutObjectResult;
+import com.aliyun.oss.model.RestoreObjectResult;
+import com.aliyun.oss.model.StorageClass;
+import com.aliyun.oss.model.VoidResult;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.auth.sts.AssumeRoleRequest;
 import com.aliyuncs.auth.sts.AssumeRoleResponse;
 import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.mortbay.util.ajax.JSON;
@@ -56,13 +71,11 @@ public class AliyunOssService {
         }
     }
 
-
     /**
      * 获取临时上传凭证
      */
     public JSONObject getUploadCredentials(String key) {
-        DefaultProfile.addEndpoint("cn-beijing", "Sts",
-                "sts.cn-beijing.aliyuncs.com");
+        DefaultProfile.addEndpoint("cn-beijing", "Sts", "sts.cn-beijing.aliyuncs.com");
         IClientProfile profile = DefaultProfile.getProfile("cn-beijing", accessKeyId, secretKey);
         DefaultAcsClient client = new DefaultAcsClient(profile);
         AssumeRoleRequest request = new AssumeRoleRequest();
@@ -120,8 +133,8 @@ public class AliyunOssService {
 
     /**
      * 按照prefix查找，分页遍历，列举所有文件
-     * <a href="https://help.aliyun.com/zh/oss/developer-reference/listobjectsv2">ListObjectsV2</a>
-     * <a href="https://error-center.aliyun.com/api/Oss/2019-05-17/ListObjectsV2">ListObjectsV2</a>
+     * <a href="https://help.aliyun.com/zh/oss/developer-reference/listobjectsv2">ListObjectsV2文档</a>
+     * <a href="https://error-center.aliyun.com/api/Oss/2019-05-17/ListObjectsV2">ListObjectsV2 OpenAPI</a>
      */
     public List<OSSObjectSummary> listAllObjects(String prefix) {
         List<OSSObjectSummary> objects = new ArrayList<>();
@@ -150,15 +163,18 @@ public class AliyunOssService {
 
     /**
      * 批量删除文件
-     * TODO 需要分页
      */
-    public DeleteObjectsResult deleteAllObjects(List<String> keys) {
-        log.info("阿里云OSS批量删除文件: 请求keys = " + JSON.toString(keys));
-        DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucket);
-        deleteObjectsRequest.setKeys(keys);
-        DeleteObjectsResult deleteObjectsResult = getClient().deleteObjects(deleteObjectsRequest);
-        log.info("阿里云OSS批量删除文件: 响应deleteObjectsResult = " + JSON.toString(deleteObjectsResult));
-        return deleteObjectsResult;
+    public List<String> deleteAllObjects(List<String> keys) {
+        List<String> deletedKeys = new ArrayList<>();
+        for (List<String> partitionKeys : Lists.partition(keys, 1000)) {
+            log.info("阿里云OSS批量删除文件: 请求keys = " + JSON.toString(partitionKeys));
+            DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucket);
+            deleteObjectsRequest.setKeys(partitionKeys);
+            DeleteObjectsResult deleteObjectsResult = getClient().deleteObjects(deleteObjectsRequest);
+            log.info("阿里云OSS批量删除文件: 响应deleteObjectsResult = " + JSON.toString(deleteObjectsResult));
+            deletedKeys.addAll(deleteObjectsResult.getDeletedObjects());
+        }
+        return deletedKeys;
     }
 
     /**

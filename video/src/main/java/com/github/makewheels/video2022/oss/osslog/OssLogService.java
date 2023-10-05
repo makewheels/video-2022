@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.file.oss.osslog;
+package com.github.makewheels.video2022.oss.osslog;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
