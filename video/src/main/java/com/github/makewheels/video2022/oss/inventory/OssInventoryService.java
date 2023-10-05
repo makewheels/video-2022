@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.file.oss.inventory;
+package com.github.makewheels.video2022.oss.inventory;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.text.csv.CsvData;
@@ -10,7 +10,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.etc.springboot.exception.VideoException;
-import com.github.makewheels.video2022.file.oss.OssDataService;
+import com.github.makewheels.video2022.oss.OssDataService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;

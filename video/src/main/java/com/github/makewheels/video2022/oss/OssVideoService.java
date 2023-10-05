@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.file.oss;
+package com.github.makewheels.video2022.oss;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
