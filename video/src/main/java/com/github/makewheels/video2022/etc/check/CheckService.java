@@ -143,7 +143,7 @@ public class CheckService {
         if (playlist == null) {
             throw new VideoException(ErrorCode.PLAYLIST_NOT_EXIST,
                     "播放列表不存在, playlistId = " + playlistId);
-        } else if (playlist.getIsDelete()) {
+        } else if (playlist.getDeleted()) {
             throw new VideoException(ErrorCode.PLAYLIST_DELETED,
                     "播放列表已删除, playlistId = " + playlistId);
         }
@@ -179,7 +179,7 @@ public class CheckService {
                             + ", ownerId = " + ownerId + ", userId = " + userId);
         }
 
-        if (!playlist.getIsDelete()) {
+        if (!playlist.getDeleted()) {
             throw new VideoException("播放列表状态正常, 不能恢复, playlistId = " + playlistId);
         }
 
