@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -56,8 +57,9 @@ public class OssInventoryService {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         String utcDate = simpleDateFormat.format(date);
-        List<OSSObjectSummary> ossObjectList
-                = ossDataService.listAllObjects(inventoryPrefix + "/" + utcDate);
+        String manifestPrefix = inventoryPrefix + "/" + utcDate;
+        List<OSSObjectSummary> ossObjectList = ossDataService.listAllObjects(manifestPrefix);
+        Assert.notEmpty(ossObjectList, "找不到清单文件, manifestPrefix = " + manifestPrefix);
         OSSObjectSummary ossObjectSummary = ossObjectList.stream()
                 .filter(e -> FilenameUtils.getName(e.getKey()).equals("manifest.json"))
                 .findFirst().orElseThrow(() -> new VideoException("找不到manifest.json"));
@@ -70,19 +72,19 @@ public class OssInventoryService {
     /**
      * 解析清单文件，获取清单GZ压缩文件的key
      * {
-     *     "creationTimestamp":"1694448644",
-     *     "destinationBucket":"oss-data-bucket",
-     *     "fileFormat":"CSV",
-     *     "fileSchema":"Bucket, Key, Size, StorageClass, LastModifiedDate, ETag, IsMultipartUploaded, EncryptionStatus",
-     *     "files":[
-     *         {
-     *             "MD5checksum":"5FC695B803A384A2FAA01D747C405FD1",
-     *             "key":"video-2022-dev/inventory/video-2022-dev/inventory-rule/data/fc581f25-2ab5-4f11-a88a-5a74ec15241f.csv.gz",
-     *             "size":12586
-     *         }
-     *     ],
-     *     "sourceBucket":"video-2022-dev",
-     *     "version":"2019-09-01"
+     * "creationTimestamp":"1694448644",
+     * "destinationBucket":"oss-data-bucket",
+     * "fileFormat":"CSV",
+     * "fileSchema":"Bucket, Key, Size, StorageClass, LastModifiedDate, ETag, IsMultipartUploaded, EncryptionStatus",
+     * "files":[
+     * {
+     * "MD5checksum":"5FC695B803A384A2FAA01D747C405FD1",
+     * "key":"video-2022-dev/inventory/video-2022-dev/inventory-rule/data/fc581f25-2ab5-4f11-a88a-5a74ec15241f.csv.gz",
+     * "size":12586
+     * }
+     * ],
+     * "sourceBucket":"video-2022-dev",
+     * "version":"2019-09-01"
      * }
      */
     public List<String> getInventoryGzFileKeys(JSONObject manifest) {
