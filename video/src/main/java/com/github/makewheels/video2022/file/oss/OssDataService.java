@@ -23,7 +23,7 @@ public class OssDataService extends AliyunOssService {
         this.accessKeyId = accessKeyId;
     }
 
-    @Value("${aliyun.oss.video.secretKey}")
+    @Value("${aliyun.oss.data.secretKey}")
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
     }
