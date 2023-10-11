@@ -6,20 +6,15 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 
 @Repository
 public class OssInventoryRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    public boolean isInventoryGenerationDate(Integer inventoryGenerationDate) {
+    public boolean isInventoryGenerationDate(LocalDate inventoryGenerationDate) {
         return mongoTemplate.exists(
-                Query.query(Criteria.where("inventoryGenerationDate").is(inventoryGenerationDate)),
-                OssInventory.class);
-    }
-
-    public OssInventory getInventoryByInventoryGenerationDate(Integer inventoryGenerationDate) {
-        return mongoTemplate.findOne(
                 Query.query(Criteria.where("inventoryGenerationDate").is(inventoryGenerationDate)),
                 OssInventory.class);
     }
