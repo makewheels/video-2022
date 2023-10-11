@@ -27,7 +27,9 @@ import org.springframework.util.Assert;
 import javax.annotation.Resource;
 import java.io.File;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,13 +51,16 @@ public class OssInventoryService {
 
     /**
      * 获取manifest.json的key
-     * 按前缀日期匹配，所以传入的时间是，北京时间的零点
+     * 按前缀日期在OSS搜索
+     * 传入时间北京时间的零点，会转为UTC时间
      */
     private String getManifestKey(LocalDate date) {
         log.info("获取manifest.json的key, 传入的时间 = " + date);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneOffset.UTC);
-        String utcDate = date.atStartOfDay().format(formatter);
-        log.info("转为UTC时间，作为OSS查找前缀utcDate = " + utcDate);
+        ZonedDateTime utcDateTime = date.atStartOfDay(ZoneId.systemDefault())
+                .withZoneSameInstant(ZoneOffset.UTC);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String utcDate = formatter.format(utcDateTime);
+
         String manifestPrefix = inventoryPrefix + "/" + utcDate;
         List<OSSObjectSummary> ossObjectList = ossDataService.listAllObjects(manifestPrefix);
         Assert.notEmpty(ossObjectList, "找不到清单文件, manifestPrefix = " + manifestPrefix);
