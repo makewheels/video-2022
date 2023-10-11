@@ -12,7 +12,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.etc.springboot.exception.VideoException;
 import com.github.makewheels.video2022.oss.OssDataService;
-import com.github.makewheels.video2022.oss.OssVideoService;
 import com.github.makewheels.video2022.oss.inventory.bean.GenerateInventoryDTO;
 import com.github.makewheels.video2022.oss.inventory.bean.OssInventory;
 import com.github.makewheels.video2022.oss.inventory.bean.OssInventoryItem;
@@ -23,16 +22,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
-import javax.annotation.Resource;
 
 /**
  * oss清单解析
@@ -46,21 +46,20 @@ public class OssInventoryService {
 
     @Resource
     private OssDataService ossDataService;
-    @Resource
-    private OssVideoService ossVideoService;
 
     /**
      * 获取manifest.json的key
      * 按前缀日期匹配，所以传入的时间是，北京时间的零点
      */
-    private String getManifestKey(Date date) {
-        log.info("获取manifest.json的key, 传入的时间 = " + DateUtil.formatDateTime(date));
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        String utcDate = simpleDateFormat.format(date);
+    private String getManifestKey(LocalDate date) {
+        log.info("获取manifest.json的key, 传入的时间 = " + date);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneOffset.UTC);
+        String utcDate = date.atStartOfDay().format(formatter);
+
         String manifestPrefix = inventoryPrefix + "/" + utcDate;
         List<OSSObjectSummary> ossObjectList = ossDataService.listAllObjects(manifestPrefix);
         Assert.notEmpty(ossObjectList, "找不到清单文件, manifestPrefix = " + manifestPrefix);
+
         OSSObjectSummary ossObjectSummary = ossObjectList.stream()
                 .filter(e -> FilenameUtils.getName(e.getKey()).equals("manifest.json"))
                 .findFirst().orElseThrow(() -> new VideoException("找不到manifest.json"));
@@ -152,7 +151,7 @@ public class OssInventoryService {
     /**
      * 获取清单
      */
-    public GenerateInventoryDTO getGenerateInventoryDTO(Date date) {
+    public GenerateInventoryDTO getGenerateInventoryDTO(LocalDate date) {
         // 获取快照，解析出inventoryItemList
         String manifestKey = this.getManifestKey(date);
         JSONObject manifest = JSON.parseObject(ossDataService.getObjectContent(manifestKey));
