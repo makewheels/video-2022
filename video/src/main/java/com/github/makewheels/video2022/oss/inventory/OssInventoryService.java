@@ -1,12 +1,13 @@
 package com.github.makewheels.video2022.oss.inventory;
 
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.text.csv.CsvData;
 import cn.hutool.core.text.csv.CsvRow;
 import cn.hutool.core.text.csv.CsvUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.URLUtil;
-import cn.hutool.core.util.ZipUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.model.OSSObjectSummary;
@@ -15,6 +16,7 @@ import com.github.makewheels.video2022.oss.OssDataService;
 import com.github.makewheels.video2022.oss.inventory.bean.GenerateInventoryDTO;
 import com.github.makewheels.video2022.oss.inventory.bean.OssInventory;
 import com.github.makewheels.video2022.oss.inventory.bean.OssInventoryItem;
+import com.github.makewheels.video2022.utils.CompressUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -24,8 +26,6 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -55,7 +55,7 @@ public class OssInventoryService {
         log.info("获取manifest.json的key, 传入的时间 = " + date);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneOffset.UTC);
         String utcDate = date.atStartOfDay().format(formatter);
-
+        log.info("转为UTC时间，作为OSS查找前缀utcDate = " + utcDate);
         String manifestPrefix = inventoryPrefix + "/" + utcDate;
         List<OSSObjectSummary> ossObjectList = ossDataService.listAllObjects(manifestPrefix);
         Assert.notEmpty(ossObjectList, "找不到清单文件, manifestPrefix = " + manifestPrefix);
@@ -75,11 +75,13 @@ public class OssInventoryService {
      * "creationTimestamp":"1694448644",
      * "destinationBucket":"oss-data-bucket",
      * "fileFormat":"CSV",
-     * "fileSchema":"Bucket, Key, Size, StorageClass, LastModifiedDate, ETag, IsMultipartUploaded, EncryptionStatus",
+     * "fileSchema":"Bucket, Key, Size, StorageClass, LastModifiedDate, ETag,
+     * IsMultipartUploaded, EncryptionStatus",
      * "files":[
      * {
      * "MD5checksum":"5FC695B803A384A2FAA01D747C405FD1",
-     * "key":"video-2022-dev/inventory/video-2022-dev/inventory-rule/data/fc581f25-2ab5-4f11-a88a-5a74ec15241f.csv.gz",
+     * "key":"video-2022-dev/inventory/video-2022-dev/inventory-rule/data
+     * /fc581f25-2ab5-4f11-a88a-5a74ec15241f.csv.gz",
      * "size":12586
      * }
      * ],
@@ -109,13 +111,12 @@ public class OssInventoryService {
             log.info("下载gz文件到本地，文件大小: " + FileUtil.readableFileSize(gzFile)
                     + "，文件路径: " + gzFile.getAbsolutePath());
             // 解压gz文件
-            try {
-                ZipUtil.unGzip(new FileInputStream(gzFile));
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            File csvFile = new File(gzFile.getParentFile(), csvFilename);
-            log.info("解压gz文件变成csv: " + csvFile.getAbsolutePath());
+            File targetFolder = new File(gzFile.getParentFile(), IdUtil.fastSimpleUUID());
+            CompressUtil.unCompressGz(gzFile, targetFolder);
+            Assert.isTrue(FileUtil.loopFiles(targetFolder).size() == 1,
+                    "解压出来的文件数量不是1");
+            File csvFile = FileUtil.loopFiles(targetFolder).get(0);
+            log.info("解压gz文件变成csv文件: " + csvFile.getAbsolutePath());
             FileUtil.del(gzFile);
             log.info("删除gz文件: " + gzFile.getAbsolutePath());
             csvFiles.add(csvFile);
@@ -138,7 +139,8 @@ public class OssInventoryService {
             inventoryItem.setObjectName(URLUtil.decode(row.get(1)));
             inventoryItem.setSize(Long.parseLong(row.get(2)));
             inventoryItem.setStorageClass(row.get(3));
-            inventoryItem.setLastModifiedDate(DateUtil.parse(row.get(4), "yyyy-MM-dd'T'HH-mm-ss'Z'"));
+            DateTime lastModifiedDate = DateUtil.parse(row.get(4), "yyyy-MM-dd'T'HH-mm-ss'Z'");
+            inventoryItem.setLastModifiedDate(lastModifiedDate);
             inventoryItem.setETag(row.get(5));
             inventoryItem.setIsMultipartUploaded(Boolean.parseBoolean(row.get(6)));
             inventoryItem.setEncryptionStatus(Boolean.parseBoolean(row.get(7)));
@@ -171,7 +173,8 @@ public class OssInventoryService {
         inventory.setGzOssKeys(gzFileKeys);
         inventory.setManifestKey(manifestKey);
         inventory.setManifest(manifest);
-        long creationTimestampInMillis = Long.parseLong(manifest.getString("creationTimestamp")) * 1000;
+        long creationTimestampInMillis
+                = Long.parseLong(manifest.getString("creationTimestamp")) * 1000;
         inventory.setAliyunGenerationTime(new Date(creationTimestampInMillis));
 
         // 返回 GenerateInventoryDTO

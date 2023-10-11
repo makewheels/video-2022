@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.video;
+package com.github.makewheels.video2022;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
