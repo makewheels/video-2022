@@ -17,11 +17,13 @@ import com.github.makewheels.video2022.oss.OssDataService;
 import com.github.makewheels.video2022.oss.inventory.bean.GenerateInventoryDTO;
 import com.github.makewheels.video2022.oss.inventory.bean.OssInventory;
 import com.github.makewheels.video2022.oss.inventory.bean.OssInventoryItem;
+import com.github.makewheels.video2022.oss.inventory.bean.OssInventoryRepository;
 import com.github.makewheels.video2022.utils.CompressUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -43,12 +45,15 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class OssInventoryService {
-
     @Value("${aliyun.oss.data.inventory-prefix}")
     private String inventoryPrefix;
 
     @Resource
     private OssDataService ossDataService;
+    @Resource
+    private MongoTemplate mongoTemplate;
+    @Resource
+    private OssInventoryRepository ossInventoryRepository;
 
     /**
      * 获取manifest.json的key
@@ -194,12 +199,10 @@ public class OssInventoryService {
         inventory.setManifestKey(generateInventoryDTO.getManifestKey());
         inventory.setManifest(manifest);
 
-        long creationTimestampInMillis = Long.parseLong(
-                manifest.getString("creationTimestamp")) * 1000;
-        inventory.setAliyunGenerationTime(new Date(creationTimestampInMillis));
-
-        inventory.setInventoryGenerationDate(Integer.valueOf(DateUtil.format(
-                inventory.getAliyunGenerationTime(), DatePattern.PURE_DATE_PATTERN)));
+        inventory.setAliyunGenerationTime(new Date(Long.parseLong(
+                manifest.getString("creationTimestamp")) * 1000));
+        inventory.setInventoryGenerationDate(inventory.getAliyunGenerationTime().toInstant()
+                .atZone(ZoneId.systemDefault()).toLocalDate());
 
         return inventory;
     }
@@ -220,7 +223,7 @@ public class OssInventoryService {
     /**
      * 获取清单
      */
-    public GenerateInventoryDTO generateInventory(LocalDate date) {
+    public GenerateInventoryDTO getInventory(LocalDate date) {
         // 初始化
         GenerateInventoryDTO generateInventoryDTO = initGenerateInventoryDTO(date);
 
@@ -235,5 +238,19 @@ public class OssInventoryService {
         return generateInventoryDTO;
     }
 
+    /**
+     * 生成并保存清单
+     */
+    public void generateAndSaveInventory(LocalDate date) {
+        if (ossInventoryRepository.isInventoryGenerationDate(date)) {
+            log.info("已经生成过快照, 跳过, date = " + date);
+            return;
+        }
 
+        log.info("开始生成快照");
+        GenerateInventoryDTO generateInventoryDTO = getInventory(date);
+        mongoTemplate.save(generateInventoryDTO.getOssInventory());
+        mongoTemplate.insertAll(generateInventoryDTO.getOssInventoryItemList());
+        log.info("生成快照完成");
+    }
 }

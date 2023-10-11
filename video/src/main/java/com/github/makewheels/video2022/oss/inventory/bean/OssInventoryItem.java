@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -41,7 +42,7 @@ public class OssInventoryItem {
      * 是北京时间，例如 20231011
      */
     @Indexed
-    private Integer inventoryGenerationDate;   // 清单生成日期
+    private LocalDate inventoryGenerationDate;   // 清单生成日期
 
     private Date createTime;
     private Date updateTime;
