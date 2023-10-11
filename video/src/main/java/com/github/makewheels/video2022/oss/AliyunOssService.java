@@ -139,6 +139,7 @@ public class AliyunOssService {
      * <a href="https://error-center.aliyun.com/api/Oss/2019-05-17/ListObjectsV2">ListObjectsV2 OpenAPI</a>
      */
     public List<OSSObjectSummary> listAllObjects(String prefix) {
+        log.info("阿里云OSS列举所有文件，请求prefix = " + prefix);
         List<OSSObjectSummary> objects = new ArrayList<>();
         String nextContinuationToken = null;
         ListObjectsV2Result result;
@@ -152,6 +153,7 @@ public class AliyunOssService {
             objects.addAll(result.getObjectSummaries());
             nextContinuationToken = result.getNextContinuationToken();
         } while (result.isTruncated());
+        log.info("阿里云OSS列举所有文件，返回objects.size() = " + objects.size());
         return objects;
     }
 
