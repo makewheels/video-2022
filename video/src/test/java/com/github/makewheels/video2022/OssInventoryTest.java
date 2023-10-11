@@ -1,19 +1,18 @@
 package com.github.makewheels.video2022;
 
-import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.oss.inventory.OssInventoryService;
 import com.github.makewheels.video2022.oss.inventory.bean.GenerateInventoryDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Date;
 import javax.annotation.Resource;
+import java.time.LocalDate;
 
 /**
  * OSS快照
  */
-@SpringBootTest
+@SpringBootTest(classes = VideoApplication.class)
 public class OssInventoryTest {
     @Resource
     private OssInventoryService ossInventoryService;
@@ -23,7 +22,7 @@ public class OssInventoryTest {
      */
     @Test
     public void getInventory() {
-        Date date = DateUtil.parse("2023-10-04 15:30:00");
+        LocalDate date = LocalDate.of(2023, 10, 4);
         GenerateInventoryDTO generateInventoryDTO = ossInventoryService.getGenerateInventoryDTO(date);
         System.out.println(JSON.toJSONString(generateInventoryDTO));
     }
