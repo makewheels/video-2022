@@ -20,6 +20,7 @@ public class OssInventoryItem {
     private String bucketName;
     @Indexed
     private String objectName;
+
     private Long size;
     private String storageClass;
     private Date lastModifiedDate;
@@ -28,9 +29,17 @@ public class OssInventoryItem {
     private Boolean isMultipartUploaded;
     private Boolean encryptionStatus;
 
-    // 清单生成时间，单位秒，对应阿里云提供的json文件里的creationTimestamp字段
+    /**
+     * 阿里云生成快照时间
+     * manifest.json文件里的creationTimestamp字段
+     */
     @Indexed
     private Date aliyunGenerationTime;
+
+    /**
+     * 清单生成日期
+     * 是北京时间，例如 20231011
+     */
     @Indexed
     private Integer inventoryGenerationDate;   // 清单生成日期
 

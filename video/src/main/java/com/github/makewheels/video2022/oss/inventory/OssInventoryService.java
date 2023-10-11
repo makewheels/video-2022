@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.oss.inventory;
 
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
@@ -118,6 +119,7 @@ public class OssInventoryService {
             // 解压gz文件
             File targetFolder = new File(gzFile.getParentFile(), IdUtil.fastSimpleUUID());
             CompressUtil.unCompressGz(gzFile, targetFolder);
+
             Assert.isTrue(FileUtil.loopFiles(targetFolder).size() == 1,
                     "解压出来的文件数量不是1");
             File csvFile = FileUtil.loopFiles(targetFolder).get(0);
@@ -134,59 +136,104 @@ public class OssInventoryService {
      * 把CSV清单文件解析成OssInventory清单对象
      * <a href="https://doc.hutool.cn/pages/CsvUtil">hutool读取CSV文档</a>
      */
-    public List<OssInventoryItem> parseFileToInventory(File file) {
-        log.info("解析CSV " + file.getAbsolutePath());
-        CsvData data = CsvUtil.getReader().read(file);
-        List<OssInventoryItem> inventoryList = new ArrayList<>(data.getRowCount());
-        for (CsvRow row : data.getRows()) {
-            OssInventoryItem inventoryItem = new OssInventoryItem();
-            inventoryItem.setBucketName(row.get(0));
-            inventoryItem.setObjectName(URLUtil.decode(row.get(1)));
-            inventoryItem.setSize(Long.parseLong(row.get(2)));
-            inventoryItem.setStorageClass(row.get(3));
-            DateTime lastModifiedDate = DateUtil.parse(row.get(4), "yyyy-MM-dd'T'HH-mm-ss'Z'");
-            inventoryItem.setLastModifiedDate(lastModifiedDate);
-            inventoryItem.setETag(row.get(5));
-            inventoryItem.setIsMultipartUploaded(Boolean.parseBoolean(row.get(6)));
-            inventoryItem.setEncryptionStatus(Boolean.parseBoolean(row.get(7)));
-            inventoryList.add(inventoryItem);
+    public List<OssInventoryItem> parseCsvFileToInventory(OssInventory inventory, List<File> csvFiles) {
+        List<OssInventoryItem> inventoryItemList = new ArrayList<>();
+        for (File csvFile : csvFiles) {
+            log.info("解析CSV文件: " + csvFile.getAbsolutePath());
+            CsvData data = CsvUtil.getReader().read(csvFile);
+            for (CsvRow row : data.getRows()) {
+                OssInventoryItem inventoryItem = new OssInventoryItem();
+                // 解析CSV文件
+                inventoryItem.setBucketName(row.get(0));
+                inventoryItem.setObjectName(URLUtil.decode(row.get(1)));
+                inventoryItem.setSize(Long.parseLong(row.get(2)));
+                inventoryItem.setStorageClass(row.get(3));
+                DateTime lastModifiedDate = DateUtil.parse(row.get(4), "yyyy-MM-dd'T'HH-mm-ss'Z'");
+                inventoryItem.setLastModifiedDate(lastModifiedDate);
+                inventoryItem.setETag(row.get(5));
+                inventoryItem.setIsMultipartUploaded(Boolean.parseBoolean(row.get(6)));
+                inventoryItem.setEncryptionStatus(Boolean.parseBoolean(row.get(7)));
+
+                // 设置inventory父级字段
+                inventoryItem.setAliyunGenerationTime(inventory.getAliyunGenerationTime());
+                inventoryItem.setInventoryGenerationDate(inventory.getInventoryGenerationDate());
+                inventoryItemList.add(inventoryItem);
+            }
+            log.info("解析出inventoryItemList.size = " + inventoryItemList.size());
         }
-        log.info("总共解析出inventoryList.size = " + inventoryList.size());
-        return inventoryList;
+        return inventoryItemList;
     }
 
     /**
-     * 获取清单
+     * 初始化 GenerateInventoryDTO, 获取manifest和CSV文件
      */
-    public GenerateInventoryDTO getGenerateInventoryDTO(LocalDate date) {
+    private GenerateInventoryDTO initGenerateInventoryDTO(LocalDate date) {
         // 获取快照，解析出inventoryItemList
         String manifestKey = this.getManifestKey(date);
         JSONObject manifest = JSON.parseObject(ossDataService.getObjectContent(manifestKey));
         log.info("获取到清单文件的内容, manifest = " + JSON.toJSONString(manifest));
         List<String> gzFileKeys = this.getInventoryGzFileKeys(manifest);
-        List<File> csvFiles = this.getCsvFiles(gzFileKeys);
-        List<OssInventoryItem> inventoryItemList = new ArrayList<>();
-        for (File csvFile : csvFiles) {
-            inventoryItemList.addAll(this.parseFileToInventory(csvFile));
-            FileUtil.del(csvFile);
-        }
 
-        // 创建 inventory
+        GenerateInventoryDTO generateInventoryDTO = new GenerateInventoryDTO();
+        generateInventoryDTO.setDate(date);
+        generateInventoryDTO.setManifestKey(manifestKey);
+        generateInventoryDTO.setManifest(manifest);
+        generateInventoryDTO.setGzFileKeys(gzFileKeys);
+        return generateInventoryDTO;
+    }
+
+    /**
+     * 创建 OssInventory
+     */
+    private OssInventory createOssInvetory(GenerateInventoryDTO generateInventoryDTO) {
+        JSONObject manifest = generateInventoryDTO.getManifest();
         OssInventory inventory = new OssInventory();
         inventory.setSnapshotSourceBucket(manifest.getString("sourceBucket"));
         inventory.setInventoryStorageBucket(ossDataService.getBucket());
-        inventory.setGzOssKeys(gzFileKeys);
-        inventory.setManifestKey(manifestKey);
+        inventory.setGzOssKeys(generateInventoryDTO.getGzFileKeys());
+        inventory.setManifestKey(generateInventoryDTO.getManifestKey());
         inventory.setManifest(manifest);
-        long creationTimestampInMillis
-                = Long.parseLong(manifest.getString("creationTimestamp")) * 1000;
+
+        long creationTimestampInMillis = Long.parseLong(
+                manifest.getString("creationTimestamp")) * 1000;
         inventory.setAliyunGenerationTime(new Date(creationTimestampInMillis));
 
-        // 返回 GenerateInventoryDTO
-        GenerateInventoryDTO generateInventoryDTO = new GenerateInventoryDTO();
+        inventory.setInventoryGenerationDate(Integer.valueOf(DateUtil.format(
+                inventory.getAliyunGenerationTime(), DatePattern.PURE_DATE_PATTERN)));
+
+        return inventory;
+    }
+
+    /**
+     * 解析 OssInventoryItem
+     */
+    private List<OssInventoryItem> getOssInventoryItems(GenerateInventoryDTO generateInventoryDTO) {
+        List<File> csvFiles = this.getCsvFiles(generateInventoryDTO.getGzFileKeys());
+        List<OssInventoryItem> inventoryItemList = parseCsvFileToInventory(
+                generateInventoryDTO.getOssInventory(), csvFiles);
+        for (File csvFile : csvFiles) {
+            FileUtil.del(csvFile);
+        }
+        return inventoryItemList;
+    }
+
+    /**
+     * 获取清单
+     */
+    public GenerateInventoryDTO getInventory(LocalDate date) {
+        // 初始化
+        GenerateInventoryDTO generateInventoryDTO = initGenerateInventoryDTO(date);
+
+        // 创建 OssInventory
+        OssInventory inventory = createOssInvetory(generateInventoryDTO);
         generateInventoryDTO.setOssInventory(inventory);
+
+        // 解析 OssInventoryItem
+        List<OssInventoryItem> inventoryItemList = getOssInventoryItems(generateInventoryDTO);
         generateInventoryDTO.setOssInventoryItemList(inventoryItemList);
+
         return generateInventoryDTO;
     }
+
 
 }

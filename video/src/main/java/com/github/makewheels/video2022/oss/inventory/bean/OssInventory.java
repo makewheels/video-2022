@@ -29,6 +29,12 @@ public class OssInventory {
      */
     private Date aliyunGenerationTime;
 
+    /**
+     * 清单生成日期
+     * 是北京时间，例如 20231011
+     */
+    private Integer inventoryGenerationDate;
+
     private Date createTime;
     private Date updateTime;
 
