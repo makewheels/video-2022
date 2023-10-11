@@ -59,7 +59,7 @@ public class OssInventoryService {
         log.info("获取manifest.json的key, 传入的时间 = " + date);
         ZonedDateTime utcDateTime = date.atStartOfDay(ZoneId.systemDefault())
                 .withZoneSameInstant(ZoneOffset.UTC);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATE_PATTERN);
         String utcDate = formatter.format(utcDateTime);
 
         String manifestPrefix = inventoryPrefix + "/" + utcDate;
@@ -220,7 +220,7 @@ public class OssInventoryService {
     /**
      * 获取清单
      */
-    public GenerateInventoryDTO getInventory(LocalDate date) {
+    public GenerateInventoryDTO generateInventory(LocalDate date) {
         // 初始化
         GenerateInventoryDTO generateInventoryDTO = initGenerateInventoryDTO(date);
 

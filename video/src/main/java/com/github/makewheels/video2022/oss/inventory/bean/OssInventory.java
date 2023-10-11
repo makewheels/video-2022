@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.oss.inventory.bean;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -33,6 +34,7 @@ public class OssInventory {
      * 清单生成日期
      * 是北京时间，例如 20231011
      */
+    @Indexed
     private Integer inventoryGenerationDate;
 
     private Date createTime;
