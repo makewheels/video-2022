@@ -10,6 +10,9 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * OSS清单，主表
+ */
 @Data
 @Document
 public class OssInventory {
