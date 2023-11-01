@@ -27,7 +27,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -38,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Resource;
 
 /**
  * oss清单解析
@@ -223,7 +223,7 @@ public class OssInventoryService {
     /**
      * 获取清单
      */
-    public GenerateInventoryDTO getInventory(LocalDate date) {
+    public GenerateInventoryDTO generateInventoryDTO(LocalDate date) {
         // 初始化
         GenerateInventoryDTO generateInventoryDTO = initGenerateInventoryDTO(date);
 
@@ -239,6 +239,15 @@ public class OssInventoryService {
     }
 
     /**
+     * 给item表设置主表inventoryId
+     */
+    private void setItemInventoryId(String inventoryId, List<OssInventoryItem> items) {
+        for (OssInventoryItem item : items) {
+            item.setInventoryId(inventoryId);
+        }
+    }
+
+    /**
      * 生成并保存清单
      */
     public void generateAndSaveInventory(LocalDate date) {
@@ -248,9 +257,13 @@ public class OssInventoryService {
         }
 
         log.info("开始生成快照");
-        GenerateInventoryDTO generateInventoryDTO = getInventory(date);
-        mongoTemplate.save(generateInventoryDTO.getOssInventory());
-        mongoTemplate.insertAll(generateInventoryDTO.getOssInventoryItemList());
+        GenerateInventoryDTO generateInventoryDTO = generateInventoryDTO(date);
+        OssInventory inventory = generateInventoryDTO.getOssInventory();
+        List<OssInventoryItem> inventoryItems = generateInventoryDTO.getOssInventoryItemList();
+
+        mongoTemplate.save(inventory);
+        setItemInventoryId(inventory.getId(), inventoryItems);
+        mongoTemplate.insertAll(inventoryItems);
         log.info("生成快照完成");
     }
 }

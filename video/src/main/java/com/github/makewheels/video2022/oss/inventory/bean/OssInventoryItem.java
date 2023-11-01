@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.Date;
 
 /**
- * oss清单
+ * OSS清单，子项item表
  * <a href="https://help.aliyun.com/zh/oss/user-guide/when-inventories-take-effect">清单</a>
  */
 @Data
@@ -29,6 +29,12 @@ public class OssInventoryItem {
     private String eTag;
     private Boolean isMultipartUploaded;
     private Boolean encryptionStatus;
+
+    /**
+     * 主表OssInventory的id
+     */
+    @Indexed
+    private String inventoryId;
 
     /**
      * 阿里云生成快照时间
