@@ -1,6 +1,8 @@
-package com.github.makewheels.video2022.oss.osslog;
+package com.github.makewheels.video2022.oss.osslog.bean;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
@@ -9,7 +11,13 @@ import java.util.Date;
  * <a href="https://help.aliyun.com/zh/oss/user-guide/logging">日志转存</a>
  */
 @Data
+@Document
 public class OssLog {
+    @Id
+    private String id;
+    private Date createTime;
+    private Date updateTime;
+
     private String remoteIp;
     private String reserved1;
     private String reserved2;
