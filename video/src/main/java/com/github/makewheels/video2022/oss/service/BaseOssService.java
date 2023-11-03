@@ -44,7 +44,7 @@ import java.util.Date;
 import java.util.List;
 
 @Slf4j
-public class AliyunOssService {
+public class BaseOssService {
     @Getter
     protected String bucket;
     protected String endpoint;

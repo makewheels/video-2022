@@ -19,6 +19,8 @@ public class OssLog {
     @Indexed
     private String programBatchId;
     @Indexed
+    private String logFileId;   // 日志文件id
+    @Indexed
     private Date createTime;
     private Date updateTime;
 

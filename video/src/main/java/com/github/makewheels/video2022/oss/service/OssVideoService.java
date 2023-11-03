@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class OssVideoService extends AliyunOssService {
+public class OssVideoService extends BaseOssService {
     @Value("${aliyun.oss.video.bucket}")
     private void setBucket(String bucket) {
         super.bucket = bucket;

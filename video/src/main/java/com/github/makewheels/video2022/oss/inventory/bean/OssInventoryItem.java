@@ -44,7 +44,7 @@ public class OssInventoryItem {
      * manifest.json文件里的creationTimestamp字段
      */
     @Indexed
-    private Date aliyunGenerationTime;
+    private Date ossGenerationTime;
 
     /**
      * 清单生成日期
