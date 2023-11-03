@@ -22,7 +22,7 @@ public class IdService {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    public synchronized String nextId(
+    private synchronized String nextId(
             Duration duration, int serialNumberLength, int randomLength) {
         // 时间戳，当前时间
         long currentTime = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli();

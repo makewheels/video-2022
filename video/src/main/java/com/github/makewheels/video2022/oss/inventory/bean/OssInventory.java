@@ -19,8 +19,10 @@ public class OssInventory {
     @Id
     private String id;
 
-    private String snapshotSourceBucket;  // 对这个存储桶打快照
+    @Indexed
+    private String programBatchId;
 
+    private String snapshotSourceBucket;  // 对这个存储桶打快照
     private String inventoryStorageBucket; // 保存清单的存储桶
 
     private List<String> gzOssKeys;
@@ -41,6 +43,7 @@ public class OssInventory {
     @Indexed
     private LocalDate inventoryGenerationDate;
 
+    @Indexed
     private Date createTime;
     private Date updateTime;
 

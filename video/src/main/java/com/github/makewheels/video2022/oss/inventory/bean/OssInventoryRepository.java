@@ -13,12 +13,18 @@ public class OssInventoryRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    public boolean isInventoryGenerationDate(LocalDate inventoryGenerationDate) {
+    /**
+     * inventoryGenerationDate是否存在
+     */
+    public boolean isInventoryGenerationDateExists(LocalDate inventoryGenerationDate) {
         return mongoTemplate.exists(
                 Query.query(Criteria.where("inventoryGenerationDate").is(inventoryGenerationDate)),
                 OssInventory.class);
     }
 
+    /**
+     * 根据key和日期查item
+     */
     public OssInventoryItem getItemByObjectNameAndDate(String objectName, Integer inventoryGenerationDate) {
         return mongoTemplate.findOne(
                 Query.query(Criteria.where("objectName").is(objectName)

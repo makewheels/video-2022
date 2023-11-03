@@ -8,10 +8,6 @@ public class RedisKey {
     private static final String ROOT = "video-2022";
 
     private static final String USER = ROOT + ":user";
-    private static final String VIDEO = ROOT + ":video";
-    private static final String TRANSCODE = ROOT + ":transcode";
-    private static final String PLAYLIST = ROOT + ":playlist";
-    private static final String PLAYLIST_ITEM = ROOT + ":playlistItem";
 
     private static final String INCREASE_SHORT_ID = ROOT + ":increaseShortId";
     private static final String INCREASE_LONG_ID = ROOT + ":increaseLongId";
