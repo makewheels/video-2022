@@ -34,7 +34,7 @@ public class OssInventory {
      * 阿里云生成快照时间
      * manifest.json文件里的creationTimestamp字段
      */
-    private Date aliyunGenerationTime;
+    private Date ossGenerationTime;
 
     /**
      * 清单生成日期

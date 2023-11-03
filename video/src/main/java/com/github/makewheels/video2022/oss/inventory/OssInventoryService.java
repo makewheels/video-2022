@@ -165,7 +165,7 @@ public class OssInventoryService {
                 inventoryItem.setEncryptionStatus(Boolean.parseBoolean(row.get(7)));
 
                 // 设置inventory父级字段
-                inventoryItem.setAliyunGenerationTime(inventory.getAliyunGenerationTime());
+                inventoryItem.setOssGenerationTime(inventory.getOssGenerationTime());
                 inventoryItem.setInventoryGenerationDate(inventory.getInventoryGenerationDate());
                 inventoryItemList.add(inventoryItem);
             }
@@ -175,9 +175,9 @@ public class OssInventoryService {
     }
 
     /**
-     * 初始化 GenerateInventoryDTO, 获取manifest和CSV文件
+     * 获取manifest和CSV文件
      */
-    private GenerateInventoryDTO initGenerateInventoryDTO(LocalDate date) {
+    private GenerateInventoryDTO loadManifest(LocalDate date) {
         // 生成批次id
         String generateBatchId = idService.nextLongId();
         log.info("生成OSS快照，生成批次id = " + generateBatchId);
@@ -186,7 +186,7 @@ public class OssInventoryService {
         String manifestKey = this.getManifestKey(date);
         JSONObject manifest = JSON.parseObject(ossDataService.getObjectContent(manifestKey));
         log.info("获取到清单文件的内容, manifest = " + JSON.toJSONString(manifest));
-        List<String> gzFileKeys = this.getInventoryGzFileKeys(manifest);
+        List<String> gzFileKeys = getInventoryGzFileKeys(manifest);
 
         // 返回DTO
         GenerateInventoryDTO generateInventoryDTO = new GenerateInventoryDTO();
@@ -211,9 +211,9 @@ public class OssInventoryService {
         inventory.setManifestKey(generateInventoryDTO.getManifestKey());
         inventory.setManifest(manifest);
 
-        inventory.setAliyunGenerationTime(new Date(Long.parseLong(
+        inventory.setOssGenerationTime(new Date(Long.parseLong(
                 manifest.getString("creationTimestamp")) * 1000));
-        inventory.setInventoryGenerationDate(inventory.getAliyunGenerationTime().toInstant()
+        inventory.setInventoryGenerationDate(inventory.getOssGenerationTime().toInstant()
                 .atZone(ZoneId.systemDefault()).toLocalDate());
 
         return inventory;
@@ -263,7 +263,7 @@ public class OssInventoryService {
      */
     public GenerateInventoryDTO generateInventoryDTO(LocalDate date) {
         // 初始化
-        GenerateInventoryDTO generateInventoryDTO = initGenerateInventoryDTO(date);
+        GenerateInventoryDTO generateInventoryDTO = loadManifest(date);
 
         // 创建 OssInventory
         OssInventory inventory = createInventory(generateInventoryDTO);
