@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.oss;
+package com.github.makewheels.video2022.oss.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

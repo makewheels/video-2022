@@ -9,7 +9,7 @@ import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.file.md5.FileMd5DTO;
 import com.github.makewheels.video2022.file.md5.Md5CfService;
-import com.github.makewheels.video2022.oss.OssVideoService;
+import com.github.makewheels.video2022.oss.service.OssVideoService;
 import com.github.makewheels.video2022.etc.springboot.exception.VideoException;
 import com.github.makewheels.video2022.etc.system.context.Context;
 import com.github.makewheels.video2022.etc.system.context.RequestUtil;

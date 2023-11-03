@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.etc.springboot.shutdown;
 
-import com.github.makewheels.video2022.oss.OssVideoService;
+import com.github.makewheels.video2022.oss.service.OssVideoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;

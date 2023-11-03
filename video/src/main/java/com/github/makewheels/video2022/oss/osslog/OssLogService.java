@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.oss.osslog;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSON;
+import com.github.makewheels.video2022.oss.osslog.bean.OssLog;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
