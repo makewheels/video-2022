@@ -294,7 +294,7 @@ public class OssInventoryService {
             return;
         }
 
-        log.info("开始生成快照");
+        log.info("开始生成快照 date = " + date);
         GenerateInventoryDTO generateInventoryDTO = generateInventoryDTO(date);
         OssInventory inventory = generateInventoryDTO.getOssInventory();
         List<OssInventoryItem> inventoryItems = generateInventoryDTO.getOssInventoryItemList();
@@ -302,6 +302,6 @@ public class OssInventoryService {
         mongoTemplate.save(inventory);
         updateItemInventoryId(inventory.getId(), inventoryItems);
         mongoTemplate.insertAll(inventoryItems);
-        log.info("生成快照完成");
+        log.info("生成快照完成 date = " + date);
     }
 }
