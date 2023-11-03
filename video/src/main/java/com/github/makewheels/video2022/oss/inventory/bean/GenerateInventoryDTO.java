@@ -9,6 +9,7 @@ import java.util.List;
 @Data
 public class GenerateInventoryDTO {
     private LocalDate date;
+    private String programBatchId;
     private String manifestKey;
     private JSONObject manifest;
     private List<String> gzFileKeys;

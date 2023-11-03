@@ -18,6 +18,9 @@ public class OssInventoryItem {
     @Id
     private String id;
 
+    @Indexed
+    private String programBatchId;
+
     private String bucketName;
     @Indexed
     private String objectName;
@@ -50,6 +53,7 @@ public class OssInventoryItem {
     @Indexed
     private LocalDate inventoryGenerationDate;   // 清单生成日期
 
+    @Indexed
     private Date createTime;
     private Date updateTime;
 
