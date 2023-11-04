@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.oss.osslog;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.oss.osslog.bean.GenerateOssLogDTO;
@@ -102,6 +103,7 @@ public class OssLogService {
     private List<OssLog> parseOssLogFile(OssLogFile ossLogFile, GenerateOssLogDTO generateOssLogDTO) {
         // 下载文件
         String logContent = ossDataService.getObjectContent(ossLogFile.getLogFileKey());
+        log.info("日志文件大小：" + FileUtil.readableFileSize(logContent.length()));
         List<String> lines = Arrays.asList(logContent.split("\n"));
 
         // TODO 解析不是分割，要从前往后逐步解析
@@ -186,6 +188,5 @@ public class OssLogService {
         }
         log.info("生成OSS访问日志完成，date = " + date);
     }
-
 
 }
