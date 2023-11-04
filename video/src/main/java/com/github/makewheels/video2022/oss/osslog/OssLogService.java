@@ -4,18 +4,27 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObjectSummary;
+import com.github.makewheels.video2022.oss.osslog.bean.GenerateOssLogDTO;
 import com.github.makewheels.video2022.oss.osslog.bean.OssLog;
+import com.github.makewheels.video2022.oss.osslog.bean.OssLogFile;
 import com.github.makewheels.video2022.oss.service.OssDataService;
 import com.github.makewheels.video2022.oss.service.OssVideoService;
+import com.github.makewheels.video2022.utils.IdService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +32,7 @@ import java.util.stream.Collectors;
  * oss日志解析
  */
 @Service
+@Slf4j
 public class OssLogService {
     @Value("${aliyun.oss.data.accesslog-prefix}")
     private String accesslogPrefix;
@@ -30,6 +40,23 @@ public class OssLogService {
     private OssDataService ossDataService;
     @Resource
     private OssVideoService ossVideoService;
+    @Resource
+    private IdService idService;
+    @Resource
+    private OssLogRepository ossLogRepository;
+    @Resource
+    private MongoTemplate mongoTemplate;
+
+    /**
+     * 创建DTO
+     */
+    private GenerateOssLogDTO createGenerateOssLogDTO(LocalDate date) {
+        GenerateOssLogDTO generateOssLogDTO = new GenerateOssLogDTO();
+        generateOssLogDTO.setDate(date);
+        String programBatchId = idService.nextLongId("oss_log_batch");
+        generateOssLogDTO.setProgramBatchId(programBatchId);
+        return generateOssLogDTO;
+    }
 
     /**
      * 获取一天所有的，OSS日志文件的key
@@ -44,14 +71,43 @@ public class OssLogService {
                 .map(OSSObjectSummary::getKey).collect(Collectors.toList());
     }
 
-    private void generateOssLog(String programBatchId, String logFileKey) {
+    /**
+     * 创建OssLogFile
+     */
+    private OssLogFile createOssLogFile(GenerateOssLogDTO generateOssLogDTO, String logFileKey) {
+        OssLogFile ossLogFile = new OssLogFile();
+        ossLogFile.setProgramBatchId(generateOssLogDTO.getProgramBatchId());
+        ossLogFile.setLogDate(generateOssLogDTO.getDate());
+        ossLogFile.setLogFileKey(logFileKey);
+        // video-2022-prod2023-06-18-16-00-00-0001
+        String filename = FilenameUtils.getName(logFileKey);
+        ossLogFile.setLogFileName(filename);
+        // 2023-06-18-16-00-00-0001
+        String timeAndUniqueString = filename.replace(ossVideoService.getBucket(), "");
+
+        // 2023-06-18-16-00-00
+        String timeString = StringUtils.substringBeforeLast(timeAndUniqueString, "-");
+        Date logFileTime = DateUtil.parse(timeString, "yyyy-MM-dd-HH-mm-ss");
+
+        // 0001
+        String uniqueString = StringUtils.substringAfterLast(timeAndUniqueString, "-");
+
+        ossLogFile.setLogFileTime(logFileTime);
+        ossLogFile.setLogFileUniqueString(uniqueString);
+        ossLogFile.setCreateTime(new Date());
+        ossLogFile.setUpdateTime(new Date());
+        return ossLogFile;
     }
 
     /**
      * 解析日志文件
      */
-    public List<OssLog> parseLogFileToBean(File file) {
-        List<String> lines = FileUtil.readLines(file, StandardCharsets.UTF_8);
+    private List<OssLog> parseOssLogFile(OssLogFile ossLogFile) {
+        // 下载文件
+        String logContent = ossDataService.getObjectContent(ossLogFile.getLogFileKey());
+        List<String> lines = Arrays.asList(logContent.split("\n"));
+
+        // TODO 解析不是分割，要从前往后逐步解析
         List<OssLog> ossLogList = new ArrayList<>(lines.size());
         for (String line : lines) {
             line = line.trim();
@@ -90,6 +146,26 @@ public class OssLogService {
             ossLogList.add(ossLog);
         }
         return ossLogList;
+    }
+
+    private void generateOssLog(LocalDate date) {
+        // 创建DTO
+        GenerateOssLogDTO generateOssLogDTO = createGenerateOssLogDTO(date);
+
+        // 获取日志文件key
+        List<String> logFileKeys = getLogFileKeys(date);
+
+        // 文件处理每个日志文件
+        for (String logFileKey : logFileKeys) {
+            // 如果文件已经解析过，跳过
+            if (ossLogRepository.isOssLogFileKeyExists(logFileKey)) {
+                continue;
+            }
+            OssLogFile ossLogFile = createOssLogFile(generateOssLogDTO, logFileKey);
+            mongoTemplate.save(ossLogFile);
+            List<OssLog> ossLogs = parseOssLogFile(ossLogFile);
+            mongoTemplate.insertAll(ossLogs);
+        }
     }
 
     public static void main(String[] args) {

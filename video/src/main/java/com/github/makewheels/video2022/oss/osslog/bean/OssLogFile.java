@@ -26,7 +26,7 @@ public class OssLogFile {
     @Indexed
     private String logFileName;  // 日志文件名
     @Indexed
-    private Date logFileDate;   // 日志文件名上的时间
+    private Date logFileTime;   // 日志文件名上的时间
     @Indexed
     private String logFileUniqueString;  // 日志文件的唯一标识
 

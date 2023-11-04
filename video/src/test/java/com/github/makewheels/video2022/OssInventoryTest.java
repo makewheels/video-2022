@@ -23,7 +23,7 @@ public class OssInventoryTest {
     @Test
     public void getInventory() {
         LocalDate date = LocalDate.of(2023, 10, 4);
-        GenerateInventoryDTO generateInventoryDTO = ossInventoryService.generateInventoryDTO(date);
+        GenerateInventoryDTO generateInventoryDTO = ossInventoryService.generateInventory(date);
         System.out.println(JSON.toJSONString(generateInventoryDTO));
     }
 

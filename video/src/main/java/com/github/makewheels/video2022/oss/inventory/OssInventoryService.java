@@ -16,7 +16,6 @@ import com.github.makewheels.video2022.etc.springboot.exception.VideoException;
 import com.github.makewheels.video2022.oss.inventory.bean.GenerateInventoryDTO;
 import com.github.makewheels.video2022.oss.inventory.bean.OssInventory;
 import com.github.makewheels.video2022.oss.inventory.bean.OssInventoryItem;
-import com.github.makewheels.video2022.oss.inventory.bean.OssInventoryRepository;
 import com.github.makewheels.video2022.oss.service.OssDataService;
 import com.github.makewheels.video2022.utils.CompressUtil;
 import com.github.makewheels.video2022.utils.IdService;
@@ -179,8 +178,8 @@ public class OssInventoryService {
      */
     private GenerateInventoryDTO loadManifest(LocalDate date) {
         // 生成批次id
-        String generateBatchId = idService.nextLongId();
-        log.info("生成OSS快照，生成批次id = " + generateBatchId);
+        String programBatchId = idService.nextLongId("oss_inventory_batch");
+        log.info("生成OSS快照，生成批次id = " + programBatchId);
 
         // 获取快照，解析出inventoryItemList
         String manifestKey = this.getManifestKey(date);
@@ -190,7 +189,7 @@ public class OssInventoryService {
 
         // 返回DTO
         GenerateInventoryDTO generateInventoryDTO = new GenerateInventoryDTO();
-        generateInventoryDTO.setProgramBatchId(generateBatchId);
+        generateInventoryDTO.setProgramBatchId(programBatchId);
         generateInventoryDTO.setDate(date);
         generateInventoryDTO.setManifestKey(manifestKey);
         generateInventoryDTO.setManifest(manifest);
@@ -261,7 +260,7 @@ public class OssInventoryService {
     /**
      * 获取清单
      */
-    public GenerateInventoryDTO generateInventoryDTO(LocalDate date) {
+    public GenerateInventoryDTO generateInventory(LocalDate date) {
         // 初始化
         GenerateInventoryDTO generateInventoryDTO = loadManifest(date);
 
@@ -295,7 +294,7 @@ public class OssInventoryService {
         }
 
         log.info("开始生成快照 date = " + date);
-        GenerateInventoryDTO generateInventoryDTO = generateInventoryDTO(date);
+        GenerateInventoryDTO generateInventoryDTO = generateInventory(date);
         OssInventory inventory = generateInventoryDTO.getOssInventory();
         List<OssInventoryItem> inventoryItems = generateInventoryDTO.getOssInventoryItemList();
 
