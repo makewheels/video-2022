@@ -144,13 +144,18 @@ public class OssInventoryService {
      * <a href="https://doc.hutool.cn/pages/CsvUtil">hutool读取CSV文档</a>
      */
     public List<OssInventoryItem> parseCsvFileToInventoryItems(
-            OssInventory inventory, List<File> csvFiles) {
+            GenerateInventoryDTO generateInventoryDTO, OssInventory inventory, List<File> csvFiles) {
         List<OssInventoryItem> inventoryItemList = new ArrayList<>();
         for (File csvFile : csvFiles) {
             log.info("解析CSV文件: " + csvFile.getAbsolutePath());
             CsvData data = CsvUtil.getReader().read(csvFile);
             for (CsvRow row : data.getRows()) {
                 OssInventoryItem inventoryItem = new OssInventoryItem();
+
+                // 给item设置id
+                inventoryItem.setInventoryId(inventory.getId());
+                inventoryItem.setProgramBatchId(generateInventoryDTO.getProgramBatchId());
+
                 // 解析CSV文件
                 inventoryItem.setBucketName(row.get(0));
                 inventoryItem.setObjectName(URLUtil.decode(row.get(1)));
@@ -239,19 +244,17 @@ public class OssInventoryService {
     /**
      * 创建OssInventoryItem
      */
-    private List<OssInventoryItem> createInventoryItems(GenerateInventoryDTO generateInventoryDTO) {
+    private List<OssInventoryItem> createInventoryItems(
+            GenerateInventoryDTO generateInventoryDTO, OssInventory inventory) {
         // 下载csv文件
         List<File> csvFiles = this.getCsvFiles(generateInventoryDTO.getGzFileKeys());
 
         // 把csv文件解析成Item
-        OssInventory inventory = generateInventoryDTO.getOssInventory();
-        List<OssInventoryItem> inventoryItems = parseCsvFileToInventoryItems(inventory, csvFiles);
+        List<OssInventoryItem> inventoryItems = parseCsvFileToInventoryItems(
+                generateInventoryDTO, inventory, csvFiles);
 
         // 删除csv文件
         deleteFiles(csvFiles);
-
-        // 更新item的批次号
-        updateItemProgramBatchId(generateInventoryDTO.getProgramBatchId(), inventoryItems);
 
         return inventoryItems;
     }
@@ -266,22 +269,13 @@ public class OssInventoryService {
 
         // 创建 OssInventory
         OssInventory inventory = createInventory(generateInventoryDTO);
-        generateInventoryDTO.setOssInventory(inventory);
+        mongoTemplate.save(inventory);
 
         // 解析 OssInventoryItem
-        List<OssInventoryItem> inventoryItemList = createInventoryItems(generateInventoryDTO);
-        generateInventoryDTO.setOssInventoryItemList(inventoryItemList);
+        List<OssInventoryItem> inventoryItems = createInventoryItems(generateInventoryDTO, inventory);
+        mongoTemplate.insertAll(inventoryItems);
 
         return generateInventoryDTO;
-    }
-
-    /**
-     * 给item表设置主表inventoryId
-     */
-    private void updateItemInventoryId(String inventoryId, List<OssInventoryItem> items) {
-        for (OssInventoryItem item : items) {
-            item.setInventoryId(inventoryId);
-        }
     }
 
     /**
@@ -292,15 +286,8 @@ public class OssInventoryService {
             log.info("已经生成过快照, 跳过, date = " + date);
             return;
         }
-
         log.info("开始生成快照 date = " + date);
-        GenerateInventoryDTO generateInventoryDTO = generateInventory(date);
-        OssInventory inventory = generateInventoryDTO.getOssInventory();
-        List<OssInventoryItem> inventoryItems = generateInventoryDTO.getOssInventoryItemList();
-
-        mongoTemplate.save(inventory);
-        updateItemInventoryId(inventory.getId(), inventoryItems);
-        mongoTemplate.insertAll(inventoryItems);
+        generateInventory(date);
         log.info("生成快照完成 date = " + date);
     }
 }

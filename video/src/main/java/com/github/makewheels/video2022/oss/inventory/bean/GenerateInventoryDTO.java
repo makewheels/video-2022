@@ -13,7 +13,4 @@ public class GenerateInventoryDTO {
     private String manifestKey;
     private JSONObject manifest;
     private List<String> gzFileKeys;
-
-    private OssInventory ossInventory;
-    private List<OssInventoryItem> ossInventoryItemList;
 }
