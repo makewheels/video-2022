@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.charge;
+package com.github.makewheels.video2022.finance.wallet;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -9,24 +9,26 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 扣费实付item
+ * 用户钱包
  */
 @Data
 @Document
-public class FeeDeductionItem {
+public class Wallet {
     @Id
     private String id;
     @Indexed
     private Date createTime;
     @Indexed
     private Date updateTime;
-
     @Indexed
     private String userId;
-    @Indexed
-    private String feeDeductionId;  // 扣费主表id
-    @Indexed
-    private String billId;          // 账单id
-    private BigDecimal payPrice;    // 支付金额
+
+    private BigDecimal balance;   // 余额
+
+    public Wallet() {
+        this.createTime = new Date();
+        this.updateTime = new Date();
+        this.balance = BigDecimal.ZERO;
+    }
 
 }
