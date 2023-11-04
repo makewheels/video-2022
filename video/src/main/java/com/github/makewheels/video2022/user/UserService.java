@@ -36,6 +36,9 @@ public class UserService {
      * 根据登录token获取用户
      */
     public User getUserByToken(String token) {
+        if (token == null) {
+            return null;
+        }
         //先看redis有没有
         User user = userRedisService.getUserByToken(token);
         //如果redis已经有了，返回ok
