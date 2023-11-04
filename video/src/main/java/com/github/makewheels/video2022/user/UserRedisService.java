@@ -6,6 +6,7 @@ import com.github.makewheels.video2022.etc.redis.RedisService;
 import com.github.makewheels.video2022.etc.redis.RedisTime;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.bean.VerificationCode;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -14,6 +15,8 @@ import javax.annotation.Resource;
 public class UserRedisService {
     @Resource
     private RedisService redisService;
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
 
     public VerificationCode getVerificationCode(String phone) {
         String json = (String) redisService.get(RedisKey.verificationCode(phone));
@@ -34,7 +37,7 @@ public class UserRedisService {
     }
 
     public User getUserByToken(String token) {
-        String json = (String) redisService.get(RedisKey.token(token));
+        String json = (String) redisTemplate.opsForValue().get(token);
         return JSON.parseObject(json, User.class);
     }
 
