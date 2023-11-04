@@ -1,5 +1,7 @@
-package com.github.makewheels.video2022.oss.inventory.bean;
+package com.github.makewheels.video2022.oss.inventory;
 
+import com.github.makewheels.video2022.oss.inventory.bean.OssInventory;
+import com.github.makewheels.video2022.oss.inventory.bean.OssInventoryItem;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;

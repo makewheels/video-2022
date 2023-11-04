@@ -88,6 +88,10 @@ public class IdService {
         return nextLongId();
     }
 
+    public synchronized String nextLongId(String prefix) {
+        return prefix + getCommonId();
+    }
+
     public synchronized String getUserId() {
         return "u_" + getCommonId();
     }
