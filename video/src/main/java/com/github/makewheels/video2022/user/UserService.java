@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.etc.springboot.exception.VideoException;
 import com.github.makewheels.video2022.etc.system.response.ErrorCode;
+import com.github.makewheels.video2022.finance.wallet.WalletService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.bean.VerificationCode;
 import com.github.makewheels.video2022.archive.BaiduSmsService;
@@ -31,6 +32,8 @@ public class UserService {
     private UserRepository userRepository;
     @Resource
     private IdService idService;
+    @Resource
+    private WalletService walletService;
 
     /**
      * 根据登录token获取用户
@@ -129,6 +132,8 @@ public class UserService {
         user.setToken(IdUtil.getSnowflakeNextIdStr());
         //保存或更新用户
         mongoTemplate.save(user);
+        //创建钱包
+        walletService.createAndSaveWallet(user.getId());
         //登陆信息存入redis
         userRedisService.setUserByToken(user);
         return user;
