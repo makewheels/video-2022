@@ -117,6 +117,7 @@ public class UserService {
             user.setId(idService.getUserId());
             user.setPhone(phone);
             user.setCreateTime(new Date());
+            user.setUpdateTime(new Date());
             log.info("创建新用户 " + JSON.toJSONString(user));
         }
         //刷新token

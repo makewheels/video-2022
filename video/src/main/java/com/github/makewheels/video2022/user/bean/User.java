@@ -21,6 +21,7 @@ public class User {
 
     @Indexed
     private Date createTime;
+    private Date updateTime;
 
     @Indexed
     private String token;

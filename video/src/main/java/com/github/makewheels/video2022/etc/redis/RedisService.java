@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit;
  * Redis工具类
  */
 @Service
+@Deprecated
 public class RedisService {
-
     @Resource
     private final RedisTemplate<String, Object> redisTemplate;
 
