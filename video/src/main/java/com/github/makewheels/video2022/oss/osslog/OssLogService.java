@@ -1,8 +1,6 @@
 package com.github.makewheels.video2022.oss.osslog;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.FileUtil;
-import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.oss.osslog.bean.GenerateOssLogDTO;
 import com.github.makewheels.video2022.oss.osslog.bean.OssLog;
@@ -18,10 +16,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -168,12 +163,4 @@ public class OssLogService {
         }
     }
 
-    public static void main(String[] args) {
-        File file = new File("C:\\Users\\thedoflin\\Downloads\\" +
-                "video-2022-prod2023-09-06-09-00-00-0001");
-        List<OssLog> ossLogList = new OssLogService().parseLogFileToBean(file);
-        for (OssLog ossLog : ossLogList) {
-            System.out.println(JSON.toJSONString(ossLog, true));
-        }
-    }
 }
