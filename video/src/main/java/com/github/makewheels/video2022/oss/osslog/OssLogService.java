@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.oss.osslog;
 
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.oss.osslog.bean.GenerateOssLogDTO;
 import com.github.makewheels.video2022.oss.osslog.bean.OssLog;
@@ -50,6 +51,7 @@ public class OssLogService {
         generateOssLogDTO.setDate(date);
         String programBatchId = idService.nextLongId("oss_log_batch");
         generateOssLogDTO.setProgramBatchId(programBatchId);
+        log.info("生成GenerateOssLogDTO = " + JSON.toJSONString(generateOssLogDTO));
         return generateOssLogDTO;
     }
 
@@ -97,7 +99,7 @@ public class OssLogService {
     /**
      * 解析日志文件
      */
-    private List<OssLog> parseOssLogFile(OssLogFile ossLogFile) {
+    private List<OssLog> parseOssLogFile(OssLogFile ossLogFile, GenerateOssLogDTO generateOssLogDTO) {
         // 下载文件
         String logContent = ossDataService.getObjectContent(ossLogFile.getLogFileKey());
         List<String> lines = Arrays.asList(logContent.split("\n"));
@@ -110,6 +112,9 @@ public class OssLogService {
             line = line.replace("]", "\"");
             List<String> row = Arrays.asList(line.split(" (?=([^']*'[^']*')*[^']*$)"));
             OssLog ossLog = new OssLog();
+            ossLog.setProgramBatchId(generateOssLogDTO.getProgramBatchId());
+            ossLog.setLogFileId(ossLogFile.getId());
+
             ossLog.setRemoteIp(row.get(0));
             ossLog.setReserved1(row.get(1));
             ossLog.setReserved2(row.get(2));
@@ -143,24 +148,44 @@ public class OssLogService {
         return ossLogList;
     }
 
+    /**
+     * 处理一个日志文件
+     */
+    private void handleLogFile(String logFileKey, GenerateOssLogDTO generateOssLogDTO) {
+        log.info("开始处理日志文件key = " + logFileKey);
+        // 如果文件已经解析过，跳过
+        if (ossLogRepository.isOssLogFileKeyExists(logFileKey)) {
+            log.info("数据库OssLogFile已存在该日志文件跳过，key = " + logFileKey);
+            return;
+        }
+
+        // 生成ossLogFile
+        OssLogFile ossLogFile = createOssLogFile(generateOssLogDTO, logFileKey);
+        mongoTemplate.save(ossLogFile);
+        log.info("保存落库OssLogFile " + JSON.toJSONString(ossLogFile));
+
+        // 解析日志文件
+        List<OssLog> ossLogs = parseOssLogFile(ossLogFile, generateOssLogDTO);
+        mongoTemplate.insertAll(ossLogs);
+        log.info("落库ossLogs，总数：" + ossLogs.size());
+    }
+
     private void generateOssLog(LocalDate date) {
+        log.info("开始获取OSS访问日志，date = " + date);
         // 创建DTO
         GenerateOssLogDTO generateOssLogDTO = createGenerateOssLogDTO(date);
 
         // 获取日志文件key
         List<String> logFileKeys = getLogFileKeys(date);
+        log.info("获取到日志文件，大小 = " + logFileKeys.size()
+                + ", logFileKeys = " + JSON.toJSONString(logFileKeys));
 
-        // 文件处理每个日志文件
+        // 解析每个日志文件
         for (String logFileKey : logFileKeys) {
-            // 如果文件已经解析过，跳过
-            if (ossLogRepository.isOssLogFileKeyExists(logFileKey)) {
-                continue;
-            }
-            OssLogFile ossLogFile = createOssLogFile(generateOssLogDTO, logFileKey);
-            mongoTemplate.save(ossLogFile);
-            List<OssLog> ossLogs = parseOssLogFile(ossLogFile);
-            mongoTemplate.insertAll(ossLogs);
+            handleLogFile(logFileKey, generateOssLogDTO);
         }
+        log.info("生成OSS访问日志完成，date = " + date);
     }
+
 
 }
