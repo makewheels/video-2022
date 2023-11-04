@@ -9,11 +9,11 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 账单，应付
+ * 扣费实付item
  */
 @Data
 @Document
-public class Bill {
+public class FeeDeductionItem {
     @Id
     private String id;
     @Indexed
@@ -22,14 +22,11 @@ public class Bill {
     private Date updateTime;
 
     @Indexed
-    private String userId;         // 用户id
-
-    private String billStatus;     // 账单状态，例如：已创建，已支付
-    private String payStatus;      // 支付状态，例如：已创建，已支付
-    private String payMethod;      // 支付方式，例如：账户余额，资源包
-    private BigDecimal totalChargePrice;  // 计费金额
-
+    private String userId;
     @Indexed
-    private String feeDeductionId; // 实付扣费id
+    private String feeDeductionId;  // 扣费主表id
+    @Indexed
+    private String billId;          // 账单id
+    private BigDecimal payPrice;    // 支付金额
 
 }
