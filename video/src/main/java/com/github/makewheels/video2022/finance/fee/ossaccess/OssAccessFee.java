@@ -1,5 +1,6 @@
-package com.github.makewheels.video2022.finance.fee;
+package com.github.makewheels.video2022.finance.fee.ossaccess;
 
+import com.github.makewheels.video2022.finance.fee.BaseFee;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -16,6 +17,8 @@ import java.util.Date;
 public class OssAccessFee extends BaseFee {
     @Indexed
     private String fileId;
+    @Indexed
+    private String accessId;      // 访问记录id
     @Indexed
     private String key;
     private String storageClass;  // OSS存储类型，例如：标准存储，低频访问存储

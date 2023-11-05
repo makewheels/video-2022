@@ -1,5 +1,6 @@
-package com.github.makewheels.video2022.finance.fee;
+package com.github.makewheels.video2022.finance.fee.ossstorage;
 
+import com.github.makewheels.video2022.finance.fee.BaseFee;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;

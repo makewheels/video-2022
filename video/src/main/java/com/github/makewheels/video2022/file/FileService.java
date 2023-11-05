@@ -40,18 +40,14 @@ public class FileService {
     private MongoTemplate mongoTemplate;
     @Resource
     private OssVideoService ossVideoService;
-
     @Resource
     private FileRepository fileRepository;
     @Resource
     private TsFileRepository tsFileRepository;
-
     @Resource
     private FileAccessLogService fileAccessLogService;
-
     @Resource
     private Md5CfService md5CfService;
-
     @Resource
     private IdService idService;
 
@@ -121,9 +117,9 @@ public class FileService {
         String clientId = context.getClientId();
         String sessionId = context.getSessionId();
 
-        // 异步保存访问File记录
+        // 异步处理访问File记录
         HttpServletRequest request = RequestUtil.getRequest();
-        new Thread(() -> fileAccessLogService.saveAccessLog(
+        new Thread(() -> fileAccessLogService.handleAccessLog(
                 request, videoId, clientId, sessionId, resolution, fileId))
                 .start();
 

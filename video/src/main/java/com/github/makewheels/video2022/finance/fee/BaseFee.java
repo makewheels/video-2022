@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Setter
 public class BaseFee extends BaseVideoFields {
     @Indexed
-    private String billId;           // 主表，账单id
+    private String billId;           // 主表，账单id，打包生成账单后回写
     private String feeStatus;        // 费用状态，例如：已创建，已计费
 
     private String feeType;          // 计费项，例如：视频转码，OSS存储空间，请求流量
