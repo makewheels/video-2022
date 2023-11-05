@@ -67,7 +67,8 @@ public class OssAccessFeeService {
         accessFee.setAmount(BigDecimal.valueOf(fileAccessLog.getSize()));
         BigDecimal feePrice = accessFee.getUnitPrice()
                 .multiply(accessFee.getAmount())
-                .setScale(UnitPriceService.SCALE, RoundingMode.HALF_DOWN);
+                .setScale(UnitPriceService.SCALE, RoundingMode.HALF_DOWN)
+                .abs();
         accessFee.setFeePrice(feePrice);
 
         return accessFee;
@@ -77,10 +78,11 @@ public class OssAccessFeeService {
      * 将OSS访问文件费用转换为账单
      */
     private Bill convertOssAccessFeeToBill(User user, List<OssAccessFee> accessFees) {
-        log.info("查到 {} 条OSS访问费用", accessFees.size());
+        log.info("用户id={}, 查到 {} 条OSS访问费用", user.getId(), accessFees.size());
         BigDecimal originChargePrice = accessFees.stream()
                 .map(OssAccessFee::getFeePrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .abs();
 
         Bill bill = new Bill();
         bill.setUserId(user.getId());
@@ -90,16 +92,19 @@ public class OssAccessFeeService {
         // 小数点后两位抹零
         // 计算抹零金额
         BigDecimal roundDownPrice = originChargePrice
-                .setScale(2, RoundingMode.DOWN)
-                .subtract(originChargePrice);
+                .setScale(2, RoundingMode.HALF_DOWN)
+                .subtract(originChargePrice)
+                .abs();
         bill.setRoundDownPrice(roundDownPrice);
         // 应付金额
-        BigDecimal realChargePrice = originChargePrice.subtract(roundDownPrice);
+        BigDecimal realChargePrice = originChargePrice.subtract(roundDownPrice).abs();
         bill.setRealChargePrice(realChargePrice);
 
         bill.setChargeTime(new Date());
         Wallet wallet = walletRepository.findByUserId(user.getId());
-        bill.setWalletId(wallet.getId());
+        if (wallet != null) {
+            bill.setWalletId(wallet.getId());
+        }
         bill.setFeeCount(accessFees.size());
         return bill;
     }
@@ -113,6 +118,7 @@ public class OssAccessFeeService {
             List<OssAccessFee> accessFees = feeRepository.listDirectDeductionFee(
                     OssAccessFee.class, billTimeStart, billTimeEnd, user.getId(), FeeStatus.CREATED);
             if (CollectionUtils.isEmpty(accessFees)) {
+                log.info("用户id：{}，没有OSS访问费用，跳过", user.getId());
                 continue;
             }
             Bill bill = convertOssAccessFeeToBill(user, accessFees);
@@ -130,6 +136,5 @@ public class OssAccessFeeService {
             }
         }
     }
-
 
 }
