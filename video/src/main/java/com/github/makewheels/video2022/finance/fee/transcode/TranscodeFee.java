@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.finance.fee.transcode;
 
-import com.github.makewheels.video2022.finance.fee.BaseFee;
+import com.github.makewheels.video2022.finance.fee.base.BaseFee;
+import com.github.makewheels.video2022.finance.fee.base.Fee;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -14,7 +15,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Document
-public class TranscodeFee extends BaseFee {
+public class TranscodeFee extends BaseFee implements Fee {
     @Indexed
     private String transcodeId;
     private String resolution;

@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.finance.fee;
+package com.github.makewheels.video2022.finance.fee.base;
 
 import com.github.makewheels.video2022.basebean.BaseVideoFields;
 import lombok.Getter;

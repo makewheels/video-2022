@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Repository
 public class UserRepository {
@@ -15,6 +16,10 @@ public class UserRepository {
 
     public User getById(String id) {
         return mongoTemplate.findById(id, User.class);
+    }
+
+    public List<User> listAll() {
+        return mongoTemplate.findAll(User.class);
     }
 
     public boolean isUserExist(String id) {

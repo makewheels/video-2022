@@ -16,9 +16,9 @@ import java.util.Date;
 @Setter
 @Document
 public class Bill extends BaseVideoFields {
-    private BigDecimal shouldChargePrice;   // 应扣金额
+    private BigDecimal originChargePrice;   // 原始应扣金额
     private BigDecimal roundDownPrice;      // 抹零金额
-    private BigDecimal realChargePrice;     // 实扣金额
+    private BigDecimal realChargePrice;     // 应付金额
     @Indexed
     private Date chargeTime;                // 扣费时间
 
@@ -27,4 +27,5 @@ public class Bill extends BaseVideoFields {
     @Indexed
     private String transactionId;           // 钱包流水id
 
+    private Integer feeCount;               // 费用记录数量
 }
