@@ -1,8 +1,6 @@
 package com.github.makewheels.video2022;
 
-import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.oss.inventory.OssInventoryService;
-import com.github.makewheels.video2022.oss.inventory.bean.GenerateInventoryDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -16,16 +14,6 @@ import java.time.LocalDate;
 public class OssInventoryTest {
     @Resource
     private OssInventoryService ossInventoryService;
-
-    /**
-     * 获取快照
-     */
-    @Test
-    public void getInventory() {
-        LocalDate date = LocalDate.of(2023, 10, 4);
-        GenerateInventoryDTO generateInventoryDTO = ossInventoryService.generateInventory(date);
-        System.out.println(JSON.toJSONString(generateInventoryDTO));
-    }
 
     /**
      * 生成快照
