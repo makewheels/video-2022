@@ -1,15 +1,14 @@
-package com.github.makewheels.video2022.etc.springboot.configuration;
+package com.github.makewheels.video2022.etc.springboot.mongo;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
-import org.springframework.data.mongodb.core.convert.DbRefResolver;
-import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
-import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
-import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.data.mongodb.core.convert.*;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class MongoConfiguration {
@@ -25,8 +24,15 @@ public class MongoConfiguration {
     public MappingMongoConverter mappingMongoConverter() {
         DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDbFactory);
         MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
-        //不保存 _class 属性到mongo
+        // 不保存 _class
         converter.setTypeMapper(new DefaultMongoTypeMapper(null));
+
+        // 设置自定义转换器
+        List<Object> customConversions = new ArrayList<>();
+        customConversions.add(new BigDecimalToDecimal128Converter());
+        customConversions.add(new Decimal128ToBigDecimalConverter());
+        converter.setCustomConversions(new MongoCustomConversions(customConversions));
+
         return converter;
     }
 }
