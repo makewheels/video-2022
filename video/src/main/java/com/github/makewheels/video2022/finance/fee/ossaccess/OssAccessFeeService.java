@@ -1,8 +1,10 @@
 package com.github.makewheels.video2022.finance.fee.ossaccess;
 
+import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.file.access.FileAccessLog;
 import com.github.makewheels.video2022.finance.bill.Bill;
 import com.github.makewheels.video2022.finance.fee.base.FeeRepository;
+import com.github.makewheels.video2022.finance.fee.base.FeeStatus;
 import com.github.makewheels.video2022.finance.fee.base.FeeTypeEnum;
 import com.github.makewheels.video2022.finance.unitprice.UnitName;
 import com.github.makewheels.video2022.finance.unitprice.UnitPrice;
@@ -11,6 +13,7 @@ import com.github.makewheels.video2022.finance.wallet.Wallet;
 import com.github.makewheels.video2022.finance.wallet.WalletRepository;
 import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.user.bean.User;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,7 @@ import java.util.List;
  * OSS访问文件费用服务
  */
 @Service
+@Slf4j
 public class OssAccessFeeService {
     @Resource
     private UnitPriceService unitPriceService;
@@ -73,6 +77,7 @@ public class OssAccessFeeService {
      * 将OSS访问文件费用转换为账单
      */
     private Bill convertOssAccessFeeToBill(User user, List<OssAccessFee> accessFees) {
+        log.info("查到 {} 条OSS访问费用", accessFees.size());
         BigDecimal originChargePrice = accessFees.stream()
                 .map(OssAccessFee::getFeePrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -106,12 +111,23 @@ public class OssAccessFeeService {
     public void createBill(Date billTimeStart, Date billTimeEnd) {
         for (User user : userRepository.listAll()) {
             List<OssAccessFee> accessFees = feeRepository.listDirectDeductionFee(
-                    OssAccessFee.class, billTimeStart, billTimeEnd, user.getId());
+                    OssAccessFee.class, billTimeStart, billTimeEnd, user.getId(), FeeStatus.CREATED);
             if (CollectionUtils.isEmpty(accessFees)) {
                 continue;
             }
             Bill bill = convertOssAccessFeeToBill(user, accessFees);
+            log.info("创建OSS访问账单，用户id：{}，账单：{}", user.getId(), JSON.toJSONString(bill));
             mongoTemplate.save(bill);
+
+            // 反向关联：计费的账单id
+            for (OssAccessFee accessFee : accessFees) {
+                feeRepository.updateBillId(OssAccessFee.class, accessFee.getId(), bill.getId());
+            }
+
+            // 更新费用状态
+            for (OssAccessFee accessFee : accessFees) {
+                feeRepository.updateStatus(OssAccessFee.class, accessFee.getId(), FeeStatus.BILLED);
+            }
         }
     }
 

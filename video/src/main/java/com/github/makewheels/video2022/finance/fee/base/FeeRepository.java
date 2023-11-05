@@ -20,10 +20,12 @@ public class FeeRepository {
      * 例如：访问OSS文件，视频转码
      */
     public <T> List<T> listDirectDeductionFee(
-            Class<T> clazz, Date billTimeStart, Date billTimeEnd, String userId) {
+            Class<T> clazz, Date billTimeStart, Date billTimeEnd, String userId,
+            String feeStatus) {
         return mongoTemplate.find(Query.query(
                         Criteria.where("billTime").gte(billTimeStart).lt(billTimeEnd)
-                                .and("userId").is(userId)),
+                                .and("userId").is(userId)
+                                .and("feeStatus").is(feeStatus)),
                 clazz
         );
     }
@@ -48,6 +50,16 @@ public class FeeRepository {
     public void updateBillId(Class<?> clazz, String feeId, String billId) {
         mongoTemplate.updateFirst(Query.query(Criteria.where("id").is(feeId)),
                 new Update().set("billId", billId).set("updateTime", new Date()),
+                clazz
+        );
+    }
+
+    /**
+     * 反向关联：计费的账单id
+     */
+    public void updateStatus(Class<?> clazz, String feeId, String status) {
+        mongoTemplate.updateFirst(Query.query(Criteria.where("id").is(feeId)),
+                new Update().set("status", status).set("updateTime", new Date()),
                 clazz
         );
     }
