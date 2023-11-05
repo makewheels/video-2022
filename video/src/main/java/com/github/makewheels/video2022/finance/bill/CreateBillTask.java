@@ -23,10 +23,10 @@ public class CreateBillTask {
      */
     @Scheduled(cron = "0 0 0 * * ?")
     public void createAccessFeeBill() {
-//        Date billTimeStart = DateUtil.beginOfDay(DateUtil.yesterday());
-//        Date billTimeEnd = DateUtil.beginOfDay(new Date());
-        Date billTimeStart = DateUtil.beginOfDay(new Date());
-        Date billTimeEnd = DateUtil.beginOfDay(DateUtil.tomorrow());
+        Date billTimeStart = DateUtil.beginOfDay(DateUtil.yesterday());
+        Date billTimeEnd = DateUtil.beginOfDay(new Date());
+//        Date billTimeStart = DateUtil.beginOfDay(new Date());
+//        Date billTimeEnd = DateUtil.beginOfDay(DateUtil.tomorrow());
         log.info("开始生成OSS访问账单 billTimeStart: {} billTimeEnd: {}", billTimeStart, billTimeEnd);
         ossAccessFeeService.createBill(billTimeStart, billTimeEnd);
         log.info("生成OSS访问账单完成");

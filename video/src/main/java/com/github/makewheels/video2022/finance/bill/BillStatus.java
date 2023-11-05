@@ -5,5 +5,5 @@ package com.github.makewheels.video2022.finance.bill;
  */
 public interface BillStatus {
     String CREATED = "CREATED";
-    String PAID = "PAID";
+    String CHARGED = "CHARGED";
 }
