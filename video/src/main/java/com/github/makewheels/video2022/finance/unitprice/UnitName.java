@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.finance.fee;
+package com.github.makewheels.video2022.finance.unitprice;
 
 /**
  * 计费单位

@@ -32,7 +32,12 @@ public class VideoRepository {
     }
 
     public Map<String, Video> getMapByIdList(List<String> idList) {
-        return getByIdList(idList).stream().collect(Collectors.toMap(Video::getId, Function.identity()));
+        return getByIdList(idList).stream().collect(
+                Collectors.toMap(Video::getId, Function.identity()));
+    }
+
+    public List<Video> listAll() {
+        return mongoTemplate.findAll(Video.class);
     }
 
     /**
@@ -52,7 +57,10 @@ public class VideoRepository {
      * watchId是否存在
      */
     public boolean isWatchIdExist(String watchId) {
-        return mongoTemplate.exists(Query.query(Criteria.where(Watch.FIELD_NAME + ".watchId").is(watchId)), Video.class);
+        return mongoTemplate.exists(Query.query(
+                        Criteria.where(Watch.FIELD_NAME + ".watchId").is(watchId)),
+                Video.class
+        );
     }
 
     public Video getByWatchId(String watchId) {
