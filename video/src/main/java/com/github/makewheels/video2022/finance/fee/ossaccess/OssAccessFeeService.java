@@ -82,11 +82,11 @@ public class OssAccessFeeService {
         BigDecimal originChargePrice = accessFees.stream()
                 .map(OssAccessFee::getFeePrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(UnitPriceService.SCALE, RoundingMode.HALF_DOWN)
                 .abs();
 
         Bill bill = new Bill();
         bill.setUserId(user.getId());
-        bill.setVideoId(user.getId());
 
         bill.setOriginChargePrice(originChargePrice);
         // 小数点后两位抹零
@@ -97,7 +97,8 @@ public class OssAccessFeeService {
                 .abs();
         bill.setRoundDownPrice(roundDownPrice);
         // 应付金额
-        BigDecimal realChargePrice = originChargePrice.subtract(roundDownPrice).abs();
+        BigDecimal realChargePrice = originChargePrice.subtract(roundDownPrice)
+                .setScale(2, RoundingMode.HALF_DOWN);
         bill.setRealChargePrice(realChargePrice);
 
         bill.setChargeTime(new Date());
