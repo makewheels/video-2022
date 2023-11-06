@@ -28,6 +28,8 @@ public class Bill extends BaseCommonFields {
     private String transactionId;           // 钱包流水id
 
     private Integer feeCount;               // 费用记录数量
+    private String feeType;                 // 账单计费类型
+    private String feeTypeName;
     private String billStatus;              // 账单状态
 
     public Bill() {

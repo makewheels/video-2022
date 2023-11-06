@@ -9,8 +9,6 @@ import com.github.makewheels.video2022.finance.fee.base.FeeTypeEnum;
 import com.github.makewheels.video2022.finance.unitprice.UnitName;
 import com.github.makewheels.video2022.finance.unitprice.UnitPrice;
 import com.github.makewheels.video2022.finance.unitprice.UnitPriceService;
-import com.github.makewheels.video2022.finance.wallet.Wallet;
-import com.github.makewheels.video2022.finance.wallet.WalletRepository;
 import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.user.bean.User;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +20,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -37,8 +36,6 @@ public class OssAccessFeeService {
     private FeeRepository feeRepository;
     @Resource
     private UserRepository userRepository;
-    @Resource
-    private WalletRepository walletRepository;
     @Resource
     private MongoTemplate mongoTemplate;
 
@@ -77,7 +74,7 @@ public class OssAccessFeeService {
     /**
      * 将OSS访问文件费用转换为账单
      */
-    private Bill convertOssAccessFeeToBill(User user, List<OssAccessFee> accessFees) {
+    private Bill convertToBill(User user, List<OssAccessFee> accessFees) {
         log.info("用户id={}, 查到 {} 条OSS访问费用", user.getId(), accessFees.size());
         BigDecimal originChargePrice = accessFees.stream()
                 .map(OssAccessFee::getFeePrice)
@@ -87,6 +84,8 @@ public class OssAccessFeeService {
 
         Bill bill = new Bill();
         bill.setUserId(user.getId());
+        bill.setFeeType(FeeTypeEnum.OSS_ACCESS.getCode());
+        bill.setFeeTypeName(FeeTypeEnum.OSS_ACCESS.getName());
 
         bill.setOriginChargePrice(originChargePrice);
         // 小数点后两位抹零
@@ -102,10 +101,6 @@ public class OssAccessFeeService {
         bill.setRealChargePrice(realChargePrice);
 
         bill.setChargeTime(new Date());
-        Wallet wallet = walletRepository.findByUserId(user.getId());
-        if (wallet != null) {
-            bill.setWalletId(wallet.getId());
-        }
         bill.setFeeCount(accessFees.size());
         return bill;
     }
@@ -114,7 +109,8 @@ public class OssAccessFeeService {
      * 创建账单
      * 按用户分组，多个视频汇总到一个账单
      */
-    public void createBill(Date billTimeStart, Date billTimeEnd) {
+    public List<Bill> createBill(Date billTimeStart, Date billTimeEnd) {
+        List<Bill> bills = new ArrayList<>();
         for (User user : userRepository.listAll()) {
             List<OssAccessFee> accessFees = feeRepository.listDirectDeductionFee(
                     OssAccessFee.class, billTimeStart, billTimeEnd, user.getId(), FeeStatus.CREATED);
@@ -122,20 +118,18 @@ public class OssAccessFeeService {
                 log.info("用户id：{}，没有OSS访问费用，跳过", user.getId());
                 continue;
             }
-            Bill bill = convertOssAccessFeeToBill(user, accessFees);
+            Bill bill = convertToBill(user, accessFees);
             log.info("创建OSS访问账单，用户id：{}，账单：{}", user.getId(), JSON.toJSONString(bill));
             mongoTemplate.save(bill);
-
-            // 反向关联：计费的账单id
+            bills.add(bill);
             for (OssAccessFee accessFee : accessFees) {
+                // 反向关联：计费的账单id
                 feeRepository.updateBillId(OssAccessFee.class, accessFee.getId(), bill.getId());
-            }
-
-            // 更新费用状态
-            for (OssAccessFee accessFee : accessFees) {
-                feeRepository.updateStatus(OssAccessFee.class, accessFee.getId(), FeeStatus.BILLED);
+                // 更新费用状态
+                feeRepository.updateStatus(OssAccessFee.class, accessFee.getId(), FeeStatus.CHARGED);
             }
         }
+        return new ArrayList<>(bills);
     }
 
 }
