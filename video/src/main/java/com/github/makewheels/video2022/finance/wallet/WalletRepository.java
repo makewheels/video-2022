@@ -12,9 +12,13 @@ public class WalletRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    public Wallet findByUserId(String userId) {
+    public Wallet getById(String id) {
+        return mongoTemplate.findById(id, Wallet.class);
+    }
+
+    public Wallet getByUserId(String userId) {
         return mongoTemplate.findOne(Query.query(
-                        Criteria.where("userId").and(userId).is(userId)),
+                Criteria.where("userId").is(userId)),
                 Wallet.class
         );
     }

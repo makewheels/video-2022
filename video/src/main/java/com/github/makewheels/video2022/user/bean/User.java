@@ -26,6 +26,11 @@ public class User {
     @Indexed
     private String token;
 
+    public User() {
+        this.createTime = new Date();
+        this.updateTime = new Date();
+    }
+
     @Override
     public String toString() {
         return JSON.toJSONString(this);

@@ -57,9 +57,9 @@ public class FeeRepository {
     /**
      * 反向关联：计费的账单id
      */
-    public void updateStatus(Class<?> clazz, String feeId, String status) {
+    public void updateStatus(Class<?> clazz, String feeId, String feeStatus) {
         mongoTemplate.updateFirst(Query.query(Criteria.where("id").is(feeId)),
-                new Update().set("status", status).set("updateTime", new Date()),
+                new Update().set("feeStatus", feeStatus).set("updateTime", new Date()),
                 clazz
         );
     }

@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.finance.wallet;
 
+import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -31,4 +32,7 @@ public class Wallet {
         this.balance = BigDecimal.ZERO;
     }
 
+    public String toString() {
+        return JSON.toJSONString(this);
+    }
 }

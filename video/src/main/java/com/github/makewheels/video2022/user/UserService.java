@@ -2,13 +2,12 @@ package com.github.makewheels.video2022.user;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
-import com.alibaba.fastjson.JSON;
+import com.github.makewheels.video2022.archive.BaiduSmsService;
 import com.github.makewheels.video2022.etc.springboot.exception.VideoException;
 import com.github.makewheels.video2022.etc.system.response.ErrorCode;
 import com.github.makewheels.video2022.finance.wallet.WalletService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.bean.VerificationCode;
-import com.github.makewheels.video2022.archive.BaiduSmsService;
 import com.github.makewheels.video2022.utils.IdService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
 
 @Service
 @Slf4j
@@ -122,9 +120,7 @@ public class UserService {
             user = new User();
             user.setId(idService.getUserId());
             user.setPhone(phone);
-            user.setCreateTime(new Date());
-            user.setUpdateTime(new Date());
-            log.info("创建新用户 " + JSON.toJSONString(user));
+            log.info("创建新用户 " + user);
         }
         //刷新token
         userRedisService.delUserByToken(user.getToken());
@@ -133,7 +129,7 @@ public class UserService {
         //保存或更新用户
         mongoTemplate.save(user);
         //创建钱包
-        walletService.createAndSaveWallet(user.getId());
+        walletService.createWallet(user.getId());
         //登陆信息存入redis
         userRedisService.setUserByToken(user);
         return user;
