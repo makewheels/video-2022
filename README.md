@@ -1,8 +1,8 @@
-# 关键设计
+## 关键设计
 
 [关键设计](docs/api/design/design.md)
 
-# API 接口文档
+## API 接口文档
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/dced8657344813ee3fbc?action=collection%2Fimport)
 
@@ -20,15 +20,11 @@
 
 [AndroidApp接口](docs/api/app/api-app.md)
 
-# MongoDB 表结构
+## MongoDB 表结构
 
 [video 视频对象](docs/mongodb/video.md)
 
-# YouTube环境构建
-
-[YouTube下载](docs/design/youtube/youtube.md)
-
-# 其它
+## 其它
 
 [运维](docs/operation/operation.md)
 
