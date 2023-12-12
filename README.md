@@ -24,23 +24,16 @@
 
 [video 视频对象](docs/mongodb/video.md)
 
-# YouTube
+# YouTube环境构建
 
 [YouTube下载](docs/design/youtube/youtube.md)
 
-# 运维
+# 其它
 
 [运维](docs/operation/operation.md)
 
-# 部署
-
 [部署](docs/deploy/deploy.md)
-
-# Java Stream Examples
 
 [Java 8 Stream Api Examples](docs/java8-stream-examples/java8-stream-examples.md)
 
-# 变更日志
-
 [变更日志](docs/changes/changes.md)
-
