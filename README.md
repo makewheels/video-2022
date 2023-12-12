@@ -16,15 +16,18 @@
 
 [转码接口](docs/api/5-转码接口.md)
 
-[App接口](docs/api/6-App接口.md)
+[播放列表接口](docs/api/6-播放列表接口.md)
 
-[统计接口](docs/api/7-统计接口.md)
+[App接口](docs/api/7-App接口.md)
+
+[统计接口](docs/api/8-统计接口.md)
 
 ## MongoDB 表结构
 
 [MongoDB 表结构](docs/2-MongoDB表结构.md)
 
 ## 其它
+
 [代办](docs/3-代办.md)
 
 [部署](docs/4-部署.md)
