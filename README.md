@@ -6,19 +6,19 @@
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/dced8657344813ee3fbc?action=collection%2Fimport)
 
-[用户接口](docs/api/用户接口.md)
+[用户接口](docs/api/1-用户接口.md)
 
-[上传视频接口](docs/api/上传视频接口.md)
+[上传视频接口](docs/api/2-上传视频接口.md)
 
-[YouTube接口](docs/api/YouTube接口.md)
+[YouTube接口](docs/api/3-YouTube接口)
 
-[播放视频接口](docs/api/播放视频接口.md)
+[播放视频接口](docs/api/4-播放视频接口)
 
-[转码接口](docs/api/转码接口.md)
+[转码接口](docs/api/5-转码接口)
 
-[统计接口](docs/api/统计接口.md)
+[App接口](docs/api/6-App接口)
 
-[App接口](docs/api/App接口.md)
+[统计接口](docs/api/7-统计接口)
 
 ## MongoDB 表结构
 
