@@ -1,4 +1,6 @@
-# 关键逻辑
+# 关键设计
+[设计](docs/api/design/design.md)
+
 
 ## 上传
 
@@ -21,9 +23,11 @@ sequenceDiagram
     观众->>观众: 前端播放器播放
 ```
 
-# 接口文档
+# API 接口文档
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/dced8657344813ee3fbc?action=collection%2Fimport)
+
+https://app.getpostman.com/run-collection/dced8657344813ee3fbc?action=collection%2Fimport
 
 [用户接口](docs/api/user/api-user.md)
 
@@ -43,7 +47,7 @@ sequenceDiagram
 
 [video 视频对象](docs/mongodb/video.md)
 
-# 如何部署？
+# 部署
 
 RSA
 
