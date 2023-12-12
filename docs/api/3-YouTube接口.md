@@ -1,7 +1,7 @@
 
 ## 3. YouTube
 
-#### 新建搬运YouTube视频
+#### 1. 新建搬运YouTube视频
 
 ```text
 POST /video/create
@@ -16,7 +16,7 @@ POST /video/create
 }
 ```
 
-#### 获取YouTube文件拓展名
+#### 2. 获取YouTube文件拓展名
 
 ```
 GET https://youtube.videoplus.top:5030/youtube/getFileExtension?youtubeVideoId=j4LtMumQGHc
@@ -36,7 +36,7 @@ GET https://youtube.videoplus.top:5030/youtube/getFileExtension?youtubeVideoId=j
 }
 ```
 
-#### 获取YouTube视频信息
+#### 3. 获取YouTube视频信息
 
 后面最终是调用的 Google YouTube 的接口
 

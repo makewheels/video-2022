@@ -1,7 +1,7 @@
 
 ## 7. App
 
-### 检查App版本
+### 1. 检查App版本
 
 ```
 GET /app/checkUpdate
