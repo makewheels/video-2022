@@ -10,15 +10,15 @@
 
 [上传视频接口](docs/api/2-上传视频接口.md)
 
-[YouTube接口](docs/api/3-YouTube接口)
+[YouTube接口](docs/api/3-YouTube接口.md)
 
-[播放视频接口](docs/api/4-播放视频接口)
+[播放视频接口](docs/api/4-播放视频接口.md)
 
-[转码接口](docs/api/5-转码接口)
+[转码接口](docs/api/5-转码接口.md)
 
-[App接口](docs/api/6-App接口)
+[App接口](docs/api/6-App接口.md)
 
-[统计接口](docs/api/7-统计接口)
+[统计接口](docs/api/7-统计接口.md)
 
 ## MongoDB 表结构
 
