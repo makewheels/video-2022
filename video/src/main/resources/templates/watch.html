@@ -166,8 +166,8 @@
         watchId = getUrlVariable("v");
         //获取播放地址
         axios.get('/watchController/getWatchInfo?watchId=' + watchId
-            + '&clientId=' + localStorage.clientId
-            + '&sessionId=' + sessionStorage.sessionId)
+            + '&clientId=' + localStorage.clientId + '&sessionId=' + sessionStorage.sessionId
+            + '&token=' + localStorage.token)
             .then(function (res) {
                 //开始播放
                 startPlayVideo(res.data.data);
