@@ -37,7 +37,7 @@ public class ProgressService {
             progress.setUpdateTime(new Date());
             log.info("视频播放进度已存在，更新进度记录");
         }
-        progress.setLastSessionId(heartbeat.getSessionId());
+        progress.setSessionId(heartbeat.getSessionId());
         progress.setProgressInMillis(heartbeat.getPlayerTime());
 
         log.info("保存视频播放进度: " + JSON.toJSONString(progress));
@@ -46,6 +46,7 @@ public class ProgressService {
 
     /**
      * 获取视频播放进度
+     * progress/getProgress?videoId=v_758099100001206&clientId=639415751e4772573842a430
      */
     public Progress getProgress(String videoId, String viewerId, String clientId) {
         return progressRepository.getProgress(videoId, viewerId, clientId);
