@@ -14,7 +14,8 @@ public class UserHolder {
     }
 
     public static String getUserId() {
-        return get().getId();
+        User user = get();
+        return user == null ? null : user.getId();
     }
 
     public boolean exists() {
