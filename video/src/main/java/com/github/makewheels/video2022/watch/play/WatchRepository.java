@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.watch;
+package com.github.makewheels.video2022.watch.play;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;

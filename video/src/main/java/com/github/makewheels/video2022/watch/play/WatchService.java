@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.watch;
+package com.github.makewheels.video2022.watch.play;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;

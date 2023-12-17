@@ -183,7 +183,7 @@ public class OssInventoryService {
      */
     private GenerateInventoryDTO loadManifest(LocalDate date) {
         // 生成批次id
-        String programBatchId = idService.nextLongId("oss_inventory_batch");
+        String programBatchId = idService.nextLongId("oss_inventory_batch_");
         log.info("生成OSS快照，生成批次id = " + programBatchId);
 
         // 获取快照，解析出inventoryItemList
