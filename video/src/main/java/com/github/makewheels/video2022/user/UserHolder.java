@@ -17,6 +17,10 @@ public class UserHolder {
         return get().getId();
     }
 
+    public boolean exists() {
+        return UserHolder.get() != null;
+    }
+
     public static void remove() {
         THREAD_LOCAL.remove();
     }
