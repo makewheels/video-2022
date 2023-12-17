@@ -29,16 +29,16 @@ public class Video {
     private String description;
 
     @Indexed
-    private String videoType;        // 类型：是用户上传还是YouTube搬运
+    private String videoType;       // 类型：是用户上传还是YouTube搬运
     @Indexed
-    private String provider;    // 它就是对象存储提供商，和file是一对一关系
+    private String provider;        // 它就是对象存储提供商，和file是一对一关系
     @Indexed
-    private String status;      // 转码状态
+    private String status;          // 转码状态
 
     @Indexed
-    private String rawFileId; // 用户上传原始视频文件id
+    private String rawFileId;       // 用户上传原始视频文件id
     @Indexed
-    private String coverId;   // 封面id
+    private String coverId;         // 封面id
     // 关联id
     private List<String> transcodeIds;  // 转码id列表
 

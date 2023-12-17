@@ -13,12 +13,12 @@ public class StorageStatus {
     public static final String FIELD_NAME = "storageStatus";
 
     @Indexed
-    private Date expireTime;                    //过期时间
+    private Date expireTime;                  //过期时间
     @Indexed
     private Boolean permanent;                //是否是永久视频
-    private Boolean rawFileDeleted;      //源视频是否已删除
+    private Boolean rawFileDeleted;           //源视频是否已删除
     private Boolean transcodeFilesDeleted;    //ts转码文件是否已删除
-    private Date deleteTime;                    //什么时候删的
+    private Date deleteTime;                  //什么时候删的
 
     public StorageStatus() {
         this.rawFileDeleted = false;

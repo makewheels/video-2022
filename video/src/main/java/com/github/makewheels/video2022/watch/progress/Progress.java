@@ -1,12 +1,14 @@
 package com.github.makewheels.video2022.watch.progress;
 
-import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.util.Date;
 
+/**
+ * 视频播放进度
+ */
 @Data
 public class Progress {
     @Id
@@ -14,6 +16,10 @@ public class Progress {
 
     @Indexed
     private String videoId;
+    //观众id，没登录就为空
+    @Indexed
+    private String viewerId;
+
     @Indexed
     private String clientId;
 
@@ -21,18 +27,14 @@ public class Progress {
     @Indexed
     private String lastSessionId;
 
-    //观众id，没登录就为空
-    @Indexed
-    private String viewerId;
-
-    //视频进度，现在播放到第几毫秒了
-    private Long playerTime;
+    //视频进度，单位毫秒
+    private Long progressInMillis;
 
     private Date createTime;
     private Date updateTime;
 
-    @Override
-    public String toString() {
-        return JSON.toJSONString(this);
+    public Progress() {
+        this.createTime = new Date();
+        this.updateTime = new Date();
     }
 }
