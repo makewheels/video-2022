@@ -145,7 +145,7 @@
                 // "cover": coverUrl,
                 "width": "100%",
                 "height": "340px",
-                "autoplay": false,
+                "autoplay": true,
                 "isLive": false,
                 "rePlay": false,
                 "playsinline": true,
@@ -203,8 +203,8 @@
         if (videoStatus !== "READY") {
             //如果视频不是 已就绪状态
             document.getElementById("errorInfo").innerHTML
-                = "视频正在上传或转码<br>" + "请稍后再来<br>"
-                + "videoId=" + videoId + "<br>" + "当前状态：" + data.videoStatus;
+                = "视频正在上传或转码<br><br>" + "请稍后再来<br><br>"
+                + "videoId=" + videoId + "<br><br>" + "当前状态：" + data.videoStatus;
             playerElement.style.display = "none";
             return;
         }
@@ -216,7 +216,7 @@
             playerElement.style.height = (window.innerHeight - 30) + "px";
         }
 
-        //自适应码率播放
+        //获取视频播放进度
         playByM3u8UrlAndTime(data.multivariantPlaylistUrl, 0);
 
     }

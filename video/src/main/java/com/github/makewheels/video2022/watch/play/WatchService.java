@@ -4,19 +4,22 @@ import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.etc.ding.NotificationService;
-import com.github.makewheels.video2022.file.TsFileRepository;
-import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.etc.system.context.Context;
 import com.github.makewheels.video2022.etc.system.context.RequestUtil;
 import com.github.makewheels.video2022.etc.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.etc.system.response.Result;
+import com.github.makewheels.video2022.file.TsFileRepository;
+import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
+import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.utils.IpService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
+import com.github.makewheels.video2022.watch.progress.Progress;
+import com.github.makewheels.video2022.watch.progress.ProgressService;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +57,8 @@ public class WatchService {
     private NotificationService notificationService;
     @Resource
     private EnvironmentService environmentService;
+    @Resource
+    private ProgressService progressService;
 
     /**
      * 保存观看记录到数据库
@@ -150,6 +155,14 @@ public class WatchService {
         watchInfoVO.setMultivariantPlaylistUrl(environmentService.getInternalBaseUrl()
                 + "/watchController/getMultivariantPlaylist.m3u8?videoId=" + videoId
                 + "&clientId=" + context.getClientId() + "&sessionId=" + context.getSessionId());
+
+        //视频播放进度
+        Progress progress = progressService.getProgress(
+                videoId, UserHolder.getUserId(), context.getClientId());
+        if (progress != null) {
+            watchInfoVO.setProgressInMillis(progress.getProgressInMillis());
+        }
+
         return Result.ok(watchInfoVO);
     }
 

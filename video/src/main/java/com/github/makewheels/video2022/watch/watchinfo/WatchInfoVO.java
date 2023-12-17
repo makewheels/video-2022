@@ -8,4 +8,5 @@ public class WatchInfoVO {
     private String coverUrl;
     private String multivariantPlaylistUrl;
     private String videoStatus;
+    private Long progressInMillis;
 }

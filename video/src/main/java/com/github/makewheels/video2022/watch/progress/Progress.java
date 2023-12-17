@@ -21,19 +21,16 @@ public class Progress {
     @Indexed
     private String videoId;
 
-    //观众id，没登录就为空
     @Indexed
-    private String viewerId;
+    private String viewerId;        //观众id，没登录就为空
 
     @Indexed
     private String clientId;
 
-    //最后一次发送过来的时候的sessionId
     @Indexed
-    private String lastSessionId;
+    private String sessionId;
 
-    //视频进度，单位毫秒
-    private Long progressInMillis;
+    private Long progressInMillis;   //视频进度，单位毫秒
 
     private Date createTime;
     private Date updateTime;
