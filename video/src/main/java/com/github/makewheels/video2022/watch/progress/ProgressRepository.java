@@ -12,9 +12,15 @@ public class ProgressRepository {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    public Progress getByVideoIdAndViewerId(String videoId, String viewerId) {
-        Query query = Query.query(Criteria.where("videoId").is(videoId)
-                .and("viewerId").is(viewerId));
-        return mongoTemplate.findOne(query, Progress.class);
+    public Progress getProgress(String videoId, String viewerId, String clientId) {
+        Criteria criteria = Criteria.where("videoId").is(videoId);
+        if (viewerId != null) {
+            criteria.and("viewerId").is(viewerId);
+        }
+        if (clientId != null) {
+            criteria.and("clientId").is(clientId);
+        }
+        return mongoTemplate.findOne(new Query(criteria), Progress.class);
     }
+
 }

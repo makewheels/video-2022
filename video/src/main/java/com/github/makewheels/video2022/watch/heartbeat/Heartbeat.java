@@ -1,13 +1,18 @@
 package com.github.makewheels.video2022.watch.heartbeat;
 
-import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
+@Document
+@CompoundIndexes({@CompoundIndex(def =
+        "{'videoId': 1, 'viewerId': 1, 'clientId': 1, 'createTime': 1}")})
 public class Heartbeat {
     @Id
     private String id;
@@ -28,8 +33,4 @@ public class Heartbeat {
     private String playerStatus;
     private BigDecimal playerVolume;
 
-    @Override
-    public String toString() {
-        return JSON.toJSONString(this);
-    }
 }

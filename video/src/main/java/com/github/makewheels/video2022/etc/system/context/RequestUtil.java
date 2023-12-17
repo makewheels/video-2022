@@ -4,7 +4,9 @@ import cn.hutool.core.io.IoUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -18,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 public class RequestUtil {
     private static <T> T mapToBean(Map<String, String> map, Class<T> clazz) {
         T t = null;
@@ -25,7 +28,7 @@ public class RequestUtil {
             t = clazz.getConstructor().newInstance();
             BeanUtils.populate(t, map);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         return t;
     }
@@ -118,7 +121,7 @@ public class RequestUtil {
         try {
             return IoUtil.readUtf8(getRequest().getInputStream());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         return null;
     }
@@ -130,7 +133,7 @@ public class RequestUtil {
         try {
             return JSON.parseObject(IoUtil.readUtf8(request.getInputStream()));
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         return null;
     }

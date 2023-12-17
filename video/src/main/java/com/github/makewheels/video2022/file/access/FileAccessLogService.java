@@ -80,6 +80,6 @@ public class FileAccessLogService {
         OssAccessFee accessFee = ossAccessFeeService.create(
                 fileAccessLog, request, videoId, clientId, sessionId, resolution, fileId);
         mongoTemplate.save(accessFee);
-        log.info("保存OSS访问费用 " + JSON.toJSONString(accessFee));
+        log.debug("保存OSS访问费用 " + JSON.toJSONString(accessFee));
     }
 }
