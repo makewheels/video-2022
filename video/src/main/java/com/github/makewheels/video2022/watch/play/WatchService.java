@@ -159,9 +159,7 @@ public class WatchService {
         //视频播放进度
         Progress progress = progressService.getProgress(
                 videoId, UserHolder.getUserId(), context.getClientId());
-        if (progress != null) {
-            watchInfoVO.setProgressInMillis(progress.getProgressInMillis());
-        }
+        watchInfoVO.setProgressInMillis(progress == null ? 0 : progress.getProgressInMillis());
 
         return Result.ok(watchInfoVO);
     }

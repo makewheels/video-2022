@@ -159,13 +159,6 @@
             }
         );
 
-        // 播放器就绪
-        // player.on("ready", function (res) {
-        //     // https://shimo.im/docs/WlArz2PzQxi1VgA2
-        //     const videoElement = document.getElementsByTagName("video")[0];
-        //     player.tag.style.objectFit = 'cover'
-        //     // videoElement.style.objectFit = "contain";
-        // });
     }
 
     //加载视频
@@ -216,8 +209,8 @@
             playerElement.style.height = (window.innerHeight - 30) + "px";
         }
 
-        //获取视频播放进度
-        playByM3u8UrlAndTime(data.multivariantPlaylistUrl, 0);
+        //自适应M3U8，播放进度
+        playByM3u8UrlAndTime(data.multivariantPlaylistUrl, data.progressInMillis / 1000);
 
     }
 
