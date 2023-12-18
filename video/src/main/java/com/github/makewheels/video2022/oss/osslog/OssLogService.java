@@ -176,7 +176,7 @@ public class OssLogService {
         log.info("保存ossAccessLogs，总数：" + ossAccessLogs.size());
     }
 
-    private void generateOssLog(LocalDate date) {
+    public void generateOssAccessLog(LocalDate date) {
         log.info("开始获取OSS访问日志，date = " + date);
         // 创建DTO
         GenerateOssAccessLogDTO generateOssAccessLogDTO = createGenerateOssLogDTO(date);
