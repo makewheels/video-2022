@@ -27,6 +27,7 @@ public class OssAccessLog {
     private String remoteIp;
     private String reserved1;
     private String reserved2;
+    @Indexed
     private Date time;
     private String requestUrl;
     private Integer httpStatus;
@@ -52,4 +53,9 @@ public class OssAccessLog {
     private String targetStorageClass;
     private String transmissionAccelerationAccessPoint;
     private String accessKeyId;
+
+    public OssAccessLog() {
+        this.createTime = new Date();
+        this.updateTime = new Date();
+    }
 }

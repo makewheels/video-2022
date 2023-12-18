@@ -50,7 +50,7 @@ public class OssLogService {
     private GenerateOssAccessLogDTO createGenerateOssLogDTO(LocalDate date) {
         GenerateOssAccessLogDTO generateOssAccessLogDTO = new GenerateOssAccessLogDTO();
         generateOssAccessLogDTO.setDate(date);
-        String programBatchId = idService.nextLongId("oss_log_batch");
+        String programBatchId = idService.nextLongId("oss_access_log_batch_");
         generateOssAccessLogDTO.setProgramBatchId(programBatchId);
         log.info("生成GenerateOssLogDTO = " + JSON.toJSONString(generateOssAccessLogDTO));
         return generateOssAccessLogDTO;
@@ -64,15 +64,20 @@ public class OssLogService {
      * @param date 传入日期，按prefix检索OSS文件
      */
     private List<String> getLogFileKeys(LocalDate date) {
+        // video-2022-prod/accesslog/video-2022-prod2023-06-06
         String prefix = accesslogPrefix + "/" + ossVideoService.getBucket() + date;
-        return ossDataService.listAllObjects(prefix).stream()
+        List<String> logFileKeys = ossDataService.listAllObjects(prefix).stream()
                 .map(OSSObjectSummary::getKey).collect(Collectors.toList());
+        log.info("获取到日志文件，大小 = " + logFileKeys.size()
+                + ", logFileKeys = " + JSON.toJSONString(logFileKeys));
+        return logFileKeys;
     }
 
     /**
      * 创建OssLogFile
      */
-    private OssAccessLogFile createOssLogFile(GenerateOssAccessLogDTO generateOssAccessLogDTO, String logFileKey) {
+    private OssAccessLogFile createOssAccessLogFile(
+            GenerateOssAccessLogDTO generateOssAccessLogDTO, String logFileKey) {
         OssAccessLogFile ossAccessLogFile = new OssAccessLogFile();
         ossAccessLogFile.setProgramBatchId(generateOssAccessLogDTO.getProgramBatchId());
         ossAccessLogFile.setLogDate(generateOssAccessLogDTO.getDate());
@@ -81,26 +86,25 @@ public class OssLogService {
         String filename = FilenameUtils.getName(logFileKey);
         ossAccessLogFile.setLogFileName(filename);
         // 2023-06-18-16-00-00-0001
-        String timeAndUniqueString = filename.replace(ossVideoService.getBucket(), "");
+        String timeAndSeq = filename.replace(ossVideoService.getBucket(), "");
 
         // 2023-06-18-16-00-00
-        String timeString = StringUtils.substringBeforeLast(timeAndUniqueString, "-");
+        String timeString = StringUtils.substringBeforeLast(timeAndSeq, "-");
         Date logFileTime = DateUtil.parse(timeString, "yyyy-MM-dd-HH-mm-ss");
 
         // 0001
-        String uniqueString = StringUtils.substringAfterLast(timeAndUniqueString, "-");
+        String sequenceNumber = StringUtils.substringAfterLast(timeAndSeq, "-");
 
         ossAccessLogFile.setLogFileTime(logFileTime);
-        ossAccessLogFile.setLogFileUniqueString(uniqueString);
-        ossAccessLogFile.setCreateTime(new Date());
-        ossAccessLogFile.setUpdateTime(new Date());
+        ossAccessLogFile.setLogFileSequenceNumber(sequenceNumber);
         return ossAccessLogFile;
     }
 
     /**
      * 解析日志文件
      */
-    private List<OssAccessLog> parseOssLogFile(OssAccessLogFile ossAccessLogFile, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
+    private List<OssAccessLog> parseOssAccessLogFile(
+            OssAccessLogFile ossAccessLogFile, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
         // 下载文件
         String logContent = ossDataService.getObjectContent(ossAccessLogFile.getLogFileKey());
         log.info("日志文件大小：" + FileUtil.readableFileSize(logContent.length()));
@@ -154,7 +158,7 @@ public class OssLogService {
      * 处理一个日志文件
      */
     private void handleLogFile(String logFileKey, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
-        log.info("开始处理日志文件key = " + logFileKey);
+        log.info("开始处理日志文件logFileKey = " + logFileKey);
         // 如果文件已经解析过，跳过
         if (ossLogRepository.isOssLogFileKeyExists(logFileKey)) {
             log.info("数据库OssLogFile已存在该日志文件跳过，key = " + logFileKey);
@@ -162,14 +166,14 @@ public class OssLogService {
         }
 
         // 生成ossLogFile
-        OssAccessLogFile ossAccessLogFile = createOssLogFile(generateOssAccessLogDTO, logFileKey);
+        OssAccessLogFile ossAccessLogFile = createOssAccessLogFile(generateOssAccessLogDTO, logFileKey);
         mongoTemplate.save(ossAccessLogFile);
-        log.info("保存落库OssLogFile " + JSON.toJSONString(ossAccessLogFile));
+        log.info("保存ossAccessLogFile " + JSON.toJSONString(ossAccessLogFile));
 
         // 解析日志文件
-        List<OssAccessLog> ossAccessLogs = parseOssLogFile(ossAccessLogFile, generateOssAccessLogDTO);
+        List<OssAccessLog> ossAccessLogs = parseOssAccessLogFile(ossAccessLogFile, generateOssAccessLogDTO);
         mongoTemplate.insertAll(ossAccessLogs);
-        log.info("落库ossLogs，总数：" + ossAccessLogs.size());
+        log.info("保存ossAccessLogs，总数：" + ossAccessLogs.size());
     }
 
     private void generateOssLog(LocalDate date) {
@@ -179,8 +183,6 @@ public class OssLogService {
 
         // 获取日志文件key
         List<String> logFileKeys = getLogFileKeys(date);
-        log.info("获取到日志文件，大小 = " + logFileKeys.size()
-                + ", logFileKeys = " + JSON.toJSONString(logFileKeys));
 
         // 解析每个日志文件
         for (String logFileKey : logFileKeys) {
