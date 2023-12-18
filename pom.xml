@@ -12,7 +12,6 @@
     <modules>
         <module>video</module>
         <module>youtube</module>
-        <module>core</module>
     </modules>
 
     <properties>
