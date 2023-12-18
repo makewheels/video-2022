@@ -4,9 +4,9 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObjectSummary;
-import com.github.makewheels.video2022.oss.osslog.bean.GenerateOssLogDTO;
-import com.github.makewheels.video2022.oss.osslog.bean.OssLog;
-import com.github.makewheels.video2022.oss.osslog.bean.OssLogFile;
+import com.github.makewheels.video2022.oss.osslog.bean.GenerateOssAccessLogDTO;
+import com.github.makewheels.video2022.oss.osslog.bean.OssAccessLog;
+import com.github.makewheels.video2022.oss.osslog.bean.OssAccessLogFile;
 import com.github.makewheels.video2022.oss.service.OssDataService;
 import com.github.makewheels.video2022.oss.service.OssVideoService;
 import com.github.makewheels.video2022.utils.IdService;
@@ -47,13 +47,13 @@ public class OssLogService {
     /**
      * 创建DTO
      */
-    private GenerateOssLogDTO createGenerateOssLogDTO(LocalDate date) {
-        GenerateOssLogDTO generateOssLogDTO = new GenerateOssLogDTO();
-        generateOssLogDTO.setDate(date);
+    private GenerateOssAccessLogDTO createGenerateOssLogDTO(LocalDate date) {
+        GenerateOssAccessLogDTO generateOssAccessLogDTO = new GenerateOssAccessLogDTO();
+        generateOssAccessLogDTO.setDate(date);
         String programBatchId = idService.nextLongId("oss_log_batch");
-        generateOssLogDTO.setProgramBatchId(programBatchId);
-        log.info("生成GenerateOssLogDTO = " + JSON.toJSONString(generateOssLogDTO));
-        return generateOssLogDTO;
+        generateOssAccessLogDTO.setProgramBatchId(programBatchId);
+        log.info("生成GenerateOssLogDTO = " + JSON.toJSONString(generateOssAccessLogDTO));
+        return generateOssAccessLogDTO;
     }
 
     /**
@@ -72,14 +72,14 @@ public class OssLogService {
     /**
      * 创建OssLogFile
      */
-    private OssLogFile createOssLogFile(GenerateOssLogDTO generateOssLogDTO, String logFileKey) {
-        OssLogFile ossLogFile = new OssLogFile();
-        ossLogFile.setProgramBatchId(generateOssLogDTO.getProgramBatchId());
-        ossLogFile.setLogDate(generateOssLogDTO.getDate());
-        ossLogFile.setLogFileKey(logFileKey);
+    private OssAccessLogFile createOssLogFile(GenerateOssAccessLogDTO generateOssAccessLogDTO, String logFileKey) {
+        OssAccessLogFile ossAccessLogFile = new OssAccessLogFile();
+        ossAccessLogFile.setProgramBatchId(generateOssAccessLogDTO.getProgramBatchId());
+        ossAccessLogFile.setLogDate(generateOssAccessLogDTO.getDate());
+        ossAccessLogFile.setLogFileKey(logFileKey);
         // video-2022-prod2023-06-18-16-00-00-0001
         String filename = FilenameUtils.getName(logFileKey);
-        ossLogFile.setLogFileName(filename);
+        ossAccessLogFile.setLogFileName(filename);
         // 2023-06-18-16-00-00-0001
         String timeAndUniqueString = filename.replace(ossVideoService.getBucket(), "");
 
@@ -90,70 +90,70 @@ public class OssLogService {
         // 0001
         String uniqueString = StringUtils.substringAfterLast(timeAndUniqueString, "-");
 
-        ossLogFile.setLogFileTime(logFileTime);
-        ossLogFile.setLogFileUniqueString(uniqueString);
-        ossLogFile.setCreateTime(new Date());
-        ossLogFile.setUpdateTime(new Date());
-        return ossLogFile;
+        ossAccessLogFile.setLogFileTime(logFileTime);
+        ossAccessLogFile.setLogFileUniqueString(uniqueString);
+        ossAccessLogFile.setCreateTime(new Date());
+        ossAccessLogFile.setUpdateTime(new Date());
+        return ossAccessLogFile;
     }
 
     /**
      * 解析日志文件
      */
-    private List<OssLog> parseOssLogFile(OssLogFile ossLogFile, GenerateOssLogDTO generateOssLogDTO) {
+    private List<OssAccessLog> parseOssLogFile(OssAccessLogFile ossAccessLogFile, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
         // 下载文件
-        String logContent = ossDataService.getObjectContent(ossLogFile.getLogFileKey());
+        String logContent = ossDataService.getObjectContent(ossAccessLogFile.getLogFileKey());
         log.info("日志文件大小：" + FileUtil.readableFileSize(logContent.length()));
         List<String> lines = Arrays.asList(logContent.split("\n"));
 
         // TODO 解析不是分割，要从前往后逐步解析
-        List<OssLog> ossLogList = new ArrayList<>(lines.size());
+        List<OssAccessLog> ossAccessLogList = new ArrayList<>(lines.size());
         for (String line : lines) {
             line = line.trim();
             line = line.replace("[", "\"");
             line = line.replace("]", "\"");
             List<String> row = Arrays.asList(line.split(" (?=([^']*'[^']*')*[^']*$)"));
-            OssLog ossLog = new OssLog();
-            ossLog.setProgramBatchId(generateOssLogDTO.getProgramBatchId());
-            ossLog.setLogFileId(ossLogFile.getId());
+            OssAccessLog ossAccessLog = new OssAccessLog();
+            ossAccessLog.setProgramBatchId(generateOssAccessLogDTO.getProgramBatchId());
+            ossAccessLog.setLogFileId(ossAccessLogFile.getId());
 
-            ossLog.setRemoteIp(row.get(0));
-            ossLog.setReserved1(row.get(1));
-            ossLog.setReserved2(row.get(2));
-            ossLog.setTime(DateUtil.parse(row.get(3), "dd/MMM/yyyy:HH:mm:ss Z"));
-            ossLog.setRequestUrl(row.get(4));
-            ossLog.setHttpStatus(Integer.parseInt(row.get(5)));
-            ossLog.setSentBytes(Long.parseLong(row.get(6)));
-            ossLog.setRequestTime(Long.parseLong(row.get(7)));
-            ossLog.setReferer(row.get(8));
-            ossLog.setUserAgent(row.get(9));
-            ossLog.setHostName(row.get(10));
-            ossLog.setRequestId(row.get(11));
-            ossLog.setLoggingFlag(Boolean.parseBoolean(row.get(12)));
-            ossLog.setRequesterAliyunId(row.get(13));
-            ossLog.setOperation(row.get(14));
-            ossLog.setBucketName(row.get(15));
-            ossLog.setObjectName(row.get(16));
-            ossLog.setObjectSize(Long.parseLong(row.get(17)));
-            ossLog.setServerCostTime(Long.parseLong(row.get(18)));
-            ossLog.setErrorCode(row.get(19));
-            ossLog.setRequestLength(Integer.parseInt(row.get(20)));
-            ossLog.setUserId(row.get(21));
-            ossLog.setDeltaDataSize(Long.parseLong(row.get(22)));
-            ossLog.setSyncRequest(row.get(23));
-            ossLog.setStorageClass(row.get(24));
-            ossLog.setTargetStorageClass(row.get(25));
-            ossLog.setTransmissionAccelerationAccessPoint(row.get(26));
-            ossLog.setAccessKeyId(row.get(27));
-            ossLogList.add(ossLog);
+            ossAccessLog.setRemoteIp(row.get(0));
+            ossAccessLog.setReserved1(row.get(1));
+            ossAccessLog.setReserved2(row.get(2));
+            ossAccessLog.setTime(DateUtil.parse(row.get(3), "dd/MMM/yyyy:HH:mm:ss Z"));
+            ossAccessLog.setRequestUrl(row.get(4));
+            ossAccessLog.setHttpStatus(Integer.parseInt(row.get(5)));
+            ossAccessLog.setSentBytes(Long.parseLong(row.get(6)));
+            ossAccessLog.setRequestTime(Long.parseLong(row.get(7)));
+            ossAccessLog.setReferer(row.get(8));
+            ossAccessLog.setUserAgent(row.get(9));
+            ossAccessLog.setHostName(row.get(10));
+            ossAccessLog.setRequestId(row.get(11));
+            ossAccessLog.setLoggingFlag(Boolean.parseBoolean(row.get(12)));
+            ossAccessLog.setRequesterAliyunId(row.get(13));
+            ossAccessLog.setOperation(row.get(14));
+            ossAccessLog.setBucketName(row.get(15));
+            ossAccessLog.setObjectName(row.get(16));
+            ossAccessLog.setObjectSize(Long.parseLong(row.get(17)));
+            ossAccessLog.setServerCostTime(Long.parseLong(row.get(18)));
+            ossAccessLog.setErrorCode(row.get(19));
+            ossAccessLog.setRequestLength(Integer.parseInt(row.get(20)));
+            ossAccessLog.setUserId(row.get(21));
+            ossAccessLog.setDeltaDataSize(Long.parseLong(row.get(22)));
+            ossAccessLog.setSyncRequest(row.get(23));
+            ossAccessLog.setStorageClass(row.get(24));
+            ossAccessLog.setTargetStorageClass(row.get(25));
+            ossAccessLog.setTransmissionAccelerationAccessPoint(row.get(26));
+            ossAccessLog.setAccessKeyId(row.get(27));
+            ossAccessLogList.add(ossAccessLog);
         }
-        return ossLogList;
+        return ossAccessLogList;
     }
 
     /**
      * 处理一个日志文件
      */
-    private void handleLogFile(String logFileKey, GenerateOssLogDTO generateOssLogDTO) {
+    private void handleLogFile(String logFileKey, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
         log.info("开始处理日志文件key = " + logFileKey);
         // 如果文件已经解析过，跳过
         if (ossLogRepository.isOssLogFileKeyExists(logFileKey)) {
@@ -162,20 +162,20 @@ public class OssLogService {
         }
 
         // 生成ossLogFile
-        OssLogFile ossLogFile = createOssLogFile(generateOssLogDTO, logFileKey);
-        mongoTemplate.save(ossLogFile);
-        log.info("保存落库OssLogFile " + JSON.toJSONString(ossLogFile));
+        OssAccessLogFile ossAccessLogFile = createOssLogFile(generateOssAccessLogDTO, logFileKey);
+        mongoTemplate.save(ossAccessLogFile);
+        log.info("保存落库OssLogFile " + JSON.toJSONString(ossAccessLogFile));
 
         // 解析日志文件
-        List<OssLog> ossLogs = parseOssLogFile(ossLogFile, generateOssLogDTO);
-        mongoTemplate.insertAll(ossLogs);
-        log.info("落库ossLogs，总数：" + ossLogs.size());
+        List<OssAccessLog> ossAccessLogs = parseOssLogFile(ossAccessLogFile, generateOssAccessLogDTO);
+        mongoTemplate.insertAll(ossAccessLogs);
+        log.info("落库ossLogs，总数：" + ossAccessLogs.size());
     }
 
     private void generateOssLog(LocalDate date) {
         log.info("开始获取OSS访问日志，date = " + date);
         // 创建DTO
-        GenerateOssLogDTO generateOssLogDTO = createGenerateOssLogDTO(date);
+        GenerateOssAccessLogDTO generateOssAccessLogDTO = createGenerateOssLogDTO(date);
 
         // 获取日志文件key
         List<String> logFileKeys = getLogFileKeys(date);
@@ -184,7 +184,7 @@ public class OssLogService {
 
         // 解析每个日志文件
         for (String logFileKey : logFileKeys) {
-            handleLogFile(logFileKey, generateOssLogDTO);
+            handleLogFile(logFileKey, generateOssAccessLogDTO);
         }
         log.info("生成OSS访问日志完成，date = " + date);
     }

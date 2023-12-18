@@ -13,7 +13,7 @@ import java.util.Date;
  */
 @Data
 @Document
-public class OssLogFile {
+public class OssAccessLogFile {
     @Id
     private String id;
     @Indexed
@@ -26,7 +26,7 @@ public class OssLogFile {
     @Indexed
     private String logFileName;  // 日志文件名
     @Indexed
-    private Date logFileTime;   // 日志文件名上的时间
+    private Date logFileTime;    // 日志文件名上的时间
     @Indexed
     private String logFileUniqueString;  // 日志文件的唯一标识
 

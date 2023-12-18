@@ -13,7 +13,7 @@ import java.util.Date;
  */
 @Data
 @Document
-public class OssLog {
+public class OssAccessLog {
     @Id
     private String id;
     @Indexed

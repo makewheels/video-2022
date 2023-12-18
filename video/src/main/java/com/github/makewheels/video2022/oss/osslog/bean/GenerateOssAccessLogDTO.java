@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class GenerateOssLogDTO {
+public class GenerateOssAccessLogDTO {
     private LocalDate date;
     private String programBatchId;
 }

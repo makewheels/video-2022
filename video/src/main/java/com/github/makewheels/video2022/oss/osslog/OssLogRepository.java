@@ -1,6 +1,6 @@
 package com.github.makewheels.video2022.oss.osslog;
 
-import com.github.makewheels.video2022.oss.osslog.bean.OssLogFile;
+import com.github.makewheels.video2022.oss.osslog.bean.OssAccessLogFile;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -19,7 +19,7 @@ public class OssLogRepository {
     public boolean isOssLogFileKeyExists(String logFileKey) {
         return mongoTemplate.exists(
                 Query.query(Criteria.where("logFileKey").is(logFileKey)),
-                OssLogFile.class);
+                OssAccessLogFile.class);
     }
 
 }
