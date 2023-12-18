@@ -16,6 +16,9 @@ public class GenerateInventoryTask {
     @Resource
     private OssInventoryService ossInventoryService;
 
+    /**
+     * 每天凌晨2点生成，当天接近零点时刻快照
+     */
     @Scheduled(cron = "0 0 2 * * ?")
     public void generateInventory() {
         ossInventoryService.generateAndSaveInventory(LocalDate.now());
