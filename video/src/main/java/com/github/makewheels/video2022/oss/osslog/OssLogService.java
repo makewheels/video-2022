@@ -101,6 +101,32 @@ public class OssLogService {
     }
 
     /**
+     * 解析一行日志
+     * 39.107.7.48 - - [07/Jun/2023:07:16:10 +0800]
+     * "GET /?acl HTTP/1.1" 200 255 32 "-"
+     * "aliyun-sdk-java/3.10.2(Linux/2.6.32-220.23.2.ali927.el5.x86_64/amd64;1.8.0_152)"
+     * "video-2022-prod.oss-cn-beijing.aliyuncs.com" "647FBE3AB258223337A7F306"
+     * "true" "302503994806979967" "GetBucketAcl" "video-2022-prod" "-" - -
+     * "-" 926 "1618784280874658" - "-" "standard" "-" "-" "STS.NUc7FvPnunUNYKsBUN4KoFoft"
+     */
+    private List<String> readLine(String line) {
+        // TODO 解析：从左往右读，遇到空格就是一个字段，先看右边是什么，要处理双引号
+        int left = 0;
+        int right = 0;
+        List<String> result = new ArrayList<>();
+        while (right < line.length()) {
+            char c = line.charAt(right);
+            if (c == ' ') {
+                String substring = line.substring(left, right);
+                result.add(substring);
+                left = right + 1;
+            }
+            right++;
+        }
+        return result;
+    }
+
+    /**
      * 解析日志文件
      */
     private List<OssAccessLog> parseOssAccessLogFile(
