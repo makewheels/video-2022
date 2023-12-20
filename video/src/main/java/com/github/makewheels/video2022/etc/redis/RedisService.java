@@ -26,12 +26,6 @@ public class RedisService {
         this.redisTemplate = redisTemplate;
     }
 
-    /**
-     * 删除缓存
-     *
-     * @param key 可以传一个值 或多个
-     */
-    @SuppressWarnings("unchecked")
     public void del(String... key) {
         if (key != null && key.length > 0) {
             if (key.length == 1) {
@@ -42,12 +36,6 @@ public class RedisService {
         }
     }
 
-    /**
-     * 普通缓存获取
-     *
-     * @param key 键
-     * @return 值
-     */
     public Object get(String key) {
         return key == null ? null : redisTemplate.opsForValue().get(key);
     }
@@ -57,9 +45,6 @@ public class RedisService {
         return JSON.parseObject(json);
     }
 
-    /**
-     * 普通缓存放入并设置时间
-     */
     public boolean set(String key, Object value, long time) {
         try {
             redisTemplate.opsForValue().set(key, value, time, TimeUnit.SECONDS);
