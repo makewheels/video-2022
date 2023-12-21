@@ -110,6 +110,9 @@ public class OssLogService {
      * "-" 926 "1618784280874658" - "-" "standard" "-" "-" "STS.NUc7FvPnunUNYKsBUN4KoFoft"
      */
     private List<String> readLine(String line) {
+        String replaceSpace = "`";
+        line = line.replace(" [", "\"");
+        line = line.replace("] ", "\"");
         // TODO 解析：从左往右读，遇到空格就是一个字段，先看右边是什么，要处理双引号
         int left = 0;
         int right = 0;
