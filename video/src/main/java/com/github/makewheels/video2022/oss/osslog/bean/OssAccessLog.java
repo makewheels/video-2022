@@ -20,6 +20,7 @@ public class OssAccessLog {
     private String programBatchId;
     @Indexed
     private String logFileId;   // 日志文件id
+    private String line;        // 日志文件中的一行
     @Indexed
     private Date createTime;
     private Date updateTime;
