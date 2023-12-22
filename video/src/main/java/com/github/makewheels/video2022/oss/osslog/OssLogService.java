@@ -19,14 +19,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
 import javax.annotation.Resource;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * oss日志解析
@@ -211,7 +207,7 @@ public class OssLogService {
 //                continue;
 //            }
 //            mongoTemplate.save(ossAccessLog);
-        }
+//        }
     }
 
     /**
