@@ -205,10 +205,10 @@ public class OssLogService {
         List<OssAccessLog> ossAccessLogs = parseLogLines(ossAccessLogFile, generateOssAccessLogDTO);
         log.info("开始保存ossAccessLogs，总数：" + ossAccessLogs.size());
         for (OssAccessLog ossAccessLog : ossAccessLogs) {
-            if (ossLogRepository.isOssLogLineMd5Exists(ossAccessLog.getMd5())) {
-                log.info("数据库OssAccessLog已存在该日志跳过，md5 = " + ossAccessLog.getMd5());
-                continue;
-            }
+//            if (ossLogRepository.isOssLogLineMd5Exists(ossAccessLog.getMd5())) {
+//                log.info("数据库OssAccessLog已存在该日志跳过，md5 = " + ossAccessLog.getMd5());
+//                continue;
+//            }
             mongoTemplate.save(ossAccessLog);
         }
     }
