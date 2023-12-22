@@ -2,6 +2,7 @@ package com.github.makewheels.video2022.oss.osslog;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.github.makewheels.video2022.etc.system.environment.EnvironmentService;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
@@ -96,10 +98,10 @@ public class OssLogService {
         Date logFileTime = DateUtil.parse(timeString, "yyyy-MM-dd-HH-mm-ss");
 
         // 0001
-        String sequenceNumber = StringUtils.substringAfterLast(timeAndSeq, "-");
+        String uniqueString = StringUtils.substringAfterLast(timeAndSeq, "-");
 
         ossAccessLogFile.setLogFileTime(logFileTime);
-        ossAccessLogFile.setLogFileSequenceNumber(sequenceNumber);
+        ossAccessLogFile.setLogFileUniqueString(uniqueString);
         return ossAccessLogFile;
     }
 
@@ -145,11 +147,10 @@ public class OssLogService {
     }
 
     /**
-     * 解析日志文件
-     * <a href="https://help.aliyun.com/zh/oss/user-guide/logging">日志转存</a>
+     * 从日志文件中，解析出每行日志
      */
-    private List<OssAccessLog> parseOssAccessLogFile(
-            OssAccessLogFile ossAccessLogFile, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
+    private List<OssAccessLog> parseLogLines(OssAccessLogFile ossAccessLogFile,
+                                             GenerateOssAccessLogDTO generateOssAccessLogDTO) {
         String logContent = ossDataService.getObjectContent(ossAccessLogFile.getLogFileKey());
         log.info("下载日志文件，大小：" + FileUtil.readableFileSize(logContent.length()));
 
@@ -161,11 +162,11 @@ public class OssLogService {
             ossAccessLog.setProgramBatchId(generateOssAccessLogDTO.getProgramBatchId());
             ossAccessLog.setLogFileId(ossAccessLogFile.getId());
             ossAccessLog.setLine(line);
-
+            ossAccessLog.setMd5(DigestUtil.md5Hex(line));
             ossAccessLog.setRemoteIp(row.get(0));
             ossAccessLog.setReserved1(row.get(1));
             ossAccessLog.setReserved2(row.get(2));
-//            ossAccessLog.setTime(DateUtil.parse(row.get(3), "dd/MMM/yyyy:HH:mm:ss Z"));
+            ossAccessLog.setTime(DateUtil.parse(row.get(3), "dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH));
             ossAccessLog.setRequestUrl(row.get(4));
             ossAccessLog.setHttpStatus(Integer.parseInt(row.get(5)));
             ossAccessLog.setSentBytes(Long.parseLong(row.get(6)));
@@ -179,12 +180,12 @@ public class OssLogService {
             ossAccessLog.setOperation(row.get(14));
             ossAccessLog.setBucketName(row.get(15));
             ossAccessLog.setObjectName(row.get(16));
-//            ossAccessLog.setObjectSize(Long.parseLong(row.get(17)));
-//            ossAccessLog.setServerCostTime(Long.parseLong(row.get(18)));
+            ossAccessLog.setObjectSize(row.get(17).equals("-") ? 0 : Long.parseLong(row.get(17)));
+            ossAccessLog.setServerCostTime(row.get(18).equals("-") ? 0 : Long.parseLong(row.get(18)));
             ossAccessLog.setErrorCode(row.get(19));
             ossAccessLog.setRequestLength(Integer.parseInt(row.get(20)));
             ossAccessLog.setUserId(row.get(21));
-//            ossAccessLog.setDeltaDataSize(Long.parseLong(row.get(22)));
+            ossAccessLog.setDeltaDataSize(row.get(22).equals("-") ? 0 : Long.parseLong(row.get(22)));
             ossAccessLog.setSyncRequest(row.get(23));
             ossAccessLog.setStorageClass(row.get(24));
             ossAccessLog.setTargetStorageClass(row.get(25));
@@ -196,27 +197,68 @@ public class OssLogService {
     }
 
     /**
-     * 处理一个日志文件
+     * 解析日志文件
+     * <a href="https://help.aliyun.com/zh/oss/user-guide/logging">日志转存</a>
      */
-    private void handleLogFile(String logFileKey, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
-        log.info("开始处理日志文件logFileKey = " + logFileKey);
-        // 生产环境，文件已经解析过，跳过
-        if (environmentService.isProductionEnv() && ossLogRepository.isOssLogFileKeyExists(logFileKey)) {
-            log.info("数据库OssLogFile已存在该日志文件跳过，key = " + logFileKey);
-            return;
+    private void parseAndSaveLogLine(
+            OssAccessLogFile ossAccessLogFile, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
+        List<OssAccessLog> ossAccessLogs = parseLogLines(ossAccessLogFile, generateOssAccessLogDTO);
+        log.info("开始保存ossAccessLogs，总数：" + ossAccessLogs.size());
+        for (OssAccessLog ossAccessLog : ossAccessLogs) {
+            if (ossLogRepository.isOssLogLineMd5Exists(ossAccessLog.getMd5())) {
+                log.info("数据库OssAccessLog已存在该日志跳过，md5 = " + ossAccessLog.getMd5());
+                continue;
+            }
+            mongoTemplate.save(ossAccessLog);
         }
+    }
 
+    /**
+     * 日志文件key是否已存在
+     */
+    private boolean isLogFileNeedSkip(String logFileKey) {
+        // 开发环境不跳过
+        if (environmentService.isDevelopmentEnv()) {
+            return false;
+        }
+        if (ossLogRepository.isOssLogFileKeyExists(logFileKey)) {
+            log.info("数据库OssLogFile已存在该日志文件跳过，key = " + logFileKey);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 处理单个日志文件
+     */
+    private OssAccessLogFile parseAndSaveLogFile(String logFileKey, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
         // 生成ossLogFile
         OssAccessLogFile ossAccessLogFile = createOssAccessLogFile(generateOssAccessLogDTO, logFileKey);
         mongoTemplate.save(ossAccessLogFile);
         log.info("保存ossAccessLogFile " + JSON.toJSONString(ossAccessLogFile));
-
-        // 解析日志文件
-        List<OssAccessLog> ossAccessLogs = parseOssAccessLogFile(ossAccessLogFile, generateOssAccessLogDTO);
-        mongoTemplate.insertAll(ossAccessLogs);
-        log.info("保存ossAccessLogs，总数：" + ossAccessLogs.size());
+        return ossAccessLogFile;
     }
 
+    /**
+     * 根据key解析保存日志
+     */
+    private void handleLogFileKeys(List<String> logFileKeys, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
+        for (String logFileKey : logFileKeys) {
+            log.info("开始处理日志文件logFileKey = " + logFileKey);
+            if (isLogFileNeedSkip(logFileKey)) {
+                continue;
+            }
+            // 保存日志文件
+            OssAccessLogFile logFile = parseAndSaveLogFile(logFileKey, generateOssAccessLogDTO);
+
+            // 保存日志记录
+            parseAndSaveLogLine(logFile, generateOssAccessLogDTO);
+        }
+    }
+
+    /**
+     * 根据时间生成OSS访问日志
+     */
     public void generateOssAccessLog(LocalDate date) {
         log.info("开始获取OSS访问日志，date = " + date);
         // 创建DTO
@@ -225,10 +267,8 @@ public class OssLogService {
         // 获取日志文件key
         List<String> logFileKeys = getLogFileKeys(date);
 
-        // 解析日志文件
-        for (String logFileKey : logFileKeys) {
-            handleLogFile(logFileKey, generateOssAccessLogDTO);
-        }
+        // 根据key解析保存日志
+        handleLogFileKeys(logFileKeys, generateOssAccessLogDTO);
         log.info("生成OSS访问日志完成，date = " + date);
     }
 

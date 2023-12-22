@@ -27,7 +27,7 @@ public class OssAccessLogFile {
     private String logFileName;  // 日志文件名
     @Indexed
     private Date logFileTime;    // 日志文件名上的时间
-    private String logFileSequenceNumber;  // 日志文件名最后四位去重四位递增，例如0001
+    private String logFileUniqueString;  // 日志文件名最后四位去重四位递增，例如0001
 
     private Date createTime;
     private Date updateTime;
