@@ -68,8 +68,8 @@ public class OssLogService {
         String prefix = accesslogPrefix + "/" + ossVideoService.getBucket() + date;
         List<String> logFileKeys = ossDataService.listAllObjects(prefix).stream()
                 .map(OSSObjectSummary::getKey).collect(Collectors.toList());
-        log.info("获取到日志文件，大小 = " + logFileKeys.size()
-                + ", logFileKeys = " + JSON.toJSONString(logFileKeys));
+        log.info("获取到日志文件，大小 = " + logFileKeys.size());
+        log.info("logFileKeys: " + JSON.toJSONString(logFileKeys));
         return logFileKeys;
     }
 
@@ -132,7 +132,9 @@ public class OssLogService {
         String[] split = stringBuilder.toString().split(" ");
         List<String> result = new ArrayList<>(split.length);
         for (String str : split) {
-            result.add(str.replace(specialSpace, ' '));
+            str = str.replace(specialSpace, ' ');
+            str = str.replace("\"", "");
+            result.add(str);
         }
         return result;
     }
@@ -142,11 +144,10 @@ public class OssLogService {
      */
     private List<OssAccessLog> parseOssAccessLogFile(
             OssAccessLogFile ossAccessLogFile, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
-        // 下载文件
         String logContent = ossDataService.getObjectContent(ossAccessLogFile.getLogFileKey());
-        log.info("日志文件大小：" + FileUtil.readableFileSize(logContent.length()));
-        List<String> lines = Arrays.asList(logContent.split("\n"));
+        log.info("下载日志文件，大小：" + FileUtil.readableFileSize(logContent.length()));
 
+        List<String> lines = Arrays.asList(logContent.split("\n"));
         List<OssAccessLog> ossAccessLogList = new ArrayList<>(lines.size());
         for (String line : lines) {
             List<String> row = readLine(line);
@@ -218,7 +219,7 @@ public class OssLogService {
         // 获取日志文件key
         List<String> logFileKeys = getLogFileKeys(date);
 
-        // 解析每个日志文件
+        // 解析日志文件
         for (String logFileKey : logFileKeys) {
             handleLogFile(logFileKey, generateOssAccessLogDTO);
         }
