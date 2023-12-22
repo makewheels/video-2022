@@ -110,6 +110,8 @@ public class OssLogService {
      * "-" 926 "1618784280874658" - "-" "standard" "-" "-" "STS.NUc7FvPnunUNYKsBUN4KoFoft"
      */
     private List<String> readLine(String line) {
+        // 去掉第一个空格
+        line = line.substring(1);
         // 把中括号[] 替换为 双引号""
         line = line.replace(" [", "\"");
         line = line.replace("] ", "\"");
