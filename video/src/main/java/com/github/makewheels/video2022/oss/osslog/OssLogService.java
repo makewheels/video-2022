@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObjectSummary;
+import com.github.makewheels.video2022.etc.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.oss.osslog.bean.GenerateOssAccessLogDTO;
 import com.github.makewheels.video2022.oss.osslog.bean.OssAccessLog;
 import com.github.makewheels.video2022.oss.osslog.bean.OssAccessLogFile;
@@ -43,6 +44,8 @@ public class OssLogService {
     private OssLogRepository ossLogRepository;
     @Resource
     private MongoTemplate mongoTemplate;
+    @Resource
+    private EnvironmentService environmentService;
 
     /**
      * 创建DTO
@@ -113,8 +116,8 @@ public class OssLogService {
         // 去掉第一个空格
         line = line.substring(1);
         // 把中括号[] 替换为 双引号""
-        line = line.replace(" [", "\"");
-        line = line.replace("] ", "\"");
+        line = line.replace(" [", " \"");
+        line = line.replace("] ", "\" ");
 
         // 把双引号之间的空格，替换为特殊字符
         StringBuilder stringBuilder = new StringBuilder(line);
@@ -161,7 +164,7 @@ public class OssLogService {
             ossAccessLog.setRemoteIp(row.get(0));
             ossAccessLog.setReserved1(row.get(1));
             ossAccessLog.setReserved2(row.get(2));
-            ossAccessLog.setTime(DateUtil.parse(row.get(3), "dd/MMM/yyyy:HH:mm:ss Z"));
+//            ossAccessLog.setTime(DateUtil.parse(row.get(3), "dd/MMM/yyyy:HH:mm:ss Z"));
             ossAccessLog.setRequestUrl(row.get(4));
             ossAccessLog.setHttpStatus(Integer.parseInt(row.get(5)));
             ossAccessLog.setSentBytes(Long.parseLong(row.get(6)));
@@ -196,8 +199,8 @@ public class OssLogService {
      */
     private void handleLogFile(String logFileKey, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
         log.info("开始处理日志文件logFileKey = " + logFileKey);
-        // 如果文件已经解析过，跳过
-        if (ossLogRepository.isOssLogFileKeyExists(logFileKey)) {
+        // 生产环境，文件已经解析过，跳过
+        if (environmentService.isProductionEnv() && ossLogRepository.isOssLogFileKeyExists(logFileKey)) {
             log.info("数据库OssLogFile已存在该日志文件跳过，key = " + logFileKey);
             return;
         }
