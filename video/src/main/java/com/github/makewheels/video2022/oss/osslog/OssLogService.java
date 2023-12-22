@@ -17,13 +17,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Resource;
 
 /**
  * oss日志解析
@@ -110,21 +110,29 @@ public class OssLogService {
      * "-" 926 "1618784280874658" - "-" "standard" "-" "-" "STS.NUc7FvPnunUNYKsBUN4KoFoft"
      */
     private List<String> readLine(String line) {
-        String replaceSpace = "`";
+        // 把中括号[] 替换为 双引号""
         line = line.replace(" [", "\"");
         line = line.replace("] ", "\"");
-        // TODO 解析：从左往右读，遇到空格就是一个字段，先看右边是什么，要处理双引号
-        int left = 0;
-        int right = 0;
-        List<String> result = new ArrayList<>();
-        while (right < line.length()) {
-            char c = line.charAt(right);
-            if (c == ' ') {
-                String substring = line.substring(left, right);
-                result.add(substring);
-                left = right + 1;
+
+        // 把双引号之间的空格，替换为特殊字符
+        StringBuilder stringBuilder = new StringBuilder(line);
+        char specialSpace = '^';
+        boolean inQuote = false;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '"') {
+                inQuote = !inQuote;
             }
-            right++;
+            if (c == ' ' && inQuote) {
+                stringBuilder.setCharAt(i, specialSpace);
+            }
+        }
+
+        // 按空格分割，再把特殊字符替换回空格，返回数组
+        String[] split = stringBuilder.toString().split(" ");
+        List<String> result = new ArrayList<>(split.length);
+        for (String str : split) {
+            result.add(str.replace(specialSpace, ' '));
         }
         return result;
     }
@@ -139,16 +147,13 @@ public class OssLogService {
         log.info("日志文件大小：" + FileUtil.readableFileSize(logContent.length()));
         List<String> lines = Arrays.asList(logContent.split("\n"));
 
-        // TODO 解析不是分割，要从前往后逐步解析
         List<OssAccessLog> ossAccessLogList = new ArrayList<>(lines.size());
         for (String line : lines) {
-            line = line.trim();
-            line = line.replace("[", "\"");
-            line = line.replace("]", "\"");
-            List<String> row = Arrays.asList(line.split(" (?=([^']*'[^']*')*[^']*$)"));
+            List<String> row = readLine(line);
             OssAccessLog ossAccessLog = new OssAccessLog();
             ossAccessLog.setProgramBatchId(generateOssAccessLogDTO.getProgramBatchId());
             ossAccessLog.setLogFileId(ossAccessLogFile.getId());
+            ossAccessLog.setLine(line);
 
             ossAccessLog.setRemoteIp(row.get(0));
             ossAccessLog.setReserved1(row.get(1));
