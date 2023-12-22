@@ -146,6 +146,7 @@ public class OssLogService {
 
     /**
      * 解析日志文件
+     * <a href="https://help.aliyun.com/zh/oss/user-guide/logging">日志转存</a>
      */
     private List<OssAccessLog> parseOssAccessLogFile(
             OssAccessLogFile ossAccessLogFile, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
@@ -178,12 +179,12 @@ public class OssLogService {
             ossAccessLog.setOperation(row.get(14));
             ossAccessLog.setBucketName(row.get(15));
             ossAccessLog.setObjectName(row.get(16));
-            ossAccessLog.setObjectSize(Long.parseLong(row.get(17)));
-            ossAccessLog.setServerCostTime(Long.parseLong(row.get(18)));
+//            ossAccessLog.setObjectSize(Long.parseLong(row.get(17)));
+//            ossAccessLog.setServerCostTime(Long.parseLong(row.get(18)));
             ossAccessLog.setErrorCode(row.get(19));
             ossAccessLog.setRequestLength(Integer.parseInt(row.get(20)));
             ossAccessLog.setUserId(row.get(21));
-            ossAccessLog.setDeltaDataSize(Long.parseLong(row.get(22)));
+//            ossAccessLog.setDeltaDataSize(Long.parseLong(row.get(22)));
             ossAccessLog.setSyncRequest(row.get(23));
             ossAccessLog.setStorageClass(row.get(24));
             ossAccessLog.setTargetStorageClass(row.get(25));
