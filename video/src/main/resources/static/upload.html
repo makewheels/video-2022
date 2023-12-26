@@ -148,7 +148,6 @@
             shortUrl.innerText = data.shortUrl;
             watchUrl.innerText = data.watchUrl;
             beginUpload();
-            // loadWeChatMiniProgramShareQrCode();
         });
     }
 
@@ -180,15 +179,6 @@
             headers: {"token": localStorage.token}
         }).then(function (res) {
             runUpload(res.data.data);
-        });
-    }
-
-    //加载小程序分享码图片
-    function loadWeChatMiniProgramShareQrCode() {
-        axios.get("/miniProgram/getShareQrCodeUrl?videoId=" + videoId, {
-            headers: {"token": localStorage.token}
-        }).then(function (res) {
-            document.getElementById("img_wechatQrcode").src = res.data.data.qrCodeUrl;
         });
     }
 
