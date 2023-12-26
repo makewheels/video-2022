@@ -145,8 +145,8 @@ public class OssLogService {
     /**
      * 从日志文件中，解析出每行日志
      */
-    private List<OssAccessLog> parseLogLines(OssAccessLogFile ossAccessLogFile,
-                                             GenerateOssAccessLogDTO generateOssAccessLogDTO) {
+    private List<OssAccessLog> parseLogLines(
+            OssAccessLogFile ossAccessLogFile, GenerateOssAccessLogDTO generateOssAccessLogDTO) {
         String logContent = ossDataService.getObjectContent(ossAccessLogFile.getLogFileKey());
         log.info("下载日志文件，大小：" + FileUtil.readableFileSize(logContent.length()));
 
