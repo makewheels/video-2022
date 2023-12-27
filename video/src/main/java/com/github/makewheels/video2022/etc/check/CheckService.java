@@ -101,16 +101,6 @@ public class CheckService {
     }
 
     /**
-     * 检查视频是已就绪状态
-     */
-    public void checkVideoIsReady(Video video) {
-        if (VideoStatus.isNotReady(video.getStatus())) {
-            throw new VideoException(ErrorCode.VIDEO_NOT_READY,
-                    "视频未就绪, video = " + JSON.toJSONString(video));
-        }
-    }
-
-    /**
      * 检查视频是未就绪状态
      */
     public void checkVideoIsNotReady(Video video) {
