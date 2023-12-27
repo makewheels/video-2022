@@ -1,7 +1,5 @@
 package com.github.makewheels.video2022.video.constants;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class VideoStatus {
     public static final String CREATED = "CREATED";
     public static final String UPLOADING = "UPLOADING";
