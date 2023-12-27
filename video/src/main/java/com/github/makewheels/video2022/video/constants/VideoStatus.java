@@ -14,14 +14,8 @@ public class VideoStatus {
     /**
      * 是就绪状态
      */
-    static boolean isReady(String status) {
+    public static boolean isReady(String status) {
         return READY.equals(status);
     }
 
-    /**
-     * 不是就绪状态
-     */
-    static boolean isNotReady(String status) {
-        return StringUtils.equalsAny(status, CREATED, TRANSCODING, TRANSCODING_PARTLY_COMPLETE);
-    }
 }
