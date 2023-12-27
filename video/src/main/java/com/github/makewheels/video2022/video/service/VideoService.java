@@ -184,7 +184,7 @@ public class VideoService {
      * 更新watch的播放设置
      */
     public void updateWatchSettings(UpdateWatchSettingsDTO updateWatchSettingsDTO) {
-        Video video = videoRepository.getById(updateWatchSettingsDTO.getId());
+        Video video = videoRepository.getById(updateWatchSettingsDTO.getVideoId());
         Watch watch = video.getWatch();
         if (updateWatchSettingsDTO.getShowWatchCount() != null) {
             watch.setShowWatchCount(updateWatchSettingsDTO.getShowWatchCount());

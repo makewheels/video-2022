@@ -24,8 +24,7 @@ public class PutTokenInterceptor implements HandlerInterceptor, Ordered {
 
     @Override
     public boolean preHandle(
-            HttpServletRequest request, HttpServletResponse response,
-            Object handler) {
+            HttpServletRequest request, HttpServletResponse response, Object handler) {
         //通过token获取User，放入userHolder
         User user = userService.getUserByRequest(request);
         if (user != null) {
