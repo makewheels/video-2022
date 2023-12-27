@@ -42,7 +42,6 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/file/uploadFinish")
                 .addPathPatterns("/video/updateInfo")
                 .addPathPatterns("/playlist/addPlaylistItem")
-                .addPathPatterns("/miniProgram/getShareQrCodeUrl")
                 .addPathPatterns("/video/getMyVideoList")
         ;
 
