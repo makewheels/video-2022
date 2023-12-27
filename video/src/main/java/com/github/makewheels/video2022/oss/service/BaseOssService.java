@@ -18,10 +18,8 @@ import com.aliyun.oss.model.ListObjectsV2Request;
 import com.aliyun.oss.model.ListObjectsV2Result;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
-import com.aliyun.oss.model.OSSSymlink;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.PutObjectResult;
-import com.aliyun.oss.model.RestoreObjectResult;
 import com.aliyun.oss.model.StorageClass;
 import com.aliyun.oss.model.VoidResult;
 import com.aliyuncs.DefaultAcsClient;
@@ -222,20 +220,6 @@ public class BaseOssService {
     }
 
     /**
-     * 重命名
-     */
-    public VoidResult renameObject(String sourceKey, String destinationKey) {
-        return getClient().renameObject(bucket, sourceKey, destinationKey);
-    }
-
-    /**
-     * 拷贝
-     */
-    public CopyObjectResult copy(String sourceKey, String destinationKey) {
-        return getClient().copyObject(bucket, sourceKey, bucket, destinationKey);
-    }
-
-    /**
      * 改变object存储类型，通过覆盖key实现
      */
     public CopyObjectResult changeObjectStorageClass(String key, StorageClass storageClass) {
@@ -245,27 +229,6 @@ public class BaseOssService {
         meta.setHeader(OSSHeaders.OSS_STORAGE_CLASS, storageClass);
         copyObjectRequest.setNewObjectMetadata(meta);
         return getClient().copyObject(copyObjectRequest);
-    }
-
-    /**
-     * 取回object
-     */
-    public RestoreObjectResult restoreObject(String key) {
-        return getClient().restoreObject(bucket, key);
-    }
-
-    /**
-     * 创建软连接
-     */
-    public VoidResult createSymlink(String symlink, String target) {
-        return getClient().createSymlink(bucket, symlink, target);
-    }
-
-    /**
-     * 获取软连接
-     */
-    public OSSSymlink getSymlink(String bucket, String symlink) {
-        return getClient().getSymlink(bucket, symlink);
     }
 
 }
