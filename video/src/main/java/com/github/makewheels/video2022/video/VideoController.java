@@ -90,7 +90,7 @@ public class VideoController {
      */
     @PostMapping("updateWatchSettings")
     public Result<Void> updateWatchSettings(@RequestBody UpdateWatchSettingsDTO updateWatchSettingsDTO) {
-        checkService.checkVideoExist(updateWatchSettingsDTO.getId());
+        checkService.checkVideoExist(updateWatchSettingsDTO.getVideoId());
         videoService.updateWatchSettings(updateWatchSettingsDTO);
         return Result.ok();
     }

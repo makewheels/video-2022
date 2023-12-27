@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 public class UpdateWatchSettingsDTO {
-    private String id;
+    private String videoId;
     private Boolean showUploadTime;
     private Boolean showWatchCount;
 }
