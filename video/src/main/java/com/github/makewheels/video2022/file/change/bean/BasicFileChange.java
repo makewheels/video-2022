@@ -1,4 +1,4 @@
-package com.github.makewheels.video2022.file.operate;
+package com.github.makewheels.video2022.file.change.bean;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -12,7 +12,7 @@ import java.util.Date;
  */
 @Data
 @Document
-public class FileChange {
+public class BasicFileChange {
     @Id
     private String id;
 
@@ -22,7 +22,6 @@ public class FileChange {
     private String key;
 
     private String method;
-    private String operator;
 
     private String beforeStorageClass;   // 改动前的存储类型
     private String afterStorageClass;    // 改动后的存储类型
