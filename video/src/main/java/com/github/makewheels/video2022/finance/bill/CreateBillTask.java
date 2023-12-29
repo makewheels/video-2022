@@ -2,7 +2,7 @@ package com.github.makewheels.video2022.finance.bill;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
-import com.github.makewheels.video2022.etc.system.environment.EnvironmentService;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.finance.fee.ossaccess.OssAccessFeeService;
 import com.github.makewheels.video2022.finance.transaction.TransactionService;
 import com.google.common.collect.Lists;

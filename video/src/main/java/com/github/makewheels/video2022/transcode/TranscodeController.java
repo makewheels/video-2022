@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.transcode;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.etc.system.response.Result;
+import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
 import com.github.makewheels.video2022.transcode.factory.TranscodeFactory;
 import com.github.makewheels.video2022.transcode.factory.TranscodeService;

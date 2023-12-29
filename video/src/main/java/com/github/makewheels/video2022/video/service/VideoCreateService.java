@@ -3,14 +3,13 @@ package com.github.makewheels.video2022.video.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverLauncher;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
-import com.github.makewheels.video2022.etc.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.IdService;
 import com.github.makewheels.video2022.utils.OssPathUtil;
-import com.github.makewheels.video2022.archive.ShortUrlService;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.Watch;
@@ -40,8 +39,6 @@ public class VideoCreateService {
     private FileService fileService;
     @Resource
     private CoverLauncher coverLauncher;
-    @Resource
-    private ShortUrlService shortUrlService;
 
     @Resource
     private EnvironmentService environmentService;
