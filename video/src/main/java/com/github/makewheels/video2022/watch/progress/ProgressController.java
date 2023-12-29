@@ -1,8 +1,8 @@
 package com.github.makewheels.video2022.watch.progress;
 
-import com.github.makewheels.video2022.etc.system.context.Context;
-import com.github.makewheels.video2022.etc.system.context.RequestUtil;
-import com.github.makewheels.video2022.etc.system.response.Result;
+import com.github.makewheels.video2022.system.context.Context;
+import com.github.makewheels.video2022.system.context.RequestUtil;
+import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.user.UserHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

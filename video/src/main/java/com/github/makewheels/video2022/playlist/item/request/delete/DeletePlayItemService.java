@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.playlist.item.request.delete;
 
 import com.alibaba.fastjson.JSON;
-import com.github.makewheels.video2022.etc.springboot.exception.VideoException;
+import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.playlist.PlaylistRepository;
 import com.github.makewheels.video2022.playlist.item.PlayItem;
 import com.github.makewheels.video2022.playlist.list.bean.Playlist;

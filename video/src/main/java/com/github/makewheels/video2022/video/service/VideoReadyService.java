@@ -3,7 +3,7 @@ package com.github.makewheels.video2022.video.service;
 import com.aliyun.oss.model.StorageClass;
 import com.github.makewheels.video2022.etc.ding.NotificationService;
 import com.github.makewheels.video2022.file.FileService;
-import com.github.makewheels.video2022.etc.system.environment.EnvironmentService;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoStatus;

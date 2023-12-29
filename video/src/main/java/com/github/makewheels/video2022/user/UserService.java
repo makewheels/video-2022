@@ -2,9 +2,9 @@ package com.github.makewheels.video2022.user;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
-import com.github.makewheels.video2022.archive.BaiduSmsService;
-import com.github.makewheels.video2022.etc.springboot.exception.VideoException;
-import com.github.makewheels.video2022.etc.system.response.ErrorCode;
+import com.github.makewheels.video2022.etc.sms.BaiduSmsService;
+import com.github.makewheels.video2022.springboot.exception.VideoException;
+import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.finance.wallet.WalletService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.bean.VerificationCode;

@@ -5,7 +5,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.model.OSSObjectSummary;
-import com.github.makewheels.video2022.etc.system.environment.EnvironmentService;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.oss.osslog.bean.GenerateOssAccessLogDTO;
 import com.github.makewheels.video2022.oss.osslog.bean.OssAccessLog;
 import com.github.makewheels.video2022.oss.osslog.bean.OssAccessLogFile;
