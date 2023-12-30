@@ -228,8 +228,8 @@ public class WatchService {
             String m3u8Url = getM3u8Url(videoId, clientId, sessionId, transcode.getId(),
                     transcode.getResolution());
 
-            stringBuilder.append("#EXT-X-STREAM-INF:BANDWIDTH=")
-                    .append(transcode.getMaxBitrate())
+            stringBuilder.append("#EXT-X-STREAM-INF:")
+                    .append("BANDWIDTH=").append(transcode.getMaxBitrate())
                     .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate())
                     .append("\n")
                     .append(m3u8Url)
