@@ -1,4 +1,4 @@
-示例：https://oneclick.video/w?v=17GO2A
+示例视频：https://oneclick.video/w?v=17GO2A
 
 ## 关键设计
 
