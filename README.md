@@ -1,3 +1,5 @@
+示例：https://oneclick.video/w?v=17GO2A
+
 ## 关键设计
 
 [关键设计](docs/1-关键设计.md)
