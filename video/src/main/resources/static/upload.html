@@ -39,9 +39,6 @@
 <button id="btn_copy" type="button">一键复制</button>
 <br>
 
-<span id="shortUrl"></span>
-<br>
-
 <span id="watchUrl"></span>
 <br>
 
@@ -109,7 +106,6 @@
     let input_description = document.getElementById("input_description");
     let btn_update = document.getElementById("btn_update");
 
-    let shortUrl = document.getElementById("shortUrl");
     let watchUrl = document.getElementById("watchUrl");
 
     let text_progress = document.getElementById("text_progress");
@@ -143,7 +139,6 @@
             videoId = data.videoId;
             watchId = data.watchId;
 
-            shortUrl.innerText = data.shortUrl;
             watchUrl.innerText = data.watchUrl;
             beginUpload();
         });
