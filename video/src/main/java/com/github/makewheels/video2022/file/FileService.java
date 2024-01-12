@@ -87,7 +87,7 @@ public class FileService {
      */
     public JSONObject getUploadCredentials(String fileId) {
         File file = fileRepository.getById(fileId);
-        JSONObject credentials = ossVideoService.getUploadCredentials(file.getKey());
+        JSONObject credentials = ossVideoService.generateUploadCredentials(file.getKey());
         if (credentials == null) {
             throw new VideoException(ErrorCode.FILE_GENERATE_UPLOAD_CREDENTIALS_FAIL);
         }

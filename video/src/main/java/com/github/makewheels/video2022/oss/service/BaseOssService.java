@@ -57,7 +57,7 @@ public class BaseOssService {
     /**
      * 获取临时上传凭证
      */
-    public JSONObject getUploadCredentials(String key) {
+    public JSONObject generateUploadCredentials(String key) {
         DefaultProfile.addEndpoint("cn-beijing", "Sts", "sts.cn-beijing.aliyuncs.com");
         IClientProfile profile = DefaultProfile.getProfile("cn-beijing", accessKeyId, secretKey);
         DefaultAcsClient client = new DefaultAcsClient(profile);
@@ -166,8 +166,7 @@ public class BaseOssService {
      * 设置对象权限
      */
     public void setObjectAcl(String key, CannedAccessControlList cannedAccessControlList) {
-        log.info("阿里云OSS设置对象权限, key = {}, cannedAccessControlList = {}",
-                key, cannedAccessControlList);
+        log.info("阿里云OSS设置对象权限, key = {}, cannedAccessControlList = {}", key, cannedAccessControlList);
         getClient().setObjectAcl(bucket, key, cannedAccessControlList);
     }
 
