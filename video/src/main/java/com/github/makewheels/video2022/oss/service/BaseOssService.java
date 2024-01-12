@@ -11,31 +11,23 @@ import com.aliyun.oss.common.comm.Protocol;
 import com.aliyun.oss.internal.OSSHeaders;
 import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.CopyObjectRequest;
-import com.aliyun.oss.model.CopyObjectResult;
-import com.aliyun.oss.model.DeleteObjectsRequest;
-import com.aliyun.oss.model.DeleteObjectsResult;
 import com.aliyun.oss.model.ListObjectsV2Request;
 import com.aliyun.oss.model.ListObjectsV2Result;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.ObjectMetadata;
-import com.aliyun.oss.model.PutObjectResult;
 import com.aliyun.oss.model.StorageClass;
-import com.aliyun.oss.model.VoidResult;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.auth.sts.AssumeRoleRequest;
 import com.aliyuncs.auth.sts.AssumeRoleResponse;
 import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
-import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.mortbay.util.ajax.JSON;
 
 import java.io.File;
-import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
@@ -63,15 +55,6 @@ public class BaseOssService {
     }
 
     /**
-     * 关闭client
-     */
-    public void shutdownClient() {
-        if (ossClient != null) {
-            ossClient.shutdown();
-        }
-    }
-
-    /**
      * 获取临时上传凭证
      */
     public JSONObject getUploadCredentials(String key) {
@@ -79,8 +62,6 @@ public class BaseOssService {
         IClientProfile profile = DefaultProfile.getProfile("cn-beijing", accessKeyId, secretKey);
         DefaultAcsClient client = new DefaultAcsClient(profile);
         AssumeRoleRequest request = new AssumeRoleRequest();
-        //精确定位上传权限
-//        request.setPolicy("");
         request.setRoleArn("acs:ram::1618784280874658:role/role-oss-video-2022");
         request.setRoleSessionName("roleSessionName-" + IdUtil.simpleUUID());
         request.setDurationSeconds(60 * 60 * 3L);
@@ -102,19 +83,6 @@ public class BaseOssService {
         credentials.put("sessionToken", responseCredentials.getSecurityToken());
         credentials.put("expiration", responseCredentials.getExpiration());
         return credentials;
-    }
-
-    /**
-     * 上传
-     */
-    public PutObjectResult putObject(String key, InputStream inputStream) {
-        log.info("阿里云OSS上传: key = {}", key);
-        try {
-            getClient().putObject(bucket, key, inputStream);
-        } catch (Throwable e) {
-            log.error(ExceptionUtils.getStackTrace(e));
-        }
-        return null;
     }
 
     /**
@@ -158,25 +126,9 @@ public class BaseOssService {
     /**
      * 删除文件
      */
-    public VoidResult deleteObject(String key) {
+    public void deleteObject(String key) {
         log.info("阿里云OSS删除文件: key = " + key);
-        return getClient().deleteObject(bucket, key);
-    }
-
-    /**
-     * 批量删除文件
-     */
-    public List<String> deleteAllObjects(List<String> keys) {
-        List<String> deletedKeys = new ArrayList<>();
-        for (List<String> partitionKeys : Lists.partition(keys, 1000)) {
-            log.info("阿里云OSS批量删除文件: 请求keys = " + JSON.toString(partitionKeys));
-            DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucket);
-            deleteObjectsRequest.setKeys(partitionKeys);
-            DeleteObjectsResult deleteObjectsResult = getClient().deleteObjects(deleteObjectsRequest);
-            log.info("阿里云OSS批量删除文件: 响应deleteObjectsResult = " + JSON.toString(deleteObjectsResult));
-            deletedKeys.addAll(deleteObjectsResult.getDeletedObjects());
-        }
-        return deletedKeys;
+        getClient().deleteObject(bucket, key);
     }
 
     /**
@@ -222,13 +174,13 @@ public class BaseOssService {
     /**
      * 改变object存储类型，通过覆盖key实现
      */
-    public CopyObjectResult changeObjectStorageClass(String key, StorageClass storageClass) {
+    public void changeObjectStorageClass(String key, StorageClass storageClass) {
         log.info("阿里云OSS改变object存储类型, key = {}, storageClass = {}", key, storageClass);
         CopyObjectRequest copyObjectRequest = new CopyObjectRequest(bucket, key, bucket, key);
         ObjectMetadata meta = new ObjectMetadata();
         meta.setHeader(OSSHeaders.OSS_STORAGE_CLASS, storageClass);
         copyObjectRequest.setNewObjectMetadata(meta);
-        return getClient().copyObject(copyObjectRequest);
+        getClient().copyObject(copyObjectRequest);
     }
 
 }
