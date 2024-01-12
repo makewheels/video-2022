@@ -7,10 +7,6 @@ import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.StorageClass;
-import com.github.makewheels.video2022.springboot.exception.VideoException;
-import com.github.makewheels.video2022.system.context.Context;
-import com.github.makewheels.video2022.system.context.RequestUtil;
-import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.file.access.FileAccessLogService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileStatus;
@@ -18,6 +14,10 @@ import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.file.md5.FileMd5DTO;
 import com.github.makewheels.video2022.file.md5.Md5CfService;
 import com.github.makewheels.video2022.oss.service.OssVideoService;
+import com.github.makewheels.video2022.springboot.exception.VideoException;
+import com.github.makewheels.video2022.system.context.Context;
+import com.github.makewheels.video2022.system.context.RequestUtil;
+import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.utils.IdService;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.constants.VideoType;
@@ -167,18 +167,6 @@ public class FileService {
      */
     public boolean doesOSSObjectExist(String key) {
         return ossVideoService.doesObjectExist(key);
-    }
-
-    /**
-     * 获取文件的md5
-     */
-    public String getMd5(String fileId) {
-        File file = fileRepository.getById(fileId);
-        FileMd5DTO fileMd5DTO = new FileMd5DTO();
-        fileMd5DTO.setFileId(fileId);
-        fileMd5DTO.setKey(file.getKey());
-        md5CfService.getOssObjectMd5(fileMd5DTO);
-        return fileMd5DTO.getMd5();
     }
 
     /**
