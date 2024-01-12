@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.cover;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.mts20140618.models.QuerySnapshotJobListResponseBody;
 import com.aliyun.oss.model.CannedAccessControlList;
@@ -16,8 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.Date;
+import javax.annotation.Resource;
 
 @Service
 @Slf4j
@@ -62,7 +63,7 @@ public class CoverCallbackService {
         String jobId = cover.getJobId();
         long startTime = System.currentTimeMillis();
         //轮询
-        for (int i = 0; i < 1000000000; i++) {
+        for (int i = 0; i < 1000000; i++) {
             //查询任务
             QuerySnapshotJobListResponseBody.QuerySnapshotJobListResponseBodySnapshotJobListSnapshotJob
                     job = aliyunMpsService.simpleQueryOneJob(jobId);
@@ -75,11 +76,7 @@ public class CoverCallbackService {
             }
 
             log.info("i = " + i + " 开始睡觉");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            ThreadUtil.sleep(1000);
 
             if ((System.currentTimeMillis() - startTime) > 3 * 60 * 1000) {
                 log.error("视频截帧长时间未完成: jobId = {}, video = {}", jobId, JSON.toJSONString(video));
