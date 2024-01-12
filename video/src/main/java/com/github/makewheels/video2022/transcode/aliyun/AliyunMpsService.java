@@ -9,6 +9,7 @@ import com.aliyun.mts20140618.models.*;
 import com.aliyun.teaopenapi.models.Config;
 import com.github.makewheels.video2022.transcode.contants.Resolution;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,7 @@ public class AliyunMpsService {
         try {
             client = new Client(config);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         return client;
     }
@@ -57,7 +58,7 @@ public class AliyunMpsService {
         try {
             response = getClient().submitMediaInfoJob(request);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         return response;
     }
@@ -92,7 +93,7 @@ public class AliyunMpsService {
         try {
             response = getClient().submitJobs(request);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         log.info("阿里云转码任务提交任务响应: " + JSON.toJSONString(response));
         return response;
@@ -125,7 +126,7 @@ public class AliyunMpsService {
         try {
             return getClient().queryJobList(new QueryJobListRequest().setJobIds(jobIds));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         return null;
     }
@@ -155,7 +156,7 @@ public class AliyunMpsService {
         try {
             return getClient().submitSnapshotJob(request);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         return null;
     }
@@ -171,7 +172,7 @@ public class AliyunMpsService {
         try {
             return getClient().querySnapshotJobList(request);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
         return null;
     }
