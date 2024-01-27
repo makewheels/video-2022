@@ -31,7 +31,7 @@
     <div id="watchCount" style="font-size: 17px;color: darkcyan;margin-top: 14px"></div>
     <div id="createTime" style="font-size: 17px;color: darkcyan;margin-top: 6px"></div>
     <div id="description" style="font-size: 20px"></div>
-
+    <button id="btn_copyCurrentTime" style="font-size: 20px;margin-top: 10px">复制当前时间</button>
     <div class="video-list">
     </div>
 </div>
@@ -158,6 +158,18 @@
 
     }
 
+    // 复制当前时间按钮点击监听
+    function addCopyCurrentTimeButtonClickListener() {
+        document.getElementById("btn_copyCurrentTime").addEventListener("click", function () {
+            // 获取播放器时间，转为毫秒，拼接url到最后，复制到剪切板
+            let currentTime = player.getCurrentTime() * 1000;
+            currentTime = Math.round(currentTime);
+            let url = window.location.href + "&seekTimeInMills=" + currentTime;
+            navigator.clipboard.writeText(url);
+            mui.toast("已复制当前时间：" + currentTime);
+        });
+    }
+
     //加载视频
     function loadVideo() {
         watchId = getUrlVariable("v");
@@ -179,6 +191,8 @@
                 addPlayerEventListeners();
                 //设置发心跳定时器
                 setInterval("sendHeartbeat('TIMER', null)", 2000);
+                //设置复制当前时间按钮点击监听
+                addCopyCurrentTimeButtonClickListener();
             })
     }
 
