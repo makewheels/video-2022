@@ -97,8 +97,6 @@
 </style>
 
 <script>
-    // log.init({ sendAddress: 'https://www.xxx.com/xxx' });
-
     let videoId;
     let watchId;
     let coverUrl;
@@ -124,10 +122,9 @@
 
     //判断是否是pc端
     function isPC() {
-        let userAgent = navigator.userAgent;
-        let mobileAgents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
+        let mobileAgents = ["Android", "iPhone"];
         for (let i = 0; i < mobileAgents.length; i++) {
-            if (userAgent.indexOf(mobileAgents[i]) > 0) {
+            if (navigator.userAgent.indexOf(mobileAgents[i]) > 0) {
                 return false;
             }
         }
