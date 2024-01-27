@@ -182,6 +182,22 @@
             })
     }
 
+    //获取播放器初始时间
+    function getInitSeekTimeInSeconds(watchInfo){
+        let seekTimeInMills;
+        // 先判断url有没有
+        seekTimeInMills = getUrlVariable("seekTimeInMills");
+        // 如果url没有，从接口返回watchInfo里获取
+        if (!seekTime) {
+            seekTimeInMills = watchInfo.progressInMillis;
+        }
+        // 如果还是没有，就从0开始播放
+        if (!seekTimeInMills) {
+            seekTimeInMills = 0;
+        }
+        return seekTimeInMills / 1000;
+    }
+
     //播放视频
     function startPlayVideo(data) {
         videoId = data.videoId;
@@ -207,8 +223,7 @@
         }
 
         //自适应M3U8，播放进度
-        playByM3u8UrlAndTime(data.multivariantPlaylistUrl, data.progressInMillis / 1000);
-
+        playByM3u8UrlAndTime(data.multivariantPlaylistUrl, getInitSeekTimeInSeconds(data));
     }
 
     //加载视频信息
