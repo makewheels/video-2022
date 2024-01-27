@@ -188,7 +188,7 @@
         // 先判断url有没有
         seekTimeInMills = getUrlVariable("seekTimeInMills");
         // 如果url没有，从接口返回watchInfo里获取
-        if (!seekTime) {
+        if (!seekTimeInMills) {
             seekTimeInMills = watchInfo.progressInMillis;
         }
         // 如果还是没有，就从0开始播放
