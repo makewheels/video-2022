@@ -20,7 +20,8 @@ public class ThreadPoolUtil {
             List<Callable<T>> tasks, int corePoolSize, int maximumPoolSize, int workQueueCapacity) {
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 corePoolSize, maximumPoolSize, 1, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(workQueueCapacity));
+                new LinkedBlockingQueue<>(workQueueCapacity),
+                new ThreadPoolExecutor.CallerRunsPolicy());
         List<CompletableFuture<T>> futures = new ArrayList<>();
 
         for (Callable<T> task : tasks) {
