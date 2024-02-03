@@ -2,6 +2,7 @@ package com.github.makewheels.video2022.utils;
 
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.RuntimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -15,20 +16,33 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class ThreadPoolUtil {
+    private static ThreadPoolExecutor executor;
 
-    public static <T> List<T> submitTasks(
-            List<Callable<T>> tasks, int corePoolSize, int maximumPoolSize, int workQueueCapacity) {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                corePoolSize, maximumPoolSize, 1, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(workQueueCapacity));
+    private ThreadPoolUtil() {
+    }
+
+    public static void initThreadPool() {
+        int corePoolSize = Math.max(RuntimeUtil.getProcessorCount() / 2, 1);
+        executor = new ThreadPoolExecutor(
+                corePoolSize, corePoolSize, 1, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(1000),
+                new ThreadPoolExecutor.CallerRunsPolicy());
+    }
+
+    static {
+        initThreadPool();
+    }
+
+    public static <T> List<T> submitTasks(List<Callable<T>> tasks) {
         List<CompletableFuture<T>> futures = new ArrayList<>();
-
         for (Callable<T> task : tasks) {
             CompletableFuture<T> future = new CompletableFuture<>();
             futures.add(future);
-            if (executor.getQueue().remainingCapacity() < 10) {
+            if (executor.getQueue().remainingCapacity() < executor.getQueue().size() / 10
+                    || executor.getPoolSize() >= executor.getMaximumPoolSize()) {
                 ThreadUtil.sleep(RandomUtil.randomInt(100, 500));
             }
+
             executor.submit(() -> {
                 try {
                     T result = task.call();
@@ -46,7 +60,4 @@ public class ThreadPoolUtil {
                 .collect(Collectors.toList());
     }
 
-    public static <T> List<T> submitTasks(List<Callable<T>> tasks) {
-        return submitTasks(tasks, 5, 10, 1000);
-    }
 }
