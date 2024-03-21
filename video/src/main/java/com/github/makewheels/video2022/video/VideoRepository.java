@@ -36,10 +36,6 @@ public class VideoRepository {
                 Collectors.toMap(Video::getId, Function.identity()));
     }
 
-    public List<Video> listAll() {
-        return mongoTemplate.findAll(Video.class);
-    }
-
     /**
      * 更新status
      */
