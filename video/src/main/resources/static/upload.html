@@ -180,7 +180,8 @@
 
         //分片上传
         const result = await client.multipartUpload(key, file, {
-            partSize: 2 * 1024 * 1024,
+            parallel: 2,
+            partSize: 512 * 1024,
             progress: function (p, checkpoint) {
                 let percent = p * 100;
                 text_progress.innerText = percent.toFixed(2) + " %";
