@@ -48,7 +48,7 @@ health_check() {
 
 start_application() {
   echo "starting java process"
-  nohup java -jar -Dspring.profiles.active=prod -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:33830 ${JAR_NAME} >> ${JAVA_OUT} 2>&1 &
+  nohup java -javaagent:/home/admin/ArmsAgent/aliyun-java-agent.jar -jar -Dspring.profiles.active=prod ${JAR_NAME} >> ${JAVA_OUT} 2>&1 &
   echo "started java process"
 }
 
