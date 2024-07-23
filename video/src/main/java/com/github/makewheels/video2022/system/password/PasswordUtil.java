@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.system.password;
 import cn.hutool.core.io.FileUtil;
 import com.github.makewheels.video2022.VideoApplication;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,7 +59,7 @@ public class PasswordUtil {
         try {
             properties.load(getPasswordFileInputStream(env));
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
         }
 
         //遍历密码文件
