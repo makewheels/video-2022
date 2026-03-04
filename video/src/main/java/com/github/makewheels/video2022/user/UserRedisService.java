@@ -9,7 +9,7 @@ import com.github.makewheels.video2022.user.bean.VerificationCode;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @Service
 public class UserRedisService {
