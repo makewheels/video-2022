@@ -18,7 +18,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @Service
 @Slf4j

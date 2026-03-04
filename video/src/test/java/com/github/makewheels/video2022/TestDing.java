@@ -11,7 +11,7 @@ import com.github.makewheels.video2022.video.bean.entity.Video;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.UUID;
 
 @SpringBootTest

@@ -8,7 +8,7 @@ import com.github.makewheels.video2022.playlist.list.bean.Playlist;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
