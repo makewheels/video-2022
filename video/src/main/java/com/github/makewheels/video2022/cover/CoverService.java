@@ -3,7 +3,7 @@ package com.github.makewheels.video2022.cover;
 import com.github.makewheels.video2022.file.FileService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
