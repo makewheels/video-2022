@@ -4,7 +4,7 @@ import com.github.makewheels.video2022.finance.bill.CreateBillTask;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @SpringBootTest
 public class CreateBillTaskTests {

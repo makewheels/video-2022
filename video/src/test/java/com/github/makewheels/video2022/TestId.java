@@ -4,7 +4,7 @@ import com.github.makewheels.video2022.utils.IdService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @SpringBootTest(classes = VideoApplication.class)
 public class TestId {
