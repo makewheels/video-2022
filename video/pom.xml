@@ -153,23 +153,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!--百度云，用于发短信-->
-        <dependency>
-            <groupId>com.baidubce</groupId>
-            <artifactId>bce-java-sdk</artifactId>
-            <version>0.10.256</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jdk.tools</groupId>
-                    <artifactId>jdk.tools</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
         <!--解析Java代码-->
         <dependency>
             <groupId>com.github.javaparser</groupId>
