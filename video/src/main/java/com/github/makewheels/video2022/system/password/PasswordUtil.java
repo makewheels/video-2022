@@ -24,12 +24,7 @@ public class PasswordUtil {
     private static String getPrivateKey(String env) {
         String path = null;
         if (env.equals("dev")) {
-            // 支持 Windows 和 macOS
-            if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-                path = System.getProperty("user.home") + "/workSpace/~keys/video-2022/privateKey.txt";
-            } else {
-                path = "D:/workSpace/~keys/video-2022/privateKey.txt";
-            }
+            path = System.getProperty("user.home") + "/Downloads/video-2022/privateKey.txt";
         } else if (env.equals("prod")) {
             path = "/root/keys/video-2022/privateKey.txt";
         }
