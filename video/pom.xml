@@ -25,6 +25,11 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <version>${spring.boot.version}</version>
             <scope>test</scope>
@@ -47,7 +52,31 @@
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.1.10.RELEASE</version>
+            <version>6.5.2.RELEASE</version>
+        </dependency>
+
+        <!-- 显式声明 logback 依赖以覆盖旧版本 -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.12</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.5.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.16</version>
+        </dependency>
+
+        <!-- 显式声明 gson 依赖以支持 Spring Boot 3.4.x -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.11.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -59,7 +88,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-dependencies</artifactId>
-            <version>2021.0.5</version>
+            <version>2024.0.0</version>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
@@ -85,20 +114,14 @@
             <version>3.16.3</version>
         </dependency>
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.1</version>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.2</version>
         </dependency>
-        <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <!-- no more than 2.3.3-->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-            <version>2.3.3</version>
+            <version>4.0.5</version>
         </dependency>
 
         <!--阿里云MTS视频转码-->
@@ -113,6 +136,21 @@
             <groupId>com.aliyun.fc.runtime</groupId>
             <artifactId>fc-java-core</artifactId>
             <version>1.4.1</version>
+        </dependency>
+
+        <!-- Jakarta EE Servlet (Spring Boot 3) -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>6.1.0</version>
+        </dependency>
+
+        <!-- javax.servlet API (阿里云函数计算 SDK 需要) -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
         </dependency>
 
         <!--百度云，用于发短信-->

@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;

@@ -10,7 +10,7 @@ import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * 当视频就绪时
