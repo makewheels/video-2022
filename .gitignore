@@ -34,3 +34,6 @@ build/
 
 ### Dotenv ###
 .env
+
+### Node ###
+node_modules/
