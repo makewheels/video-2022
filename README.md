@@ -234,6 +234,7 @@ docker run -d -p 5022:5022 --name video-2022 video-2022:latest
 | [#8](https://github.com/makewheels/video-2022/pull/8) | copilot/cleanup-agent-config | 迁移 AGENT.md 到 .github/copilot-instructions.md，添加 Copilot Skills |
 | [#9](https://github.com/makewheels/video-2022/pull/9) | dev/feature-testing | Spring Boot 4.x 兼容性修复（lettuce-core 升级、-parameters 编译参数） |
 | [#10](https://github.com/makewheels/video-2022/pull/10) | dev/feature-testing | 全面文档更新：README、关键设计、8 个 API 文档（AI 友好格式） |
+| [#11](https://github.com/makewheels/video-2022/pull/11) | docs/business-flows | 添加 10 篇业务文档，覆盖全部业务流程（3,668 行） |
 
 ---
 
