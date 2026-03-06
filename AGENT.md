@@ -60,7 +60,7 @@ java -jar video/target/video-0.0.1-SNAPSHOT.jar
 
 ### 技术栈
 
-- **Java 11** + **Spring Boot 2.7.11**
+- **Java 21** + **Spring Boot 3.4.1**
 - **MongoDB** - 主数据库
 - **Redis** - 缓存、Session存储
 - **阿里云 OSS** - 视频文件存储
@@ -93,9 +93,32 @@ java -jar video/target/video-0.0.1-SNAPSHOT.jar
 
 ## 配置说明
 
-开发环境配置文件: `video/src/main/resources/application.properties`
+### 环境变量 (.env)
 
-必要的外部依赖：
+项目使用 `.env` 文件管理密钥，启动时由 `DotenvEnvironmentPostProcessor` 自动加载。
+
+```bash
+# 复制模板
+cp .env.example .env
+# 编辑 .env 填入实际密钥
+```
+
+所需密钥参见 `.env.example`。不配置密钥也能启动，但对应功能不可用。
+
+生产环境可直接设置系统环境变量，优先级：`.env` 文件 > 系统环境变量 > 默认空值。
+
+### 外部依赖
+
 - MongoDB (localhost:27017)
 - Redis (localhost:6379)
-- 阿里云 OSS/MPS 凭证 (生产环境配置在 application-prod.properties)
+
+## 踩坑记录
+
+### bce-java-sdk Jackson 版本冲突
+百度云 SDK (`bce-java-sdk`) 自带 Jackson 2.10.x，与 Spring Boot 3.4 管理的 Jackson 2.18.x 冲突，导致 `NoClassDefFoundError: com/fasterxml/jackson/core/util/JacksonFeature`。已通过删除百度云 SMS 功能彻底解决。如果将来引入自带旧 Jackson 的第三方 SDK，需在 `<exclusions>` 中排除 `jackson-core`、`jackson-databind`、`jackson-annotations`。
+
+### MongoDB `password` 属性不能为空字符串
+`spring.data.mongodb.password` 类型是 `char[]`，如果用 `${MONGODB_PASSWORD:}` 占位（空默认值），Spring Boot 绑定时抛 NPE。解决方案：开发环境不配置 username/password（本地 MongoDB 无需认证），生产环境用 `${MONGODB_PASSWORD}`（无默认值，未设置时 fail fast）。
+
+### 测试编译问题
+`JavaFunctionLineCounterTest.java` 使用 JUnit 4 (`org.junit.Test`) 但项目只引入了 JUnit 5，打包时需 `-Dmaven.test.skip=true`。

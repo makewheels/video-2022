@@ -164,17 +164,22 @@ brew services start mongodb-community
 brew services start redis
 ```
 
-### 2. 配置 RSA 私钥
+### 2. 配置密钥
 
 ```bash
-# 创建私钥文件 (macOS)
-mkdir -p ~/workSpace/~keys/video-2022
-# 将私钥内容保存到 ~/workSpace/~keys/video-2022/privateKey.txt
+# 复制环境变量模板
+cp .env.example .env
+# 编辑 .env 填入实际的阿里云、百度云等密钥
 ```
 
-### 3. 配置应用
+不配置密钥也能启动项目，但 OSS、转码、短信等功能不可用。
 
-编辑 `video/src/main/resources/application.properties`，配置 MongoDB、Redis 和阿里云凭证。
+### 3. 运行项目
+
+```bash
+cd video
+mvn spring-boot:run
+```
 
 ---
 
