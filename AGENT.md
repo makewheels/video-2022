@@ -60,7 +60,7 @@ java -jar video/target/video-0.0.1-SNAPSHOT.jar
 
 ### 技术栈
 
-- **Java 21** + **Spring Boot 3.4.1**
+- **Java 21** + **Spring Boot 4.0.3**
 - **MongoDB** - 主数据库
 - **Redis** - 缓存、Session存储
 - **阿里云 OSS** - 视频文件存储
@@ -107,6 +107,89 @@ cp .env.example .env
 
 生产环境可直接设置系统环境变量，优先级：`.env` 文件 > 系统环境变量 > 默认空值。
 
+### 密钥清单与用途
+
+| 环境变量 | 用途 | 服务 |
+|---------|------|------|
+| `ALIYUN_OSS_VIDEO_ACCESS_KEY_ID` / `SECRET_KEY` | 视频文件存储、STS临时上传凭证 | OSS (cn-beijing) |
+| `ALIYUN_OSS_DATA_ACCESS_KEY_ID` / `SECRET_KEY` | 数据桶（inventory/accesslog） | OSS (cn-beijing) |
+| `ALIYUN_MPS_ACCESS_KEY_ID` / `SECRET_KEY` | 视频转码、截图 | MPS (cn-beijing) |
+| `ALIYUN_APIGATEWAY_IP_APPCODE` | IP 地理位置查询 | API 网关云市场 |
+| `MONGODB_USERNAME` / `PASSWORD` | MongoDB 认证（仅生产） | MongoDB |
+| `REDIS_PASSWORD` | Redis 认证（仅生产） | Redis |
+| `SSL_KEYSTORE_PASSWORD` | HTTPS 证书（仅生产） | Tomcat SSL |
+
+### 使用阿里云 CLI 生成最小权限 AK
+
+```bash
+# 安装 aliyun CLI (macOS)
+brew install aliyun-cli
+aliyun configure  # 用主账号 AK 登录
+
+# ===== 1. OSS 视频存储 RAM 用户 =====
+aliyun ram CreateUser --UserName video-2022-oss-video
+aliyun ram CreateAccessKey --UserName video-2022-oss-video
+# 记录返回的 AccessKeyId / AccessKeySecret → ALIYUN_OSS_VIDEO_ACCESS_KEY_ID / SECRET_KEY
+
+# 创建最小权限策略
+aliyun ram CreatePolicy --PolicyName video-2022-oss-video-policy --PolicyDocument '{
+  "Version": "1",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["oss:GetObject", "oss:PutObject", "oss:DeleteObject",
+                 "oss:ListObjects", "oss:GetObjectAcl", "oss:PutObjectAcl",
+                 "oss:CopyObject", "oss:ListObjectsV2"],
+      "Resource": ["acs:oss:*:*:video-2022-dev/*", "acs:oss:*:*:video-2022-dev",
+                    "acs:oss:*:*:video-2022-prod/*", "acs:oss:*:*:video-2022-prod"]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "*"
+    }
+  ]
+}'
+aliyun ram AttachPolicyToUser --PolicyType Custom --PolicyName video-2022-oss-video-policy --UserName video-2022-oss-video
+
+# ===== 2. OSS 数据存储 RAM 用户 =====
+aliyun ram CreateUser --UserName video-2022-oss-data
+aliyun ram CreateAccessKey --UserName video-2022-oss-data
+# → ALIYUN_OSS_DATA_ACCESS_KEY_ID / SECRET_KEY
+
+aliyun ram CreatePolicy --PolicyName video-2022-oss-data-policy --PolicyDocument '{
+  "Version": "1",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": ["oss:GetObject", "oss:ListObjects", "oss:ListObjectsV2"],
+    "Resource": ["acs:oss:*:*:oss-data-bucket/*", "acs:oss:*:*:oss-data-bucket"]
+  }]
+}'
+aliyun ram AttachPolicyToUser --PolicyType Custom --PolicyName video-2022-oss-data-policy --UserName video-2022-oss-data
+
+# ===== 3. MPS 转码 RAM 用户 =====
+aliyun ram CreateUser --UserName video-2022-mps
+aliyun ram CreateAccessKey --UserName video-2022-mps
+# → ALIYUN_MPS_ACCESS_KEY_ID / SECRET_KEY
+
+aliyun ram CreatePolicy --PolicyName video-2022-mps-policy --PolicyDocument '{
+  "Version": "1",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": ["mts:SubmitJobs", "mts:QueryJobList",
+               "mts:SubmitMediaInfoJob", "mts:SubmitSnapshotJob",
+               "mts:QuerySnapshotJobList"],
+    "Resource": "*"
+  }]
+}'
+aliyun ram AttachPolicyToUser --PolicyType Custom --PolicyName video-2022-mps-policy --UserName video-2022-mps
+
+# ===== 4. API 网关 AppCode =====
+# AppCode 在阿里云市场订阅 IP 查询 API 后自动生成
+# 登录云市场控制台 → 已购买的服务 → 查看 AppCode
+# → ALIYUN_APIGATEWAY_IP_APPCODE
+```
+
 ### 外部依赖
 
 - MongoDB (localhost:27017)
@@ -122,3 +205,11 @@ cp .env.example .env
 
 ### 测试编译问题
 `JavaFunctionLineCounterTest.java` 使用 JUnit 4 (`org.junit.Test`) 但项目只引入了 JUnit 5，打包时需 `-Dmaven.test.skip=true`。
+
+### Spring Boot 4.0 升级注意事项
+- `spring-boot-starter-web` → `spring-boot-starter-webmvc`（旧名废弃）
+- MongoDB 属性重命名：`spring.data.mongodb.host/port/database/username/password/authentication-database` → `spring.mongodb.*`（`auto-index-creation` 不变）
+- `EnvironmentPostProcessor` 包从 `org.springframework.boot.env` 移至 `org.springframework.boot`
+- `spring.factories` 的 key 也要改为 `org.springframework.boot.EnvironmentPostProcessor`
+- `GenericJackson2JsonRedisSerializer` 废弃 → 用 `RedisSerializer.json()`
+- Spring Cloud 依赖如果未使用可直接移除
