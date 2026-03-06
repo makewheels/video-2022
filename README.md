@@ -146,7 +146,7 @@ docker-compose up -d
 - [待办](docs/3-待办.md)
 - [部署](docs/4-部署.md)
 - [运维](docs/5-运维.md)
-- [变更日志](docs/6-变更日志.md)
+- [变更日志](docs/请勿删除/6-变更日志.md)
 - [Java 8 Stream Api Examples](docs/7-java8-stream-examples.md)
 
 ---
