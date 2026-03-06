@@ -1,24 +1,33 @@
+# App接口
 
-## 7. App
+> 文档地图：[README](../../README.md) > [API接口文档](../../README.md#api-接口文档) > 本文档
 
-### 1. 检查App版本
+## 接口列表
 
+| 接口 | 方法 | 路径 | 认证 |
+|------|------|------|------|
+| 检查App更新 | GET | /app/checkUpdate | 不需要 |
+
+## 接口详情
+
+### 检查App更新
+
+客户端检查是否有新版本可用。
+
+**请求**
 ```
-GET /app/checkUpdate
+GET /app/checkUpdate?platform={platform}
 ```
 
-请求参数
+**参数**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| platform | String | 是 | 平台：android / ios |
 
-| 参数     | 说明                | 示例    |
-| -------- | ------------------- | ------- |
-| platform | 平台：android / ios | android |
-
-返回
-
+**响应示例**
 ```json
 {
     "code": 0,
-    "message": "success",
     "data": {
         "downloadUrl": "https://baidu.com",
         "versionInfo": "最新版本信息：alpha内测，2022年4月25日20:41:46",
@@ -26,15 +35,16 @@ GET /app/checkUpdate
         "versionName": "1.0.0",
         "versionCode": 1,
         "isForceUpdate": false
-    }
+    },
+    "message": "成功"
 }
 ```
 
-| 参数           | 说明                                                         | 示例                                                         |
-| -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| downloadUrl    | apk包下载地址                                                | http://abcdefg.com/video-2022-prod/packages/andoird/1.0.0-release.apk |
-| versionInfo    | 版本描述信息                                                 |                                                              |
-| compareVersion | 客户端是否把当前版本与最新版本对比，看是否更新，仅用于测试安装覆盖 | false                                                        |
-| versionName    | 版本                                                         | 1.0.0                                                        |
-| versionCode    | 版本号                                                       | 1                                                            |
-| isForceUpdate  | 是否强制更新                                                 | false                                                        |
+| 字段 | 说明 |
+|------|------|
+| downloadUrl | 安装包下载地址 |
+| versionInfo | 版本描述信息 |
+| compareVersion | 客户端是否需要对比版本号决定是否更新（测试用） |
+| versionName | 版本名称 |
+| versionCode | 版本号（整数） |
+| isForceUpdate | 是否强制更新 |
