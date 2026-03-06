@@ -6,7 +6,8 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 
 import java.io.File;
 import java.util.*;
@@ -17,6 +18,7 @@ import java.util.*;
 public class JavaFunctionLineCounterTest {
 
     @Test
+    @Disabled("Utility test - requires specific local path")
     public void run() {
         countFunctionLines("D:\\workSpace\\intellijidea\\video-2022");
 //        countFunctionLines("D:\\workSpace\\xiaomi\\maps");
