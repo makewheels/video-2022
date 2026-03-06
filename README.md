@@ -223,7 +223,7 @@ docker run -d -p 5022:5022 --name video-2022 video-2022:latest
 ## 其它文档
 
 - [运维手册](docs/5-运维.md)
-- [变更日志](docs/请勿删除/6-变更日志.md)
+- [变更日志](docs/归档/6-变更日志.md)
 
 ---
 
