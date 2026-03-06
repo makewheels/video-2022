@@ -9,7 +9,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.fc.runtime.Context;
 import com.aliyun.fc.runtime.HttpRequestHandler;
-import com.github.makewheels.video2022.system.context.RequestUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletRequest;
@@ -65,7 +64,7 @@ public class Md5CloudFunction implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response, Context context)
             throws IOException {
-        JSONObject body = RequestUtil.servletToRequestJSONObject(request);
+        JSONObject body = JSON.parseObject(IoUtil.readUtf8(request.getInputStream()));
         log.info("请求body = " + body.toJSONString());
 
         List<FileMd5DTO> objectList = JSONArray.parseArray(

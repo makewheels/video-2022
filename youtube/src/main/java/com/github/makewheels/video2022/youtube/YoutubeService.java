@@ -18,7 +18,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
