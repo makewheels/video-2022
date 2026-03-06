@@ -52,7 +52,7 @@
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.5.2.RELEASE</version>
+            <version>6.8.2.RELEASE</version>
         </dependency>
 
         <!-- 显式声明 logback 依赖以覆盖旧版本 -->

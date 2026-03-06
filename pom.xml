@@ -91,6 +91,7 @@
                     <source>21</source>
                     <target>21</target>
                     <fork>true</fork>
+                    <parameters>true</parameters>
                     <compilerArgs>
                         <arg>--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
                         <arg>--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
