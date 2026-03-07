@@ -65,6 +65,31 @@
                 <div id="description" class="video-description"></div>
                 <button id="btn_copyCurrentTime" type="button" class="btn btn-secondary" style="margin-top:12px;">复制当前时间</button>
             </div>
+
+            <!-- 评论区 -->
+            <div class="comment-section" style="margin-top:24px;padding:0 4px;">
+                <h3 id="commentHeader" style="font-size:1.1rem;margin-bottom:16px;">评论 <span id="commentCount">0</span></h3>
+
+                <!-- 排序按钮 -->
+                <div style="margin-bottom:12px;display:flex;gap:8px;">
+                    <button id="sortTime" class="btn btn-secondary btn-sm" style="font-weight:bold;">最新</button>
+                    <button id="sortHot" class="btn btn-secondary btn-sm">最热</button>
+                </div>
+
+                <!-- 评论输入框 -->
+                <div id="commentInputBox" style="margin-bottom:20px;">
+                    <textarea id="commentInput" placeholder="添加评论..." rows="2"
+                        style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:8px;resize:vertical;font-size:0.9rem;background:var(--bg-secondary);color:var(--text-primary);"></textarea>
+                    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+                        <button id="cancelComment" class="btn btn-secondary btn-sm">取消</button>
+                        <button id="submitComment" class="btn btn-primary btn-sm">评论</button>
+                    </div>
+                </div>
+
+                <!-- 评论列表 -->
+                <div id="commentList"></div>
+                <button id="loadMoreComments" class="btn btn-secondary btn-sm" style="display:none;width:100%;margin-top:12px;">加载更多</button>
+            </div>
         </div>
 
         <!-- Sidebar playlist -->
@@ -411,6 +436,9 @@
                     }
                     // 加载点赞状态
                     loadLikeStatus(videoId);
+                    // 加载评论
+                    loadCommentCount();
+                    loadComments(false);
                 });
         }
 
@@ -441,6 +469,234 @@
             axios.get('/videoLike/dislike?videoId=' + videoId, {headers: VideoApp.authHeaders()})
                 .then(function () { loadLikeStatus(videoId); })
                 .catch(function () { VideoApp.toast('请先登录', 'error'); });
+        });
+
+        // ==================== 评论系统 ====================
+        let commentSort = 'time';
+        let commentSkip = 0;
+        const COMMENT_LIMIT = 20;
+
+        function maskPhone(phone) {
+            if (!phone || phone.length < 7) return '用户';
+            return phone.substring(0, 3) + '****' + phone.substring(phone.length - 4);
+        }
+
+        function timeAgo(dateStr) {
+            let d = new Date(dateStr);
+            let now = Date.now();
+            let diff = (now - d.getTime()) / 1000;
+            if (diff < 60) return '刚刚';
+            if (diff < 3600) return Math.floor(diff / 60) + '分钟前';
+            if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+            if (diff < 2592000) return Math.floor(diff / 86400) + '天前';
+            return d.toLocaleDateString('zh-CN');
+        }
+
+        function loadCommentCount() {
+            if (!videoId) return;
+            axios.get('/comment/getCount?videoId=' + videoId).then(function (res) {
+                document.getElementById('commentCount').textContent = res.data.data.count || 0;
+            });
+        }
+
+        function loadComments(append) {
+            if (!videoId) return;
+            if (!append) {
+                commentSkip = 0;
+                document.getElementById('commentList').innerHTML = '';
+            }
+            axios.get('/comment/getByVideoId?videoId=' + videoId
+                + '&skip=' + commentSkip + '&limit=' + COMMENT_LIMIT + '&sort=' + commentSort)
+                .then(function (res) {
+                    var comments = res.data.data;
+                    var container = document.getElementById('commentList');
+                    comments.forEach(function (c) {
+                        container.appendChild(buildCommentEl(c, false));
+                    });
+                    commentSkip += comments.length;
+                    document.getElementById('loadMoreComments').style.display =
+                        comments.length >= COMMENT_LIMIT ? 'block' : 'none';
+                });
+        }
+
+        function buildCommentEl(c, isReply) {
+            var div = document.createElement('div');
+            div.style.cssText = 'margin-bottom:16px;padding:' + (isReply ? '8px 0 0 32px' : '0') + ';';
+            div.dataset.commentId = c.id;
+
+            var header = document.createElement('div');
+            header.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px;';
+            var nameSpan = document.createElement('span');
+            nameSpan.style.cssText = 'font-weight:600;font-size:0.85rem;';
+            nameSpan.textContent = maskPhone(c.userPhone);
+            var timeSpan = document.createElement('span');
+            timeSpan.style.cssText = 'font-size:0.8rem;color:var(--text-secondary);';
+            timeSpan.textContent = timeAgo(c.createTime);
+            header.appendChild(nameSpan);
+            header.appendChild(timeSpan);
+
+            var contentDiv = document.createElement('div');
+            contentDiv.style.cssText = 'font-size:0.9rem;margin-bottom:6px;line-height:1.5;';
+            if (isReply && c.replyToUserPhone) {
+                var replyTag = document.createElement('span');
+                replyTag.style.cssText = 'color:var(--primary-color);font-size:0.85rem;';
+                replyTag.textContent = '@' + maskPhone(c.replyToUserPhone) + ' ';
+                contentDiv.appendChild(replyTag);
+            }
+            contentDiv.appendChild(document.createTextNode(c.content));
+
+            var actions = document.createElement('div');
+            actions.style.cssText = 'display:flex;align-items:center;gap:12px;font-size:0.8rem;color:var(--text-secondary);';
+
+            var likeBtn = document.createElement('button');
+            likeBtn.className = 'btn-icon';
+            likeBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;background:none;border:none;color:var(--text-secondary);';
+            likeBtn.textContent = '👍 ' + (c.likeCount || 0);
+            likeBtn.addEventListener('click', function () {
+                axios.get('/comment/like?commentId=' + c.id, {headers: VideoApp.authHeaders()})
+                    .then(function () { loadComments(false); loadCommentCount(); })
+                    .catch(function () { VideoApp.toast('请先登录', 'error'); });
+            });
+            actions.appendChild(likeBtn);
+
+            var replyBtn = document.createElement('button');
+            replyBtn.className = 'btn-icon';
+            replyBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;background:none;border:none;color:var(--text-secondary);';
+            replyBtn.textContent = '回复';
+            replyBtn.addEventListener('click', function () {
+                showReplyInput(div, c.id);
+            });
+            actions.appendChild(replyBtn);
+
+            // 删除按钮（评论者或视频作者）
+            var deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn-icon';
+            deleteBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;background:none;border:none;color:var(--text-secondary);';
+            deleteBtn.textContent = '删除';
+            deleteBtn.addEventListener('click', function () {
+                if (!confirm('确定删除此评论？')) return;
+                axios.get('/comment/delete?commentId=' + c.id, {headers: VideoApp.authHeaders()})
+                    .then(function () { loadComments(false); loadCommentCount(); })
+                    .catch(function () { VideoApp.toast('删除失败', 'error'); });
+            });
+            actions.appendChild(deleteBtn);
+
+            div.appendChild(header);
+            div.appendChild(contentDiv);
+            div.appendChild(actions);
+
+            // 回复区域
+            if (!isReply && c.replyCount > 0) {
+                var replyToggle = document.createElement('button');
+                replyToggle.className = 'btn-icon';
+                replyToggle.style.cssText = 'font-size:0.8rem;cursor:pointer;background:none;border:none;color:var(--primary-color);margin-top:4px;';
+                replyToggle.textContent = '▶ ' + c.replyCount + ' 条回复';
+                var replyContainer = document.createElement('div');
+                replyContainer.style.display = 'none';
+                replyToggle.addEventListener('click', function () {
+                    if (replyContainer.style.display === 'none') {
+                        replyContainer.style.display = 'block';
+                        replyToggle.textContent = '▼ 收起回复';
+                        loadReplies(c.id, replyContainer);
+                    } else {
+                        replyContainer.style.display = 'none';
+                        replyToggle.textContent = '▶ ' + c.replyCount + ' 条回复';
+                    }
+                });
+                div.appendChild(replyToggle);
+                div.appendChild(replyContainer);
+            }
+
+            return div;
+        }
+
+        function loadReplies(parentId, container) {
+            container.innerHTML = '';
+            axios.get('/comment/getReplies?parentId=' + parentId + '&skip=0&limit=50')
+                .then(function (res) {
+                    res.data.data.forEach(function (r) {
+                        container.appendChild(buildCommentEl(r, true));
+                    });
+                });
+        }
+
+        function showReplyInput(parentDiv, parentId) {
+            var existingInput = parentDiv.querySelector('.reply-input-box');
+            if (existingInput) { existingInput.remove(); return; }
+
+            var box = document.createElement('div');
+            box.className = 'reply-input-box';
+            box.style.cssText = 'margin:8px 0 0 32px;';
+
+            var textarea = document.createElement('textarea');
+            textarea.placeholder = '回复...';
+            textarea.rows = 1;
+            textarea.style.cssText = 'width:100%;padding:6px 10px;border:1px solid var(--border-color);border-radius:6px;resize:none;font-size:0.85rem;background:var(--bg-secondary);color:var(--text-primary);';
+
+            var btnRow = document.createElement('div');
+            btnRow.style.cssText = 'display:flex;justify-content:flex-end;gap:6px;margin-top:6px;';
+
+            var cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn btn-secondary btn-sm';
+            cancelBtn.textContent = '取消';
+            cancelBtn.style.fontSize = '0.8rem';
+            cancelBtn.addEventListener('click', function () { box.remove(); });
+
+            var submitBtn = document.createElement('button');
+            submitBtn.className = 'btn btn-primary btn-sm';
+            submitBtn.textContent = '回复';
+            submitBtn.style.fontSize = '0.8rem';
+            submitBtn.addEventListener('click', function () {
+                var text = textarea.value.trim();
+                if (!text) return;
+                axios.post('/comment/add', {videoId: videoId, content: text, parentId: parentId},
+                    {headers: VideoApp.authHeaders()})
+                    .then(function () { box.remove(); loadComments(false); loadCommentCount(); })
+                    .catch(function () { VideoApp.toast('请先登录', 'error'); });
+            });
+
+            btnRow.appendChild(cancelBtn);
+            btnRow.appendChild(submitBtn);
+            box.appendChild(textarea);
+            box.appendChild(btnRow);
+            parentDiv.appendChild(box);
+            textarea.focus();
+        }
+
+        // 排序按钮
+        document.getElementById('sortTime').addEventListener('click', function () {
+            commentSort = 'time';
+            this.style.fontWeight = 'bold';
+            document.getElementById('sortHot').style.fontWeight = 'normal';
+            loadComments(false);
+        });
+        document.getElementById('sortHot').addEventListener('click', function () {
+            commentSort = 'hot';
+            this.style.fontWeight = 'bold';
+            document.getElementById('sortTime').style.fontWeight = 'normal';
+            loadComments(false);
+        });
+
+        // 提交评论
+        document.getElementById('submitComment').addEventListener('click', function () {
+            var content = document.getElementById('commentInput').value.trim();
+            if (!content) return;
+            axios.post('/comment/add', {videoId: videoId, content: content},
+                {headers: VideoApp.authHeaders()})
+                .then(function () {
+                    document.getElementById('commentInput').value = '';
+                    loadComments(false);
+                    loadCommentCount();
+                })
+                .catch(function () { VideoApp.toast('请先登录', 'error'); });
+        });
+
+        document.getElementById('cancelComment').addEventListener('click', function () {
+            document.getElementById('commentInput').value = '';
+        });
+
+        document.getElementById('loadMoreComments').addEventListener('click', function () {
+            loadComments(true);
         });
 
         // ==================== 播放列表 ====================
