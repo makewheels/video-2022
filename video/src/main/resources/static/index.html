@@ -121,6 +121,7 @@
 
         function renderTableRow(v) {
             var tr = document.createElement('tr');
+            tr.setAttribute('data-video-id', v.id || '');
             tr.innerHTML =
                 '<td class="td-title"><a href="/watch?v=' + (v.watchId || '') + '">' + (v.title || '未命名视频') + '</a></td>' +
                 '<td>' + (v.watchCount || 0) + '</td>' +
@@ -129,6 +130,7 @@
                 '<td class="td-actions">' +
                     '<a href="/watch?v=' + (v.watchId || '') + '" class="action-link">播放</a>' +
                     '<a href="/edit.html?videoId=' + (v.id || '') + '" class="action-link">编辑</a>' +
+                    '<a href="javascript:void(0)" class="action-link" style="color:#dc3545;" onclick="deleteVideo(\'' + v.id + '\', this)">删除</a>' +
                 '</td>';
             return tr;
         }
@@ -274,6 +276,26 @@
         document.getElementById('loadMoreBtn').onclick = function () {
             loadMyVideos(allLoadedVideos.length);
         };
+
+        function deleteVideo(videoId, linkEl) {
+            if (!confirm('确定要删除这个视频吗？此操作不可恢复。')) return;
+            linkEl.textContent = '删除中...';
+            linkEl.style.pointerEvents = 'none';
+            axios.get('/video/delete?videoId=' + videoId, {
+                headers: VideoApp.authHeaders()
+            }).then(function () {
+                VideoApp.toast('视频已删除', 'success');
+                // 重新加载列表
+                currentPage = 1;
+                allLoadedVideos = [];
+                clearList();
+                loadMyVideos(0);
+            }).catch(function (err) {
+                VideoApp.toast('删除失败: ' + (err.response ? err.response.data.message : err.message), 'error');
+                linkEl.textContent = '删除';
+                linkEl.style.pointerEvents = 'auto';
+            });
+        }
     </script>
 </body>
 </html>
