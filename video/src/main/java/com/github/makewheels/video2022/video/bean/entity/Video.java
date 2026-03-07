@@ -54,6 +54,7 @@ public class Video {
 
     private Integer likeCount;
     private Integer dislikeCount;
+    private Integer commentCount;
 
     @Indexed
     private Date createTime;

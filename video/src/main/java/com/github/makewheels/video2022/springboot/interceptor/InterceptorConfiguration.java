@@ -47,6 +47,9 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/video/delete")
                 .addPathPatterns("/videoLike/like")
                 .addPathPatterns("/videoLike/dislike")
+                .addPathPatterns("/comment/add")
+                .addPathPatterns("/comment/delete")
+                .addPathPatterns("/comment/like")
         ;
 
         // 记录请求日志
