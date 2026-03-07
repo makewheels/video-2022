@@ -6,6 +6,12 @@
 
 ---
 
+### [PR #34](https://github.com/makewheels/video-2022/pull/34) — 转码进度展示
+- 新增 `GET /video/getVideoStatus` 轻量级状态 API
+- upload.html 上传完成后自动轮询转码状态（5s/次，10min 超时）
+- 我的视频列表非 READY 视频显示"处理中"标签
+- 新增 2 个状态 API 测试用例
+
 ### [PR #33](https://github.com/makewheels/video-2022/pull/33) — 视频可见性功能
 - Video 实体新增 `visibility` 字段（PUBLIC/UNLISTED/PRIVATE）
 - 创建视频时默认 PUBLIC，编辑时可修改

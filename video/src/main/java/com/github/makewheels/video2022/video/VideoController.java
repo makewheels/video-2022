@@ -103,6 +103,16 @@ public class VideoController {
     }
 
     /**
+     * 获取视频状态（轻量级，用于前端轮询）
+     */
+    @GetMapping("getVideoStatus")
+    public Result<JSONObject> getVideoStatus(@RequestParam String videoId) {
+        checkService.checkVideoExist(videoId);
+        checkService.checkVideoBelongsToUser(videoId, UserHolder.getUserId());
+        return videoService.getVideoStatus(videoId);
+    }
+
+    /**
      * 更新播放设置
      */
     @PostMapping("updateWatchSettings")
