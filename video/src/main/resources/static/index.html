@@ -128,6 +128,7 @@
                 '<td>' + formatRelativeTime(v.createTimeString || v.createTime) + '</td>' +
                 '<td class="td-actions">' +
                     '<a href="/watch?v=' + (v.watchId || '') + '" class="action-link">播放</a>' +
+                    '<a href="/edit.html?videoId=' + (v.id || '') + '" class="action-link">编辑</a>' +
                 '</td>';
             return tr;
         }

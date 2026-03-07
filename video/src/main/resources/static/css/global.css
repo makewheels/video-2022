@@ -402,6 +402,10 @@ img {
     white-space: nowrap;
 }
 
+.video-table .td-actions .action-link + .action-link {
+    margin-left: 12px;
+}
+
 .action-link {
     color: var(--accent);
     text-decoration: none;
@@ -445,6 +449,112 @@ img {
     margin-top: 4px;
     color: var(--text-secondary);
     font-size: 0.75rem;
+}
+
+/* ===== Edit Page ===== */
+.edit-page {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.edit-header {
+    margin-bottom: 20px;
+}
+
+.back-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+.back-link:hover {
+    color: var(--accent);
+}
+
+.edit-info-card,
+.edit-form-card {
+    margin-bottom: 20px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.info-links {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+}
+
+.info-link-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.info-link-row .info-label {
+    min-width: 60px;
+}
+
+.link-value {
+    flex: 1;
+    word-break: break-all;
+    font-size: 0.8125rem;
+    color: var(--accent);
+}
+
+.copy-btn {
+    flex-shrink: 0;
+    font-size: 0.875rem;
+    padding: 4px;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
 }
 
 /* ===== Section Header ===== */
@@ -1130,6 +1240,15 @@ textarea.form-input {
     /* Table: hide on mobile */
     .video-table-wrap {
         display: none !important;
+    }
+
+    /* Edit page: single column info grid */
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .edit-actions {
+        flex-direction: column;
     }
 
     /* Upload zone padding */
