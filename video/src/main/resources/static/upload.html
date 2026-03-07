@@ -199,7 +199,6 @@
                 VideoApp.toast('标题不能为空', 'error');
                 return;
             }
-            VideoApp.toast('正在保存...', 'info');
             axios.post("/video/updateInfo", {
                 id: videoId,
                 title: input_title.value,

@@ -662,7 +662,7 @@ textarea.form-input {
 .watch-layout {
     display: flex;
     gap: 24px;
-    max-width: var(--max-width);
+    max-width: 1400px;
     margin: 0 auto;
     padding: 16px;
 }
@@ -673,24 +673,19 @@ textarea.form-input {
 }
 
 .watch-sidebar {
-    width: 400px;
+    width: 350px;
     flex-shrink: 0;
 }
 
 .player-wrapper {
     position: relative;
-    padding-top: 56.25%;
     background-color: #000;
     border-radius: var(--radius-lg);
     overflow: hidden;
 }
 
-.player-wrapper .player-con {
-    position: absolute;
-    top: 0;
-    left: 0;
+.player-wrapper .video-js {
     width: 100%;
-    height: 100%;
 }
 
 .video-info-section {
