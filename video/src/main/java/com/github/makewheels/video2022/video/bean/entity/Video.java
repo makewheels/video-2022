@@ -52,6 +52,9 @@ public class Video {
     private Watch watch;                   // 播放信息
     private Link link;                     // 视频链接
 
+    private Integer likeCount;
+    private Integer dislikeCount;
+
     @Indexed
     private Date createTime;
     @Indexed

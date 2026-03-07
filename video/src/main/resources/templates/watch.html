@@ -53,6 +53,15 @@
                     <span id="watchCount"></span>
                     <span id="createTime"></span>
                 </div>
+                <!-- 点赞/点踩 -->
+                <div id="likeSection" style="margin:12px 0;display:flex;gap:12px;align-items:center;">
+                    <button id="btn_like" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:4px;">
+                        👍 <span id="likeCount">0</span>
+                    </button>
+                    <button id="btn_dislike" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:4px;">
+                        👎
+                    </button>
+                </div>
                 <div id="description" class="video-description"></div>
                 <button id="btn_copyCurrentTime" type="button" class="btn btn-secondary" style="margin-top:12px;">复制当前时间</button>
             </div>
@@ -400,8 +409,39 @@
                     if (data.watchCount !== undefined) {
                         document.getElementById('watchCount').innerText = data.watchCount + ' 次播放';
                     }
+                    // 加载点赞状态
+                    loadLikeStatus(videoId);
                 });
         }
+
+        // ==================== 点赞/点踩 ====================
+        function loadLikeStatus(videoId) {
+            axios.get('/videoLike/getStatus?videoId=' + videoId)
+                .then(function (res) {
+                    var d = res.data.data;
+                    document.getElementById('likeCount').textContent = d.likeCount || 0;
+                    var btnLike = document.getElementById('btn_like');
+                    var btnDislike = document.getElementById('btn_dislike');
+                    btnLike.style.fontWeight = d.userAction === 'LIKE' ? 'bold' : 'normal';
+                    btnLike.style.opacity = d.userAction === 'LIKE' ? '1' : '0.7';
+                    btnDislike.style.fontWeight = d.userAction === 'DISLIKE' ? 'bold' : 'normal';
+                    btnDislike.style.opacity = d.userAction === 'DISLIKE' ? '1' : '0.7';
+                });
+        }
+
+        document.getElementById('btn_like').addEventListener('click', function () {
+            if (!videoId) return;
+            axios.get('/videoLike/like?videoId=' + videoId, {headers: VideoApp.authHeaders()})
+                .then(function () { loadLikeStatus(videoId); })
+                .catch(function () { VideoApp.toast('请先登录', 'error'); });
+        });
+
+        document.getElementById('btn_dislike').addEventListener('click', function () {
+            if (!videoId) return;
+            axios.get('/videoLike/dislike?videoId=' + videoId, {headers: VideoApp.authHeaders()})
+                .then(function () { loadLikeStatus(videoId); })
+                .catch(function () { VideoApp.toast('请先登录', 'error'); });
+        });
 
         // ==================== 播放列表 ====================
         function loadPlaylist(videoId) {
