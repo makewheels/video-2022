@@ -2,9 +2,17 @@
 
 本文档记录项目的所有关键变更，按时间倒序排列。
 
+每个 PR 合并后，在此文件顶部添加记录。
+
 ---
 
 ## 2026 年 3 月 7 日
+
+### [PR #19](https://github.com/makewheels/video-2022/pull/19) — CHANGELOG + 开发规范
+
+- 创建 `docs/CHANGELOG.md`，整合 PR #2-#18 全部变更 + 2022-2025 历史记录
+- README 新增「开发规范」：禁止直接 push master、一个功能一个 PR、PR 后更新 CHANGELOG
+- README 开发记录表格补全 PR #2-#18
 
 ### [PR #18](https://github.com/makewheels/video-2022/pull/18) — 测试套件全面改进
 
