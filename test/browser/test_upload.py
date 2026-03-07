@@ -59,6 +59,5 @@ class TestUploadAuth:
     def test_requires_auth(self, page, base_url):
         """Unauthenticated users are redirected to /login."""
         page.goto(f"{base_url}/upload")
-        page.wait_for_load_state("domcontentloaded")
-        page.wait_for_url("**/login**", timeout=BASE_TIMEOUT)
+        page.wait_for_function("() => window.location.pathname.includes('/login')", timeout=BASE_TIMEOUT)
         assert "/login" in page.url

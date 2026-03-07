@@ -28,7 +28,7 @@ def test_create_video_appears_in_my_list(api_client, create_video):
     assert list_body["code"] == 0
 
     videos = list_body["data"]["list"] if isinstance(list_body["data"], dict) else list_body["data"]
-    video_ids = [v["videoId"] for v in videos]
+    video_ids = [v["id"] for v in videos]
     assert video_id in video_ids, f"Video {video_id} not found in user's video list"
 
 
