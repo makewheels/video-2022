@@ -6,6 +6,15 @@
 
 ---
 
+### PR #24: "我的视频"页面改造 + 分页
+- **导航栏**: "首页" → "我的视频"（全部6个页面同步）
+- **页面简化**: 去掉欢迎区，保留快捷操作卡片
+- **视频卡片增强**: 显示播放次数 · 时长 · 创建时间
+- **分页（响应式）**: 电脑端传统分页器 / 手机端"加载更多"按钮
+- **API改动**: `getMyVideoList` 返回 `{ list: [...], total: N }`
+- **新增**: `VideoListVO` 响应类, `VideoRepository.countVideosByUserId()`
+- **测试**: 更新 Playwright 测试适配新导航和页面结构
+
 ### PR #23: 播放器升级 — Video.js + 分辨率切换 + 键盘快捷键 + 播放统计
 - **播放器引擎**: Aliplayer 2.13.2 → Video.js 8.10.0
 - **分辨率切换**: videojs-http-source-selector 插件

@@ -345,6 +345,178 @@ img {
 
 .video-grid-card .video-meta {
     margin-top: 6px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+/* ===== Video Table (Desktop) ===== */
+.video-table-wrap {
+    overflow-x: auto;
+}
+
+.video-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.video-table thead th {
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+}
+
+.video-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.15s ease;
+}
+
+.video-table tbody tr:hover {
+    background-color: var(--bg-secondary);
+}
+
+.video-table td {
+    padding: 12px 16px;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.video-table .td-title {
+    white-space: normal;
+    max-width: 400px;
+}
+
+.video-table .td-title a {
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.video-table .td-title a:hover {
+    color: var(--accent);
+}
+
+.video-table .td-actions {
+    white-space: nowrap;
+}
+
+.action-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.8125rem;
+}
+
+.action-link:hover {
+    text-decoration: underline;
+}
+
+/* ===== Video Card List (Mobile) ===== */
+.video-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.video-list-card {
+    display: block;
+    padding: 12px 16px;
+    background-color: var(--card-bg);
+    border-radius: var(--radius-md);
+    box-shadow: var(--card-shadow);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: box-shadow 0.2s ease;
+}
+
+.video-list-card:hover {
+    box-shadow: var(--card-shadow-hover);
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.video-list-card .video-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.video-list-card .video-meta {
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+/* ===== Section Header ===== */
+.section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.video-count {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* ===== Pagination (Desktop) ===== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin-top: 24px;
+    padding: 16px 0;
+}
+
+.page-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(.disabled):not(.active) {
+    background: var(--bg-secondary);
+    border-color: var(--text-secondary);
+}
+
+.page-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.page-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-ellipsis {
+    padding: 0 8px;
+    color: var(--text-secondary);
+}
+
+/* ===== Load More (Mobile) ===== */
+.load-more-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 8px 0;
+}
+
+.no-more-text {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    padding: 16px 0;
 }
 
 /* ===== Welcome Section ===== */
@@ -948,6 +1120,16 @@ textarea.form-input {
     /* Video grid: 1 column on mobile */
     .video-grid {
         grid-template-columns: 1fr;
+    }
+
+    /* Pagination: hide on mobile (use load-more instead) */
+    .pagination {
+        display: none !important;
+    }
+
+    /* Table: hide on mobile */
+    .video-table-wrap {
+        display: none !important;
     }
 
     /* Upload zone padding */

@@ -43,9 +43,9 @@ test.describe('E2E: 登录流程', () => {
   });
 });
 
-// ===== E2E: 首页 =====
-test.describe('E2E: 首页', () => {
-  test('首页可访问且有导航链接', async ({ page }) => {
+// ===== E2E: 我的视频 =====
+test.describe('E2E: 我的视频', () => {
+  test('我的视频页可访问且有导航链接', async ({ page }) => {
     const response = await page.goto('/index.html');
     expect(response.status()).toBe(200);
 
@@ -83,7 +83,7 @@ test.describe('E2E: 上传页面', () => {
 // ===== E2E: CDN 可用性测试 =====
 test.describe('E2E: CDN 可用性', () => {
   const pages = [
-    { name: '首页', path: '/index.html' },
+    { name: '我的视频', path: '/index.html' },
     { name: '登录', path: '/login.html' },
     { name: '统计', path: '/statistics.html' },
     { name: 'YouTube', path: '/transfer-youtube.html' },
