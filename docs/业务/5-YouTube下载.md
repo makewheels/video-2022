@@ -375,3 +375,14 @@ if (file.exists()) {
 | `RawFileService` 第101行 | `VideoType.YOUTUBE.equals(newVideo.getStatus())` 应为 `.getVideoType()`，导致 YouTube 视频可能重复创建封面 |
 | `VideoService.getVideoList` 第148行 | 同样的 `getStatus()` vs `getVideoType()` 混用问题 |
 | `Dockerfile-youtube-service` 第3行 | `-Dfile.enconding=utf-8` 拼写错误，应为 `-Dfile.encoding=utf-8` |
+
+---
+
+## 源码位置
+
+| 类 | 路径 |
+|----|------|
+| YoutubeService (video 模块) | `video/src/main/java/com/github/makewheels/video2022/video/service/YoutubeService.java` |
+| VideoCreateService | `video/src/main/java/com/github/makewheels/video2022/video/service/VideoCreateService.java` |
+| CoverLauncher | `video/src/main/java/com/github/makewheels/video2022/cover/CoverLauncher.java` |
+| CoverCallbackService | `video/src/main/java/com/github/makewheels/video2022/cover/CoverCallbackService.java` |
