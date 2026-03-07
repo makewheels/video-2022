@@ -92,4 +92,34 @@ public class VideoWatchE2ETest extends BaseE2ETest {
         assertNotNull(data.getString("watchId"), "watchId 不应为空");
         assertNotNull(data.getString("watchUrl"), "watchUrl 不应为空");
     }
+
+    // ---- Error Scenarios ----
+
+    @Test
+    void testGetWatchInfo_nonExistentWatchId_shouldReturnError() {
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                getBaseUrl() + "/watchController/getWatchInfo?watchId=non-existent-id",
+                String.class);
+        assertEquals(200, response.getStatusCode().value());
+
+        JSONObject result = JSONObject.parseObject(response.getBody());
+        assertNotNull(result, "应返回 JSON 响应");
+        assertNotNull(result.get("code"), "响应应包含 code 字段");
+        assertNotEquals(0, result.getIntValue("code"),
+                "不存在的 watchId 应返回非 0 状态码");
+    }
+
+    @Test
+    void testGetVideoDetail_nonExistentVideoId_shouldReturnError() {
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                getBaseUrl() + "/video/getVideoDetail?videoId=non-existent-id",
+                String.class);
+        assertEquals(200, response.getStatusCode().value());
+
+        JSONObject result = JSONObject.parseObject(response.getBody());
+        assertNotNull(result, "应返回 JSON 响应");
+        assertNotNull(result.get("code"), "响应应包含 code 字段");
+        assertNotEquals(0, result.getIntValue("code"),
+                "不存在的 videoId 应返回非 0 状态码");
+    }
 }
