@@ -345,6 +345,80 @@ img {
 
 .video-grid-card .video-meta {
     margin-top: 6px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+/* ===== Section Header ===== */
+.section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.video-count {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* ===== Pagination (Desktop) ===== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin-top: 24px;
+    padding: 16px 0;
+}
+
+.page-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(.disabled):not(.active) {
+    background: var(--bg-secondary);
+    border-color: var(--text-secondary);
+}
+
+.page-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.page-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-ellipsis {
+    padding: 0 8px;
+    color: var(--text-secondary);
+}
+
+/* ===== Load More (Mobile) ===== */
+.load-more-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 8px 0;
+}
+
+.no-more-text {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    padding: 16px 0;
 }
 
 /* ===== Welcome Section ===== */
@@ -948,6 +1022,11 @@ textarea.form-input {
     /* Video grid: 1 column on mobile */
     .video-grid {
         grid-template-columns: 1fr;
+    }
+
+    /* Pagination: hide on mobile (use load-more instead) */
+    .pagination {
+        display: none !important;
     }
 
     /* Upload zone padding */

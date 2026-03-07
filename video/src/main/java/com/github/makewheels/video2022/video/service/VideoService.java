@@ -15,6 +15,7 @@ import com.github.makewheels.video2022.video.bean.dto.UpdateWatchSettingsDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
+import com.github.makewheels.video2022.video.bean.vo.VideoListVO;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
@@ -169,9 +170,14 @@ public class VideoService {
     /**
      * 分页获取我的视频列表
      */
-    public Result<List<VideoVO>> getMyVideoList(int skip, int limit) {
-        List<VideoVO> videoVOList = getVideoList(UserHolder.getUserId(), skip, limit);
-        return Result.ok(videoVOList);
+    public Result<VideoListVO> getMyVideoList(int skip, int limit) {
+        String userId = UserHolder.getUserId();
+        List<VideoVO> videoVOList = getVideoList(userId, skip, limit);
+        long total = videoRepository.countVideosByUserId(userId);
+        VideoListVO videoListVO = new VideoListVO();
+        videoListVO.setList(videoVOList);
+        videoListVO.setTotal(total);
+        return Result.ok(videoListVO);
     }
 
     /**

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video</title>
+    <title>我的视频 - Video</title>
     <link rel="stylesheet" href="/css/global.css">
     <script src="https://cdn.jsdelivr.net/npm/axios@0.26.1/dist/axios.min.js"></script>
 </head>
@@ -11,7 +11,7 @@
     <header class="page-header">
         <a href="/" class="logo">📹 Video</a>
         <nav class="nav-menu" id="navMenu">
-            <a href="/" class="nav-link active">首页</a>
+            <a href="/" class="nav-link active">我的视频</a>
             <a href="/upload.html" class="nav-link">上传</a>
             <a href="/statistics.html" class="nav-link">统计</a>
             <a href="/transfer-youtube.html" class="nav-link">YouTube</a>
@@ -24,11 +24,6 @@
     </header>
 
     <div class="page-container">
-        <div class="welcome-section" id="welcomeSection">
-            <h1 id="greeting">欢迎</h1>
-            <p>管理和分享你的视频</p>
-        </div>
-
         <div class="quick-actions">
             <a href="/upload.html" class="quick-action-card">
                 <span class="quick-action-icon">📤</span>
@@ -48,9 +43,17 @@
         </div>
 
         <div id="myVideosSection">
-            <h2 class="section-title">我的视频</h2>
+            <div class="section-header">
+                <h2 class="section-title">我的视频</h2>
+                <span class="video-count" id="videoCount"></span>
+            </div>
             <div id="videoGrid" class="video-grid"></div>
             <div id="videoEmpty" class="empty-state" style="display:none;">暂无视频，快去上传吧</div>
+            <div id="pagination" class="pagination" style="display:none;"></div>
+            <div id="loadMoreWrap" class="load-more-wrap" style="display:none;">
+                <button id="loadMoreBtn" class="btn btn-secondary">加载更多</button>
+            </div>
+            <div id="noMoreText" class="no-more-text" style="display:none;">没有更多了</div>
         </div>
     </div>
 
@@ -60,46 +63,208 @@
 
     <script src="/js/global.js"></script>
     <script>
-        var greeting = document.getElementById('greeting');
+        var PAGE_SIZE = 12;
+        var currentPage = 1;
+        var totalVideos = 0;
+        var allLoadedVideos = [];
+        var isMobile = window.innerWidth <= 768;
+
         if (VideoApp.getToken()) {
-            greeting.textContent = '欢迎回来';
-            loadMyVideos();
+            loadMyVideos(0);
         } else {
-            greeting.textContent = '请先登录';
             document.getElementById('videoEmpty').style.display = 'block';
             document.getElementById('videoEmpty').textContent = '登录后查看你的视频';
         }
 
-        function loadMyVideos() {
-            axios.get('/video/getMyVideoList?skip=0&limit=12', {
+        window.addEventListener('resize', function () {
+            var wasMobile = isMobile;
+            isMobile = window.innerWidth <= 768;
+            if (wasMobile !== isMobile && totalVideos > 0) {
+                currentPage = 1;
+                allLoadedVideos = [];
+                document.getElementById('videoGrid').innerHTML = '';
+                loadMyVideos(0);
+            }
+        });
+
+        function formatDuration(ms) {
+            if (!ms || ms <= 0) return '';
+            var totalSec = Math.floor(ms / 1000);
+            var min = Math.floor(totalSec / 60);
+            var sec = totalSec % 60;
+            return min + ':' + (sec < 10 ? '0' : '') + sec;
+        }
+
+        function formatRelativeTime(dateStr) {
+            if (!dateStr) return '';
+            var date = new Date(dateStr);
+            var now = new Date();
+            var diff = now - date;
+            var sec = Math.floor(diff / 1000);
+            if (sec < 60) return '刚刚';
+            var min = Math.floor(sec / 60);
+            if (min < 60) return min + '分钟前';
+            var hour = Math.floor(min / 60);
+            if (hour < 24) return hour + '小时前';
+            var day = Math.floor(hour / 24);
+            if (day < 30) return day + '天前';
+            var month = Math.floor(day / 30);
+            if (month < 12) return month + '个月前';
+            return Math.floor(month / 12) + '年前';
+        }
+
+        function renderVideoCard(v) {
+            var card = document.createElement('a');
+            card.className = 'video-grid-card';
+            card.href = '/watch?v=' + (v.watchId || '');
+
+            var title = document.createElement('div');
+            title.className = 'video-title';
+            title.textContent = v.title || '未命名视频';
+
+            var meta = document.createElement('div');
+            meta.className = 'video-meta';
+
+            var parts = [];
+            parts.push((v.watchCount || 0) + ' 播放');
+            var dur = formatDuration(v.duration);
+            if (dur) parts.push(dur);
+            var time = formatRelativeTime(v.createTimeString || v.createTime);
+            if (time) parts.push(time);
+            meta.textContent = parts.join(' · ');
+
+            card.appendChild(title);
+            card.appendChild(meta);
+            return card;
+        }
+
+        function loadMyVideos(skip) {
+            axios.get('/video/getMyVideoList?skip=' + skip + '&limit=' + PAGE_SIZE, {
                 headers: VideoApp.authHeaders()
             }).then(function (res) {
-                var data = res.data.data;
-                var grid = document.getElementById('videoGrid');
-                if (!data || data.length === 0) {
+                var result = res.data.data;
+                var list = result.list;
+                totalVideos = result.total;
+
+                document.getElementById('videoCount').textContent = '共 ' + totalVideos + ' 个';
+
+                if (totalVideos === 0) {
                     document.getElementById('videoEmpty').style.display = 'block';
                     return;
                 }
-                for (var i = 0; i < data.length; i++) {
-                    var v = data[i];
-                    var card = document.createElement('a');
-                    card.className = 'video-grid-card';
-                    card.href = '/watch?v=' + (v.watchId || '');
-                    var title = document.createElement('div');
-                    title.className = 'video-title';
-                    title.textContent = v.title || '未命名视频';
-                    var meta = document.createElement('div');
-                    meta.className = 'video-meta';
-                    meta.textContent = (v.watchCount || 0) + ' 播放';
-                    card.appendChild(title);
-                    card.appendChild(meta);
-                    grid.appendChild(card);
+
+                var grid = document.getElementById('videoGrid');
+
+                if (isMobile) {
+                    // 手机端：追加模式
+                    for (var i = 0; i < list.length; i++) {
+                        allLoadedVideos.push(list[i]);
+                        grid.appendChild(renderVideoCard(list[i]));
+                    }
+                    updateLoadMore();
+                } else {
+                    // 电脑端：替换模式
+                    grid.innerHTML = '';
+                    for (var i = 0; i < list.length; i++) {
+                        grid.appendChild(renderVideoCard(list[i]));
+                    }
+                    renderPagination();
                 }
             }).catch(function () {
                 document.getElementById('videoEmpty').style.display = 'block';
                 document.getElementById('videoEmpty').textContent = '加载视频列表失败';
             });
         }
+
+        // 电脑端分页器
+        function renderPagination() {
+            var totalPages = Math.ceil(totalVideos / PAGE_SIZE);
+            if (totalPages <= 1) {
+                document.getElementById('pagination').style.display = 'none';
+                return;
+            }
+            var pag = document.getElementById('pagination');
+            pag.style.display = 'flex';
+            pag.innerHTML = '';
+
+            // 上一页
+            var prev = document.createElement('button');
+            prev.className = 'page-btn' + (currentPage <= 1 ? ' disabled' : '');
+            prev.textContent = '上一页';
+            prev.disabled = currentPage <= 1;
+            prev.onclick = function () { goToPage(currentPage - 1); };
+            pag.appendChild(prev);
+
+            // 页码
+            var pages = getPageNumbers(currentPage, totalPages);
+            for (var i = 0; i < pages.length; i++) {
+                var p = pages[i];
+                if (p === '...') {
+                    var ellipsis = document.createElement('span');
+                    ellipsis.className = 'page-ellipsis';
+                    ellipsis.textContent = '...';
+                    pag.appendChild(ellipsis);
+                } else {
+                    var btn = document.createElement('button');
+                    btn.className = 'page-btn' + (p === currentPage ? ' active' : '');
+                    btn.textContent = p;
+                    btn.onclick = (function (page) { return function () { goToPage(page); }; })(p);
+                    pag.appendChild(btn);
+                }
+            }
+
+            // 下一页
+            var next = document.createElement('button');
+            next.className = 'page-btn' + (currentPage >= totalPages ? ' disabled' : '');
+            next.textContent = '下一页';
+            next.disabled = currentPage >= totalPages;
+            next.onclick = function () { goToPage(currentPage + 1); };
+            pag.appendChild(next);
+        }
+
+        function getPageNumbers(current, total) {
+            if (total <= 7) {
+                var arr = [];
+                for (var i = 1; i <= total; i++) arr.push(i);
+                return arr;
+            }
+            var pages = [1];
+            if (current > 3) pages.push('...');
+            var start = Math.max(2, current - 1);
+            var end = Math.min(total - 1, current + 1);
+            for (var i = start; i <= end; i++) pages.push(i);
+            if (current < total - 2) pages.push('...');
+            pages.push(total);
+            return pages;
+        }
+
+        function goToPage(page) {
+            var totalPages = Math.ceil(totalVideos / PAGE_SIZE);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            var skip = (page - 1) * PAGE_SIZE;
+            loadMyVideos(skip);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 手机端"加载更多"
+        function updateLoadMore() {
+            var loadMoreWrap = document.getElementById('loadMoreWrap');
+            var noMoreText = document.getElementById('noMoreText');
+            if (allLoadedVideos.length >= totalVideos) {
+                loadMoreWrap.style.display = 'none';
+                if (totalVideos > PAGE_SIZE) {
+                    noMoreText.style.display = 'block';
+                }
+            } else {
+                loadMoreWrap.style.display = 'flex';
+                noMoreText.style.display = 'none';
+            }
+        }
+
+        document.getElementById('loadMoreBtn').onclick = function () {
+            loadMyVideos(allLoadedVideos.length);
+        };
     </script>
 </body>
 </html>

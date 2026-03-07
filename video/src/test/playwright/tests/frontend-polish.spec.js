@@ -30,7 +30,7 @@ test.describe('Navigation Bar', () => {
         await page.goto('/');
         const links = page.locator('.nav-menu .nav-link');
         await expect(links).toHaveCount(4);
-        await expect(links.nth(0)).toHaveText('首页');
+        await expect(links.nth(0)).toHaveText('我的视频');
         await expect(links.nth(1)).toHaveText('上传');
         await expect(links.nth(2)).toHaveText('统计');
         await expect(links.nth(3)).toHaveText('YouTube');
@@ -70,10 +70,10 @@ test.describe('Homepage', () => {
         await expect(title.first()).toHaveText('我的视频');
     });
 
-    test('welcome section visible', async ({ page }) => {
+    test('has video count display', async ({ page }) => {
         await page.goto('/');
-        const welcome = page.locator('.welcome-section');
-        await expect(welcome).toBeVisible();
+        const count = page.locator('.video-count');
+        await expect(count).toBeAttached();
     });
 });
 

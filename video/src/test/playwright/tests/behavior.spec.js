@@ -70,7 +70,7 @@ test.describe('Desktop nav click navigation', () => {
 
     // Navigate to login page via nav link
     await page.goto('/login.html');
-    await page.click('.nav-menu .nav-link:has-text("首页")');
+    await page.click('.nav-menu .nav-link:has-text("我的视频")');
     await page.waitForURL(/\/$|\/index\.html/, { timeout: 5000 });
   });
 
@@ -111,7 +111,7 @@ test.describe('Mobile hamburger menu', () => {
     await expect(hamburger).toHaveText('✕');
 
     // Click a nav link → navigates and menu closes
-    await page.click('.nav-menu .nav-link:has-text("首页")');
+    await page.click('.nav-menu .nav-link:has-text("我的视频")');
     await page.waitForURL(/\/$|\/index\.html/, { timeout: 5000 });
     expect(page.url()).toMatch(/\/$|\/index\.html/);
 

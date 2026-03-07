@@ -77,6 +77,14 @@ public class VideoRepository {
     }
 
     /**
+     * 统计用户视频总数
+     */
+    public long countVideosByUserId(String userId) {
+        return mongoTemplate.count(
+                Query.query(Criteria.where("uploaderId").is(userId)), Video.class);
+    }
+
+    /**
      * 增加观看次数
      */
     public void addWatchCount(String videoId) {
