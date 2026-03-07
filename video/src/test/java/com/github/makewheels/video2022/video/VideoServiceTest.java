@@ -8,6 +8,7 @@ import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.dto.UpdateVideoInfoDTO;
 import com.github.makewheels.video2022.video.bean.dto.UpdateWatchSettingsDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
+import com.github.makewheels.video2022.video.bean.vo.VideoListVO;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
@@ -177,9 +178,9 @@ class VideoServiceTest extends BaseIntegrationTest {
         createDefaultVideo("list2.mp4");
         createDefaultVideo("list3.mp4");
 
-        Result<List<VideoVO>> result = videoService.getMyVideoList(0, 10);
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 10);
         assertNotNull(result.getData());
-        assertEquals(3, result.getData().size());
+        assertEquals(3, result.getData().getList().size());
     }
 
     @Test
@@ -188,9 +189,9 @@ class VideoServiceTest extends BaseIntegrationTest {
         createDefaultVideo("skip2.mp4");
         createDefaultVideo("skip3.mp4");
 
-        Result<List<VideoVO>> result = videoService.getMyVideoList(1, 10);
+        Result<VideoListVO> result = videoService.getMyVideoList(1, 10);
         assertNotNull(result.getData());
-        assertEquals(2, result.getData().size());
+        assertEquals(2, result.getData().getList().size());
     }
 
     @Test
@@ -199,16 +200,16 @@ class VideoServiceTest extends BaseIntegrationTest {
         createDefaultVideo("lim2.mp4");
         createDefaultVideo("lim3.mp4");
 
-        Result<List<VideoVO>> result = videoService.getMyVideoList(0, 2);
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 2);
         assertNotNull(result.getData());
-        assertEquals(2, result.getData().size());
+        assertEquals(2, result.getData().getList().size());
     }
 
     @Test
     void getMyVideoList_emptyWhenNoVideos() {
-        Result<List<VideoVO>> result = videoService.getMyVideoList(0, 10);
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 10);
         assertNotNull(result.getData());
-        assertTrue(result.getData().isEmpty());
+        assertTrue(result.getData().getList().isEmpty());
     }
 
     @Test
@@ -223,9 +224,9 @@ class VideoServiceTest extends BaseIntegrationTest {
         mongoTemplate.save(otherUser);
         UserHolder.set(otherUser);
 
-        Result<List<VideoVO>> result = videoService.getMyVideoList(0, 10);
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 10);
         assertNotNull(result.getData());
-        assertTrue(result.getData().isEmpty(),
+        assertTrue(result.getData().getList().isEmpty(),
                 "Should not return videos belonging to a different user");
     }
 
