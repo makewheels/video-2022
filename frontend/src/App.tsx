@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route, Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import Layout from './components/Layout';
+import LoginPage from './pages/LoginPage';
+import AuthCallback from './pages/AuthCallback';
+import MyVideosPage from './pages/MyVideosPage';
+import UploadPage from './pages/UploadPage';
+import EditPage from './pages/EditPage';
+import WatchPage from './pages/WatchPage';
+import StatisticsPage from './pages/StatisticsPage';
+import YouTubePage from './pages/YouTubePage';
+import { isLoggedIn } from './utils/auth';
 
-function App() {
-  const [count, setCount] = useState(0)
+function PrivateRoute() {
+  const navigate = useNavigate();
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+  useEffect(() => {
+    if (!isLoggedIn()) {
+      const target = encodeURIComponent(window.location.pathname + window.location.search);
+      navigate(`/login?target=${target}`, { replace: true });
+    }
+  }, [navigate]);
+
+  if (!isLoggedIn()) return null;
+  return <Outlet />;
 }
 
-export default App
+export default function App() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/watch/:videoId" element={<WatchPage />} />
+
+        <Route element={<PrivateRoute />}>
+          <Route path="/" element={<MyVideosPage />} />
+          <Route path="/upload" element={<UploadPage />} />
+          <Route path="/edit/:videoId" element={<EditPage />} />
+          <Route path="/statistics" element={<StatisticsPage />} />
+          <Route path="/youtube" element={<YouTubePage />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  );
+}
