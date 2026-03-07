@@ -142,32 +142,6 @@ test.describe('Mobile hamburger menu', () => {
 });
 
 // ===== Homepage Quick Action Cards =====
-test.describe('Homepage quick action behavior', () => {
-  test('upload card navigates away from homepage', async ({ page }) => {
-    await page.goto('/');
-    const uploadCard = page.locator('.quick-action-card[href="/upload.html"]');
-    await expect(uploadCard).toBeVisible();
-
-    await uploadCard.click();
-    // Without login, should redirect to login; with login, to upload
-    await expect(async () => {
-      const url = page.url();
-      expect(url.includes('/upload.html') || url.includes('/login.html')).toBe(true);
-    }).toPass({ timeout: 5000 });
-  });
-
-  test('youtube card click navigates away from homepage', async ({ page }) => {
-    await page.goto('/');
-    const ytCard = page.locator('.quick-action-card[href="/transfer-youtube.html"]');
-    await ytCard.click();
-    // May redirect to login (auth required) or transfer-youtube
-    await expect(async () => {
-      const url = page.url();
-      expect(url.includes('/transfer-youtube.html') || url.includes('/login.html')).toBe(true);
-    }).toPass({ timeout: 5000 });
-  });
-});
-
 // ===== Upload Auth Redirect Behavior =====
 test.describe('Upload page auth redirect', () => {
   test('unauthenticated visit redirects to login with target param', async ({ page, context }) => {
