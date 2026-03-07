@@ -10,4 +10,5 @@ public class UpdateVideoInfoDTO {
     private String id;
     private String title;
     private String description;
+    private String visibility;
 }
