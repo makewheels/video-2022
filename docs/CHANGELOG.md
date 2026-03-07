@@ -16,8 +16,13 @@
 - **退出记录**: sendBeacon 上报
 - **心跳间隔**: 2秒 → 15秒
 - **Video.js 主题 CSS**: 控件样式、暗色主题适配
-- **测试**: PlaybackServiceTest (8个) + player.spec.js (8个)
-- **文件变更**: watch.html, global.css, 7个新Java文件, 2个Playwright文件
+- **修复 axios CDN 404**: 全部6个页面统一使用 jsdelivr + 版本锁定 0.26.1
+- **upload 页面 8 项 UX 改进**: 文件选择反馈、修改/复制/列表操作 toast 提示、OSS 上传 try/catch、文件大小校验、进度条重置、空列表按钮禁用
+- **README 新增前端 UX 规范**: 所有操作必须有 toast 反馈、CDN 统一规则、错误处理要求
+- **CDN 可用性 E2E 测试**: 6 个真实测试验证所有页面脚本无 404
+- **upload UX Playwright 测试**: 5 个新测试覆盖文件选择、修改提示、空列表禁用等
+- **测试**: PlaybackServiceTest (8个) + player.spec.js (8个) + upload UX (5个) + CDN E2E (6个)
+- **文件变更**: watch.html, upload.html, global.css, README.md, 7个新Java文件, 多个Playwright文件
 
 ### [PR #22](https://github.com/makewheels/video-2022/pull/22) — 专家级代码审查 + 测试文档
 
