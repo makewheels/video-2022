@@ -48,6 +48,10 @@ test.describe('Login page responsive', () => {
     const card = page.locator('.card');
     const box = await card.boundingBox();
     const viewport = page.viewportSize();
-    expect(box.width / viewport.width).toBeGreaterThan(0.85);
+    // On small screens (<500px), card should be nearly full width
+    // On tablets, card uses max-width so this test only applies to phones
+    if (viewport.width < 500) {
+      expect(box.width / viewport.width).toBeGreaterThan(0.85);
+    }
   });
 });

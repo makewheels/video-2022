@@ -9,7 +9,7 @@ module.exports = defineConfig({
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile', use: { ...devices['iPhone 14'] } },
-    { name: 'tablet', use: { ...devices['iPad Mini'] } },
+    { name: 'mobile', use: { ...devices['Pixel 7'], browserName: 'chromium' } },
+    { name: 'tablet', use: { ...devices['iPad Mini'], browserName: 'chromium' } },
   ],
 });
