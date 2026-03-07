@@ -5,41 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video</title>
     <link rel="stylesheet" href="/css/global.css">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <header class="page-header">
-        <a href="/" class="logo">Video</a>
-        <button id="theme-toggle" type="button">🌙</button>
+        <a href="/" class="logo">📹 Video</a>
+        <nav class="nav-menu" id="navMenu">
+            <a href="/" class="nav-link active">首页</a>
+            <a href="/upload.html" class="nav-link">上传</a>
+            <a href="/statistics.html" class="nav-link">统计</a>
+            <a href="/transfer-youtube.html" class="nav-link">YouTube</a>
+        </nav>
+        <div class="header-right">
+            <button id="theme-toggle" class="btn-icon" type="button" title="切换主题">🌙</button>
+            <div class="header-auth" id="headerAuth"></div>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="菜单">☰</button>
     </header>
 
-    <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - var(--header-height));padding:16px;">
-        <div class="card" style="width:100%;max-width:500px;">
-            <div class="card-header" id="greeting">欢迎</div>
+    <div class="page-container">
+        <div class="welcome-section" id="welcomeSection">
+            <h1 id="greeting">欢迎</h1>
+            <p>管理和分享你的视频</p>
+        </div>
 
-            <div class="nav-links">
-                <a href="/upload.html" class="nav-link-item">
-                    <span class="nav-icon">📤</span>
-                    <span class="nav-text">上传视频</span>
-                </a>
-                <a href="/statistics.html" class="nav-link-item">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-text">数据统计</span>
-                </a>
-                <a href="/transfer-youtube.html" class="nav-link-item">
-                    <span class="nav-icon">🔄</span>
-                    <span class="nav-text">搬运YouTube</span>
-                </a>
-            </div>
+        <div class="quick-actions">
+            <a href="/upload.html" class="quick-action-card">
+                <span class="quick-action-icon">📤</span>
+                <span class="quick-action-title">上传视频</span>
+                <span class="quick-action-desc">上传并管理你的视频内容</span>
+            </a>
+            <a href="/statistics.html" class="quick-action-card">
+                <span class="quick-action-icon">📊</span>
+                <span class="quick-action-title">数据统计</span>
+                <span class="quick-action-desc">查看播放量和流量数据</span>
+            </a>
+            <a href="/transfer-youtube.html" class="quick-action-card">
+                <span class="quick-action-icon">🔄</span>
+                <span class="quick-action-title">YouTube搬运</span>
+                <span class="quick-action-desc">从YouTube导入视频</span>
+            </a>
+        </div>
+
+        <div id="myVideosSection">
+            <h2 class="section-title">我的视频</h2>
+            <div id="videoGrid" class="video-grid"></div>
+            <div id="videoEmpty" class="empty-state" style="display:none;">暂无视频，快去上传吧</div>
         </div>
     </div>
+
+    <footer class="page-footer">
+        <span>Video Platform</span>
+    </footer>
 
     <script src="/js/global.js"></script>
     <script>
         var greeting = document.getElementById('greeting');
         if (VideoApp.getToken()) {
             greeting.textContent = '欢迎回来';
+            loadMyVideos();
         } else {
             greeting.textContent = '请先登录';
+            document.getElementById('videoEmpty').style.display = 'block';
+            document.getElementById('videoEmpty').textContent = '登录后查看你的视频';
+        }
+
+        function loadMyVideos() {
+            axios.get('/video/getMyVideoList?skip=0&limit=12', {
+                headers: VideoApp.authHeaders()
+            }).then(function (res) {
+                var data = res.data.data;
+                var grid = document.getElementById('videoGrid');
+                if (!data || data.length === 0) {
+                    document.getElementById('videoEmpty').style.display = 'block';
+                    return;
+                }
+                for (var i = 0; i < data.length; i++) {
+                    var v = data[i];
+                    var card = document.createElement('a');
+                    card.className = 'video-grid-card';
+                    card.href = '/watch?v=' + (v.watchId || '');
+                    var title = document.createElement('div');
+                    title.className = 'video-title';
+                    title.textContent = v.title || '未命名视频';
+                    var meta = document.createElement('div');
+                    meta.className = 'video-meta';
+                    meta.textContent = (v.watchCount || 0) + ' 播放';
+                    card.appendChild(title);
+                    card.appendChild(meta);
+                    grid.appendChild(card);
+                }
+            }).catch(function () {
+                document.getElementById('videoEmpty').style.display = 'block';
+                document.getElementById('videoEmpty').textContent = '加载视频列表失败';
+            });
         }
     </script>
 </body>

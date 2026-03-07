@@ -111,6 +111,52 @@
         return { token: getToken() };
     }
 
+    // ===== Nav Menu (Mobile) =====
+
+    function initNavMenu() {
+        var btn = document.getElementById('mobileMenuBtn');
+        var menu = document.getElementById('navMenu');
+        if (!btn || !menu) return;
+
+        btn.addEventListener('click', function () {
+            menu.classList.toggle('open');
+            btn.textContent = menu.classList.contains('open') ? '✕' : '☰';
+        });
+
+        // Close menu when clicking a nav link
+        var links = menu.querySelectorAll('.nav-link');
+        for (var i = 0; i < links.length; i++) {
+            links[i].addEventListener('click', function () {
+                menu.classList.remove('open');
+                btn.textContent = '☰';
+            });
+        }
+
+        // Set active link based on current path
+        var path = window.location.pathname;
+        for (var j = 0; j < links.length; j++) {
+            var href = links[j].getAttribute('href');
+            links[j].classList.remove('active');
+            if (path === href || (path === '/' && href === '/') ||
+                (path === '/index.html' && href === '/')) {
+                links[j].classList.add('active');
+            }
+        }
+    }
+
+    // ===== Header Auth =====
+
+    function initHeaderAuth() {
+        var container = document.getElementById('headerAuth');
+        if (!container) return;
+
+        if (getToken()) {
+            container.innerHTML = '<span class="user-icon" title="已登录">👤</span>';
+        } else {
+            container.innerHTML = '<a href="/login.html">登录</a>';
+        }
+    }
+
     // ===== Init =====
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -120,6 +166,9 @@
         if (toggle) {
             toggle.addEventListener('click', toggleTheme);
         }
+
+        initNavMenu();
+        initHeaderAuth();
     });
 
     // Export as window.VideoApp
@@ -134,6 +183,8 @@
         requireAuth: requireAuth,
         jumpToLogin: jumpToLogin,
         authHeaders: authHeaders,
-        toast: toast
+        toast: toast,
+        initNavMenu: initNavMenu,
+        initHeaderAuth: initHeaderAuth
     };
 })();
