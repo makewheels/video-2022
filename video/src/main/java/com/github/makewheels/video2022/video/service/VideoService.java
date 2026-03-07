@@ -18,6 +18,7 @@ import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.bean.vo.VideoListVO;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.constants.VideoType;
+import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -105,6 +106,18 @@ public class VideoService {
         log.info("更新视频信息：videoId = {}, title = {}, description = {}, visibility = {}",
                 videoId, video.getTitle(), video.getDescription(), video.getVisibility());
         return video;
+    }
+
+    /**
+     * 获取视频状态（轻量级，仅返回 status）
+     */
+    public Result<JSONObject> getVideoStatus(String videoId) {
+        Video video = videoRepository.getById(videoId);
+        JSONObject data = new JSONObject();
+        data.put("videoId", video.getId());
+        data.put("status", video.getStatus());
+        data.put("isReady", VideoStatus.isReady(video.getStatus()));
+        return Result.ok(data);
     }
 
     /**

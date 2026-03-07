@@ -348,6 +348,34 @@ class VideoServiceTest extends BaseIntegrationTest {
         assertEquals("PUBLIC", detail.getVisibility());
     }
 
+    // ──────────────────── getVideoStatus tests ────────────────────
+
+    @Test
+    void getVideoStatus_returnsCreatedStatus() {
+        JSONObject resp = createDefaultVideo("status-check.mp4");
+        String videoId = resp.getString("videoId");
+
+        Result<JSONObject> result = videoService.getVideoStatus(videoId);
+        assertNotNull(result.getData());
+        assertEquals(videoId, result.getData().getString("videoId"));
+        assertEquals("CREATED", result.getData().getString("status"));
+        assertFalse(result.getData().getBooleanValue("isReady"));
+    }
+
+    @Test
+    void getVideoStatus_readyAfterStatusChange() {
+        JSONObject resp = createDefaultVideo("status-ready.mp4");
+        String videoId = resp.getString("videoId");
+
+        mongoTemplate.updateFirst(
+                Query.query(Criteria.where("_id").is(videoId)),
+                Update.update("status", "READY"), Video.class);
+
+        Result<JSONObject> result = videoService.getVideoStatus(videoId);
+        assertEquals("READY", result.getData().getString("status"));
+        assertTrue(result.getData().getBooleanValue("isReady"));
+    }
+
     // ──────────────────── updateWatchSettings tests ────────────────────
 
     @Test
