@@ -98,7 +98,7 @@ public class RawFileService {
         transcodeLauncher.transcodeVideo(user, newVideo);
 
         //封面：如果是youtube视频，之前创建的时候已经搬运封面了，用户上传视频要截帧
-        if (!VideoType.YOUTUBE.equals(newVideo.getStatus())) {
+        if (!VideoType.YOUTUBE.equals(newVideo.getVideoType())) {
             coverLauncher.createCover(user, newVideo);
         }
     }
