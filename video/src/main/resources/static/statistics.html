@@ -10,8 +10,18 @@
 </head>
 <body>
     <header class="page-header">
-        <a href="/" class="logo">Video</a>
-        <button id="theme-toggle" type="button">🌙</button>
+        <a href="/" class="logo">📹 Video</a>
+        <nav class="nav-menu" id="navMenu">
+            <a href="/" class="nav-link">首页</a>
+            <a href="/upload.html" class="nav-link">上传</a>
+            <a href="/statistics.html" class="nav-link active">统计</a>
+            <a href="/transfer-youtube.html" class="nav-link">YouTube</a>
+        </nav>
+        <div class="header-right">
+            <button id="theme-toggle" class="btn-icon" type="button" title="切换主题">🌙</button>
+            <div class="header-auth" id="headerAuth"></div>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="菜单">☰</button>
     </header>
 
     <div class="page-container" style="padding-top:24px;">
@@ -28,6 +38,10 @@
             <div id="bar-chart" class="chart-container"></div>
         </div>
     </div>
+
+    <footer class="page-footer">
+        <span>Video Platform</span>
+    </footer>
 
     <script src="/js/global.js"></script>
     <script>
