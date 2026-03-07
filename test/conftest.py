@@ -112,7 +112,7 @@ def create_video(api_client, created_videos):
             json={"videoType": video_type, "rawFilename": filename, "size": size},
         )
         data = resp.json()
-        if data.get("code") == "ok" and data.get("data"):
+        if data.get("code") == 0 and data.get("data"):
             video_id = data["data"].get("videoId")
             if video_id:
                 created_videos.append(video_id)

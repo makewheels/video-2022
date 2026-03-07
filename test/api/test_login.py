@@ -15,7 +15,7 @@ from conftest import login, TEST_PHONE, TEST_CODE
 def test_login_flow_and_token_validation(base_url):
     """Login with test phone, then use the token to access a protected endpoint."""
     result = login(base_url, TEST_PHONE, TEST_CODE)
-    assert result["code"] == "ok", f"Login failed: {result}"
+    assert result["code"] == 0, f"Login failed: {result}"
     token = result["data"]["token"]
 
     resp = requests.get(
@@ -25,7 +25,7 @@ def test_login_flow_and_token_validation(base_url):
     )
     assert resp.status_code == 200
     body = resp.json()
-    assert body["code"] == "ok", f"getMyVideoList failed: {body}"
+    assert body["code"] == 0, f"getMyVideoList failed: {body}"
 
 
 @pytest.mark.api
@@ -37,14 +37,14 @@ def test_invalid_token_returns_error(base_url):
         headers={"token": "invalid_token_xxx"},
     )
     body = resp.json()
-    assert body["code"] != "ok", f"Expected error but got: {body}"
+    assert body["code"] != 0, f"Expected error but got: {body}"
 
 
 @pytest.mark.api
 def test_get_user_by_token(base_url):
     """Login, then retrieve user info via getUserByToken and verify key fields."""
     result = login(base_url, TEST_PHONE, TEST_CODE)
-    assert result["code"] == "ok", f"Login failed: {result}"
+    assert result["code"] == 0, f"Login failed: {result}"
     token = result["data"]["token"]
 
     resp = requests.get(
@@ -53,7 +53,7 @@ def test_get_user_by_token(base_url):
     )
     assert resp.status_code == 200
     body = resp.json()
-    assert body["code"] == "ok", f"getUserByToken failed: {body}"
+    assert body["code"] == 0, f"getUserByToken failed: {body}"
 
     user = body["data"]
     assert "phone" in user, f"Missing 'phone' in user data: {user}"
@@ -65,10 +65,10 @@ def test_get_user_by_token(base_url):
 def test_relogin_refreshes_token(base_url):
     """Logging in twice with the same phone should keep the userId but issue a new token."""
     first = login(base_url, TEST_PHONE, TEST_CODE)
-    assert first["code"] == "ok", f"First login failed: {first}"
+    assert first["code"] == 0, f"First login failed: {first}"
 
     second = login(base_url, TEST_PHONE, TEST_CODE)
-    assert second["code"] == "ok", f"Second login failed: {second}"
+    assert second["code"] == 0, f"Second login failed: {second}"
 
     assert first["data"]["id"] == second["data"]["id"], "userId should stay the same"
     assert first["data"]["token"] != second["data"]["token"], "Token should be refreshed"
@@ -89,7 +89,7 @@ def test_bad_phone_returns_error(base_url, phone):
         params={"phone": phone, "code": TEST_CODE},
     )
     body = resp.json()
-    assert body["code"] != "ok", f"Expected error for phone={phone!r}, got: {body}"
+    assert body["code"] != 0, f"Expected error for phone={phone!r}, got: {body}"
 
 
 @pytest.mark.api
@@ -105,4 +105,4 @@ def test_wrong_verification_code(base_url):
         params={"phone": TEST_PHONE, "code": "999"},
     )
     body = resp.json()
-    assert body["code"] != "ok", f"Expected error for wrong code, got: {body}"
+    assert body["code"] != 0, f"Expected error for wrong code, got: {body}"

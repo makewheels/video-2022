@@ -8,7 +8,7 @@ def test_create_video(create_video):
     """Creating a video returns expected fields: videoId, fileId, watchUrl, watchId."""
     body = create_video()
 
-    assert body["code"] == "ok"
+    assert body["code"] == 0
     data = body["data"]
     assert "videoId" in data
     assert "fileId" in data
@@ -25,7 +25,7 @@ def test_create_video_appears_in_my_list(api_client, create_video):
     list_resp = api_client.get(f"{api_client.base_url}/video/getMyVideoList", params={"skip": 0, "limit": 10})
     assert list_resp.status_code == 200
     list_body = list_resp.json()
-    assert list_body["code"] == "ok"
+    assert list_body["code"] == 0
 
     video_ids = [v["videoId"] for v in list_body["data"]]
     assert video_id in video_ids, f"Video {video_id} not found in user's video list"
@@ -47,10 +47,10 @@ def test_create_video_missing_fields(api_client, created_videos, payload):
     body = resp.json()
 
     # If the server happens to accept the request, track the video for cleanup
-    if body["code"] == "ok" and "data" in body and "videoId" in body.get("data", {}):
+    if body["code"] == 0 and "data" in body and "videoId" in body.get("data", {}):
         created_videos.append(body["data"]["videoId"])
 
-    assert body["code"] != "ok", f"Expected error for payload {payload}, got success"
+    assert body["code"] != 0, f"Expected error for payload {payload}, got success"
 
 
 @pytest.mark.api

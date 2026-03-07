@@ -15,7 +15,7 @@ def test_update_video_info(api_client, create_video):
     )
     assert resp.status_code == 200
     body = resp.json()
-    assert body["code"] == "ok"
+    assert body["code"] == 0
 
     resp = api_client.get(
         f"{api_client.base_url}/video/getVideoDetail",
@@ -23,7 +23,7 @@ def test_update_video_info(api_client, create_video):
     )
     assert resp.status_code == 200
     detail = resp.json()
-    assert detail["code"] == "ok"
+    assert detail["code"] == 0
     assert detail["data"]["title"] == "new title"
     assert detail["data"]["description"] == "new desc"
 
@@ -40,4 +40,4 @@ def test_update_video_by_other_user_fails(api_client, create_video, second_api_c
     )
     assert resp.status_code == 200
     body = resp.json()
-    assert body["code"] != "ok"
+    assert body["code"] != 0

@@ -17,7 +17,7 @@ def test_get_watch_info(api_client, create_video):
     assert resp.status_code == 200
 
     body = resp.json()
-    assert body["code"] == "ok"
+    assert body["code"] == 0
     assert body["data"] is not None
 
 
@@ -41,7 +41,7 @@ def test_get_video_detail(api_client, create_video):
     assert resp.status_code == 200
 
     body = resp.json()
-    assert body["code"] == "ok"
+    assert body["code"] == 0
 
     data = body["data"]
     assert data["id"] is not None
@@ -57,7 +57,7 @@ def test_get_watch_info_nonexistent(api_client):
         params={"watchId": "nonexistent_id_999"},
     )
     body = resp.json()
-    assert body["code"] != "ok"
+    assert body["code"] != 0
 
 
 @pytest.mark.api
@@ -68,4 +68,4 @@ def test_get_video_detail_nonexistent(api_client):
         params={"videoId": "nonexistent_id_999"},
     )
     body = resp.json()
-    assert body["code"] != "ok"
+    assert body["code"] != 0
