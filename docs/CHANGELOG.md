@@ -6,6 +6,14 @@
 
 ---
 
+### [PR #35](https://github.com/makewheels/video-2022/pull/35) — 视频点赞/点踩
+- 新增 `VideoLike` 实体 + `video_like` MongoDB 集合
+- Video 实体新增 `likeCount`、`dislikeCount` 字段
+- 新增 `VideoLikeService`：点赞/点踩/取消/切换逻辑，原子计数更新
+- 新增 `VideoLikeController`：like、dislike、getStatus API
+- watch.html 添加 👍/👎 按钮，显示点赞数（不显示点踩数）
+- 新增 `VideoLikeServiceTest`（6 个测试用例）
+
 ### [PR #34](https://github.com/makewheels/video-2022/pull/34) — 转码进度展示
 - 新增 `GET /video/getVideoStatus` 轻量级状态 API
 - upload.html 上传完成后自动轮询转码状态（5s/次，10min 超时）
