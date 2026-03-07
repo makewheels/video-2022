@@ -43,6 +43,7 @@ jobs:
           cache: maven
 
       - name: Run integration tests
+        working-directory: backend
         run: >-
           mvn test -pl video -Pspringboot
           -Dtest='!com.github.makewheels.video2022.e2e.**'
@@ -84,6 +85,7 @@ jobs:
           cache: maven
 
       - name: Run E2E tests
+        working-directory: backend
         env:
           ALIYUN_OSS_VIDEO_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_VIDEO_ACCESS_KEY_ID }}
           ALIYUN_OSS_VIDEO_SECRET_KEY: ${{ secrets.ALIYUN_OSS_VIDEO_SECRET_KEY }}
