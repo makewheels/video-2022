@@ -6,6 +6,19 @@
 
 ---
 
+### PR #23: 播放器升级 — Video.js + 分辨率切换 + 键盘快捷键 + 播放统计
+- **播放器引擎**: Aliplayer 2.13.2 → Video.js 8.10.0
+- **分辨率切换**: videojs-http-source-selector 插件
+- **键盘快捷键**: 空格暂停、方向键进退、F全屏、M静音
+- **时间跳转**: `?t=21` 替代 `?seekTimeInMills=`
+- **记忆播放**: localStorage + 后端双重存储
+- **播放统计**: PlaybackSession 实体（start/heartbeat/exit）
+- **退出记录**: sendBeacon 上报
+- **心跳间隔**: 2秒 → 15秒
+- **Video.js 主题 CSS**: 控件样式、暗色主题适配
+- **测试**: PlaybackServiceTest (8个) + player.spec.js (8个)
+- **文件变更**: watch.html, global.css, 7个新Java文件, 2个Playwright文件
+
 ### [PR #22](https://github.com/makewheels/video-2022/pull/22) — 专家级代码审查 + 测试文档
 
 - 修正 plan 文件日期（2025-07 → 2026-03-07）
