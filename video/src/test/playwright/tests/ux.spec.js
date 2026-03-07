@@ -275,8 +275,8 @@ test.describe('Statistics UX', () => {
 
   test('API error shows toast', async ({ page }) => {
     await page.route('**/statistics/**', route => route.fulfill({
-      status: 500, contentType: 'application/json',
-      body: JSON.stringify({ code: -1, message: 'Server error' })
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ code: -1, data: null })
     }));
     await page.goto('/statistics.html');
     await page.waitForTimeout(1000);
