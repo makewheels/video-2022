@@ -20,6 +20,7 @@ public class VideoVO {
     private String description;
     private String type;
     private String status;
+    private String visibility;
 
     private Date createTime;
     private String createTimeString;

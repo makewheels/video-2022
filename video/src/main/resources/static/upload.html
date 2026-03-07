@@ -54,6 +54,14 @@
                     <label for="input_description">描述</label>
                     <textarea id="input_description" class="form-input" maxlength="1000" placeholder="视频描述" rows="3"></textarea>
                 </div>
+                <div class="form-group">
+                    <label for="input_visibility">可见性</label>
+                    <select id="input_visibility" class="form-input">
+                        <option value="PUBLIC">公开</option>
+                        <option value="UNLISTED">不公开（有链接可看）</option>
+                        <option value="PRIVATE">私密（仅自己可看）</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Action buttons -->
@@ -202,7 +210,8 @@
             axios.post("/video/updateInfo", {
                 id: videoId,
                 title: input_title.value,
-                description: input_description.value
+                description: input_description.value,
+                visibility: document.getElementById("input_visibility").value
             }, {
                 headers: VideoApp.authHeaders()
             }).then(function (res) {

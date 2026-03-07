@@ -15,6 +15,7 @@ import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.constants.VideoType;
+import com.github.makewheels.video2022.video.constants.Visibility;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,7 @@ public class VideoCreateService {
 
         String videoType = createVideoDTO.getVideoType();
         video.setVideoType(videoType);
+        video.setVisibility(Visibility.PUBLIC);
 
         //YouTube
         if (videoType.equals(VideoType.YOUTUBE)) {

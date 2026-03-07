@@ -289,6 +289,65 @@ class VideoServiceTest extends BaseIntegrationTest {
         assertEquals(1, result.getData().getList().size());
     }
 
+    // ──────────────────── visibility tests ────────────────────
+
+    @Test
+    void createVideo_defaultVisibilityIsPublic() {
+        JSONObject resp = createDefaultVideo("vis-default.mp4");
+        String videoId = resp.getString("videoId");
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(video);
+        assertEquals("PUBLIC", video.getVisibility());
+    }
+
+    @Test
+    void updateVideo_changesVisibility() {
+        JSONObject resp = createDefaultVideo("vis-update.mp4");
+        String videoId = resp.getString("videoId");
+
+        UpdateVideoInfoDTO dto = new UpdateVideoInfoDTO();
+        dto.setId(videoId);
+        dto.setTitle("test");
+        dto.setVisibility("PRIVATE");
+        videoService.updateVideo(dto);
+
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(video);
+        assertEquals("PRIVATE", video.getVisibility());
+    }
+
+    @Test
+    void updateVideo_nullVisibilityPreservesExisting() {
+        JSONObject resp = createDefaultVideo("vis-preserve.mp4");
+        String videoId = resp.getString("videoId");
+
+        // First set to UNLISTED
+        UpdateVideoInfoDTO dto1 = new UpdateVideoInfoDTO();
+        dto1.setId(videoId);
+        dto1.setTitle("test1");
+        dto1.setVisibility("UNLISTED");
+        videoService.updateVideo(dto1);
+
+        // Then update without visibility
+        UpdateVideoInfoDTO dto2 = new UpdateVideoInfoDTO();
+        dto2.setId(videoId);
+        dto2.setTitle("test2");
+        videoService.updateVideo(dto2);
+
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(video);
+        assertEquals("UNLISTED", video.getVisibility());
+    }
+
+    @Test
+    void getVideoDetail_includesVisibility() {
+        JSONObject resp = createDefaultVideo("vis-detail.mp4");
+        String videoId = resp.getString("videoId");
+
+        VideoVO detail = videoService.getVideoDetail(videoId);
+        assertEquals("PUBLIC", detail.getVisibility());
+    }
+
     // ──────────────────── updateWatchSettings tests ────────────────────
 
     @Test

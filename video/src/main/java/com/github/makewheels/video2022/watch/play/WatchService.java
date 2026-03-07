@@ -19,6 +19,7 @@ import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
+import com.github.makewheels.video2022.video.constants.Visibility;
 import com.github.makewheels.video2022.watch.progress.Progress;
 import com.github.makewheels.video2022.watch.progress.ProgressService;
 import com.github.makewheels.video2022.watch.watchinfo.WatchInfoVO;
@@ -147,6 +148,15 @@ public class WatchService {
             log.warn("getWatchInfo: 视频不存在, watchId = {}", watchId);
             return Result.error(ErrorCode.VIDEO_NOT_EXIST);
         }
+
+        // 可见性检查：PRIVATE 视频仅所有者可观看
+        if (Visibility.PRIVATE.equals(video.getVisibility())) {
+            String currentUserId = UserHolder.getUserId();
+            if (currentUserId == null || !currentUserId.equals(video.getUploaderId())) {
+                return Result.error("该视频为私密视频");
+            }
+        }
+
         String videoId = video.getId();
         WatchInfoVO watchInfoVO = new WatchInfoVO();
         watchInfoVO.setVideoId(videoId);

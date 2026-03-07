@@ -128,11 +128,19 @@
             return Math.floor(month / 12) + '年前';
         }
 
+        function visibilityIcon(v) {
+            if (v === 'UNLISTED') return '🔗';
+            if (v === 'PRIVATE') return '🔒';
+            return '';
+        }
+
         function renderTableRow(v) {
             var tr = document.createElement('tr');
             tr.setAttribute('data-video-id', v.id || '');
+            var icon = visibilityIcon(v.visibility);
+            var titleText = (icon ? icon + ' ' : '') + (v.title || '未命名视频');
             tr.innerHTML =
-                '<td class="td-title"><a href="/watch?v=' + (v.watchId || '') + '">' + (v.title || '未命名视频') + '</a></td>' +
+                '<td class="td-title"><a href="/watch?v=' + (v.watchId || '') + '">' + titleText + '</a></td>' +
                 '<td>' + (v.watchCount || 0) + '</td>' +
                 '<td>' + formatDuration(v.duration) + '</td>' +
                 '<td>' + formatRelativeTime(v.createTimeString || v.createTime) + '</td>' +
@@ -150,7 +158,8 @@
             card.href = '/watch?v=' + (v.watchId || '');
             var title = document.createElement('div');
             title.className = 'video-title';
-            title.textContent = v.title || '未命名视频';
+            var icon = visibilityIcon(v.visibility);
+            title.textContent = (icon ? icon + ' ' : '') + (v.title || '未命名视频');
             var meta = document.createElement('div');
             meta.className = 'video-meta';
             var parts = [(v.watchCount || 0) + ' 播放'];
