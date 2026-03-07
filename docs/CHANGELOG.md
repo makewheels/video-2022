@@ -6,6 +6,14 @@
 
 ---
 
+### [PR #33](https://github.com/makewheels/video-2022/pull/33) — 视频可见性功能
+- Video 实体新增 `visibility` 字段（PUBLIC/UNLISTED/PRIVATE）
+- 创建视频时默认 PUBLIC，编辑时可修改
+- PRIVATE 视频仅所有者可观看，WatchService 添加权限检查
+- upload.html / edit.html 新增可见性下拉框
+- 我的视频列表显示可见性图标（🔗 不公开 / 🔒 私密）
+- 新增 4 个可见性测试用例
+
 ### [PR #32](https://github.com/makewheels/video-2022/pull/32) — 视频搜索功能
 - `getMyVideoList` API 新增可选 `keyword` 参数
 - MongoDB `$or` + regex 模糊搜索（标题 + 描述），不区分大小写

@@ -76,6 +76,14 @@
                     <label class="form-label" for="input_description">描述</label>
                     <textarea id="input_description" class="form-input form-textarea" placeholder="输入视频描述" rows="5" maxlength="1000"></textarea>
                 </div>
+                <div class="form-group">
+                    <label class="form-label" for="input_visibility">可见性</label>
+                    <select id="input_visibility" class="form-input">
+                        <option value="PUBLIC">公开</option>
+                        <option value="UNLISTED">不公开（有链接可看）</option>
+                        <option value="PRIVATE">私密（仅自己可看）</option>
+                    </select>
+                </div>
                 <div class="edit-actions">
                     <button id="btn_save" class="btn btn-primary" disabled>保存</button>
                     <a href="/" class="btn btn-secondary">返回列表</a>
@@ -107,6 +115,7 @@
 
         var originalTitle = '';
         var originalDesc = '';
+        var originalVisibility = 'PUBLIC';
 
         function formatDuration(ms) {
             if (!ms || ms <= 0) return '-';
@@ -143,8 +152,10 @@
                 // 填充可编辑字段
                 originalTitle = v.title || '';
                 originalDesc = v.description || '';
+                originalVisibility = v.visibility || 'PUBLIC';
                 document.getElementById('input_title').value = originalTitle;
                 document.getElementById('input_description').value = originalDesc;
+                document.getElementById('input_visibility').value = originalVisibility;
                 document.getElementById('btn_save').disabled = false;
 
                 document.title = (v.title || '编辑视频') + ' - Video';
@@ -159,13 +170,14 @@
         document.getElementById('btn_save').addEventListener('click', function () {
             var title = document.getElementById('input_title').value.trim();
             var desc = document.getElementById('input_description').value;
+            var visibility = document.getElementById('input_visibility').value;
 
             if (!title) {
                 VideoApp.toast('标题不能为空', 'error');
                 return;
             }
 
-            if (title === originalTitle && desc === originalDesc) {
+            if (title === originalTitle && desc === originalDesc && visibility === originalVisibility) {
                 VideoApp.toast('没有修改', 'info');
                 return;
             }
@@ -176,13 +188,15 @@
             axios.post('/video/updateInfo', {
                 id: videoId,
                 title: title,
-                description: desc
+                description: desc,
+                visibility: visibility
             }, {
                 headers: VideoApp.authHeaders()
             }).then(function () {
                 VideoApp.toast('保存成功', 'success');
                 originalTitle = title;
                 originalDesc = desc;
+                originalVisibility = visibility;
                 btn.disabled = false;
             }).catch(function (err) {
                 VideoApp.toast('保存失败: ' + (err.response ? err.response.data.message : err.message), 'error');

@@ -96,10 +96,14 @@ public class VideoService {
 
         video.setTitle(updateVideoInfoDTO.getTitle());
         video.setDescription(updateVideoInfoDTO.getDescription());
+        if (updateVideoInfoDTO.getVisibility() != null) {
+            checkService.checkVideoVisibility(updateVideoInfoDTO.getVisibility());
+            video.setVisibility(updateVideoInfoDTO.getVisibility());
+        }
         mongoTemplate.save(video);
 
-        log.info("更新视频信息：videoId = {}, title = {}, description = {}",
-                videoId, video.getTitle(), video.getDescription());
+        log.info("更新视频信息：videoId = {}, title = {}, description = {}, visibility = {}",
+                videoId, video.getTitle(), video.getDescription(), video.getVisibility());
         return video;
     }
 
@@ -113,6 +117,7 @@ public class VideoService {
         videoVO.setUserId(video.getUploaderId());
         videoVO.setType(video.getVideoType());
         videoVO.setStatus(video.getStatus());
+        videoVO.setVisibility(video.getVisibility());
         videoVO.setTitle(video.getTitle());
         videoVO.setDescription(video.getDescription());
         videoVO.setCoverUrl(coverService.getSignedCoverUrl(video.getCoverId()));

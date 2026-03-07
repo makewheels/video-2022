@@ -29,6 +29,9 @@ public class Video {
     private String description;
 
     @Indexed
+    private String visibility;      // 可见性：PUBLIC/UNLISTED/PRIVATE
+
+    @Indexed
     private String videoType;       // 类型：是用户上传还是YouTube搬运
     @Indexed
     private String provider;        // 它就是对象存储提供商，和file是一对一关系
