@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.finance.wallet.WalletService;
+import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.bean.VerificationCode;
 import com.github.makewheels.video2022.utils.IdService;
@@ -29,6 +30,8 @@ public class UserService {
     private IdService idService;
     @Resource
     private WalletService walletService;
+    @Resource
+    private EnvironmentService environmentService;
 
     /**
      * 根据登录token获取用户
@@ -104,7 +107,9 @@ public class UserService {
             throw new VideoException(ErrorCode.USER_PHONE_VERIFICATION_CODE_EXPIRED);
         }
         //验证码校验失败
-        if (!verificationCode.getCode().equals(code) && !code.equals("111")) {
+        boolean codeMatches = verificationCode.getCode().equals(code);
+        boolean isDevBypass = !environmentService.isProductionEnv() && code.equals("111");
+        if (!codeMatches && !isDevBypass) {
             throw new VideoException(ErrorCode.USER_PHONE_VERIFICATION_CODE_WRONG);
         }
         //验证码校验成功

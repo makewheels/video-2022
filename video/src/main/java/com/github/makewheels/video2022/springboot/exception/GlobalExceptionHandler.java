@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
     @ResponseBody
     @ExceptionHandler(Exception.class)
     public Result<Object> exceptionHandler(Exception exception) {
-        exception.printStackTrace();
+        log.error("未处理异常", exception);
         handleException(exception);
         String stackTrace = ExceptionUtils.getStackTrace(exception);
         return new Result<>(ErrorCode.FAIL.getCode(), exception.getMessage(), stackTrace);
@@ -44,9 +44,6 @@ public class GlobalExceptionHandler {
         String value = errorCode.getMessage();
         String message = errorCode.getMessage();
         log.error("code = " + code + ", value = " + value + ", message = " + message);
-
-        //打印错误堆栈
-        videoException.printStackTrace();
 
         //把异常保存到数据库
         handleException(videoException);
