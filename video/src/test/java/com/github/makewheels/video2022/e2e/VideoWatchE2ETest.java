@@ -17,7 +17,10 @@ public class VideoWatchE2ETest extends BaseE2ETest {
      * 创建一个测试视频并跟踪清理，返回包含 videoId、fileId、watchId 的 JSONObject。
      */
     private JSONObject createTestVideo() {
-        ResponseEntity<String> response = authPost(getBaseUrl() + "/video/create", new JSONObject());
+        JSONObject body = new JSONObject();
+        body.put("videoType", "USER_UPLOAD");
+        body.put("rawFilename", "test-watch-video.mp4");
+        ResponseEntity<String> response = authPost(getBaseUrl() + "/video/create", body);
         JSONObject result = JSONObject.parseObject(response.getBody());
         assertEquals(0, result.getIntValue("code"), "创建视频应返回 code=0");
 
