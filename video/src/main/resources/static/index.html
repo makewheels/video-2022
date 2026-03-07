@@ -30,6 +30,14 @@
                 <span class="video-count" id="videoCount"></span>
             </div>
 
+            <!-- 搜索框 -->
+            <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+                <input type="text" id="searchInput" class="form-input"
+                       placeholder="搜索视频标题或描述..." style="flex: 1; max-width: 400px;">
+                <button id="searchBtn" class="btn btn-secondary" style="white-space: nowrap;">搜索</button>
+                <button id="clearSearchBtn" class="btn btn-secondary" style="white-space: nowrap; display: none;">清除</button>
+            </div>
+
             <!-- 电脑端表格 -->
             <div class="video-table-wrap" id="videoTableWrap" style="display:none;">
                 <table class="video-table">
@@ -69,6 +77,7 @@
         var totalVideos = 0;
         var allLoadedVideos = [];
         var isMobile = window.innerWidth <= 768;
+        var currentKeyword = '';
 
         if (VideoApp.getToken()) {
             loadMyVideos(0);
@@ -156,7 +165,11 @@
         }
 
         function loadMyVideos(skip) {
-            axios.get('/video/getMyVideoList?skip=' + skip + '&limit=' + PAGE_SIZE, {
+            var url = '/video/getMyVideoList?skip=' + skip + '&limit=' + PAGE_SIZE;
+            if (currentKeyword) {
+                url += '&keyword=' + encodeURIComponent(currentKeyword);
+            }
+            axios.get(url, {
                 headers: VideoApp.authHeaders()
             }).then(function (res) {
                 var result = res.data.data;
@@ -296,6 +309,29 @@
                 linkEl.style.pointerEvents = 'auto';
             });
         }
+
+        // 搜索功能
+        function doSearch() {
+            var keyword = document.getElementById('searchInput').value.trim();
+            currentKeyword = keyword;
+            currentPage = 1;
+            allLoadedVideos = [];
+            document.getElementById('clearSearchBtn').style.display = keyword ? 'inline-block' : 'none';
+            loadMyVideos(0);
+        }
+
+        document.getElementById('searchBtn').addEventListener('click', doSearch);
+        document.getElementById('searchInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') doSearch();
+        });
+        document.getElementById('clearSearchBtn').addEventListener('click', function () {
+            document.getElementById('searchInput').value = '';
+            currentKeyword = '';
+            currentPage = 1;
+            allLoadedVideos = [];
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            loadMyVideos(0);
+        });
     </script>
 </body>
 </html>
