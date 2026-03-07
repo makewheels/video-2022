@@ -33,7 +33,7 @@ public class PlaylistController {
     @PostMapping("createPlaylist")
     public Result<Playlist> createPlaylist(@RequestBody CreatePlaylistRequest createPlaylistRequest) {
         if (StringUtils.isEmpty(createPlaylistRequest.getTitle())) {
-            return Result.error("playlist title is empty");
+            return Result.error("播放列表title为空");
         }
         Playlist playlist = playlistService.createPlaylist(createPlaylistRequest);
         return Result.ok(playlist, "playlist created");
@@ -45,7 +45,7 @@ public class PlaylistController {
     @PostMapping("updatePlaylist")
     public Result<Playlist> updatePlaylist(@RequestBody UpdatePlaylistRequest updatePlaylistRequest) {
         if (StringUtils.isEmpty(updatePlaylistRequest.getTitle())) {
-            return Result.error("playlist title is empty");
+            return Result.error("播放列表title为空");
         }
         Playlist playlist = playlistService.updatePlaylist(updatePlaylistRequest);
         return Result.ok(playlist, "playlist updated");
