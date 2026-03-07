@@ -79,3 +79,72 @@ test.describe('E2E: 上传页面', () => {
     }).toPass({ timeout: 10000 });
   });
 });
+
+// ===== E2E: CDN 可用性测试 =====
+test.describe('E2E: CDN 可用性', () => {
+  const pages = [
+    { name: '首页', path: '/index.html' },
+    { name: '登录', path: '/login.html' },
+    { name: '统计', path: '/statistics.html' },
+    { name: 'YouTube', path: '/transfer-youtube.html' },
+  ];
+
+  for (const p of pages) {
+    test(`${p.name}页面所有脚本加载成功 (${p.path})`, async ({ page }) => {
+      test.setTimeout(60000);
+      const failedScripts = [];
+
+      page.on('pageerror', error => {
+        if (error.message.includes('is not defined')) {
+          failedScripts.push(error.message);
+        }
+      });
+
+      page.on('response', response => {
+        const url = response.url();
+        if (url.endsWith('.js') && response.status() >= 400) {
+          failedScripts.push(`${response.status()} ${url}`);
+        }
+      });
+
+      await page.goto(p.path, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForTimeout(3000);
+
+      expect(failedScripts).toEqual([]);
+    });
+  }
+
+  test('upload页面脚本加载成功（需登录）', async ({ page }) => {
+    test.setTimeout(60000);
+    // Upload requires auth, so inject token
+    await page.addInitScript(() => localStorage.setItem('token', 'test-token'));
+
+    const failedScripts = [];
+
+    page.on('response', response => {
+      const url = response.url();
+      if (url.endsWith('.js') && response.status() >= 400) {
+        failedScripts.push(`${response.status()} ${url}`);
+      }
+    });
+
+    // Mock auth API but NOT CDN scripts — we want to test real CDN
+    await page.route('**/user/getUserByToken*', route => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ code: 0, data: { id: 'test' } })
+    }));
+    await page.route('**/playlist/getMyPlaylistByPage*', route => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ code: 0, data: [] })
+    }));
+
+    await page.goto('/upload.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3000);
+
+    expect(failedScripts).toEqual([]);
+
+    // Verify axios is actually loaded
+    const axiosLoaded = await page.evaluate(() => typeof window.axios !== 'undefined');
+    expect(axiosLoaded).toBe(true);
+  });
+});
