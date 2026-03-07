@@ -138,9 +138,11 @@ def browser_context(base_url):
 
 
 @pytest.fixture
-def page(browser_context):
-    """Fresh page for each test."""
+def page(browser_context, base_url):
+    """Fresh page for each test with clean localStorage."""
     pg = browser_context.new_page()
+    pg.goto(base_url)
+    pg.evaluate("localStorage.clear()")
     yield pg
     pg.close()
 
