@@ -1,3 +1,5 @@
+> **状态:** ✅ 已完成 — [PR #18](https://github.com/makewheels/video-2022/pull/18)
+
 # 测试套件全面改进设计文档
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
