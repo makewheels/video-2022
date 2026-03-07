@@ -8,9 +8,12 @@
 
     <link rel="stylesheet" href="/css/global.css">
 
-    <!-- Aliplayer -->
-    <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.13.2/skins/default/aliplayer-min.css"/>
-    <script src="https://g.alicdn.com/de/prismplayer/2.13.2/aliplayer-min.js"></script>
+    <!-- Video.js -->
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <!-- 分辨率切换插件 -->
+    <script src="https://unpkg.com/videojs-contrib-quality-levels/dist/videojs-contrib-quality-levels.min.js"></script>
+    <script src="https://unpkg.com/videojs-http-source-selector/dist/videojs-http-source-selector.min.js"></script>
 
     <!-- axios -->
     <script src="https://production-bucket.oss-cn-beijing.aliyuncs.com/dist/axios/axios-0.26.1.min.js"></script>
@@ -37,7 +40,7 @@
         <div class="watch-main">
             <!-- Player with 16:9 aspect ratio wrapper -->
             <div class="player-wrapper">
-                <div class="prism-player" id="player-con"></div>
+                <video id="player-con" class="video-js vjs-big-play-centered vjs-fluid"></video>
             </div>
 
             <!-- Error/status message (shown when video not ready) -->
@@ -67,19 +70,19 @@
 
     <script src="/js/global.js"></script>
     <script>
-        // === ALL ORIGINAL JS LOGIC PRESERVED EXACTLY ===
-        // Only changes: use VideoApp.getUrlVariable/isPC where available
-
+        // ==================== 全局变量 ====================
         let videoId;
         let watchId;
         let coverUrl;
-
         let videoStatus;
-        let currentUrl;
         let player;
+        let playbackSessionId = null;
+        let playStartTime = null;
+        let totalPlayDurationMs = 0;
+        let lastHeartbeatTime = null;
+        let currentResolution = 'auto';
 
-        let playerElement = document.getElementById("player-con");
-
+        // ==================== URL 工具 ====================
         function getUrlVariable(key) {
             return VideoApp.getUrlVariable(key);
         }
@@ -88,40 +91,262 @@
             return VideoApp.isPC();
         }
 
-        function playByM3u8UrlAndTime(m3u8Url, time) {
-            currentUrl = m3u8Url;
-            player = new Aliplayer({
-                    "id": "player-con",
-                    "source": currentUrl,
-                    "width": "100%",
-                    "height": "100%",
-                    "autoplay": true,
-                    "isLive": false,
-                    "rePlay": false,
-                    "playsinline": true,
-                    "isVBR": true,
-                    "preload": true,
-                    "controlBarVisibility": "hover",
-                    "useH5Prism": true
-                }, function (player) {
-                    player.seek(time);
-                    player.tag.style.objectFit = 'contain'
+        // ==================== Video.js 初始化 ====================
+        function initPlayer(m3u8Url, seekTimeSeconds) {
+            player = videojs('player-con', {
+                controls: true,
+                autoplay: true,
+                preload: 'auto',
+                fluid: true,
+                playsinline: true,
+                html5: {
+                    vhs: {
+                        overrideNative: true
+                    },
+                    nativeAudioTracks: false,
+                    nativeVideoTracks: false
                 }
-            );
+            });
+
+            // 分辨率切换插件
+            player.httpSourceSelector();
+
+            // 设置视频源
+            player.src({ type: 'application/x-mpegURL', src: m3u8Url });
+
+            // 跳转到指定时间
+            player.on('loadedmetadata', function () {
+                if (seekTimeSeconds > 0) {
+                    player.currentTime(seekTimeSeconds);
+                }
+            });
+
+            // 监听分辨率变化
+            let qualityLevels = player.qualityLevels();
+            qualityLevels.on('change', function () {
+                let activeLevel = qualityLevels[qualityLevels.selectedIndex];
+                if (activeLevel) {
+                    currentResolution = activeLevel.height + 'p';
+                }
+            });
+
+            // 键盘快捷键
+            initKeyboardShortcuts();
+
+            // 播放器事件监听
+            addPlayerEventListeners();
+
+            // 心跳定时器（15 秒）
+            setInterval(function () { sendHeartbeat('TIMER', null); }, 15000);
+
+            // 退出上报
+            initExitReporting();
+
+            // 进度定时保存到 localStorage
+            setInterval(saveProgressToLocal, 5000);
         }
 
-        function addCopyCurrentTimeButtonClickListener() {
-            document.getElementById("btn_copyCurrentTime").addEventListener("click", function () {
-                let currentTime = player.getCurrentTime() * 1000;
-                currentTime = Math.round(currentTime);
-                let url = window.location.href + "&seekTimeInMills=" + currentTime;
-                navigator.clipboard.writeText(url);
-                VideoApp.toast("已复制当前时间：" + currentTime, "success");
+        // ==================== 键盘快捷键 ====================
+        function initKeyboardShortcuts() {
+            document.addEventListener('keydown', function (e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                if (!player) return;
+
+                switch (e.key) {
+                    case ' ':
+                    case 'k':
+                    case 'K':
+                        e.preventDefault();
+                        player.paused() ? player.play() : player.pause();
+                        break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        player.currentTime(Math.max(0, player.currentTime() - 5));
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        player.currentTime(Math.min(player.duration(), player.currentTime() + 5));
+                        break;
+                    case 'j':
+                    case 'J':
+                        e.preventDefault();
+                        player.currentTime(Math.max(0, player.currentTime() - 10));
+                        break;
+                    case 'l':
+                    case 'L':
+                        e.preventDefault();
+                        player.currentTime(Math.min(player.duration(), player.currentTime() + 10));
+                        break;
+                    case 'f':
+                    case 'F':
+                        e.preventDefault();
+                        player.isFullscreen() ? player.exitFullscreen() : player.requestFullscreen();
+                        break;
+                    case 'm':
+                    case 'M':
+                        e.preventDefault();
+                        player.muted(!player.muted());
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        player.volume(Math.min(1, player.volume() + 0.1));
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        player.volume(Math.max(0, player.volume() - 0.1));
+                        break;
+                }
             });
         }
 
+        // ==================== 时间跳转 t= ====================
+        function getInitSeekTimeInSeconds(watchInfo) {
+            // 优先级：URL t= > 后端 progress > localStorage > 0
+            let tParam = getUrlVariable('t');
+            if (tParam) {
+                return parseFloat(tParam);
+            }
+
+            if (watchInfo.progressInMillis && watchInfo.progressInMillis > 0) {
+                return watchInfo.progressInMillis / 1000;
+            }
+
+            let localProgress = localStorage.getItem('video_progress_' + watchInfo.videoId);
+            if (localProgress) {
+                return parseFloat(localProgress);
+            }
+
+            return 0;
+        }
+
+        // ==================== localStorage 进度缓存 ====================
+        function saveProgressToLocal() {
+            if (player && videoId && !player.paused()) {
+                localStorage.setItem('video_progress_' + videoId, player.currentTime().toFixed(1));
+            }
+        }
+
+        // ==================== 复制当前时间按钮 ====================
+        function addCopyCurrentTimeButtonClickListener() {
+            document.getElementById('btn_copyCurrentTime').addEventListener('click', function () {
+                let currentTime = Math.round(player.currentTime());
+                let baseUrl = window.location.origin + window.location.pathname;
+                let params = new URLSearchParams();
+                params.set('v', watchId);
+                let listParam = getUrlVariable('list');
+                if (listParam) params.set('list', listParam);
+                params.set('t', currentTime);
+                let url = baseUrl + '?' + params.toString();
+                navigator.clipboard.writeText(url);
+                VideoApp.toast('已复制播放链接（' + currentTime + '秒）', 'success');
+            });
+        }
+
+        // ==================== 播放器事件 ====================
+        function addPlayerEventListeners() {
+            let events = ['play', 'pause', 'ended', 'waiting', 'error',
+                'seeking', 'seeked', 'fullscreenchange', 'volumechange'];
+            events.forEach(function (eventName) {
+                player.on(eventName, function () {
+                    sendHeartbeat('EVENT', eventName);
+                });
+            });
+
+            // 播放时间追踪
+            player.on('play', function () {
+                playStartTime = Date.now();
+            });
+            player.on('pause', function () {
+                if (playStartTime) {
+                    totalPlayDurationMs += (Date.now() - playStartTime);
+                    playStartTime = null;
+                }
+                saveProgressToLocal();
+            });
+        }
+
+        // ==================== 心跳上报 ====================
+        function sendHeartbeat(type, playerEvent) {
+            if (!player) return;
+            let currentTimeMs = Math.round(player.currentTime() * 1000);
+
+            // 发送到现有心跳接口（保持兼容）
+            axios.post('/heartbeat/add', {
+                videoId: videoId,
+                clientId: localStorage.clientId,
+                sessionId: sessionStorage.sessionId,
+                videoStatus: videoStatus,
+                playerProvider: 'VIDEOJS_WEB',
+                clientTime: new Date(),
+                type: type,
+                event: playerEvent,
+                playerTime: currentTimeMs,
+                playerStatus: player.paused() ? 'paused' : 'playing',
+                playerVolume: player.volume()
+            }, {
+                headers: { 'token': localStorage.token }
+            }).catch(function () { /* 静默失败 */ });
+
+            // 发送到 PlaybackSession 心跳接口
+            if (playbackSessionId) {
+                axios.post('/playback/heartbeat', {
+                    playbackSessionId: playbackSessionId,
+                    currentTimeMs: currentTimeMs,
+                    isPlaying: !player.paused(),
+                    resolution: currentResolution,
+                    totalPlayDurationMs: getTotalPlayDuration()
+                }, {
+                    headers: { 'token': localStorage.token }
+                }).catch(function () { /* 静默失败 */ });
+            }
+        }
+
+        function getTotalPlayDuration() {
+            let total = totalPlayDurationMs;
+            if (playStartTime) {
+                total += (Date.now() - playStartTime);
+            }
+            return total;
+        }
+
+        // ==================== PlaybackSession 生命周期 ====================
+        function startPlaybackSession() {
+            axios.post('/playback/start', {
+                watchId: watchId,
+                videoId: videoId,
+                clientId: localStorage.clientId,
+                sessionId: sessionStorage.sessionId
+            }, {
+                headers: { 'token': localStorage.token }
+            }).then(function (res) {
+                if (res.data && res.data.data) {
+                    playbackSessionId = res.data.data.playbackSessionId;
+                }
+            }).catch(function () { /* 静默失败 */ });
+        }
+
+        // ==================== 退出上报 ====================
+        function initExitReporting() {
+            document.addEventListener('visibilitychange', function () {
+                if (document.visibilityState === 'hidden' && playbackSessionId && player) {
+                    let currentTimeMs = Math.round(player.currentTime() * 1000);
+                    if (videoId) {
+                        localStorage.setItem('video_progress_' + videoId, (currentTimeMs / 1000).toFixed(1));
+                    }
+                    navigator.sendBeacon('/playback/exit', JSON.stringify({
+                        playbackSessionId: playbackSessionId,
+                        currentTimeMs: currentTimeMs,
+                        totalPlayDurationMs: getTotalPlayDuration(),
+                        exitType: 'CLOSE_TAB',
+                        resolution: currentResolution
+                    }));
+                }
+            });
+        }
+
+        // ==================== 视频加载 ====================
         function loadVideo() {
-            watchId = getUrlVariable("v");
+            watchId = getUrlVariable('v');
             axios.get('/watchController/getWatchInfo?watchId=' + watchId
                 + '&clientId=' + localStorage.clientId + '&sessionId=' + sessionStorage.sessionId
                 + '&token=' + localStorage.token)
@@ -130,91 +355,81 @@
                     loadVideoInfo(videoId);
                     loadPlaylist(videoId);
                     addWatchHistory();
-                    addPlayerEventListeners();
-                    setInterval("sendHeartbeat('TIMER', null)", 2000);
                     addCopyCurrentTimeButtonClickListener();
+                    startPlaybackSession();
                 })
-                .catch(function (err) {
+                .catch(function () {
                     VideoApp.toast('加载视频失败', 'error');
-                })
-        }
-
-        function getInitSeekTimeInSeconds(watchInfo){
-            let seekTimeInMills;
-            seekTimeInMills = getUrlVariable("seekTimeInMills");
-            if (!seekTimeInMills) {
-                seekTimeInMills = watchInfo.progressInMillis;
-            }
-            if (!seekTimeInMills) {
-                seekTimeInMills = 0;
-            }
-            return seekTimeInMills / 1000;
+                });
         }
 
         function startPlayVideo(data) {
             videoId = data.videoId;
             coverUrl = data.coverUrl;
-
             videoStatus = data.videoStatus;
-            if (videoStatus !== "READY") {
-                document.getElementById("errorInfo").innerHTML
-                    = "视频正在上传或转码<br><br>" + "请稍后再来<br><br>"
-                    + "videoId=" + videoId + "<br><br>" + "当前状态：" + data.videoStatus;
-                document.getElementById("errorInfo").style.display = "block";
-                document.querySelector(".player-wrapper").style.display = "none";
+
+            if (videoStatus !== 'READY') {
+                document.getElementById('errorInfo').innerHTML
+                    = '视频正在上传或转码<br><br>请稍后再来<br><br>'
+                    + 'videoId=' + videoId + '<br><br>当前状态：' + data.videoStatus;
+                document.getElementById('errorInfo').style.display = 'block';
+                document.querySelector('.player-wrapper').style.display = 'none';
                 return;
             }
 
-            // Player fills the wrapper (100% width and height via CSS)
-            // No explicit width/height needed — .player-wrapper handles 16:9
-
-            playByM3u8UrlAndTime(data.multivariantPlaylistUrl, getInitSeekTimeInSeconds(data));
+            let seekTime = getInitSeekTimeInSeconds(data);
+            initPlayer(data.multivariantPlaylistUrl, seekTime);
         }
 
+        // ==================== 视频信息 ====================
         function loadVideoInfo(videoId) {
             axios.get('/video/getVideoDetail?videoId=' + videoId)
                 .then(function (res) {
                     let data = res.data.data;
-                    document.getElementById("div_title").innerText = data.title;
-                    document.getElementById("description").innerText = data.description;
+                    document.getElementById('div_title').innerText = data.title;
+                    document.getElementById('description').innerText = data.description;
+                    document.getElementById('htmlTitle').innerText = data.title || '播放页';
 
-                    let createTime = document.getElementById("createTime");
-                    if (data.type === "USER_UPLOAD") {
-                        createTime.innerText = "发布时间：" + data.createTimeString;
-                    } else if (data.type === "YOUTUBE") {
-                        createTime.innerText = "发布时间：" + data.youtubePublishTimeString;
+                    let createTime = document.getElementById('createTime');
+                    if (data.type === 'USER_UPLOAD') {
+                        createTime.innerText = '发布时间：' + data.createTimeString;
+                    } else if (data.type === 'YOUTUBE') {
+                        createTime.innerText = '发布时间：' + data.youtubePublishTimeString;
+                    }
+
+                    if (data.watchCount !== undefined) {
+                        document.getElementById('watchCount').innerText = data.watchCount + ' 次播放';
                     }
                 });
         }
 
+        // ==================== 播放列表 ====================
         function loadPlaylist(videoId) {
-            const playlistId = getUrlVariable('list');
-            if (!playlistId) {
-                return;
-            }
-            axios.get("playlist/getPlayItemListDetail?playlistId=" + playlistId)
+            let playlistId = getUrlVariable('list');
+            if (!playlistId) return;
+
+            axios.get('playlist/getPlayItemListDetail?playlistId=' + playlistId)
                 .then(function (response) {
-                    const itemList = response.data.data;
-                    const videoList = document.querySelector('.video-list');
+                    let itemList = response.data.data;
+                    let videoList = document.querySelector('.video-list');
 
                     for (let i = 0; i < itemList.length; i++) {
-                        const dataItem = itemList[i];
-
-                        const videoItem = document.createElement('div');
+                        let dataItem = itemList[i];
+                        let videoItem = document.createElement('div');
                         videoItem.classList.add('video-item');
 
-                        const coverImage = document.createElement('img');
+                        let coverImage = document.createElement('img');
                         coverImage.classList.add('video-thumbnail');
                         coverImage.src = dataItem.coverUrl;
 
-                        const videoInfo = document.createElement('div');
+                        let videoInfo = document.createElement('div');
                         videoInfo.style.minWidth = '0';
 
-                        const videoTitle = document.createElement('div');
+                        let videoTitle = document.createElement('div');
                         videoTitle.classList.add('video-title');
                         videoTitle.innerText = dataItem.title;
 
-                        const videoMeta = document.createElement('p');
+                        let videoMeta = document.createElement('p');
                         videoMeta.classList.add('video-meta');
                         videoMeta.textContent = dataItem.watchCount + ' 播放 · ' + dataItem.videoCreateTime;
 
@@ -227,10 +442,8 @@
 
                         videoInfo.appendChild(videoTitle);
                         videoInfo.appendChild(videoMeta);
-
                         videoItem.appendChild(coverImage);
                         videoItem.appendChild(videoInfo);
-
                         videoList.appendChild(videoItem);
                     }
                 })
@@ -239,13 +452,16 @@
                 });
         }
 
+        // ==================== ID 管理 ====================
+        let isIdsHandled = false;
+
         function start() {
             handleClientId();
             handleSessionId();
         }
 
         function handleClientId() {
-            if (localStorage.getItem("clientId") != null) {
+            if (localStorage.getItem('clientId') != null) {
                 onHandleIdsFinished();
                 return;
             }
@@ -257,7 +473,7 @@
         }
 
         function handleSessionId() {
-            if (sessionStorage.getItem("sessionId") != null) {
+            if (sessionStorage.getItem('sessionId') != null) {
                 onHandleIdsFinished();
                 return;
             }
@@ -268,11 +484,9 @@
                 });
         }
 
-        let isIdsHandled = false;
-
         function onHandleIdsFinished() {
-            if (isIdsHandled || localStorage.getItem("clientId") == null
-                || sessionStorage.getItem("sessionId") == null) {
+            if (isIdsHandled || localStorage.getItem('clientId') == null
+                || sessionStorage.getItem('sessionId') == null) {
                 return;
             }
             isIdsHandled = true;
@@ -284,52 +498,10 @@
                 + '&clientId=' + localStorage.clientId
                 + '&sessionId=' + sessionStorage.sessionId
                 + '&videoStatus=' + videoStatus)
-                .then(function (res) {
-                });
+                .then(function () {});
         }
 
-        function addPlayerEventListeners() {
-            player.on("ready", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("play", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("pause", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("canplay", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("playing", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("ended", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("liveStreamStop", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("onM3u8Retry", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("hideBar", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("showBar", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("waiting", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("snapshoted", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("requestFullScreen", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("cancelFullScreen", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("error", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("startSeek", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("completeSeek", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("resolutionChange", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("seiFrame", function (res) { sendHeartbeat("EVENT", res.type) });
-            player.on("rtsFallback", function (res) { sendHeartbeat("EVENT", res.type) });
-        }
-
-        function sendHeartbeat(type, playerEvent) {
-            axios.post("/heartbeat/add", {
-                videoId: videoId,
-                clientId: localStorage.clientId,
-                sessionId: sessionStorage.sessionId,
-                videoStatus: videoStatus,
-                playerProvider: "ALIYUN_WEB",
-                clientTime: new Date(),
-                type: type,
-                event: playerEvent,
-                playerTime: player.getCurrentTime() * 1000,
-                playerStatus: player.getStatus(),
-                playerVolume: player.getVolume()
-            }, {
-                headers: {"token": localStorage.token}
-            }).then(function (res) {
-            });
-        }
-
+        // ==================== 启动 ====================
         start();
     </script>
 </body>
