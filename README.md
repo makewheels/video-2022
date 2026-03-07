@@ -235,6 +235,17 @@ docker run -d -p 5022:5022 --name video-2022 video-2022:latest
 - 每个 PR 合并后，在 [CHANGELOG.md](docs/CHANGELOG.md) 记录关键变更
 - PR 标题格式：`类型: 简述`（类型：feat / fix / test / docs / refactor / chore）
 
+### 前端 UX 规范
+
+- **所有用户操作必须有 toast 反馈**（成功/失败/处理中），不允许操作后无任何提示
+- 表单提交前必须校验输入，校验失败显示 `VideoApp.toast(msg, 'error')`
+- 异步请求必须有 `.catch()` 错误处理，不允许静默失败
+- CDN 统一使用 `cdn.jsdelivr.net` + 版本锁定（如 `axios@0.26.1`），禁止使用未锁定版本
+- 按钮在不可操作时应设置 `disabled`，避免用户误点
+- 文件上传需显示文件名、大小信息，进度条实时更新
+- 使用 `VideoApp.toast(message, type)` 统一提示（type: `success` / `error` / `info`）
+- 新增/修改前端页面后，必须实际访问页面验证基本交互流程
+
 ---
 
 ## 开发记录
