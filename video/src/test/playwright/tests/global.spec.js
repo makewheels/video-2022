@@ -8,11 +8,15 @@ test.describe('Global CSS', () => {
   });
 
   test('global.css is loaded on upload page', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('token', 'test-token'));
     await page.route('**/user/getUserByToken*', route => route.fulfill({
       status: 200, contentType: 'application/json',
       body: JSON.stringify({ code: 0, data: { id: 'test' } })
     }));
-    await page.evaluate(() => localStorage.setItem('token', 'test-token'));
+    await page.route('**/playlist/getMyPlaylistByPage*', route => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ code: 0, data: [] })
+    }));
     await page.goto('/upload.html');
     const link = page.locator('link[href*="global.css"]');
     await expect(link).toHaveCount(1);
