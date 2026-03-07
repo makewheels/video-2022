@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.file.access;
 import com.alibaba.fastjson.JSON;
 import com.github.makewheels.video2022.file.TsFileRepository;
 import com.github.makewheels.video2022.file.bean.TsFile;
+import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.finance.fee.ossaccess.OssAccessFee;
 import com.github.makewheels.video2022.finance.fee.ossaccess.OssAccessFeeService;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
@@ -64,8 +65,8 @@ public class FileAccessLogService {
         accessLog.setTranscodeId(transcode.getId());
         accessLog.setResolution(transcode.getResolution());
         accessLog.setCreateTime(new Date());
-        //TODO 拿不到ip
-        accessLog.setIp(request.getRemoteAddr());
+        // 通过 RequestUtil.getIp() 获取客户端真实IP（经过代理时需配置 X-Forwarded-For）
+        accessLog.setIp(RequestUtil.getIp());
 
         mongoTemplate.save(accessLog);
         log.debug("保存文件访问记录 " + JSON.toJSONString(accessLog));

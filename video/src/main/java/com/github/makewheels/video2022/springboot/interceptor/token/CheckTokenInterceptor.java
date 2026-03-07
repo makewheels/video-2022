@@ -42,7 +42,6 @@ public class CheckTokenInterceptor implements HandlerInterceptor, Ordered {
         }
 
         //如果不通过，让他回登录页
-        response.setStatus(403);
         String targetUrl = request.getRequestURL().toString();
         URI targetUri = new URI(targetUrl);
         response.sendRedirect(targetUri.getScheme() + "://" + targetUri.getHost()
