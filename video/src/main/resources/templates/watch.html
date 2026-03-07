@@ -53,13 +53,16 @@
                     <span id="watchCount"></span>
                     <span id="createTime"></span>
                 </div>
-                <!-- 点赞/点踩 -->
+                <!-- 点赞/点踩/分享 -->
                 <div id="likeSection" style="margin:12px 0;display:flex;gap:12px;align-items:center;">
                     <button id="btn_like" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:4px;">
                         👍 <span id="likeCount">0</span>
                     </button>
                     <button id="btn_dislike" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:4px;">
                         👎
+                    </button>
+                    <button id="btn_share" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:4px;">
+                        🔗 分享
                     </button>
                 </div>
                 <div id="description" class="video-description"></div>
@@ -470,6 +473,36 @@
                 .then(function () { loadLikeStatus(videoId); })
                 .catch(function () { VideoApp.toast('请先登录', 'error'); });
         });
+
+        // ==================== 分享 ====================
+        document.getElementById('btn_share').addEventListener('click', function () {
+            var url = window.location.href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(function () {
+                    VideoApp.toast('链接已复制到剪贴板', 'success');
+                }).catch(function () {
+                    fallbackCopy(url);
+                });
+            } else {
+                fallbackCopy(url);
+            }
+        });
+
+        function fallbackCopy(text) {
+            var textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                VideoApp.toast('链接已复制到剪贴板', 'success');
+            } catch (e) {
+                VideoApp.toast('复制失败，请手动复制', 'error');
+            }
+            document.body.removeChild(textarea);
+        }
 
         // ==================== 评论系统 ====================
         let commentSort = 'time';
