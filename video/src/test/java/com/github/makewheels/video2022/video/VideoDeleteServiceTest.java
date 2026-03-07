@@ -2,6 +2,9 @@ package com.github.makewheels.video2022.video;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.BaseIntegrationTest;
+import com.github.makewheels.video2022.comment.Comment;
+import com.github.makewheels.video2022.comment.CommentLike;
+import com.github.makewheels.video2022.comment.CommentService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.playlist.item.PlayItem;
 import com.github.makewheels.video2022.playlist.list.PlaylistService;
@@ -11,8 +14,12 @@ import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoType;
+import com.github.makewheels.video2022.video.like.LikeType;
+import com.github.makewheels.video2022.video.like.VideoLike;
+import com.github.makewheels.video2022.video.like.VideoLikeService;
 import com.github.makewheels.video2022.video.service.VideoDeleteService;
 import com.github.makewheels.video2022.video.service.VideoService;
+import com.github.makewheels.video2022.watch.play.WatchLog;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,6 +45,12 @@ class VideoDeleteServiceTest extends BaseIntegrationTest {
 
     @Autowired
     private PlaylistService playlistService;
+
+    @Autowired
+    private CommentService commentService;
+
+    @Autowired
+    private VideoLikeService videoLikeService;
 
     private User testUser;
 
@@ -149,5 +163,101 @@ class VideoDeleteServiceTest extends BaseIntegrationTest {
         // 第二个视频已删除
         assertNull(mongoTemplate.findById(deleteId, Video.class),
                 "Deleted video should be gone");
+    }
+
+    // ──────────────────── 新增级联删除测试 ────────────────────
+
+    @Test
+    void deleteVideo_deletesComments() {
+        JSONObject createData = createDefaultVideo("comments-delete.mp4");
+        String videoId = createData.getString("videoId");
+
+        // 添加评论
+        commentService.addComment(videoId, "评论1", null);
+        Comment parent = commentService.addComment(videoId, "评论2", null).getData();
+        commentService.addComment(videoId, "回复", parent.getId());
+
+        // 确认评论存在
+        long commentsBefore = mongoTemplate.count(
+                Query.query(Criteria.where("videoId").is(videoId)), Comment.class);
+        assertEquals(3, commentsBefore);
+
+        // 删除视频
+        videoDeleteService.deleteVideo(videoId);
+
+        // 验证评论已删除
+        long commentsAfter = mongoTemplate.count(
+                Query.query(Criteria.where("videoId").is(videoId)), Comment.class);
+        assertEquals(0, commentsAfter, "所有评论应被级联删除");
+    }
+
+    @Test
+    void deleteVideo_deletesCommentLikes() {
+        JSONObject createData = createDefaultVideo("comment-likes-delete.mp4");
+        String videoId = createData.getString("videoId");
+
+        // 添加评论并点赞
+        Comment c = commentService.addComment(videoId, "将被点赞", null).getData();
+        commentService.likeComment(c.getId());
+
+        // 确认 CommentLike 存在
+        long likesBefore = mongoTemplate.count(new Query(), CommentLike.class);
+        assertEquals(1, likesBefore);
+
+        // 删除视频
+        videoDeleteService.deleteVideo(videoId);
+
+        // 验证 CommentLike 已删除
+        long likesAfter = mongoTemplate.count(new Query(), CommentLike.class);
+        assertEquals(0, likesAfter, "CommentLike 应被级联删除");
+    }
+
+    @Test
+    void deleteVideo_deletesVideoLikes() {
+        JSONObject createData = createDefaultVideo("video-likes-delete.mp4");
+        String videoId = createData.getString("videoId");
+
+        // 点赞视频
+        videoLikeService.react(videoId, LikeType.LIKE);
+
+        // 确认 VideoLike 存在
+        long likesBefore = mongoTemplate.count(
+                Query.query(Criteria.where("videoId").is(videoId)), VideoLike.class);
+        assertEquals(1, likesBefore);
+
+        // 删除视频
+        videoDeleteService.deleteVideo(videoId);
+
+        // 验证 VideoLike 已删除
+        long likesAfter = mongoTemplate.count(
+                Query.query(Criteria.where("videoId").is(videoId)), VideoLike.class);
+        assertEquals(0, likesAfter, "VideoLike 应被级联删除");
+    }
+
+    @Test
+    void deleteVideo_deletesWatchLogs() {
+        JSONObject createData = createDefaultVideo("watchlog-delete.mp4");
+        String videoId = createData.getString("videoId");
+
+        // 手动插入 WatchLog
+        WatchLog watchLog = new WatchLog();
+        watchLog.setVideoId(videoId);
+        watchLog.setClientId("test-client");
+        watchLog.setSessionId("test-session");
+        watchLog.setCreateTime(new Date());
+        mongoTemplate.save(watchLog);
+
+        // 确认 WatchLog 存在
+        long logsBefore = mongoTemplate.count(
+                Query.query(Criteria.where("videoId").is(videoId)), WatchLog.class);
+        assertEquals(1, logsBefore);
+
+        // 删除视频
+        videoDeleteService.deleteVideo(videoId);
+
+        // 验证 WatchLog 已删除
+        long logsAfter = mongoTemplate.count(
+                Query.query(Criteria.where("videoId").is(videoId)), WatchLog.class);
+        assertEquals(0, logsAfter, "WatchLog 应被级联删除");
     }
 }
