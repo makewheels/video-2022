@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.system.response;
 
 public enum ErrorCode {
-    SUCCESS(0, "成功"),
+    SUCCESS(0, "success"),
     FAIL(1, "未知错误"),
 
     USER_PHONE_VERIFICATION_CODE_WRONG(11, "验证码错误"),
@@ -10,7 +10,7 @@ public enum ErrorCode {
     USER_NOT_EXIST(14, "用户不存在"),
     USER_NOT_LOGIN(15, "用户未登录"),
 
-    VIDEO_CREATE_ARG_ILLEGAL(21,"视频创建参数不合法"),
+    VIDEO_CREATE_ARG_ILLEGAL(21, "视频创建参数不合法"),
     VIDEO_NOT_EXIST(22, "视频不存在"),
     VIDEO_AND_UPLOADER_NOT_MATCH(23, "视频与上传者不匹配"),
     VIDEO_NOT_READY(24, "视频未就绪"),
