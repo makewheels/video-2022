@@ -32,7 +32,7 @@ import java.util.List;
  * 不 mock 任何外部服务，使用本地 dev 数据库和真实阿里云 OSS。
  * 测试后自动清理创建的数据。
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("e2e")
 @Slf4j
 public abstract class BaseE2ETest {

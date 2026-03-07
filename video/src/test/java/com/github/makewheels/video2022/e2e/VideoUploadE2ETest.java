@@ -29,6 +29,7 @@ public class VideoUploadE2ETest extends BaseE2ETest {
         JSONObject body = new JSONObject();
         body.put("videoType", "USER_UPLOAD");
         body.put("rawFilename", RAW_FILENAME);
+        body.put("size", 1024000L);
 
         ResponseEntity<String> response = authPost(
                 getBaseUrl() + "/video/create", body.toJSONString());

@@ -41,32 +41,29 @@ public class LoginE2ETest extends BaseE2ETest {
     }
 
     /**
-     * 使用无效 token 访问受保护接口，期望返回 403 或 302。
+     * 使用无效 token 访问受保护接口，期望被拦截重定向到登录页。
+     * 注意：CheckTokenInterceptor 会 sendRedirect 到 login.html，
+     * RestTemplate 默认跟随重定向，所以最终状态码为 200，
+     * 但响应体应包含登录页内容。
      */
     @Test
-    void testInvalidTokenReturns403() {
+    void testInvalidTokenRedirectsToLogin() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", "invalid-token-that-does-not-exist");
         headers.set("Content-Type", "application/json");
 
         HttpEntity<Void> entity = new HttpEntity<>(headers);
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    getBaseUrl() + "/video/getMyVideoList?skip=0&limit=10",
-                    HttpMethod.GET, entity, String.class);
-            // 如果没有抛异常（比如 302 跟随后变成 200），检查状态码
-            HttpStatus status = (HttpStatus) response.getStatusCode();
-            assertTrue(
-                    status == HttpStatus.FORBIDDEN
-                            || status == HttpStatus.FOUND
-                            || status == HttpStatus.UNAUTHORIZED,
-                    "无效 token 应返回 403/302/401，实际: " + status);
-        } catch (HttpClientErrorException e) {
-            HttpStatus status = (HttpStatus) e.getStatusCode();
-            assertTrue(
-                    status == HttpStatus.FORBIDDEN || status == HttpStatus.UNAUTHORIZED,
-                    "无效 token 应返回 403 或 401，实际: " + status);
-        }
+        ResponseEntity<String> response = restTemplate.exchange(
+                getBaseUrl() + "/video/getMyVideoList?skip=0&limit=10",
+                HttpMethod.GET, entity, String.class);
+
+        // RestTemplate 跟随 302 重定向到 login.html，最终返回 200
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        String body = response.getBody();
+        assertNotNull(body, "响应体不应为空");
+        // 验证被重定向到了登录页
+        assertTrue(body.contains("login") || body.contains("登录") || body.contains("verificationCode"),
+                "无效 token 应被重定向到登录页");
     }
 
     /**
