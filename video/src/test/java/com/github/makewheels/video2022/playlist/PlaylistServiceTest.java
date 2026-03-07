@@ -423,4 +423,49 @@ class PlaylistServiceTest extends BaseIntegrationTest {
         assertNotNull(recovered);
         assertFalse(recovered.getDeleted());
     }
+
+    // ──────────────────── Boundary Conditions ────────────────────
+
+    @Test
+    void createPlaylist_emptyTitle_savesToMongo() {
+        CreatePlaylistRequest request = new CreatePlaylistRequest();
+        request.setTitle("");
+        request.setDescription("Empty title playlist");
+
+        Playlist playlist = playlistService.createPlaylist(request);
+
+        assertNotNull(playlist.getId());
+        assertEquals("", playlist.getTitle());
+
+        Playlist fromDb = mongoTemplate.findById(playlist.getId(), Playlist.class);
+        assertNotNull(fromDb);
+        assertEquals("", fromDb.getTitle());
+    }
+
+    @Test
+    void createPlaylist_nullTitle_savesToMongo() {
+        CreatePlaylistRequest request = new CreatePlaylistRequest();
+        request.setTitle(null);
+        request.setDescription("Null title playlist");
+
+        Playlist playlist = playlistService.createPlaylist(request);
+
+        assertNotNull(playlist.getId());
+        assertNull(playlist.getTitle());
+
+        Playlist fromDb = mongoTemplate.findById(playlist.getId(), Playlist.class);
+        assertNotNull(fromDb);
+        assertNull(fromDb.getTitle());
+    }
+
+    @Test
+    void addVideoToPlaylist_byNonOwner_throwsException() {
+        Playlist playlist = createTestPlaylist("Owner's Playlist For Add");
+        Video video = createTestVideo("Test Video For Add");
+
+        UserHolder.set(otherUser);
+
+        assertThrows(VideoException.class, () ->
+                addVideoToPlaylist(playlist.getId(), video.getId(), AddMode.ADD_TO_BOTTOM));
+    }
 }

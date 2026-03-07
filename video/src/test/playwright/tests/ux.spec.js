@@ -62,20 +62,39 @@ test.describe('Homepage', () => {
 
   test('has navigation link to upload', async ({ page }) => {
     await page.goto('/index.html');
-    const link = page.locator('a[href*="upload"]');
-    await expect(link).toBeVisible();
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width <= 768) {
+      // On mobile/tablet, nav links are in the hamburger menu
+      const link = page.locator('.nav-menu a[href*="upload"]');
+      await expect(link.first()).toBeAttached();
+    } else {
+      const link = page.locator('.nav-menu a[href*="upload"]');
+      await expect(link.first()).toBeVisible();
+    }
   });
 
   test('has navigation link to statistics', async ({ page }) => {
     await page.goto('/index.html');
-    const link = page.locator('a[href*="statistics"]');
-    await expect(link).toBeVisible();
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width <= 768) {
+      const link = page.locator('.nav-menu a[href*="statistics"]');
+      await expect(link.first()).toBeAttached();
+    } else {
+      const link = page.locator('.nav-menu a[href*="statistics"]');
+      await expect(link.first()).toBeVisible();
+    }
   });
 
   test('has navigation link to transfer-youtube', async ({ page }) => {
     await page.goto('/index.html');
-    const link = page.locator('a[href*="transfer-youtube"]');
-    await expect(link).toBeVisible();
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width <= 768) {
+      const link = page.locator('.nav-menu a[href*="transfer-youtube"]');
+      await expect(link.first()).toBeAttached();
+    } else {
+      const link = page.locator('.nav-menu a[href*="transfer-youtube"]');
+      await expect(link.first()).toBeVisible();
+    }
   });
 });
 

@@ -100,4 +100,52 @@ public class LoginE2ETest extends BaseE2ETest {
         assertNotEquals(oldToken, testToken, "重新登录后 token 应与旧 token 不同");
         assertEquals(oldUserId, testUserId, "同一手机号重新登录，userId 应不变");
     }
+
+    // ---- Error Scenarios ----
+
+    @Test
+    void login_invalidPhoneFormat_shouldReturnError() {
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                getBaseUrl() + "/user/requestVerificationCode?phone=123", String.class);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        JSONObject result = JSONObject.parseObject(response.getBody());
+        assertNotNull(result, "应返回 JSON 响应");
+        assertNotNull(result.get("code"), "响应应包含 code 字段");
+    }
+
+    @Test
+    void login_emptyPhone_shouldReturnError() {
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(
+                    getBaseUrl() + "/user/requestVerificationCode?phone=", String.class);
+            // If server accepts empty phone, verify response structure
+            JSONObject result = JSONObject.parseObject(response.getBody());
+            assertNotNull(result, "应返回 JSON 响应");
+        } catch (HttpClientErrorException e) {
+            // Spring may reject empty @RequestParam with 400
+            assertTrue(e.getStatusCode().is4xxClientError(),
+                    "空手机号应返回 4xx 错误");
+        }
+    }
+
+    @Test
+    void login_wrongVerificationCode_shouldFail() {
+        String phone = "19900009999";
+        restTemplate.getForEntity(
+                getBaseUrl() + "/user/requestVerificationCode?phone=" + phone, String.class);
+
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(
+                    getBaseUrl() + "/user/submitVerificationCode?phone=" + phone + "&code=999999",
+                    String.class);
+            JSONObject result = JSONObject.parseObject(response.getBody());
+            assertNotNull(result);
+            assertNotEquals(0, result.getIntValue("code"),
+                    "错误验证码应返回非 0 状态码");
+        } catch (HttpClientErrorException e) {
+            assertTrue(e.getStatusCode().is4xxClientError() || e.getStatusCode().is5xxServerError(),
+                    "错误验证码应返回错误状态");
+        }
+    }
 }

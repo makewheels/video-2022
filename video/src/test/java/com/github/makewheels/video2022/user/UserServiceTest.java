@@ -196,4 +196,40 @@ class UserServiceTest extends BaseIntegrationTest {
         User user = userService.getUserById("non-existent-id");
         assertNull(user);
     }
+
+    // ---- Edge Cases ----
+
+    @Test
+    void getUserByToken_withEmptyStringToken_shouldReturnNull() {
+        User user = userService.getUserByToken("");
+        assertNull(user, "Empty string token should return null");
+    }
+
+    @Test
+    void submitVerificationCode_withEmptyCode_shouldThrow() {
+        userService.requestVerificationCode(TEST_PHONE);
+
+        VideoException ex = assertThrows(VideoException.class, () ->
+                userService.submitVerificationCode(TEST_PHONE, ""));
+
+        assertEquals(ErrorCode.USER_PHONE_VERIFICATION_CODE_WRONG, ex.getErrorCode(),
+                "Empty code should be treated as wrong code");
+    }
+
+    @Test
+    void requestVerificationCode_differentPhones_shouldGenerateDifferentCodes() {
+        String phone1 = "13800000001";
+        String phone2 = "13800000002";
+
+        userService.requestVerificationCode(phone1);
+        userService.requestVerificationCode(phone2);
+
+        VerificationCode vc1 = userRedisService.getVerificationCode(phone1);
+        VerificationCode vc2 = userRedisService.getVerificationCode(phone2);
+
+        assertNotNull(vc1);
+        assertNotNull(vc2);
+        assertEquals(phone1, vc1.getPhone());
+        assertEquals(phone2, vc2.getPhone());
+    }
 }

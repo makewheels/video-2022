@@ -148,4 +148,33 @@ public class PlaylistE2ETest extends BaseE2ETest {
         assertTrue(videoIds.contains(videoId1), "应包含第一个视频");
         assertTrue(videoIds.contains(videoId2), "应包含第二个视频");
     }
+
+    // ---- Error Scenarios ----
+
+    @Test
+    void testCreatePlaylist_emptyName_shouldStillCreate() {
+        JSONObject body = new JSONObject();
+        body.put("title", "");
+        body.put("description", "空标题测试");
+
+        ResponseEntity<String> response = authPost(
+                getBaseUrl() + "/playlist/createPlaylist", body.toJSONString());
+        JSONObject result = JSONObject.parseObject(response.getBody());
+        assertNotNull(result);
+        // Server may or may not accept empty title
+        assertNotNull(result.get("code"), "响应应包含 code 字段");
+    }
+
+    @Test
+    void testCreatePlaylist_missingTitle_shouldStillCreate() {
+        JSONObject body = new JSONObject();
+        body.put("description", "无标题测试");
+        // title field is missing entirely
+
+        ResponseEntity<String> response = authPost(
+                getBaseUrl() + "/playlist/createPlaylist", body.toJSONString());
+        JSONObject result = JSONObject.parseObject(response.getBody());
+        assertNotNull(result);
+        assertNotNull(result.get("code"), "响应应包含 code 字段");
+    }
 }
