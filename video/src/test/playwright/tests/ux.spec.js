@@ -205,7 +205,8 @@ test.describe('Upload UX', () => {
     // Grant clipboard permission
     await page.context().grantPermissions(['clipboard-write']);
     await page.click('#btn_copy');
-    const toast = page.locator('.toast-success');
+    // No video URL yet, so should show error toast
+    const toast = page.locator('.toast-error');
     await expect(toast).toBeVisible({ timeout: 3000 });
   });
 });
