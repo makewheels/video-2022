@@ -135,6 +135,8 @@
                 watchId = data.watchId;
                 watchUrl.innerText = data.watchUrl;
                 beginUpload();
+            }).catch(function (err) {
+                VideoApp.toast('创建视频失败', 'error');
             });
         }
 
@@ -146,12 +148,20 @@
                 description: input_description.value
             }, {
                 headers: VideoApp.authHeaders()
-            }).then(function (res) {});
+            }).then(function (res) {
+                VideoApp.toast('修改成功', 'success');
+            }).catch(function (err) {
+                VideoApp.toast('修改失败', 'error');
+            });
         });
 
         btn_copy.addEventListener("click", function () {
             let content = "【" + input_title.value + "】" + "\n" + watchUrl.innerText;
-            navigator.clipboard.writeText(content);
+            navigator.clipboard.writeText(content).then(function () {
+                VideoApp.toast('已复制到剪贴板', 'success');
+            }).catch(function () {
+                VideoApp.toast('复制失败', 'error');
+            });
         });
 
         function beginUpload() {
@@ -159,6 +169,8 @@
                 headers: VideoApp.authHeaders()
             }).then(function (res) {
                 runUpload(res.data.data);
+            }).catch(function (err) {
+                VideoApp.toast('获取上传凭证失败', 'error');
             });
         }
 
@@ -197,7 +209,12 @@
                     headers: VideoApp.authHeaders()
                 }).then(function (res) {
                     text_progress.innerText = "上传已完成";
+                    VideoApp.toast('上传已完成', 'success');
+                }).catch(function (err) {
+                    VideoApp.toast('处理上传失败', 'error');
                 });
+            }).catch(function (err) {
+                VideoApp.toast('完成上传失败', 'error');
             });
         }
 
@@ -207,12 +224,21 @@
             }).then(function (res) {
                 let data = res.data.data;
                 let select = document.getElementById("select_playlist");
+                if (!data || data.length === 0) {
+                    var emptyDiv = document.createElement("div");
+                    emptyDiv.className = "empty-state";
+                    emptyDiv.textContent = "暂无播放列表";
+                    select.parentElement.appendChild(emptyDiv);
+                    return;
+                }
                 for (let i = 0; i < data.length; i++) {
                     let option = document.createElement("option");
                     option.value = data[i].id;
                     option.innerText = data[i].title;
                     select.appendChild(option);
                 }
+            }).catch(function (err) {
+                VideoApp.toast('加载播放列表失败', 'error');
             });
         }
 

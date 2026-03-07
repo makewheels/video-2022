@@ -14,10 +14,6 @@
 
     <!-- axios -->
     <script src="https://production-bucket.oss-cn-beijing.aliyuncs.com/dist/axios/axios-0.26.1.min.js"></script>
-
-    <!-- MUI (for toast) -->
-    <link href="https://production-bucket.oss-cn-beijing.aliyuncs.com/dist/mui/mui-3.7.1.min.css" rel="stylesheet">
-    <script src="https://production-bucket.oss-cn-beijing.aliyuncs.com/dist/mui/mui-3.7.1.min.js"></script>
 </head>
 
 <body>
@@ -106,7 +102,7 @@
                 currentTime = Math.round(currentTime);
                 let url = window.location.href + "&seekTimeInMills=" + currentTime;
                 navigator.clipboard.writeText(url);
-                mui.toast("已复制当前时间：" + currentTime);
+                VideoApp.toast("已复制当前时间：" + currentTime, "success");
             });
         }
 
@@ -123,6 +119,9 @@
                     addPlayerEventListeners();
                     setInterval("sendHeartbeat('TIMER', null)", 2000);
                     addCopyCurrentTimeButtonClickListener();
+                })
+                .catch(function (err) {
+                    VideoApp.toast('加载视频失败', 'error');
                 })
         }
 

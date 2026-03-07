@@ -41,15 +41,23 @@
         let watchUrl = document.getElementById("watchUrl");
 
         btn_submit.addEventListener("click", function () {
+            var url = input_youtubeUrl.value.trim();
+            if (!url || (url.indexOf('youtube.com') === -1 && url.indexOf('youtu.be') === -1)) {
+                VideoApp.toast('请输入有效的YouTube链接', 'error');
+                return;
+            }
             axios.post("/video/create", {
                 "videoType": "YOUTUBE",
-                "youtubeUrl": input_youtubeUrl.value
+                "youtubeUrl": url
             }, {
                 headers: VideoApp.authHeaders()
             }).then(function (res) {
                 let data = res.data.data;
                 shortUrl.innerText = data.shortUrl;
                 watchUrl.innerText = data.watchUrl;
+                VideoApp.toast('提交成功', 'success');
+            }).catch(function (err) {
+                VideoApp.toast('提交失败', 'error');
             });
         });
     </script>
