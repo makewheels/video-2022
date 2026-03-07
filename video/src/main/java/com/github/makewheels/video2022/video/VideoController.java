@@ -10,6 +10,7 @@ import com.github.makewheels.video2022.video.bean.dto.UpdateWatchSettingsDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.vo.VideoListVO;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
+import com.github.makewheels.video2022.video.service.VideoDeleteService;
 import com.github.makewheels.video2022.video.service.VideoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,8 @@ import java.util.List;
 public class VideoController {
     @Resource
     private VideoService videoService;
+    @Resource
+    private VideoDeleteService videoDeleteService;
     @Resource
     private CheckService checkService;
 
@@ -84,6 +87,17 @@ public class VideoController {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("url", url);
         return Result.ok(jsonObject);
+    }
+
+    /**
+     * 删除视频
+     */
+    @GetMapping("delete")
+    public Result<Void> deleteVideo(@RequestParam String videoId) {
+        checkService.checkVideoExist(videoId);
+        checkService.checkVideoBelongsToUser(videoId, UserHolder.getUserId());
+        videoDeleteService.deleteVideo(videoId);
+        return Result.ok();
     }
 
     /**
