@@ -68,6 +68,9 @@ public class RequestUtil {
      */
     public static HttpServletRequest getRequest() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if (requestAttributes == null) {
+            throw new IllegalStateException("当前线程无法获取请求上下文，可能在异步线程中调用");
+        }
         return ((ServletRequestAttributes) requestAttributes).getRequest();
     }
 
@@ -76,6 +79,9 @@ public class RequestUtil {
      */
     public static HttpServletResponse getResponse() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if (requestAttributes == null) {
+            throw new IllegalStateException("当前线程无法获取请求上下文，可能在异步线程中调用");
+        }
         return ((ServletRequestAttributes) requestAttributes).getResponse();
     }
 
