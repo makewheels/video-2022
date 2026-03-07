@@ -56,7 +56,7 @@ public class RequestLogInterceptor implements HandlerInterceptor, Ordered {
             @NotNull HttpServletRequest servletRequest, @NotNull HttpServletResponse servletResponse,
             @NotNull Object handler, ModelAndView modelAndView) {
         RequestLog requestLog = RequestLogContext.getRequestLog();
-        // TODO 不知道怎么获取响应体
+        // 注意：Spring Interceptor 无法直接获取响应体，如需日志记录响应体需使用 Filter
 
     }
 
