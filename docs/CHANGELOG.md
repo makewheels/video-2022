@@ -6,6 +6,13 @@
 
 ---
 
+### [PR #22](https://github.com/makewheels/video-2022/pull/22) — 专家级代码审查 + 测试文档
+
+- 修正 plan 文件日期（2025-07 → 2026-03-07）
+- 修复 3 个关键 Bug：RawFileService/VideoService 视频类型字段比较错误、FileController 上传凭证鉴权缺失
+- 安全改进：RequestUtil null 检查、GlobalExceptionHandler 日志规范、WatchService 竞态条件修复、验证码 "111" 环境守卫
+- 创建测试文档体系：11 篇模块测试文档，覆盖 490 个用例（409 Java + 82 Playwright）
+
 ### [PR #21](https://github.com/makewheels/video-2022/pull/21) — 代码审查修复
 
 - 修复 PlaylistRepository 字段名 `isDelete` → `deleted`，与 Playlist 实体一致
