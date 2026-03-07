@@ -24,30 +24,31 @@
     </header>
 
     <div class="page-container">
-        <div class="quick-actions">
-            <a href="/upload.html" class="quick-action-card">
-                <span class="quick-action-icon">📤</span>
-                <span class="quick-action-title">上传视频</span>
-                <span class="quick-action-desc">上传并管理你的视频内容</span>
-            </a>
-            <a href="/statistics.html" class="quick-action-card">
-                <span class="quick-action-icon">📊</span>
-                <span class="quick-action-title">数据统计</span>
-                <span class="quick-action-desc">查看播放量和流量数据</span>
-            </a>
-            <a href="/transfer-youtube.html" class="quick-action-card">
-                <span class="quick-action-icon">🔄</span>
-                <span class="quick-action-title">YouTube搬运</span>
-                <span class="quick-action-desc">从YouTube导入视频</span>
-            </a>
-        </div>
-
         <div id="myVideosSection">
             <div class="section-header">
                 <h2 class="section-title">我的视频</h2>
                 <span class="video-count" id="videoCount"></span>
             </div>
-            <div id="videoGrid" class="video-grid"></div>
+
+            <!-- 电脑端表格 -->
+            <div class="video-table-wrap" id="videoTableWrap" style="display:none;">
+                <table class="video-table">
+                    <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>播放次数</th>
+                            <th>时长</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="videoTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- 手机端卡片列表 -->
+            <div id="videoCardList" class="video-card-list" style="display:none;"></div>
+
             <div id="videoEmpty" class="empty-state" style="display:none;">暂无视频，快去上传吧</div>
             <div id="pagination" class="pagination" style="display:none;"></div>
             <div id="loadMoreWrap" class="load-more-wrap" style="display:none;">
@@ -82,13 +83,18 @@
             if (wasMobile !== isMobile && totalVideos > 0) {
                 currentPage = 1;
                 allLoadedVideos = [];
-                document.getElementById('videoGrid').innerHTML = '';
+                clearList();
                 loadMyVideos(0);
             }
         });
 
+        function clearList() {
+            document.getElementById('videoTableBody').innerHTML = '';
+            document.getElementById('videoCardList').innerHTML = '';
+        }
+
         function formatDuration(ms) {
-            if (!ms || ms <= 0) return '';
+            if (!ms || ms <= 0) return '-';
             var totalSec = Math.floor(ms / 1000);
             var min = Math.floor(totalSec / 60);
             var sec = totalSec % 60;
@@ -96,7 +102,7 @@
         }
 
         function formatRelativeTime(dateStr) {
-            if (!dateStr) return '';
+            if (!dateStr) return '-';
             var date = new Date(dateStr);
             var now = new Date();
             var diff = now - date;
@@ -113,26 +119,34 @@
             return Math.floor(month / 12) + '年前';
         }
 
-        function renderVideoCard(v) {
-            var card = document.createElement('a');
-            card.className = 'video-grid-card';
-            card.href = '/watch?v=' + (v.watchId || '');
+        function renderTableRow(v) {
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td class="td-title"><a href="/watch?v=' + (v.watchId || '') + '">' + (v.title || '未命名视频') + '</a></td>' +
+                '<td>' + (v.watchCount || 0) + '</td>' +
+                '<td>' + formatDuration(v.duration) + '</td>' +
+                '<td>' + formatRelativeTime(v.createTimeString || v.createTime) + '</td>' +
+                '<td class="td-actions">' +
+                    '<a href="/watch?v=' + (v.watchId || '') + '" class="action-link">播放</a>' +
+                '</td>';
+            return tr;
+        }
 
+        function renderMobileCard(v) {
+            var card = document.createElement('a');
+            card.className = 'video-list-card';
+            card.href = '/watch?v=' + (v.watchId || '');
             var title = document.createElement('div');
             title.className = 'video-title';
             title.textContent = v.title || '未命名视频';
-
             var meta = document.createElement('div');
             meta.className = 'video-meta';
-
-            var parts = [];
-            parts.push((v.watchCount || 0) + ' 播放');
+            var parts = [(v.watchCount || 0) + ' 播放'];
             var dur = formatDuration(v.duration);
-            if (dur) parts.push(dur);
+            if (dur !== '-') parts.push(dur);
             var time = formatRelativeTime(v.createTimeString || v.createTime);
-            if (time) parts.push(time);
+            if (time !== '-') parts.push(time);
             meta.textContent = parts.join(' · ');
-
             card.appendChild(title);
             card.appendChild(meta);
             return card;
@@ -153,20 +167,22 @@
                     return;
                 }
 
-                var grid = document.getElementById('videoGrid');
-
                 if (isMobile) {
-                    // 手机端：追加模式
+                    document.getElementById('videoTableWrap').style.display = 'none';
+                    document.getElementById('videoCardList').style.display = 'block';
+                    var cardList = document.getElementById('videoCardList');
                     for (var i = 0; i < list.length; i++) {
                         allLoadedVideos.push(list[i]);
-                        grid.appendChild(renderVideoCard(list[i]));
+                        cardList.appendChild(renderMobileCard(list[i]));
                     }
                     updateLoadMore();
                 } else {
-                    // 电脑端：替换模式
-                    grid.innerHTML = '';
+                    document.getElementById('videoCardList').style.display = 'none';
+                    document.getElementById('videoTableWrap').style.display = 'block';
+                    var tbody = document.getElementById('videoTableBody');
+                    tbody.innerHTML = '';
                     for (var i = 0; i < list.length; i++) {
-                        grid.appendChild(renderVideoCard(list[i]));
+                        tbody.appendChild(renderTableRow(list[i]));
                     }
                     renderPagination();
                 }
@@ -176,7 +192,6 @@
             });
         }
 
-        // 电脑端分页器
         function renderPagination() {
             var totalPages = Math.ceil(totalVideos / PAGE_SIZE);
             if (totalPages <= 1) {
@@ -187,7 +202,6 @@
             pag.style.display = 'flex';
             pag.innerHTML = '';
 
-            // 上一页
             var prev = document.createElement('button');
             prev.className = 'page-btn' + (currentPage <= 1 ? ' disabled' : '');
             prev.textContent = '上一页';
@@ -195,7 +209,6 @@
             prev.onclick = function () { goToPage(currentPage - 1); };
             pag.appendChild(prev);
 
-            // 页码
             var pages = getPageNumbers(currentPage, totalPages);
             for (var i = 0; i < pages.length; i++) {
                 var p = pages[i];
@@ -213,7 +226,6 @@
                 }
             }
 
-            // 下一页
             var next = document.createElement('button');
             next.className = 'page-btn' + (currentPage >= totalPages ? ' disabled' : '');
             next.textContent = '下一页';
@@ -242,20 +254,16 @@
             var totalPages = Math.ceil(totalVideos / PAGE_SIZE);
             if (page < 1 || page > totalPages) return;
             currentPage = page;
-            var skip = (page - 1) * PAGE_SIZE;
-            loadMyVideos(skip);
+            loadMyVideos((page - 1) * PAGE_SIZE);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // 手机端"加载更多"
         function updateLoadMore() {
             var loadMoreWrap = document.getElementById('loadMoreWrap');
             var noMoreText = document.getElementById('noMoreText');
             if (allLoadedVideos.length >= totalVideos) {
                 loadMoreWrap.style.display = 'none';
-                if (totalVideos > PAGE_SIZE) {
-                    noMoreText.style.display = 'block';
-                }
+                if (totalVideos > PAGE_SIZE) noMoreText.style.display = 'block';
             } else {
                 loadMoreWrap.style.display = 'flex';
                 noMoreText.style.display = 'none';

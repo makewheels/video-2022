@@ -56,12 +56,6 @@ test.describe('Navigation Bar', () => {
 });
 
 test.describe('Homepage', () => {
-    test('has quick actions grid with 3 cards', async ({ page }) => {
-        await page.goto('/');
-        const cards = page.locator('.quick-action-card');
-        await expect(cards).toHaveCount(3);
-    });
-
     test('has my videos section', async ({ page }) => {
         await page.goto('/');
         const section = page.locator('#myVideosSection');
