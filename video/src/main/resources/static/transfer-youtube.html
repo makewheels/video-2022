@@ -2,57 +2,56 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>搬运YouTube</title>
-
+    <link rel="stylesheet" href="/css/global.css">
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="https://code.bdstatic.com/npm/@baiducloud/sdk@1.0.0-rc.32/dist/baidubce-sdk.bundle.min.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/async/3.2.3/async.min.js"></script>
 </head>
-
 <body>
-<script>
-    //看有没有token，如果没有跳转登录页
-    if (localStorage.getItem("token") == null) {
-        window.location.href = "//" + document.domain + ":" + location.port + "/login.html"
-            + "?target=" + window.location.href
-    }
-</script>
+    <header class="page-header">
+        <a href="/" class="logo">Video</a>
+        <button id="theme-toggle" type="button">🌙</button>
+    </header>
 
-<span>YouTube URL:</span>
-<input id="input_youtubeUrl" type="text" maxlength="100"/>
-<br>
+    <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - var(--header-height));padding:16px;">
+        <div class="card" style="width:100%;max-width:500px;">
+            <div class="card-header">搬运YouTube视频</div>
 
-<button id="btn_submit" type="button">提交</button>
-<br>
+            <div class="form-group">
+                <label for="input_youtubeUrl">YouTube URL</label>
+                <input id="input_youtubeUrl" type="text" class="form-input" maxlength="100" placeholder="https://www.youtube.com/watch?v=...">
+            </div>
 
-<span id="shortUrl"></span>
-<br>
+            <button id="btn_submit" type="button" class="btn btn-primary" style="width:100%;">提交</button>
 
-<span id="watchUrl"></span>
-<br>
+            <div id="resultArea" style="margin-top:16px;">
+                <div id="shortUrl" style="font-size:0.875rem;color:var(--text-secondary);word-break:break-all;"></div>
+                <div id="watchUrl" style="font-size:0.875rem;color:var(--accent);word-break:break-all;margin-top:4px;"></div>
+            </div>
+        </div>
+    </div>
 
-<script>
-    let input_youtubeUrl = document.getElementById("input_youtubeUrl");
+    <script src="/js/global.js"></script>
+    <script>
+        VideoApp.requireAuth();
 
-    let btn_submit = document.getElementById("btn_submit");
+        let input_youtubeUrl = document.getElementById("input_youtubeUrl");
+        let btn_submit = document.getElementById("btn_submit");
+        let shortUrl = document.getElementById("shortUrl");
+        let watchUrl = document.getElementById("watchUrl");
 
-    let shortUrl = document.getElementById("shortUrl");
-    let watchUrl = document.getElementById("watchUrl");
-
-    btn_submit.addEventListener("click", function () {
-        axios.post("/video/create", {
-            "videoType": "YOUTUBE",
-            "youtubeUrl": input_youtubeUrl.value
-        }, {
-            headers: {"token": localStorage.token}
-        }).then(function (res) {
-            let data = res.data.data;
-            shortUrl.innerText = data.shortUrl;
-            watchUrl.innerText = data.watchUrl;
+        btn_submit.addEventListener("click", function () {
+            axios.post("/video/create", {
+                "videoType": "YOUTUBE",
+                "youtubeUrl": input_youtubeUrl.value
+            }, {
+                headers: VideoApp.authHeaders()
+            }).then(function (res) {
+                let data = res.data.data;
+                shortUrl.innerText = data.shortUrl;
+                watchUrl.innerText = data.watchUrl;
+            });
         });
-    });
-
-</script>
-
+    </script>
 </body>
 </html>
