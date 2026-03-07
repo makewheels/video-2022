@@ -1,3 +1,5 @@
+> **状态:** ✅ 已完成 — [PR #14](https://github.com/makewheels/video-2022/pull/14)
+
 # Frontend Redesign — YouTube-like UI
 
 ## Problem

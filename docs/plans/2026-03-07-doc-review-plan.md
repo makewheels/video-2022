@@ -1,3 +1,5 @@
+> **状态:** 🔄 执行中
+
 # 文档全面评审与改进 实施计划
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
