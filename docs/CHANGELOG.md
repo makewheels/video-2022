@@ -6,6 +6,11 @@
 
 ---
 
+### [PR #37](https://github.com/makewheels/video-2022/pull/37) — 分享按钮
+- watch.html 添加 🔗 分享按钮（点赞按钮旁）
+- 点击复制当前页面链接到剪贴板，toast 提示
+- 支持 Clipboard API + fallback execCommand
+
 ### [PR #36](https://github.com/makewheels/video-2022/pull/36) — 评论系统
 - 新增 `Comment` 实体 + `comment` MongoDB 集合
 - 新增 `CommentLike` 实体 + `comment_like` 集合（commentId+userId 唯一索引）
