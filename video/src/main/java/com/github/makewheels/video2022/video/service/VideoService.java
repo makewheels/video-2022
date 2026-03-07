@@ -145,6 +145,16 @@ public class VideoService {
             BeanUtils.copyProperties(video, videoVO);
             videoVO.setCoverUrl(coverId2UrlMap.get(video.getCoverId()));
             videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
+            // 手动映射嵌套对象中的字段（BeanUtils 不处理嵌套属性）
+            if (video.getWatch() != null) {
+                videoVO.setWatchCount(video.getWatch().getWatchCount());
+                videoVO.setWatchId(video.getWatch().getWatchId());
+                videoVO.setWatchUrl(video.getWatch().getWatchUrl());
+                videoVO.setShortUrl(video.getWatch().getShortUrl());
+            }
+            if (video.getMediaInfo() != null) {
+                videoVO.setDuration(video.getMediaInfo().getDuration());
+            }
             if (VideoType.YOUTUBE.equals(video.getVideoType()) && video.getYouTube() != null) {
                 YouTube youTube = video.getYouTube();
                 if (youTube.getPublishTime() != null) {

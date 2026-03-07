@@ -662,7 +662,7 @@ textarea.form-input {
 .watch-layout {
     display: flex;
     gap: 24px;
-    max-width: var(--max-width);
+    max-width: 1400px;
     margin: 0 auto;
     padding: 16px;
 }
@@ -673,24 +673,19 @@ textarea.form-input {
 }
 
 .watch-sidebar {
-    width: 400px;
+    width: 350px;
     flex-shrink: 0;
 }
 
 .player-wrapper {
     position: relative;
-    padding-top: 56.25%;
     background-color: #000;
     border-radius: var(--radius-lg);
     overflow: hidden;
 }
 
-.player-wrapper .player-con {
-    position: absolute;
-    top: 0;
-    left: 0;
+.player-wrapper .video-js {
     width: 100%;
-    height: 100%;
 }
 
 .video-info-section {
@@ -1034,4 +1029,48 @@ textarea.form-input {
     .watch-sidebar {
         width: 340px;
     }
+}
+
+/* ===== Video.js 主题适配 ===== */
+.video-js {
+    font-family: inherit;
+}
+
+.video-js .vjs-big-play-button {
+    background-color: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+}
+
+.video-js .vjs-control-bar {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+}
+
+/* 分辨率选择菜单 */
+.video-js .vjs-http-source-selector .vjs-menu {
+    background: var(--card-bg, #fff);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow, 0 2px 8px rgba(0,0,0,0.15));
+}
+
+.video-js .vjs-http-source-selector .vjs-menu-item {
+    color: var(--text-primary, #0f0f0f);
+    padding: 8px 16px;
+}
+
+.video-js .vjs-http-source-selector .vjs-menu-item.vjs-selected {
+    background: var(--accent-light, rgba(6, 95, 212, 0.1));
+    color: var(--accent, #065fd4);
+}
+
+/* 暗色主题覆盖 */
+[data-theme="dark"] .video-js .vjs-http-source-selector .vjs-menu {
+    background: var(--card-bg);
+}
+
+[data-theme="dark"] .video-js .vjs-http-source-selector .vjs-menu-item {
+    color: var(--text-primary);
 }

@@ -2,8 +2,8 @@
 
 Playwright 前端测试覆盖页面行为交互、端到端流程、前端样式规范、全局配置、各页面功能和 UX 组件。测试在浏览器环境中运行，验证真实的 DOM 交互和用户操作。
 
-- **测试文件数**：9
-- **测试用例数**：80
+- **测试文件数**：10
+- **测试用例数**：88
 
 ## 运行方式
 
@@ -164,6 +164,23 @@ cd video/src/test/playwright && npx playwright test --ui
 | 19 | invalid YouTube URL shows validation error | 无效 YouTube URL | YouTube 转存页（含 mock） | 输入 "not-a-url" → 提交 | .toast-error 可见 | URL 校验 |
 | 20 | submit success shows toast | YouTube 提交成功 | YouTube 转存页（含 mock） | 输入有效 URL → 提交 | .toast-success 可见 | 成功反馈 |
 | 21 | missing token parameter shows error | 缺少 Token 参数 | 无 | 访问 /save-token.html 无 token 参数 | .text 显示"缺少登录信息" | 参数缺失提示 |
+
+---
+
+## player.spec.js
+
+验证播放器引擎替换（Aliplayer → Video.js）、资源加载、API 函数和 URL 参数解析。
+
+| # | 测试用例 | 场景 | 前置条件 | 操作 | 期望结果 | 测试目标 |
+|---|---------|------|---------|------|---------|---------|
+| 1 | 页面加载Video.js而非Aliplayer | 播放器引擎验证 | mock 环境 | 检查 window.videojs 和 Aliplayer | videojs 存在，Aliplayer 不存在 | 引擎替换验证 |
+| 2 | 播放器容器使用video标签 | HTML 元素验证 | mock 环境 | 检查 video#player-con | video 标签存在 | DOM 结构 |
+| 3 | Video.js CSS已加载 | 样式加载验证 | mock 环境 | 检查 link[href*=video-js.css] | CSS 链接存在 | 资源加载 |
+| 4 | 没有Aliplayer CSS | 旧资源清除验证 | mock 环境 | 检查 link[href*=aliplayer] | 不存在 | 清理验证 |
+| 5 | getInitSeekTimeInSeconds函数存在 | 时间跳转函数验证 | mock 环境 | 检查函数类型 | function 类型 | API 验证 |
+| 6 | initKeyboardShortcuts函数存在 | 键盘快捷键函数验证 | mock 环境 | 检查函数类型 | function 类型 | API 验证 |
+| 7 | 复制按钮存在且可见 | 复制按钮 UI 验证 | mock 环境 | 检查 #btn_copyCurrentTime | 可见且包含"复制" | UI 验证 |
+| 8 | t参数被getInitSeekTimeInSeconds读取 | t= 参数解析 | mock 环境，URL 含 t=42 | 调用函数 | 返回 42 | URL 参数 |
 
 ---
 
