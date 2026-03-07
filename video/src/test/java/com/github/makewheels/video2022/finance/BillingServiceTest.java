@@ -408,4 +408,66 @@ class BillingServiceTest extends BaseIntegrationTest {
         assertEquals(1, secondBills.get(0).getFeeCount(),
                 "Second billing should only include the new uncharged fee");
     }
+
+    // ---- Boundary Conditions ----
+
+    @Test
+    void createOssAccessFee_zeroFileSize_shouldHaveZeroFeePrice() {
+        User user = createAndSaveUser();
+        long fileSize = 0L;
+        Date accessTime = new Date();
+
+        FileAccessLog accessLog = buildAccessLog(user.getId(), fileSize, accessTime);
+        OssAccessFee fee = ossAccessFeeService.create(
+                accessLog, null, new ObjectId().toHexString(),
+                "client-1", "session-1", "720p", new ObjectId().toHexString());
+
+        assertNotNull(fee.getFeePrice());
+        assertEquals(0, fee.getFeePrice().compareTo(BigDecimal.ZERO),
+                "Zero file size should produce zero fee price");
+        assertEquals(0, fee.getAmount().compareTo(BigDecimal.ZERO),
+                "Zero file size should produce zero amount");
+    }
+
+    @Test
+    void feePriceCalculation_verySmallTranscodeDuration_shouldMaintainPrecision() {
+        BigDecimal unitPrice = new BigDecimal("0.0035");
+        long durationMs = 1L; // 1 millisecond
+        BigDecimal amount = BigDecimal.valueOf(durationMs)
+                .divide(BigDecimal.valueOf(1000), UnitPriceService.SCALE, RoundingMode.HALF_DOWN);
+        BigDecimal expected = unitPrice.multiply(amount)
+                .setScale(UnitPriceService.SCALE, RoundingMode.HALF_DOWN).abs();
+
+        User user = createAndSaveUser();
+        TranscodeFee fee = createAndSaveTranscodeFee(
+                user.getId(), new ObjectId().toHexString(),
+                "1080p", durationMs, "ALIYUN", new Date());
+
+        assertTrue(fee.getFeePrice().compareTo(BigDecimal.ZERO) > 0,
+                "1ms transcode fee should still be positive");
+        assertEquals(0, expected.compareTo(fee.getFeePrice()),
+                "Very small transcode fee should maintain precision");
+        assertTrue(fee.getFeePrice().scale() <= UnitPriceService.SCALE,
+                "Scale should not exceed configured SCALE");
+    }
+
+    @Test
+    void createBill_withZeroSizeFees_shouldCreateBillWithZeroTotal() {
+        User user = createAndSaveUser();
+        Date yesterday = Date.from(Instant.now().minus(1, ChronoUnit.HOURS));
+        Date billStart = Date.from(Instant.now().minus(1, ChronoUnit.DAYS));
+        Date billEnd = Date.from(Instant.now().plus(1, ChronoUnit.DAYS));
+
+        createAndSaveAccessFee(user.getId(), new ObjectId().toHexString(), 0L, yesterday);
+
+        List<Bill> bills = ossAccessFeeService.createBill(billStart, billEnd);
+
+        assertEquals(1, bills.size(), "Should create a bill even with zero-amount fees");
+        Bill bill = bills.get(0);
+        assertEquals(0, bill.getOriginChargePrice().compareTo(BigDecimal.ZERO),
+                "Origin charge should be zero for zero-size file");
+        assertEquals(0, bill.getRealChargePrice().compareTo(BigDecimal.ZERO),
+                "Real charge should be zero for zero-size file");
+        assertEquals(1, bill.getFeeCount());
+    }
 }
