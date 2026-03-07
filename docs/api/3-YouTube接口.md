@@ -2,6 +2,10 @@
 
 > 文档地图：[README](../../README.md) > [API接口文档](../../README.md#api-接口文档) > 本文档
 
+> 认证：除标注「公开」的接口外，需要请求头携带 `token`。无效 token 返回 HTTP 403。
+>
+> 详细业务流程见对应的 [业务文档](../业务/5-YouTube下载.md)。
+
 YouTube模块独立运行，默认地址为 `https://youtube.videoplus.top:5030`。
 
 ## 接口列表
@@ -14,7 +18,7 @@ YouTube模块独立运行，默认地址为 `https://youtube.videoplus.top:5030`
 
 ## 接口详情
 
-### 新建YouTube视频
+### 新建YouTube视频 🔒
 
 通过主服务创建YouTube类型的视频。
 

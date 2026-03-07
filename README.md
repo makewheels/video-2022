@@ -200,13 +200,13 @@ curl -H "token: {your_token}" "http://localhost:5022/video/getMyVideoList"
 
 ## MongoDB 表结构
 
-[MongoDB 表结构](docs/2-MongoDB表结构.md)
+[MongoDB 表结构](docs/归档/2-MongoDB表结构.md)
 
 ---
 
 ## 部署
 
-[部署指南](docs/4-部署.md)
+[部署指南](docs/归档/4-部署.md)
 
 ### Docker 部署
 
@@ -222,8 +222,9 @@ docker run -d -p 5022:5022 --name video-2022 video-2022:latest
 
 ## 其它文档
 
+- [变更日志（CHANGELOG）](docs/CHANGELOG.md)
+- [历史变更日志（2022-2025）](docs/归档/6-变更日志.md)
 - [运维手册](docs/归档/5-运维.md)
-- [变更日志](docs/归档/6-变更日志.md)
 
 ---
 
@@ -238,27 +239,7 @@ docker run -d -p 5022:5022 --name video-2022 video-2022:latest
 
 ## 开发记录
 
-完整变更日志见 [CHANGELOG.md](docs/CHANGELOG.md)
-
-| PR | 内容 |
-|----|------|
-| [#18](https://github.com/makewheels/video-2022/pull/18) | 测试套件全面改进 — 删除垃圾测试、新增 250+ 测试、Playwright 行为测试 |
-| [#17](https://github.com/makewheels/video-2022/pull/17) | 前端全面优化 — 导航栏、首页重设计、响应式、移动端适配 |
-| [#16](https://github.com/makewheels/video-2022/pull/16) | E2E 端到端测试 — 登录、上传、修改、播放、播放列表 |
-| [#15](https://github.com/makewheels/video-2022/pull/15) | UX 优化 — Toast 提示、输入验证、空状态提示 |
-| [#14](https://github.com/makewheels/video-2022/pull/14) | 前端重新设计 — YouTube 风格、深色/浅色主题 |
-| [#13](https://github.com/makewheels/video-2022/pull/13) | 综合测试套件 — 130 个测试、12 个测试类 |
-| [#12](https://github.com/makewheels/video-2022/pull/12) | 文档目录整理 — 老文档移入归档 |
-| [#11](https://github.com/makewheels/video-2022/pull/11) | 业务文档 — 10 篇业务流程文档（3,668 行） |
-| [#10](https://github.com/makewheels/video-2022/pull/10) | Spring Boot 4.x 兼容性修复 + 文档更新 |
-| [#9](https://github.com/makewheels/video-2022/pull/9) | Spring Boot 4.x 启动修复 |
-| [#8](https://github.com/makewheels/video-2022/pull/8) | Copilot 配置迁移 + Skills 体系 |
-| [#7](https://github.com/makewheels/video-2022/pull/7) | Spring Boot 3.4.1 → 4.0.3 |
-| [#6](https://github.com/makewheels/video-2022/pull/6) | 清理 CLAUDE.md |
-| [#5](https://github.com/makewheels/video-2022/pull/5) | 密钥管理迁移到 .env |
-| [#4](https://github.com/makewheels/video-2022/pull/4) | Java 21 支持 |
-| [#3](https://github.com/makewheels/video-2022/pull/3) | Spring Boot 2.7.11 → 3.4.1 大版本升级 |
-| [#2](https://github.com/makewheels/video-2022/pull/2) | Lombok 与 Java 21 编译修复 |
+详见 [CHANGELOG.md](docs/CHANGELOG.md)
 
 ---
 

@@ -1,3 +1,5 @@
+> **状态:** ✅ 已完成 — [PR #16](https://github.com/makewheels/video-2022/pull/16)
+
 # E2E 端到端测试设计
 
 ## 目标

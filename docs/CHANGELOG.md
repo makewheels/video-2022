@@ -8,6 +8,14 @@
 
 ## 2026 年 3 月 7 日
 
+### [PR #20](https://github.com/makewheels/video-2022/pull/20) — 文档全面评审与改进
+
+- README 清理：去除与 CHANGELOG 重复的 PR 表格、修复指向归档文档的断链
+- 10 篇业务文档添加「源码位置」引用表
+- 8 篇 API 文档添加认证说明和错误响应码，标注公开/需认证接口
+- 7 个计划文档添加完成状态和对应 PR 链接
+- 关键设计文档添加源码包结构图
+
 ### [PR #19](https://github.com/makewheels/video-2022/pull/19) — CHANGELOG + 开发规范
 
 - 创建 `docs/CHANGELOG.md`，整合 PR #2-#18 全部变更 + 2022-2025 历史记录
