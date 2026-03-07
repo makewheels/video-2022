@@ -20,11 +20,11 @@ def auth_token(base_url):
     """Login with test phone number and return token."""
     req.get(
         f"{base_url}/user/requestVerificationCode",
-        params={"phoneNumber": TEST_PHONE},
+        params={"phone": TEST_PHONE},
     )
     resp = req.get(
         f"{base_url}/user/submitVerificationCode",
-        params={"phoneNumber": TEST_PHONE, "verificationCode": TEST_CODE},
+        params={"phone": TEST_PHONE, "code": TEST_CODE},
     )
     assert resp.status_code == 200
     data = resp.json()
@@ -58,11 +58,11 @@ def login(base_url, phone=TEST_PHONE, code=TEST_CODE):
     """Perform login flow and return the parsed JSON response."""
     req.get(
         f"{base_url}/user/requestVerificationCode",
-        params={"phoneNumber": phone},
+        params={"phone": phone},
     )
     resp = req.get(
         f"{base_url}/user/submitVerificationCode",
-        params={"phoneNumber": phone, "verificationCode": code},
+        params={"phone": phone, "code": code},
     )
     assert resp.status_code == 200
     return resp.json()

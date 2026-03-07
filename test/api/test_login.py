@@ -86,7 +86,7 @@ def test_bad_phone_returns_error(base_url, phone):
     """submitVerificationCode with an invalid or empty phone should return an error."""
     resp = requests.get(
         f"{base_url}/user/submitVerificationCode",
-        params={"phoneNumber": phone, "verificationCode": TEST_CODE},
+        params={"phone": phone, "code": TEST_CODE},
     )
     body = resp.json()
     assert body["code"] != "ok", f"Expected error for phone={phone!r}, got: {body}"
@@ -97,12 +97,12 @@ def test_wrong_verification_code(base_url):
     """Correct phone but wrong verification code should be rejected."""
     requests.get(
         f"{base_url}/user/requestVerificationCode",
-        params={"phoneNumber": TEST_PHONE},
+        params={"phone": TEST_PHONE},
     )
 
     resp = requests.get(
         f"{base_url}/user/submitVerificationCode",
-        params={"phoneNumber": TEST_PHONE, "verificationCode": "999"},
+        params={"phone": TEST_PHONE, "code": "999"},
     )
     body = resp.json()
     assert body["code"] != "ok", f"Expected error for wrong code, got: {body}"
