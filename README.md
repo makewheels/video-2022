@@ -227,6 +227,15 @@ docker run -d -p 5022:5022 --name video-2022 video-2022:latest
 
 ---
 
+## 开发规范
+
+- **禁止直接 push master**，所有变更必须通过 PR 合并
+- 一个功能/修复对应一个 PR
+- 每个 PR 合并后，在 [CHANGELOG.md](docs/CHANGELOG.md) 记录关键变更
+- PR 标题格式：`类型: 简述`（类型：feat / fix / test / docs / refactor / chore）
+
+---
+
 ## 开发记录
 
 完整变更日志见 [CHANGELOG.md](docs/CHANGELOG.md)
