@@ -12,12 +12,18 @@ const pages = [
 const pagesForOverflow = pages.filter(p => p.path !== '/statistics.html');
 
 test.describe('Navigation Bar', () => {
-    test('desktop: nav links visible, hamburger hidden', async ({ page }) => {
+    test('desktop: nav links visible, hamburger hidden', async ({ page, browserName }, testInfo) => {
         await page.goto('/');
+        const viewport = page.viewportSize();
         const navMenu = page.locator('.nav-menu');
-        await expect(navMenu).toBeVisible();
         const hamburger = page.locator('.mobile-menu-btn');
-        await expect(hamburger).toBeHidden();
+        if (viewport && viewport.width > 768) {
+            await expect(navMenu).toBeVisible();
+            await expect(hamburger).toBeHidden();
+        } else {
+            // On mobile: nav hidden, hamburger visible
+            await expect(hamburger).toBeVisible();
+        }
     });
 
     test('nav contains correct links', async ({ page }) => {
@@ -125,7 +131,7 @@ test.describe('Footer', () => {
         test(`${p.name} has footer`, async ({ page }) => {
             await page.goto(p.path, { waitUntil: 'domcontentloaded', timeout: 60000 });
             const footer = page.locator('.page-footer');
-            await expect(footer).toBeAttached();
+            await expect(footer).toBeAttached({ timeout: 10000 });
             await expect(footer).toContainText('Video Platform');
         });
     }

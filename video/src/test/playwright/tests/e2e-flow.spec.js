@@ -49,11 +49,17 @@ test.describe('E2E: 首页', () => {
     const response = await page.goto('/index.html');
     expect(response.status()).toBe(200);
 
-    const navLinks = page.locator('a.nav-link');
-    await expect(navLinks.first()).toBeVisible({ timeout: 5000 });
-
-    const count = await navLinks.count();
-    expect(count).toBeGreaterThanOrEqual(1);
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width > 768) {
+      const navLinks = page.locator('a.nav-link');
+      await expect(navLinks.first()).toBeVisible({ timeout: 5000 });
+      const count = await navLinks.count();
+      expect(count).toBeGreaterThanOrEqual(1);
+    } else {
+      // On mobile/tablet, nav links are in hamburger menu
+      const hamburger = page.locator('.mobile-menu-btn');
+      await expect(hamburger).toBeVisible({ timeout: 5000 });
+    }
   });
 });
 
