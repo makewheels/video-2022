@@ -118,3 +118,45 @@ def create_video(api_client, created_videos):
                 created_videos.append(video_id)
         return data
     return _create
+
+
+# ---------------------------------------------------------------------------
+# Browser test fixtures (Playwright)
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(scope="session")
+def browser_context(base_url):
+    """Shared browser context for all browser tests."""
+    from playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(viewport={"width": 1280, "height": 720})
+        yield context
+        context.close()
+        browser.close()
+
+
+@pytest.fixture
+def page(browser_context):
+    """Fresh page for each test."""
+    pg = browser_context.new_page()
+    yield pg
+    pg.close()
+
+
+@pytest.fixture
+def auth_page(page, base_url, auth_token):
+    """Page with auth token pre-set in localStorage."""
+    page.goto(base_url)
+    page.evaluate(f"localStorage.setItem('token', '{auth_token}')")
+    return page
+
+
+@pytest.fixture
+def mobile_page(browser_context):
+    """Mobile viewport page."""
+    pg = browser_context.new_page()
+    pg.set_viewport_size({"width": 375, "height": 812})
+    yield pg
+    pg.close()
