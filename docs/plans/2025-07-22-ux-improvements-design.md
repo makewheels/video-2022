@@ -1,3 +1,5 @@
+> **状态:** ✅ 已完成 — [PR #15](https://github.com/makewheels/video-2022/pull/15)
+
 # UX 改进设计文档
 
 ## 目标
