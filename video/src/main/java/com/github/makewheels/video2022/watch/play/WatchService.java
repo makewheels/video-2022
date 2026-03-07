@@ -104,10 +104,6 @@ public class WatchService {
         //增加video观看次数
         if (videoStatus.equals(VideoStatus.READY)) {
             videoRepository.addWatchCount(videoId);
-            //刷新Redis缓存
-            Watch watch = video.getWatch();
-            watch.setWatchCount(watch.getWatchCount() + 1);
-            mongoTemplate.save(video);
         }
 
         //保存观看记录到数据库
