@@ -6,6 +6,9 @@
 
 ---
 
+### [PR #41](https://github.com/makewheels/video-2022/pull/41) — 测试覆盖补充
+- 新增 23 个测试用例（450→473），覆盖评论授权、级联删除、回复链、分页排序、多用户点赞、私密视频访问控制
+
 ### [PR #40](https://github.com/makewheels/video-2022/pull/40) — 代码审查修复
 - 修复 CRITICAL：`CommentService.deleteComment()` 先查询回复再删除，避免遗留 CommentLike
 - 新增：`VideoDeleteService` 级联删除评论、评论点赞、视频点赞

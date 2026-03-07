@@ -122,4 +122,91 @@ class VideoLikeServiceTest extends BaseIntegrationTest {
         assertEquals(0, data.getIntValue("likeCount"));
         assertNull(data.getString("userAction"));
     }
+
+    // ──────────────────── 新增测试 ────────────────────
+
+    @Test
+    void dislikeAgain_cancelsDislike() {
+        JSONObject resp = createDefaultVideo("cancel-dislike.mp4");
+        String videoId = resp.getString("videoId");
+
+        videoLikeService.react(videoId, LikeType.DISLIKE);
+        videoLikeService.react(videoId, LikeType.DISLIKE);
+
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(video);
+        assertEquals(0, video.getDislikeCount());
+    }
+
+    @Test
+    void switchDislikeToLike() {
+        JSONObject resp = createDefaultVideo("switch-d2l.mp4");
+        String videoId = resp.getString("videoId");
+
+        videoLikeService.react(videoId, LikeType.DISLIKE);
+        videoLikeService.react(videoId, LikeType.LIKE);
+
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(video);
+        assertEquals(1, video.getLikeCount());
+        assertEquals(0, video.getDislikeCount());
+    }
+
+    @Test
+    void multipleUsers_independentLikes() {
+        JSONObject resp = createDefaultVideo("multi-user.mp4");
+        String videoId = resp.getString("videoId");
+
+        // 用户 A 点赞
+        videoLikeService.react(videoId, LikeType.LIKE);
+
+        // 切换到用户 B
+        User userB = new User();
+        userB.setPhone("13800000011");
+        userB.setRegisterChannel("TEST");
+        userB.setToken("test-token-user-b");
+        mongoTemplate.save(userB);
+        UserHolder.set(userB);
+
+        // 用户 B 点踩
+        videoLikeService.react(videoId, LikeType.DISLIKE);
+
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(video);
+        assertEquals(1, video.getLikeCount());
+        assertEquals(1, video.getDislikeCount());
+
+        // 用户 B 看到的状态是 DISLIKE
+        Result<JSONObject> statusB = videoLikeService.getLikeStatus(videoId);
+        assertEquals("DISLIKE", statusB.getData().getString("userAction"));
+
+        // 切回用户 A
+        User userA = mongoTemplate.find(
+                new org.springframework.data.mongodb.core.query.Query(
+                        org.springframework.data.mongodb.core.query.Criteria.where("phone").is("13800000010")),
+                User.class).get(0);
+        UserHolder.set(userA);
+
+        // 用户 A 看到的状态是 LIKE
+        Result<JSONObject> statusA = videoLikeService.getLikeStatus(videoId);
+        assertEquals("LIKE", statusA.getData().getString("userAction"));
+    }
+
+    @Test
+    void getLikeStatus_afterCancelAndRelike() {
+        JSONObject resp = createDefaultVideo("relike.mp4");
+        String videoId = resp.getString("videoId");
+
+        // 点赞 → 取消 → 再点赞
+        videoLikeService.react(videoId, LikeType.LIKE);
+        videoLikeService.react(videoId, LikeType.LIKE);
+        videoLikeService.react(videoId, LikeType.LIKE);
+
+        Video video = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(video);
+        assertEquals(1, video.getLikeCount());
+
+        Result<JSONObject> result = videoLikeService.getLikeStatus(videoId);
+        assertEquals("LIKE", result.getData().getString("userAction"));
+    }
 }

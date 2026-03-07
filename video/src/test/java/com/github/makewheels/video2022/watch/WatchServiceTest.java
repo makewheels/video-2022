@@ -332,4 +332,66 @@ class WatchServiceTest extends BaseIntegrationTest {
         // Exactly one stream entry
         assertEquals(1, playlist.split("#EXT-X-STREAM-INF").length - 1);
     }
+
+    // ──────────────────── 可见性测试 ────────────────────
+
+    @Test
+    void getWatchInfo_privateVideo_nonOwner_returnsError() {
+        String videoId = "v_private_001";
+        Video video = createAndSaveVideo(videoId, VideoStatus.READY);
+        video.setVisibility("PRIVATE");
+        mongoTemplate.save(video);
+        String watchId = video.getWatch().getWatchId();
+
+        // 切换到非所有者用户
+        User otherUser = new User();
+        otherUser.setId(new ObjectId().toHexString());
+        otherUser.setPhone("13800000088");
+        mongoTemplate.save(otherUser);
+        UserHolder.set(otherUser);
+
+        Context ctx = buildContext(videoId, "client_1", "session_1");
+        Result<WatchInfoVO> result = watchService.getWatchInfo(ctx, watchId);
+
+        assertNotNull(result.getMessage());
+        assertTrue(result.getMessage().contains("私密"));
+    }
+
+    @Test
+    void getWatchInfo_privateVideo_owner_canWatch() {
+        String videoId = "v_private_002";
+        Video video = createAndSaveVideo(videoId, VideoStatus.READY);
+        video.setVisibility("PRIVATE");
+        mongoTemplate.save(video);
+        String watchId = video.getWatch().getWatchId();
+
+        // 当前用户就是所有者
+        Context ctx = buildContext(videoId, "client_1", "session_1");
+        Result<WatchInfoVO> result = watchService.getWatchInfo(ctx, watchId);
+
+        assertEquals(0, result.getCode());
+        assertNotNull(result.getData());
+    }
+
+    @Test
+    void getWatchInfo_unlistedVideo_anyoneCanWatch() {
+        String videoId = "v_unlisted_001";
+        Video video = createAndSaveVideo(videoId, VideoStatus.READY);
+        video.setVisibility("UNLISTED");
+        mongoTemplate.save(video);
+        String watchId = video.getWatch().getWatchId();
+
+        // 切换到非所有者用户
+        User otherUser = new User();
+        otherUser.setId(new ObjectId().toHexString());
+        otherUser.setPhone("13800000077");
+        mongoTemplate.save(otherUser);
+        UserHolder.set(otherUser);
+
+        Context ctx = buildContext(videoId, "client_1", "session_1");
+        Result<WatchInfoVO> result = watchService.getWatchInfo(ctx, watchId);
+
+        assertEquals(0, result.getCode());
+        assertNotNull(result.getData());
+    }
 }

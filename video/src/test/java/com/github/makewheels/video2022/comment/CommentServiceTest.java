@@ -161,4 +161,218 @@ class CommentServiceTest extends BaseIntegrationTest {
         assertEquals("回复A", replies.get(0).getContent());
         assertEquals("回复B", replies.get(1).getContent());
     }
+
+    // ──────────────────── 授权测试 ────────────────────
+
+    @Test
+    void deleteComment_nonAuthor_returnsError() {
+        String videoId = createDefaultVideo();
+        Comment comment = commentService.addComment(videoId, "别人的评论", null).getData();
+
+        // 切换到另一个用户
+        User otherUser = new User();
+        otherUser.setPhone("13800000021");
+        otherUser.setRegisterChannel("TEST");
+        otherUser.setToken("test-token-other");
+        mongoTemplate.save(otherUser);
+        UserHolder.set(otherUser);
+
+        Result<Void> result = commentService.deleteComment(comment.getId());
+        assertNotNull(result.getMessage());
+        assertTrue(result.getMessage().contains("无权"));
+
+        // 评论仍然存在
+        assertEquals(1, commentService.getCount(videoId).getData().getIntValue("count"));
+    }
+
+    @Test
+    void deleteComment_videoUploader_canDelete() {
+        // 先创建视频（当前用户是视频上传者）
+        String videoId = createDefaultVideo();
+
+        // 切换到另一个用户发表评论
+        User commenter = new User();
+        commenter.setPhone("13800000022");
+        commenter.setRegisterChannel("TEST");
+        commenter.setToken("test-token-commenter");
+        mongoTemplate.save(commenter);
+        UserHolder.set(commenter);
+
+        Comment comment = commentService.addComment(videoId, "他人评论", null).getData();
+
+        // 切回视频上传者
+        User uploader = mongoTemplate.find(
+                new org.springframework.data.mongodb.core.query.Query(
+                        org.springframework.data.mongodb.core.query.Criteria.where("phone").is("13800000020")),
+                User.class).get(0);
+        UserHolder.set(uploader);
+
+        // 视频上传者可以删除别人的评论
+        Result<Void> result = commentService.deleteComment(comment.getId());
+        assertEquals(0, result.getCode());
+        assertEquals(0, commentService.getCount(videoId).getData().getIntValue("count"));
+    }
+
+    @Test
+    void deleteComment_nonExistent_returnsError() {
+        Result<Void> result = commentService.deleteComment("nonexistent_id_12345");
+        assertNotNull(result.getMessage());
+        assertTrue(result.getMessage().contains("不存在"));
+    }
+
+    // ──────────────────── 级联删除测试 ────────────────────
+
+    @Test
+    void deleteTopComment_cleansUpCommentLikes() {
+        String videoId = createDefaultVideo();
+        Comment parent = commentService.addComment(videoId, "被点赞的父评论", null).getData();
+        Comment reply = commentService.addComment(videoId, "被点赞的回复", parent.getId()).getData();
+
+        // 对父评论和回复都点赞
+        commentService.likeComment(parent.getId());
+        commentService.likeComment(reply.getId());
+
+        // 验证 CommentLike 记录存在
+        long likesBefore = mongoTemplate.count(
+                new org.springframework.data.mongodb.core.query.Query(), CommentLike.class);
+        assertEquals(2, likesBefore);
+
+        // 删除父评论（应级联删除回复和所有 CommentLike）
+        commentService.deleteComment(parent.getId());
+
+        long likesAfter = mongoTemplate.count(
+                new org.springframework.data.mongodb.core.query.Query(), CommentLike.class);
+        assertEquals(0, likesAfter, "所有 CommentLike 应被级联删除");
+    }
+
+    @Test
+    void deleteChildComment_decreasesParentReplyCount() {
+        String videoId = createDefaultVideo();
+        Comment parent = commentService.addComment(videoId, "父评论", null).getData();
+        Comment reply = commentService.addComment(videoId, "将被删除的回复", parent.getId()).getData();
+
+        // 验证 replyCount 为 1
+        Comment parentBefore = mongoTemplate.findById(parent.getId(), Comment.class);
+        assertEquals(1, parentBefore.getReplyCount());
+
+        // 删除子评论
+        commentService.deleteComment(reply.getId());
+
+        // 验证 replyCount 减为 0
+        Comment parentAfter = mongoTemplate.findById(parent.getId(), Comment.class);
+        assertEquals(0, parentAfter.getReplyCount());
+
+        // 总评论数减少 1（父评论仍在）
+        assertEquals(1, commentService.getCount(videoId).getData().getIntValue("count"));
+    }
+
+    // ──────────────────── 回复链测试 ────────────────────
+
+    @Test
+    void addReply_toReply_pointsToTopParent() {
+        String videoId = createDefaultVideo();
+        Comment topComment = commentService.addComment(videoId, "顶级评论", null).getData();
+        Comment firstReply = commentService.addComment(videoId, "一级回复", topComment.getId()).getData();
+
+        // 回复一级回复 → parentId 应指向顶级评论
+        Comment secondReply = commentService.addComment(videoId, "二级回复", firstReply.getId()).getData();
+
+        assertEquals(topComment.getId(), secondReply.getParentId(),
+                "回复的回复应统一指向顶级评论");
+        assertEquals(firstReply.getUserId(), secondReply.getReplyToUserId(),
+                "replyToUserId 应指向被回复的用户");
+    }
+
+    @Test
+    void addComment_nonExistentParent_returnsError() {
+        String videoId = createDefaultVideo();
+        Result<Comment> result = commentService.addComment(videoId, "回复不存在的评论", "nonexistent_parent_id");
+        assertNotNull(result.getMessage());
+        assertTrue(result.getMessage().contains("不存在"));
+    }
+
+    // ──────────────────── 排序测试 ────────────────────
+
+    @Test
+    void getByVideoId_hotSort_ordersByLikeThenTime() {
+        String videoId = createDefaultVideo();
+        Comment c1 = commentService.addComment(videoId, "普通评论", null).getData();
+        Comment c2 = commentService.addComment(videoId, "热门评论", null).getData();
+
+        // 给 c2 点赞使其更"热门"
+        commentService.likeComment(c2.getId());
+
+        List<Comment> comments = commentService.getByVideoId(videoId, 0, 20, "hot").getData();
+        assertEquals(2, comments.size());
+        assertEquals("热门评论", comments.get(0).getContent(), "hot 排序应将点赞数多的排在前面");
+    }
+
+    // ──────────────────── 分页测试 ────────────────────
+
+    @Test
+    void getByVideoId_pagination_works() {
+        String videoId = createDefaultVideo();
+        for (int i = 0; i < 5; i++) {
+            commentService.addComment(videoId, "评论" + i, null);
+        }
+
+        // 第一页取 2 条
+        List<Comment> page1 = commentService.getByVideoId(videoId, 0, 2, "time").getData();
+        assertEquals(2, page1.size());
+
+        // 第二页取 2 条
+        List<Comment> page2 = commentService.getByVideoId(videoId, 2, 2, "time").getData();
+        assertEquals(2, page2.size());
+
+        // 第三页取剩余
+        List<Comment> page3 = commentService.getByVideoId(videoId, 4, 2, "time").getData();
+        assertEquals(1, page3.size());
+    }
+
+    @Test
+    void getReplies_pagination_works() {
+        String videoId = createDefaultVideo();
+        Comment parent = commentService.addComment(videoId, "父评论", null).getData();
+        for (int i = 0; i < 5; i++) {
+            commentService.addComment(videoId, "回复" + i, parent.getId());
+        }
+
+        List<Comment> page1 = commentService.getReplies(parent.getId(), 0, 3).getData();
+        assertEquals(3, page1.size());
+
+        List<Comment> page2 = commentService.getReplies(parent.getId(), 3, 3).getData();
+        assertEquals(2, page2.size());
+    }
+
+    // ──────────────────── getUserLikes 测试 ────────────────────
+
+    @Test
+    void getUserLikes_returnsBatchLikeStatus() {
+        String videoId = createDefaultVideo();
+        Comment c1 = commentService.addComment(videoId, "评论1", null).getData();
+        Comment c2 = commentService.addComment(videoId, "评论2", null).getData();
+        Comment c3 = commentService.addComment(videoId, "评论3", null).getData();
+
+        // 只点赞 c1 和 c3
+        commentService.likeComment(c1.getId());
+        commentService.likeComment(c3.getId());
+
+        String userId = UserHolder.getUserId();
+        List<CommentLike> likes = commentService.getUserLikes(userId,
+                java.util.Arrays.asList(c1.getId(), c2.getId(), c3.getId()));
+
+        assertEquals(2, likes.size());
+        assertTrue(likes.stream().anyMatch(l -> l.getCommentId().equals(c1.getId())));
+        assertTrue(likes.stream().anyMatch(l -> l.getCommentId().equals(c3.getId())));
+    }
+
+    @Test
+    void getUserLikes_emptyWhenNoLikes() {
+        String videoId = createDefaultVideo();
+        Comment c = commentService.addComment(videoId, "未被点赞", null).getData();
+
+        String userId = UserHolder.getUserId();
+        List<CommentLike> likes = commentService.getUserLikes(userId, java.util.Arrays.asList(c.getId()));
+        assertTrue(likes.isEmpty());
+    }
 }
