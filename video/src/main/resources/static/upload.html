@@ -10,40 +10,54 @@
 </head>
 <body>
     <header class="page-header">
-        <a href="/" class="logo">Video</a>
-        <button id="theme-toggle" type="button">🌙</button>
+        <a href="/" class="logo">📹 Video</a>
+        <nav class="nav-menu" id="navMenu">
+            <a href="/" class="nav-link">首页</a>
+            <a href="/upload.html" class="nav-link active">上传</a>
+            <a href="/statistics.html" class="nav-link">统计</a>
+            <a href="/transfer-youtube.html" class="nav-link">YouTube</a>
+        </nav>
+        <div class="header-right">
+            <button id="theme-toggle" class="btn-icon" type="button" title="切换主题">🌙</button>
+            <div class="header-auth" id="headerAuth"></div>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="菜单">☰</button>
     </header>
 
     <div class="page-container" style="padding-top:24px;padding-bottom:24px;">
         <div class="card">
             <div class="card-header">上传视频</div>
 
-            <!-- Upload zone - click to select file -->
-            <div class="upload-zone" id="uploadZone">
-                <div class="upload-zone-icon">📁</div>
-                <div class="upload-zone-text">点击选择文件或拖拽到此处</div>
-                <input type="file" id="input_file" style="display:none;">
+            <div class="upload-section">
+                <div class="section-title">选择文件</div>
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-zone-icon">📁</div>
+                    <div class="upload-zone-text">点击选择文件或拖拽到此处</div>
+                    <input type="file" id="input_file" style="display:none;">
+                </div>
             </div>
 
-            <!-- Progress section (visible after file selected) -->
+            <!-- Progress section -->
             <div id="progress-bar" class="progress-bar" style="margin-top:16px;">
                 <div id="progress-bar-inner" class="progress-bar-fill"></div>
             </div>
             <div id="text_progress" class="progress-text"></div>
 
-            <!-- Video info -->
-            <div class="form-group" style="margin-top:16px;">
-                <label for="input_title">标题</label>
-                <input id="input_title" type="text" class="form-input" maxlength="100" placeholder="视频标题">
-            </div>
+            <div class="upload-section" style="margin-top:16px;">
+                <div class="section-title">视频信息</div>
+                <div class="form-group">
+                    <label for="input_title">标题</label>
+                    <input id="input_title" type="text" class="form-input" maxlength="100" placeholder="视频标题">
+                </div>
 
-            <div class="form-group">
-                <label for="input_description">描述</label>
-                <input id="input_description" type="text" class="form-input" maxlength="1000" placeholder="视频描述">
+                <div class="form-group">
+                    <label for="input_description">描述</label>
+                    <textarea id="input_description" class="form-input" maxlength="1000" placeholder="视频描述" rows="3"></textarea>
+                </div>
             </div>
 
             <!-- Action buttons -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="upload-actions" style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button id="btn_update" type="button" class="btn btn-primary">修改信息</button>
                 <button id="btn_copy" type="button" class="btn btn-secondary">一键复制</button>
             </div>
@@ -52,9 +66,10 @@
             <div id="watchUrl" style="margin-top:12px;font-size:0.875rem;color:var(--text-secondary);word-break:break-all;"></div>
 
             <!-- Playlist section -->
-            <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border-light);">
+            <div class="upload-section" style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border-light);">
+                <div class="section-title">播放列表</div>
                 <div class="form-group">
-                    <label for="select_playlist">播放列表</label>
+                    <label for="select_playlist">选择列表</label>
                     <select id="select_playlist" class="form-input"></select>
                 </div>
                 <button id="btn_addPlaylistItem" type="button" class="btn btn-secondary">加入播放列表</button>
@@ -62,6 +77,10 @@
             </div>
         </div>
     </div>
+
+    <footer class="page-footer">
+        <span>Video Platform</span>
+    </footer>
 
     <script src="/js/global.js"></script>
     <script>
