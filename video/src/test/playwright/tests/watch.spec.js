@@ -11,19 +11,37 @@ test.describe('Watch page structure', () => {
         return fetch(url, {method:'POST',body:JSON.stringify(data)}).then(function(r) { return r.json().then(function(d) { return {data: d}; }); });
       }};`
     }));
-    await page.route('**/aliplayer-min.js', route => route.fulfill({
+    await page.route('**/video.min.js', route => route.fulfill({
       status: 200, contentType: 'application/javascript',
-      body: 'window.Aliplayer = function() { this.on = function(){}; this.seek = function(){}; this.getCurrentTime = function(){ return 0; }; this.tag = { style: {} }; };'
+      body: `window.videojs = function(id, opts) {
+        var p = {
+          on: function(e,cb){ if(e==='loadedmetadata'&&cb) cb(); return p; },
+          src: function(){},
+          currentTime: function(t){ if(t!==undefined) return; return 0; },
+          duration: function(){ return 100; },
+          paused: function(){ return true; },
+          play: function(){ return Promise.resolve(); },
+          pause: function(){},
+          volume: function(v){ if(v!==undefined) return; return 1; },
+          muted: function(m){ if(m!==undefined) return; return false; },
+          isFullscreen: function(){ return false; },
+          requestFullscreen: function(){},
+          exitFullscreen: function(){},
+          httpSourceSelector: function(){},
+          qualityLevels: function(){ var ql = []; ql.on = function(){}; ql.selectedIndex = -1; return ql; }
+        };
+        return p;
+      };
+      window.videojs.getPlayer = function(){ return null; };`
     }));
-    await page.route('**/aliplayer-min.css', route => route.fulfill({
+    await page.route('**/video-js.css', route => route.fulfill({
       status: 200, contentType: 'text/css', body: ''
     }));
-    await page.route('**/mui*.js', route => route.fulfill({
-      status: 200, contentType: 'application/javascript',
-      body: 'window.mui = function() { return { toast: function(){} }; };'
+    await page.route('**/videojs-contrib-quality-levels*', route => route.fulfill({
+      status: 200, contentType: 'application/javascript', body: ''
     }));
-    await page.route('**/mui*.css', route => route.fulfill({
-      status: 200, contentType: 'text/css', body: ''
+    await page.route('**/videojs-http-source-selector*', route => route.fulfill({
+      status: 200, contentType: 'application/javascript', body: ''
     }));
 
     // Mock API endpoints
@@ -52,9 +70,9 @@ test.describe('Watch page structure', () => {
       status: 200, contentType: 'application/json',
       body: JSON.stringify({ code: 0 })
     }));
-    await page.route('**/watchLog/**', route => route.fulfill({
+    await page.route('**/playback/**', route => route.fulfill({
       status: 200, contentType: 'application/json',
-      body: JSON.stringify({ code: 0 })
+      body: JSON.stringify({ code: 0, data: { playbackSessionId: 'ps_test' } })
     }));
     await page.addInitScript(() => {
       localStorage.setItem('clientId', 'test-client');
