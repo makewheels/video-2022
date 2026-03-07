@@ -12,6 +12,8 @@ import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.watch.play.WatchLog;
+import com.github.makewheels.video2022.comment.Comment;
+import com.github.makewheels.video2022.comment.CommentLike;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -62,7 +64,17 @@ public class VideoDeleteService {
         // 6. 删除原始文件（检查 MD5 引用）
         deleteRawFile(video.getRawFileId());
 
-        // 7. 删除 Video 记录
+        // 7. 删除评论和评论点赞
+        deleteComments(videoId);
+
+        // 8. 删除视频点赞
+        long videoLikeCount = mongoTemplate.remove(
+                Query.query(Criteria.where("videoId").is(videoId)),
+                com.github.makewheels.video2022.video.like.VideoLike.class
+        ).getDeletedCount();
+        log.info("已删除 VideoLike: {} 条", videoLikeCount);
+
+        // 9. 删除 Video 记录
         mongoTemplate.remove(Query.query(Criteria.where("id").is(videoId)), Video.class);
         log.info("视频删除完成: videoId={}", videoId);
     }
@@ -227,5 +239,23 @@ public class VideoDeleteService {
         // 删除 File 记录
         mongoTemplate.remove(file);
         log.info("已删除原始文件记录: fileId={}", rawFileId);
+    }
+
+    /**
+     * 删除视频的所有评论及评论点赞
+     */
+    private void deleteComments(String videoId) {
+        // 先查所有评论 ID，用于删除 CommentLike
+        List<Comment> comments = mongoTemplate.find(
+                Query.query(Criteria.where("videoId").is(videoId)), Comment.class);
+        for (Comment comment : comments) {
+            mongoTemplate.remove(
+                    Query.query(Criteria.where("commentId").is(comment.getId())),
+                    CommentLike.class);
+        }
+        long commentCount = mongoTemplate.remove(
+                Query.query(Criteria.where("videoId").is(videoId)), Comment.class
+        ).getDeletedCount();
+        log.info("已删除评论: {} 条", commentCount);
     }
 }

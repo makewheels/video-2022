@@ -6,6 +6,11 @@
 
 ---
 
+### [PR #40](https://github.com/makewheels/video-2022/pull/40) — 代码审查修复
+- 修复 CRITICAL：`CommentService.deleteComment()` 先查询回复再删除，避免遗留 CommentLike
+- 新增：`VideoDeleteService` 级联删除评论、评论点赞、视频点赞
+- 更新：CI 设计文档反映合并后的单 workflow 结构
+
 ### [PR #38](https://github.com/makewheels/video-2022/pull/38) — GitHub Actions CI/CD
 - 新增 `ci.yml`：集成测试自动化（PR + push to master 触发）
 - 新增 `e2e.yml`：E2E 测试自动化（需配置阿里云 Secrets）
