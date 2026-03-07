@@ -126,19 +126,20 @@ public class CommentService {
 
         int deletedCount = 1;
         if (comment.getParentId() == null) {
-            // 顶级评论：同时删除所有回复
+            // 顶级评论：先查回复，再删除
             Query replyQuery = Query.query(Criteria.where("parentId").is(commentId));
-            long replyCount = mongoTemplate.count(replyQuery, Comment.class);
-            mongoTemplate.remove(replyQuery, Comment.class);
-            deletedCount += (int) replyCount;
+            List<Comment> replies = mongoTemplate.find(replyQuery, Comment.class);
+            deletedCount += replies.size();
 
             // 删除回复的点赞
-            List<Comment> replies = mongoTemplate.find(replyQuery, Comment.class);
             for (Comment reply : replies) {
                 mongoTemplate.remove(
                         Query.query(Criteria.where("commentId").is(reply.getId())),
                         CommentLike.class);
             }
+
+            // 删除回复
+            mongoTemplate.remove(replyQuery, Comment.class);
         } else {
             // 子评论：减少父评论回复数
             mongoTemplate.updateFirst(

@@ -8,19 +8,19 @@
 
 ## 两个 Workflow
 
-### 1. `ci.yml` — 集成测试
+### 1. `ci.yml` — 单个 Workflow，两个 Job
 
+**Job 1: 集成测试**
 - **触发**：push to master, pull_request
 - **Services**：MongoDB 7 + Redis 7（GitHub Actions service containers）
-- **命令**：`mvn test -pl video -Pspringboot`
+- **命令**：`mvn test -pl video -Pspringboot -Dtest='!...e2e.**'`
 - **Secrets**：不需要（外部服务全部 mock）
 - **测试数**：~450
 
-### 2. `e2e.yml` — E2E 测试
-
-- **触发**：push to master, pull_request
+**Job 2: E2E 测试**
+- **触发**：同上（与集成测试并行）
 - **Services**：MongoDB 7 + Redis 7
-- **命令**：`mvn test -pl video -Pe2e`（需确认 profile 名称）
+- **命令**：`mvn test -pl video -Pspringboot -Dtest='...e2e.**'`
 - **Secrets**：7 个阿里云凭证
   - `ALIYUN_OSS_VIDEO_ACCESS_KEY_ID`
   - `ALIYUN_OSS_VIDEO_SECRET_KEY`
