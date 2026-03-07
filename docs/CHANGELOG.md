@@ -6,6 +6,16 @@
 
 ---
 
+### [PR #36](https://github.com/makewheels/video-2022/pull/36) — 评论系统
+- 新增 `Comment` 实体 + `comment` MongoDB 集合
+- 新增 `CommentLike` 实体 + `comment_like` 集合（commentId+userId 唯一索引）
+- Video 实体新增 `commentCount` 字段
+- 新增 `CommentService`：添加评论/回复、分页查询、删除（级联）、点赞 toggle、评论数
+- 新增 `CommentController`：add、getByVideoId、getReplies、delete、like、getCount API
+- watch.html 添加评论区：输入框、评论列表、回复展开、排序切换、加载更多
+- 两级评论结构（顶级评论 + 回复），YouTube 风格
+- 新增 `CommentServiceTest`（8 个测试用例）
+
 ### [PR #35](https://github.com/makewheels/video-2022/pull/35) — 视频点赞/点踩
 - 新增 `VideoLike` 实体 + `video_like` MongoDB 集合
 - Video 实体新增 `likeCount`、`dislikeCount` 字段
