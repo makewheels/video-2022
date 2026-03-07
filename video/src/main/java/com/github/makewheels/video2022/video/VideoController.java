@@ -33,7 +33,7 @@ public class VideoController {
     public Result<JSONObject> create(@RequestBody CreateVideoDTO createVideoDTO) {
         checkService.checkCreateVideoDTO(createVideoDTO);
         JSONObject response = videoService.create(createVideoDTO);
-        return Result.ok(response, "视频已创建");
+        return Result.ok(response, "video created");
     }
 
     /**

@@ -33,10 +33,10 @@ public class PlaylistController {
     @PostMapping("createPlaylist")
     public Result<Playlist> createPlaylist(@RequestBody CreatePlaylistRequest createPlaylistRequest) {
         if (StringUtils.isEmpty(createPlaylistRequest.getTitle())) {
-            return Result.error("播放列表title为空");
+            return Result.error("playlist title is empty");
         }
         Playlist playlist = playlistService.createPlaylist(createPlaylistRequest);
-        return Result.ok(playlist, "播放列表创建成功");
+        return Result.ok(playlist, "playlist created");
     }
 
     /**
@@ -45,10 +45,10 @@ public class PlaylistController {
     @PostMapping("updatePlaylist")
     public Result<Playlist> updatePlaylist(@RequestBody UpdatePlaylistRequest updatePlaylistRequest) {
         if (StringUtils.isEmpty(updatePlaylistRequest.getTitle())) {
-            return Result.error("播放列表title为空");
+            return Result.error("playlist title is empty");
         }
         Playlist playlist = playlistService.updatePlaylist(updatePlaylistRequest);
-        return Result.ok(playlist, "播放列表更新成功");
+        return Result.ok(playlist, "playlist updated");
     }
 
     /**
@@ -57,7 +57,7 @@ public class PlaylistController {
     @GetMapping("deletePlaylist")
     public Result<Void> deletePlaylist(@RequestParam String playlistId) {
         playlistService.deletePlaylist(playlistId);
-        return Result.ok("播放列表删除成功");
+        return Result.ok("playlist deleted");
     }
 
     /**
@@ -66,7 +66,7 @@ public class PlaylistController {
     @GetMapping("recoverPlaylist")
     public Result<Void> recoverPlaylist(@RequestParam String playlistId) {
         playlistService.recoverPlaylist(playlistId);
-        return Result.ok("播放列表恢复成功");
+        return Result.ok("playlist recovered");
     }
 
     /**
@@ -115,7 +115,7 @@ public class PlaylistController {
     public Result<Playlist> addPlaylistItem(
             @RequestBody AddPlayItemRequest addPlayItemRequest) {
         Playlist playlist = playItemService.addVideoToPlaylist(addPlayItemRequest);
-        return Result.ok(playlist, "视频已成功添加到播放列表");
+        return Result.ok(playlist, "video added to playlist");
     }
 
     /**
@@ -125,7 +125,7 @@ public class PlaylistController {
     public Result<Void> deletePlaylistItem(
             @RequestBody DeletePlayItemRequest deletePlayItemRequest) {
         playItemService.deletePlayItem(deletePlayItemRequest);
-        return Result.ok("视频已成功从播放列表移除");
+        return Result.ok("video removed from playlist");
     }
 
     /**
@@ -135,7 +135,7 @@ public class PlaylistController {
     public Result<Void> movePlaylistItem(
             @RequestBody MovePlayItemRequest movePlayItemRequest) {
         playItemService.movePlayItem(movePlayItemRequest);
-        return Result.ok("视频位置已移动");
+        return Result.ok("video position moved");
     }
 
     /**

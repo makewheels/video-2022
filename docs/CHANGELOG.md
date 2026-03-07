@@ -6,6 +6,11 @@
 
 ---
 
+### PR #27: API 返回消息改为英文
+- **ErrorCode 枚举**: 18 个错误消息从中文改为英文（如 "视频不存在" → "video not found"）
+- **PlaylistController**: 9 处直接写的中文消息改为英文
+- **VideoController**: 1 处中文消息改为英文
+
 ### PR #26: 统计页面 CDN 优化
 - **ECharts CDN**: `cdn.staticfile.org` → `cdn.jsdelivr.net`，统一全站 CDN 源，解决统计页面加载慢的问题
 
