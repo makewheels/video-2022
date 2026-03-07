@@ -43,6 +43,8 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/video/updateInfo")
                 .addPathPatterns("/playlist/addPlaylistItem")
                 .addPathPatterns("/video/getMyVideoList")
+                .addPathPatterns("/video/getVideoStatus")
+                .addPathPatterns("/video/delete")
         ;
 
         // 记录请求日志

@@ -139,8 +139,11 @@
             tr.setAttribute('data-video-id', v.id || '');
             var icon = visibilityIcon(v.visibility);
             var titleText = (icon ? icon + ' ' : '') + (v.title || '未命名视频');
+            var statusBadge = (v.status && v.status !== 'READY')
+                ? ' <span style="font-size:0.75rem;padding:2px 6px;border-radius:4px;background:#ffc107;color:#000;">处理中</span>'
+                : '';
             tr.innerHTML =
-                '<td class="td-title"><a href="/watch?v=' + (v.watchId || '') + '">' + titleText + '</a></td>' +
+                '<td class="td-title"><a href="/watch?v=' + (v.watchId || '') + '">' + titleText + '</a>' + statusBadge + '</td>' +
                 '<td>' + (v.watchCount || 0) + '</td>' +
                 '<td>' + formatDuration(v.duration) + '</td>' +
                 '<td>' + formatRelativeTime(v.createTimeString || v.createTime) + '</td>' +
@@ -169,6 +172,13 @@
             if (time !== '-') parts.push(time);
             meta.textContent = parts.join(' · ');
             card.appendChild(title);
+            if (v.status && v.status !== 'READY') {
+                var badge = document.createElement('span');
+                badge.textContent = '处理中';
+                badge.style.cssText = 'font-size:0.75rem;padding:2px 6px;border-radius:4px;background:#ffc107;color:#000;margin-left:8px;';
+                title.appendChild(document.createTextNode(' '));
+                title.appendChild(badge);
+            }
             card.appendChild(meta);
             return card;
         }

@@ -73,6 +73,12 @@
             <!-- Watch URL display -->
             <div id="watchUrl" style="margin-top:12px;font-size:0.875rem;color:var(--text-secondary);word-break:break-all;"></div>
 
+            <!-- 转码状态 -->
+            <div id="transcodeStatus" style="display:none;margin-top:12px;padding:12px;border-radius:8px;background:var(--bg-elevated);border:1px solid var(--border-light);">
+                <span id="statusIcon" style="margin-right:8px;">⏳</span>
+                <span id="statusText">等待处理...</span>
+            </div>
+
             <!-- Playlist section -->
             <div class="upload-section" style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border-light);">
                 <div class="section-title">播放列表</div>
@@ -285,13 +291,60 @@
                 axios.get("/video/rawFileUploadFinish?videoId=" + videoId, {
                     headers: VideoApp.authHeaders()
                 }).then(function (res) {
-                    text_progress.innerText = "上传已完成";
-                    VideoApp.toast('上传已完成', 'success');
+                    text_progress.innerText = "上传已完成，正在处理...";
+                    VideoApp.toast('上传已完成，开始处理', 'success');
+                    startStatusPolling();
                 }).catch(function (err) {
                     VideoApp.toast('处理上传失败', 'error');
                 });
             }).catch(function (err) {
                 VideoApp.toast('完成上传失败', 'error');
+            });
+        }
+
+        var statusPollTimer = null;
+        var statusPollStart = 0;
+        var STATUS_POLL_INTERVAL = 5000;
+        var STATUS_POLL_TIMEOUT = 600000; // 10 min
+
+        var statusLabels = {
+            'CREATED': '已创建',
+            'UPLOADING': '上传中',
+            'PREPARE_TRANSCODING': '准备转码...',
+            'TRANSCODING': '转码中...',
+            'TRANSCODING_PARTLY_COMPLETE': '转码中（部分完成）...',
+            'PROCESSING_AFTER_TRANSCODE_COMPLETE': '转码后处理中...',
+            'READY': '✅ 处理完成'
+        };
+
+        function startStatusPolling() {
+            var statusDiv = document.getElementById('transcodeStatus');
+            statusDiv.style.display = 'block';
+            statusPollStart = Date.now();
+            pollStatus();
+        }
+
+        function pollStatus() {
+            if (Date.now() - statusPollStart > STATUS_POLL_TIMEOUT) {
+                document.getElementById('statusIcon').textContent = '⚠️';
+                document.getElementById('statusText').textContent = '处理超时，请刷新页面查看';
+                return;
+            }
+            axios.get('/video/getVideoStatus?videoId=' + videoId, {
+                headers: VideoApp.authHeaders()
+            }).then(function (res) {
+                var d = res.data.data;
+                var label = statusLabels[d.status] || d.status;
+                document.getElementById('statusText').textContent = label;
+                if (d.isReady) {
+                    document.getElementById('statusIcon').textContent = '✅';
+                    text_progress.innerText = "处理完成";
+                    VideoApp.toast('视频处理完成', 'success');
+                } else {
+                    statusPollTimer = setTimeout(pollStatus, STATUS_POLL_INTERVAL);
+                }
+            }).catch(function () {
+                statusPollTimer = setTimeout(pollStatus, STATUS_POLL_INTERVAL);
             });
         }
 
