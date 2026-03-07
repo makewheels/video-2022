@@ -2,6 +2,7 @@ package com.github.makewheels.video2022.video;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.BaseIntegrationTest;
+import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.user.UserHolder;
@@ -13,6 +14,8 @@ import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import com.github.makewheels.video2022.video.service.VideoService;
+import com.github.makewheels.video2022.springboot.exception.VideoException;
+import com.github.makewheels.video2022.system.response.ErrorCode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +28,9 @@ class VideoCreateServiceTest extends BaseIntegrationTest {
 
     @Autowired
     private VideoService videoService;
+
+    @Autowired
+    private CheckService checkService;
 
     private User testUser;
 
@@ -303,5 +309,89 @@ class VideoCreateServiceTest extends BaseIntegrationTest {
         assertEquals(file.getId(), video.getRawFileId());
         // File.videoId should point back to the video
         assertEquals(video.getId(), file.getVideoId());
+    }
+
+    // ──────────────────── Validation / Boundary Tests ────────────────────
+
+    @Test
+    void checkCreateVideoDTO_nullVideoType_shouldThrow() {
+        CreateVideoDTO dto = new CreateVideoDTO();
+        dto.setVideoType(null);
+        dto.setRawFilename("test.mp4");
+        dto.setSize(1024L);
+
+        VideoException ex = assertThrows(VideoException.class, () ->
+                checkService.checkCreateVideoDTO(dto));
+        assertEquals(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL, ex.getErrorCode());
+    }
+
+    @Test
+    void checkCreateVideoDTO_emptyVideoType_shouldThrow() {
+        CreateVideoDTO dto = new CreateVideoDTO();
+        dto.setVideoType("");
+        dto.setRawFilename("test.mp4");
+        dto.setSize(1024L);
+
+        VideoException ex = assertThrows(VideoException.class, () ->
+                checkService.checkCreateVideoDTO(dto));
+        assertEquals(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL, ex.getErrorCode());
+    }
+
+    @Test
+    void checkCreateVideoDTO_userUpload_nullRawFilename_shouldThrow() {
+        CreateVideoDTO dto = new CreateVideoDTO();
+        dto.setVideoType(VideoType.USER_UPLOAD);
+        dto.setRawFilename(null);
+        dto.setSize(1024L);
+
+        VideoException ex = assertThrows(VideoException.class, () ->
+                checkService.checkCreateVideoDTO(dto));
+        assertEquals(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL, ex.getErrorCode());
+    }
+
+    @Test
+    void checkCreateVideoDTO_userUpload_emptyRawFilename_shouldThrow() {
+        CreateVideoDTO dto = new CreateVideoDTO();
+        dto.setVideoType(VideoType.USER_UPLOAD);
+        dto.setRawFilename("");
+        dto.setSize(1024L);
+
+        VideoException ex = assertThrows(VideoException.class, () ->
+                checkService.checkCreateVideoDTO(dto));
+        assertEquals(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL, ex.getErrorCode());
+    }
+
+    @Test
+    void checkCreateVideoDTO_userUpload_nullSize_shouldThrow() {
+        CreateVideoDTO dto = new CreateVideoDTO();
+        dto.setVideoType(VideoType.USER_UPLOAD);
+        dto.setRawFilename("test.mp4");
+        dto.setSize(null);
+
+        VideoException ex = assertThrows(VideoException.class, () ->
+                checkService.checkCreateVideoDTO(dto));
+        assertEquals(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL, ex.getErrorCode());
+    }
+
+    @Test
+    void checkCreateVideoDTO_userUpload_zeroSize_shouldThrow() {
+        CreateVideoDTO dto = new CreateVideoDTO();
+        dto.setVideoType(VideoType.USER_UPLOAD);
+        dto.setRawFilename("test.mp4");
+        dto.setSize(0L);
+
+        VideoException ex = assertThrows(VideoException.class, () ->
+                checkService.checkCreateVideoDTO(dto));
+        assertEquals(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL, ex.getErrorCode());
+    }
+
+    @Test
+    void checkCreateVideoDTO_validUserUpload_shouldNotThrow() {
+        CreateVideoDTO dto = new CreateVideoDTO();
+        dto.setVideoType(VideoType.USER_UPLOAD);
+        dto.setRawFilename("test.mp4");
+        dto.setSize(1024L);
+
+        assertDoesNotThrow(() -> checkService.checkCreateVideoDTO(dto));
     }
 }
