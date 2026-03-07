@@ -6,6 +6,9 @@
 
 ---
 
+### PR #26: 统计页面 CDN 优化
+- **ECharts CDN**: `cdn.staticfile.org` → `cdn.jsdelivr.net`，统一全站 CDN 源，解决统计页面加载慢的问题
+
 ### PR #25: 新增视频编辑页面
 - **编辑页面**: `/edit.html?videoId=xxx`，独立页面编辑视频标题和描述
 - **只读信息展示**: 播放次数、时长、创建时间、视频类型、播放链接（带复制）
