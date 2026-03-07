@@ -6,6 +6,11 @@
 
 ---
 
+### [PR #43](https://github.com/makewheels/video-2022/pull/43) — 文档补全与命名修正
+- 新增 `docs/业务/11-视频删除与级联.md`、`12-评论与回复系统.md`、`13-视频互动.md`
+- 修正测试计数：README 510→562、视频模块 105→101、播放与统计 36→39
+- plan 文件名加入时分秒时间戳，修正 brainstorming skill 命名格式
+
 ### [PR #42](https://github.com/makewheels/video-2022/pull/42) — 文档补充
 - 新增 `docs/api/9-评论接口.md`：评论系统 6 个接口完整文档
 - 新增 `docs/api/10-点赞接口.md`：点赞系统 3 个接口完整文档
