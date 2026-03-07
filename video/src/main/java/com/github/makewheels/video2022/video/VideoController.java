@@ -8,6 +8,7 @@ import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.dto.UpdateVideoInfoDTO;
 import com.github.makewheels.video2022.video.bean.dto.UpdateWatchSettingsDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
+import com.github.makewheels.video2022.video.bean.vo.VideoListVO;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
 import com.github.makewheels.video2022.video.service.VideoService;
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +71,7 @@ public class VideoController {
      * 分页获取我的视频
      */
     @GetMapping("getMyVideoList")
-    public Result<List<VideoVO>> getMyVideoList(@RequestParam int skip, @RequestParam int limit) {
+    public Result<VideoListVO> getMyVideoList(@RequestParam int skip, @RequestParam int limit) {
         return videoService.getMyVideoList(skip, limit);
     }
 
