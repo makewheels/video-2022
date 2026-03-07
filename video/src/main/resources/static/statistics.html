@@ -58,7 +58,14 @@
             axios.get('/statistics/aggregateTrafficData?startTime='
                 + startTime.getTime() + '&endTime=' + endTime.getTime())
                 .then(function (response) {
+                    if (!response.data || !response.data.data) {
+                        VideoApp.toast('加载数据失败', 'error');
+                        return;
+                    }
                     barChart.setOption(response.data.data);
+                })
+                .catch(function (err) {
+                    VideoApp.toast('加载数据失败', 'error');
                 })
         }
 
