@@ -198,10 +198,10 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
 ### Task 4: Plans 文档标记完成状态
 
 **Files:**
-- Modify: `docs/plans/2025-07-22-ux-improvements-design.md`
-- Modify: `docs/plans/2025-07-23-e2e-testing-design.md`
-- Modify: `docs/plans/2025-07-23-e2e-testing-plan.md`
-- Modify: `docs/plans/2025-07-23-frontend-polish-plan.md`
+- Modify: `docs/plans/2026-03-07-ux-improvements-design.md`
+- Modify: `docs/plans/2026-03-07-e2e-testing-design.md`
+- Modify: `docs/plans/2026-03-07-e2e-testing-plan.md`
+- Modify: `docs/plans/2026-03-07-frontend-polish-plan.md`
 - Modify: `docs/plans/2026-03-07-frontend-redesign-design.md`
 - Modify: `docs/plans/2026-03-07-test-review-design.md`
 - Modify: `docs/plans/2026-03-07-test-review-plan.md`
@@ -221,10 +221,10 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
 ```
 
 **对应关系：**
-- `2025-07-22-ux-improvements-design.md` → PR #15 (UX优化)
-- `2025-07-23-e2e-testing-design.md` → PR #16 (E2E测试)
-- `2025-07-23-e2e-testing-plan.md` → PR #16 (E2E测试)
-- `2025-07-23-frontend-polish-plan.md` → PR #17 (前端优化)
+- `2026-03-07-ux-improvements-design.md` → PR #15 (UX优化)
+- `2026-03-07-e2e-testing-design.md` → PR #16 (E2E测试)
+- `2026-03-07-e2e-testing-plan.md` → PR #16 (E2E测试)
+- `2026-03-07-frontend-polish-plan.md` → PR #17 (前端优化)
 - `2026-03-07-frontend-redesign-design.md` → PR #14 (前端重设计)
 - `2026-03-07-test-review-design.md` → PR #18 (测试套件改进)
 - `2026-03-07-test-review-plan.md` → PR #18 (测试套件改进)
