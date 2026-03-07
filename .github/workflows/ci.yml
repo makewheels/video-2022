@@ -125,8 +125,8 @@ jobs:
           ALIYUN_APIGATEWAY_IP_APPCODE: ${{ secrets.ALIYUN_APIGATEWAY_IP_APPCODE }}
         run: |
           java -jar video/target/video-0.0.1-SNAPSHOT.jar &
-          for i in $(seq 1 30); do
-            curl -sf http://localhost:5022/actuator/health && break || sleep 2
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:5022/healthCheck && break || sleep 2
           done
 
       - name: Set up Python
@@ -208,8 +208,8 @@ jobs:
           ALIYUN_APIGATEWAY_IP_APPCODE: ${{ secrets.ALIYUN_APIGATEWAY_IP_APPCODE }}
         run: |
           java -jar video/target/video-0.0.1-SNAPSHOT.jar &
-          for i in $(seq 1 30); do
-            curl -sf http://localhost:5022/actuator/health && break || sleep 2
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:5022/healthCheck && break || sleep 2
           done
 
       - name: Set up Python
