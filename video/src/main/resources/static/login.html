@@ -43,11 +43,24 @@
         let input_phone = document.getElementById("input_phone");
         let input_verificationCode = document.getElementById("input_verificationCode");
 
+        function isValidPhone(phone) {
+            return /^1\d{10}$/.test(phone);
+        }
+
         btn_requestVerificationCode.addEventListener("click", function () {
+            if (!isValidPhone(input_phone.value)) {
+                VideoApp.toast('请输入正确的手机号（11位，以1开头）', 'error');
+                return;
+            }
             btn_requestVerificationCode.setAttribute("disabled", "disabled");
             axios.get('/user/requestVerificationCode?phone=' + input_phone.value)
                 .then(function (res) {
-                    btn_submitVerificationCode.removeAttribute("disabled")
+                    btn_submitVerificationCode.removeAttribute("disabled");
+                    VideoApp.toast('验证码已发送', 'success');
+                })
+                .catch(function (err) {
+                    btn_requestVerificationCode.removeAttribute("disabled");
+                    VideoApp.toast('发送验证码失败', 'error');
                 });
         });
 
@@ -57,11 +70,18 @@
                 .then(function (res) {
                     if (res.data.code !== 0) {
                         document.getElementById("errorMessage").innerText = res.data.message;
+                        VideoApp.toast(res.data.message || '登录失败', 'error');
                         return;
                     }
                     let data = res.data.data;
-                    window.location.href = "//" + document.domain + ":" + location.port + "/save-token.html?token="
-                        + data.token + "&target=" + VideoApp.getUrlVariable("target");
+                    VideoApp.toast('登录成功', 'success');
+                    setTimeout(function () {
+                        window.location.href = "//" + document.domain + ":" + location.port + "/save-token.html?token="
+                            + data.token + "&target=" + VideoApp.getUrlVariable("target");
+                    }, 500);
+                })
+                .catch(function (err) {
+                    VideoApp.toast('登录失败，请重试', 'error');
                 });
         });
     </script>

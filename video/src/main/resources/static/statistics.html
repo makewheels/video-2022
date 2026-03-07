@@ -60,6 +60,9 @@
                 .then(function (response) {
                     barChart.setOption(response.data.data);
                 })
+                .catch(function (err) {
+                    VideoApp.toast('加载数据失败', 'error');
+                })
         }
 
         loadData(getNDaysAgoAtMidnight(7), new Date());

@@ -65,6 +65,29 @@
         return !/Android|iPhone/i.test(ua);
     }
 
+    // ===== Toast Notifications =====
+
+    function toast(message, type) {
+        type = type || 'info';
+        var container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        var el = document.createElement('div');
+        el.className = 'toast toast-' + type;
+        el.textContent = message;
+        container.appendChild(el);
+        setTimeout(function () {
+            el.style.animation = 'toast-out 0.3s ease forwards';
+            setTimeout(function () {
+                el.remove();
+            }, 300);
+        }, 2000);
+    }
+
     // ===== Auth =====
 
     function getToken() {
@@ -110,6 +133,7 @@
         getToken: getToken,
         requireAuth: requireAuth,
         jumpToLogin: jumpToLogin,
-        authHeaders: authHeaders
+        authHeaders: authHeaders,
+        toast: toast
     };
 })();
