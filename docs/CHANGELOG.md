@@ -6,6 +6,12 @@
 
 ---
 
+### [PR #32](https://github.com/makewheels/video-2022/pull/32) — 视频搜索功能
+- `getMyVideoList` API 新增可选 `keyword` 参数
+- MongoDB `$or` + regex 模糊搜索（标题 + 描述），不区分大小写
+- 我的视频页面添加搜索输入框 + 搜索/清除按钮
+- 新增 4 个搜索测试用例（按标题、按描述、无匹配、大小写不敏感）
+
 ### [PR #31](https://github.com/makewheels/video-2022/pull/31) — 视频删除功能
 - 新增 `VideoDeleteService`：硬删除视频及所有关联数据（File、Transcode、Cover、PlayItem、WatchLog）
 - OSS 文件删除前检查 MD5 引用计数，避免误删共享对象

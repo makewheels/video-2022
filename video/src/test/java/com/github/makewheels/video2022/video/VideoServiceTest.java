@@ -18,6 +18,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 import java.util.List;
 
@@ -178,7 +181,7 @@ class VideoServiceTest extends BaseIntegrationTest {
         createDefaultVideo("list2.mp4");
         createDefaultVideo("list3.mp4");
 
-        Result<VideoListVO> result = videoService.getMyVideoList(0, 10);
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 10, null);
         assertNotNull(result.getData());
         assertEquals(3, result.getData().getList().size());
     }
@@ -189,7 +192,7 @@ class VideoServiceTest extends BaseIntegrationTest {
         createDefaultVideo("skip2.mp4");
         createDefaultVideo("skip3.mp4");
 
-        Result<VideoListVO> result = videoService.getMyVideoList(1, 10);
+        Result<VideoListVO> result = videoService.getMyVideoList(1, 10, null);
         assertNotNull(result.getData());
         assertEquals(2, result.getData().getList().size());
     }
@@ -200,14 +203,14 @@ class VideoServiceTest extends BaseIntegrationTest {
         createDefaultVideo("lim2.mp4");
         createDefaultVideo("lim3.mp4");
 
-        Result<VideoListVO> result = videoService.getMyVideoList(0, 2);
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 2, null);
         assertNotNull(result.getData());
         assertEquals(2, result.getData().getList().size());
     }
 
     @Test
     void getMyVideoList_emptyWhenNoVideos() {
-        Result<VideoListVO> result = videoService.getMyVideoList(0, 10);
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 10, null);
         assertNotNull(result.getData());
         assertTrue(result.getData().getList().isEmpty());
     }
@@ -224,10 +227,66 @@ class VideoServiceTest extends BaseIntegrationTest {
         mongoTemplate.save(otherUser);
         UserHolder.set(otherUser);
 
-        Result<VideoListVO> result = videoService.getMyVideoList(0, 10);
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 10, null);
         assertNotNull(result.getData());
         assertTrue(result.getData().getList().isEmpty(),
                 "Should not return videos belonging to a different user");
+    }
+
+    // ──────────────────── keyword search tests ────────────────────
+
+    @Test
+    void getMyVideoList_searchByTitle() {
+        JSONObject resp1 = createDefaultVideo("search1.mp4");
+        JSONObject resp2 = createDefaultVideo("search2.mp4");
+        String videoId1 = resp1.getString("videoId");
+        String videoId2 = resp2.getString("videoId");
+
+        // Set different titles directly in DB
+        mongoTemplate.updateFirst(
+                Query.query(Criteria.where("_id").is(videoId1)),
+                Update.update("title", "Java教程入门"), Video.class);
+        mongoTemplate.updateFirst(
+                Query.query(Criteria.where("_id").is(videoId2)),
+                Update.update("title", "Python基础"), Video.class);
+
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 10, "Java");
+        assertEquals(1, result.getData().getList().size());
+        assertEquals("Java教程入门", result.getData().getList().get(0).getTitle());
+    }
+
+    @Test
+    void getMyVideoList_searchByDescription() {
+        JSONObject resp = createDefaultVideo("desc-search.mp4");
+        String videoId = resp.getString("videoId");
+
+        mongoTemplate.updateFirst(
+                Query.query(Criteria.where("_id").is(videoId)),
+                new Update().set("title", "普通标题").set("description", "这是一个关于Spring Boot的教程"),
+                Video.class);
+
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 10, "Spring");
+        assertEquals(1, result.getData().getList().size());
+    }
+
+    @Test
+    void getMyVideoList_searchNoMatch() {
+        createDefaultVideo("no-match.mp4");
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 10, "不存在的关键词xyz");
+        assertTrue(result.getData().getList().isEmpty());
+    }
+
+    @Test
+    void getMyVideoList_searchCaseInsensitive() {
+        JSONObject resp = createDefaultVideo("case.mp4");
+        String videoId = resp.getString("videoId");
+
+        mongoTemplate.updateFirst(
+                Query.query(Criteria.where("_id").is(videoId)),
+                Update.update("title", "Hello World Demo"), Video.class);
+
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 10, "hello");
+        assertEquals(1, result.getData().getList().size());
     }
 
     // ──────────────────── updateWatchSettings tests ────────────────────

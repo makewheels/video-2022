@@ -134,8 +134,8 @@ public class VideoService {
     /**
      * 分页获取指定userId视频列表
      */
-    private List<VideoVO> getVideoList(String userId, int skip, int limit) {
-        List<Video> videos = videoRepository.getVideosByUserId(userId, skip, limit);
+    private List<VideoVO> getVideoList(String userId, int skip, int limit, String keyword) {
+        List<Video> videos = videoRepository.getVideosByUserId(userId, skip, limit, keyword);
         // 获取封面url
         List<String> coverIdList = videos.stream().map(Video::getCoverId).collect(Collectors.toList());
         Map<String, String> coverId2UrlMap = coverService.getSignedCoverUrl(coverIdList);
@@ -170,10 +170,10 @@ public class VideoService {
     /**
      * 分页获取我的视频列表
      */
-    public Result<VideoListVO> getMyVideoList(int skip, int limit) {
+    public Result<VideoListVO> getMyVideoList(int skip, int limit, String keyword) {
         String userId = UserHolder.getUserId();
-        List<VideoVO> videoVOList = getVideoList(userId, skip, limit);
-        long total = videoRepository.countVideosByUserId(userId);
+        List<VideoVO> videoVOList = getVideoList(userId, skip, limit, keyword);
+        long total = videoRepository.countVideosByUserId(userId, keyword);
         VideoListVO videoListVO = new VideoListVO();
         videoListVO.setList(videoVOList);
         videoListVO.setTotal(total);
