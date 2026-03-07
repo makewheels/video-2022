@@ -57,9 +57,8 @@ public class VideoUploadE2ETest extends BaseE2ETest {
      * 获取上传凭证
      */
     private JSONObject getUploadCredentials(String fileId) {
-        ResponseEntity<String> response = restTemplate.getForEntity(
-                getBaseUrl() + "/file/getUploadCredentials?fileId=" + fileId,
-                String.class);
+        ResponseEntity<String> response = authGet(
+                getBaseUrl() + "/file/getUploadCredentials?fileId=" + fileId);
         assertEquals(200, response.getStatusCode().value());
 
         JSONObject result = JSONObject.parseObject(response.getBody());
