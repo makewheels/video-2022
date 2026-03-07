@@ -17,8 +17,13 @@
     <script src="/js/global.js"></script>
     <script>
         let token = VideoApp.getUrlVariable("token");
-        localStorage.token = token;
-        window.location.href = VideoApp.getUrlVariable("target");
+        if (!token) {
+            document.querySelector(".text").textContent = "缺少登录信息";
+            document.querySelector(".spinner").style.display = "none";
+        } else {
+            localStorage.token = token;
+            window.location.href = VideoApp.getUrlVariable("target") || "/index.html";
+        }
     </script>
 </body>
 </html>

@@ -522,6 +522,105 @@ textarea.form-input {
     min-height: 300px;
 }
 
+/* ===== Toast Notifications ===== */
+.toast-container {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.toast {
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    color: #fff;
+    pointer-events: auto;
+    animation: toast-in 0.3s ease forwards;
+    white-space: nowrap;
+}
+
+.toast-success {
+    background-color: var(--success);
+}
+
+.toast-error {
+    background-color: var(--error);
+}
+
+.toast-info {
+    background-color: var(--accent);
+}
+
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes toast-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-disabled);
+    font-size: 0.875rem;
+}
+
+/* ===== Nav Links (Homepage) ===== */
+.nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.nav-link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    font-weight: 500;
+}
+
+.nav-link-item:hover {
+    background-color: var(--bg-hover);
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.nav-link-item .nav-icon {
+    font-size: 1.5rem;
+}
+
+.nav-link-item .nav-text {
+    font-size: 1rem;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
     .watch-layout {
