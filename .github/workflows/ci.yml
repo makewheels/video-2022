@@ -1,4 +1,4 @@
-name: 集成测试
+name: CI
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 
 jobs:
   integration-tests:
+    name: 集成测试
     runs-on: ubuntu-latest
 
     services:
@@ -45,4 +46,53 @@ jobs:
         run: >-
           mvn test -pl video -Pspringboot
           -Dtest='!com.github.makewheels.video2022.e2e.**'
+          --batch-mode --no-transfer-progress
+
+  e2e-tests:
+    name: E2E 测试
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping:1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run E2E tests
+        env:
+          ALIYUN_OSS_VIDEO_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_VIDEO_ACCESS_KEY_ID }}
+          ALIYUN_OSS_VIDEO_SECRET_KEY: ${{ secrets.ALIYUN_OSS_VIDEO_SECRET_KEY }}
+          ALIYUN_OSS_DATA_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_DATA_ACCESS_KEY_ID }}
+          ALIYUN_OSS_DATA_SECRET_KEY: ${{ secrets.ALIYUN_OSS_DATA_SECRET_KEY }}
+          ALIYUN_MPS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_MPS_ACCESS_KEY_ID }}
+          ALIYUN_MPS_SECRET_KEY: ${{ secrets.ALIYUN_MPS_SECRET_KEY }}
+          ALIYUN_APIGATEWAY_IP_APPCODE: ${{ secrets.ALIYUN_APIGATEWAY_IP_APPCODE }}
+        run: >-
+          mvn test -pl video -Pspringboot
+          -Dtest='com.github.makewheels.video2022.e2e.**'
           --batch-mode --no-transfer-progress

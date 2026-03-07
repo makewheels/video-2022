@@ -10,6 +10,10 @@
 - 新增 `ci.yml`：集成测试自动化（PR + push to master 触发）
 - 新增 `e2e.yml`：E2E 测试自动化（需配置阿里云 Secrets）
 - Service Containers：MongoDB 7 + Redis 7
+
+### [PR #39](https://github.com/makewheels/video-2022/pull/39) — CI 优化
+- 合并 ci.yml 和 e2e.yml 为单个 workflow，两个 job 并行执行
+- 配置 7 个阿里云 GitHub Secrets
 - 集成测试无需 secrets（外部服务全部 mock）
 
 ### [PR #37](https://github.com/makewheels/video-2022/pull/37) — 分享按钮
