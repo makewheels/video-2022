@@ -6,6 +6,11 @@
 
 ---
 
+### [PR #30](https://github.com/makewheels/video-2022/pull/30) — 修复测试编译错误
+- VideoServiceTest: 适配 PR #24 的 `Result<VideoListVO>` 返回类型变更
+- VideoUploadE2ETest: `getMyVideoList` 通过 `data.list` 获取视频列表
+- VideoUploadE2ETest: `invalidVideoType` 测试改为非断言式（API 不校验 videoType）
+
 ### [PR #29](https://github.com/makewheels/video-2022/pull/29) — 测试文档添加源码链接
 - 10 个测试文档中 506 个测试方法名添加 GitHub 源码链接
 - 点击方法名可直接跳转到对应测试代码行
