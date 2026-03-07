@@ -1,10 +1,10 @@
 # Video 2022
 
-一个视频分享平台后端服务，支持视频上传、转码、播放、YouTube 下载等功能。
+一个视频分享平台，支持视频上传、转码、播放、YouTube 下载等功能。
 
-**示例视频**: https://oneclick.video/w?v=17GO2A
+**示例视频**: https://oneclick.video/watch/17GO2A
 
-**上传入口**: https://oneclick.video/upload.html
+**上传入口**: https://oneclick.video/upload
 
 **验证码**: 111
 
@@ -25,45 +25,55 @@
 ## 快速开始
 
 ### 环境要求
-- Java 21
-- Maven 3.8+
-- MongoDB 6.0+
-- Redis 7.0+
+- Java 21 + Maven 3.8+
+- Node.js 20+ + npm
+- Python 3.12+ (E2E 测试)
+- MongoDB 6.0+ + Redis 7.0+
 
 ### 构建与运行
 
 ```bash
 # 1. 安装依赖 (macOS)
-brew install mongodb-community redis openjdk@21
+brew install mongodb-community redis openjdk@21 node python@3.12
 brew services start mongodb-community
 brew services start redis
 
 # 2. 配置密钥
-cp .env.example .env
+cp backend/.env.example backend/.env
 # 编辑 .env 填入阿里云 AccessKey 等密钥
-# 不配置密钥也能启动，但 OSS、转码等功能不可用
 
-# 3. 构建
-mvn clean package -pl video -Pspringboot -Dmaven.test.skip=true
+# 3. 构建前端
+cd frontend && npm install && npm run build && cd ..
 
-# 4. 启动
-export $(grep -v '^#' .env | grep -v '^$' | xargs)
+# 4. 构建后端（前端已打包到 backend/video/src/main/resources/static/）
+cd backend && mvn clean package -pl video -Pspringboot -Dmaven.test.skip=true && cd ..
+
+# 5. 启动
+cd backend && export $(grep -v '^#' .env | grep -v '^$' | xargs)
 java -jar video/target/video-0.0.1-SNAPSHOT.jar
 
-# 5. 访问
-# 上传页面: http://localhost:5022/upload.html
+# 6. 访问
+# 首页: http://localhost:5022
 # 健康检查: http://localhost:5022/healthCheck
 ```
 
-默认端口：`5022`，配置文件：`video/src/main/resources/application.properties`
+默认端口：`5022`
+
+**前端开发模式：**
+```bash
+cd frontend && npm run dev  # 端口 5173，自动代理 API 到 5022
+```
 
 ---
 
 ## 项目架构
 
-多模块 Maven 项目：
-- `video/` - 核心视频服务模块 (Spring Boot 应用)
-- `youtube/` - YouTube 视频下载服务模块 (独立部署到阿里云函数计算)
+三子项目结构：
+- `frontend/` - React SPA 前端 (Vite + TypeScript)
+- `backend/` - Java Spring Boot 后端 (Maven 多模块)
+  - `video/` - 核心视频服务模块
+  - `youtube/` - YouTube 下载服务模块
+- `test/` - Python E2E 测试 (pytest + Playwright)
 
 ### 核心模块分包结构 (video 模块)
 
@@ -89,13 +99,14 @@ java -jar video/target/video-0.0.1-SNAPSHOT.jar
 ### 技术栈
 
 - **Java 21** + **Spring Boot 4.0.3**
+- **React 19** + **Vite 7** + **TypeScript** (前端 SPA)
 - **MongoDB** - 主数据库（存储视频、用户、文件、转码等所有业务数据）
 - **Redis** - 缓存（IP 地理位置查询缓存、验证码存储）
 - **阿里云 OSS** - 视频文件存储（video bucket）+ 日志/库存存储（data bucket）
 - **阿里云 MPS** - 视频转码服务（480p/720p/1080p HLS）
 - **阿里云函数计算** - GPU 云函数转码、MD5 计算
 - **阿里云 API 网关** - IP 地理位置查询
-- **Thymeleaf** - 前端页面模板引擎
+- **pytest + Playwright** - E2E 测试（API + 浏览器）
 
 ### 云服务依赖
 
@@ -204,6 +215,27 @@ curl -H "token: {your_token}" "http://localhost:5022/video/getMyVideoList"
 
 ---
 
+## 测试
+
+```bash
+# 后端单元/集成测试 (451 tests)
+cd backend && export $(grep -v '^#' .env | grep -v '^$' | xargs)
+mvn test -pl video -Pspringboot
+
+# 前端单元测试 (14 tests)
+cd frontend && npx vitest run
+
+# API E2E 测试 (需要后端运行中)
+cd test && source venv/bin/activate && pytest api/ -v
+
+# 浏览器 E2E 测试 (需要后端运行中)
+cd test && source venv/bin/activate && pytest browser/ -v
+```
+
+CI 自动运行 4 个 Job：后端测试、前端测试、API E2E、浏览器 E2E。
+
+---
+
 ## 部署
 
 [部署指南](docs/归档/4-部署.md)
@@ -211,8 +243,11 @@ curl -H "token: {your_token}" "http://localhost:5022/video/getMyVideoList"
 ### Docker 部署
 
 ```bash
+# 构建前端
+cd frontend && npm ci && npm run build && cd ..
+
 # 构建镜像
-docker build -f video/Dockerfile-video -t video-2022:latest .
+docker build -f backend/video/Dockerfile-video -t video-2022:latest backend/
 
 # 运行容器
 docker run -d -p 5022:5022 --name video-2022 video-2022:latest
@@ -235,16 +270,15 @@ docker run -d -p 5022:5022 --name video-2022 video-2022:latest
 - 每个 PR 合并后，在 [CHANGELOG.md](docs/CHANGELOG.md) 记录关键变更
 - PR 标题格式：`类型: 简述`（类型：feat / fix / test / docs / refactor / chore）
 
-### 前端 UX 规范
+### 前端规范
 
-- **所有用户操作必须有 toast 反馈**（成功/失败/处理中），不允许操作后无任何提示
-- 表单提交前必须校验输入，校验失败显示 `VideoApp.toast(msg, 'error')`
-- 异步请求必须有 `.catch()` 错误处理，不允许静默失败
-- CDN 统一使用 `cdn.jsdelivr.net` + 版本锁定（如 `axios@0.26.1`），禁止使用未锁定版本
-- 按钮在不可操作时应设置 `disabled`，避免用户误点
+- 使用 React + TypeScript，组件化开发
+- 所有用户操作必须有 Toast 反馈（成功/失败/处理中）
+- 表单提交前必须校验输入
+- 使用 Axios 实例统一处理 API 请求和错误
 - 文件上传需显示文件名、大小信息，进度条实时更新
-- 使用 `VideoApp.toast(message, type)` 统一提示（type: `success` / `error` / `info`）
-- 新增/修改前端页面后，必须实际访问页面验证基本交互流程
+- 支持暗色/亮色主题切换
+- 移动端适配（响应式布局）
 
 ---
 

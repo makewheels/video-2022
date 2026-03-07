@@ -6,6 +6,14 @@
 
 ---
 
+### [PR #44](https://github.com/makewheels/video-2022/pull/44) — 项目重构：前后端分离
+- 项目结构拆分为 `frontend/`、`backend/`、`test/` 三子项目
+- 新建 React + Vite + TypeScript 前端：8 个页面、11 个组件、14 个前端测试
+- 后端迁入 `backend/`，新增 `SpaController` 支持 SPA 路由
+- 删除旧版 HTML/JS 前端文件和 Thymeleaf 模板
+- Python E2E 测试：24 个 API 测试 + 49 个浏览器测试（替代 Java E2E + JS Playwright）
+- CI 从 2 Job 扩展为 4 Job：后端测试、前端测试、API E2E、浏览器 E2E
+
 ### [PR #43](https://github.com/makewheels/video-2022/pull/43) — 文档补全与命名修正
 - 新增 `docs/业务/11-视频删除与级联.md`、`12-评论与回复系统.md`、`13-视频互动.md`
 - 修正测试计数：README 510→562、视频模块 105→101、播放与统计 36→39
