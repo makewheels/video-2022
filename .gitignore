@@ -37,3 +37,5 @@ build/
 
 ### Node ###
 node_modules/
+test/venv/
+node_modules/
