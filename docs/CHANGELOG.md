@@ -6,6 +6,15 @@
 
 ---
 
+### [PR #31](https://github.com/makewheels/video-2022/pull/31) — 视频删除功能
+- 新增 `VideoDeleteService`：硬删除视频及所有关联数据（File、Transcode、Cover、PlayItem、WatchLog）
+- OSS 文件删除前检查 MD5 引用计数，避免误删共享对象
+- 自动从所有播放列表中移除被删除的视频
+- `VideoController` 新增 `GET /video/delete` 端点
+- edit.html 添加红色"删除视频"按钮 + 确认弹窗
+- 我的视频列表每行添加删除操作链接
+- 新增 `VideoDeleteServiceTest`（4 个测试用例）
+
 ### [PR #30](https://github.com/makewheels/video-2022/pull/30) — 修复测试编译错误
 - VideoServiceTest: 适配 PR #24 的 `Result<VideoListVO>` 返回类型变更
 - VideoUploadE2ETest: `getMyVideoList` 通过 `data.list` 获取视频列表

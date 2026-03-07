@@ -81,6 +81,15 @@
                     <a href="/" class="btn btn-secondary">返回列表</a>
                 </div>
             </div>
+
+            <!-- 危险操作 -->
+            <div class="edit-form-card card" style="border-color: #dc3545;">
+                <h3 class="card-header" style="color: #dc3545;">危险操作</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 14px;">
+                    删除视频后将无法恢复，视频文件和所有相关数据将被永久删除。
+                </p>
+                <button id="btn_delete" class="btn" style="background-color: #dc3545; color: white; border: none;">删除视频</button>
+            </div>
         </div>
     </div>
 
@@ -206,6 +215,27 @@
         document.getElementById('copyShortUrl').addEventListener('click', function () {
             var url = document.getElementById('infoShortUrl').textContent;
             if (url && url !== '-') copyText(url);
+        });
+
+        // 删除视频
+        document.getElementById('btn_delete').addEventListener('click', function () {
+            if (!confirm('确定要删除这个视频吗？此操作不可恢复，视频文件和所有相关数据将被永久删除。')) {
+                return;
+            }
+            var btn = document.getElementById('btn_delete');
+            btn.disabled = true;
+            btn.textContent = '删除中...';
+
+            axios.get('/video/delete?videoId=' + videoId, {
+                headers: VideoApp.authHeaders()
+            }).then(function () {
+                VideoApp.toast('视频已删除', 'success');
+                setTimeout(function () { window.location.href = '/'; }, 1500);
+            }).catch(function (err) {
+                VideoApp.toast('删除失败: ' + (err.response ? err.response.data.message : err.message), 'error');
+                btn.disabled = false;
+                btn.textContent = '删除视频';
+            });
         });
     </script>
 </body>
