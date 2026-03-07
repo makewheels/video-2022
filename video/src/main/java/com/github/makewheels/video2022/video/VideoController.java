@@ -74,8 +74,10 @@ public class VideoController {
      * 分页获取我的视频
      */
     @GetMapping("getMyVideoList")
-    public Result<VideoListVO> getMyVideoList(@RequestParam int skip, @RequestParam int limit) {
-        return videoService.getMyVideoList(skip, limit);
+    public Result<VideoListVO> getMyVideoList(
+            @RequestParam int skip, @RequestParam int limit,
+            @RequestParam(required = false) String keyword) {
+        return videoService.getMyVideoList(skip, limit, keyword);
     }
 
     /**

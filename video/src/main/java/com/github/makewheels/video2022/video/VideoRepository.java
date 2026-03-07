@@ -65,11 +65,18 @@ public class VideoRepository {
     }
 
     /**
-     * 根据userId分页获取视频列表
+     * 根据userId分页获取视频列表，支持按关键词搜索
      */
-    public List<Video> getVideosByUserId(String userId, int skip, int limit) {
-        Query query = Query.query(Criteria.where("uploaderId").is(userId))
-                //根据时间降序排列
+    public List<Video> getVideosByUserId(String userId, int skip, int limit, String keyword) {
+        Criteria criteria = Criteria.where("uploaderId").is(userId);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String regex = keyword.trim();
+            criteria.orOperator(
+                    Criteria.where("title").regex(regex, "i"),
+                    Criteria.where("description").regex(regex, "i")
+            );
+        }
+        Query query = Query.query(criteria)
                 .with(Sort.by(Sort.Direction.DESC, "createTime"))
                 .skip(skip)
                 .limit(limit);
@@ -77,11 +84,18 @@ public class VideoRepository {
     }
 
     /**
-     * 统计用户视频总数
+     * 统计用户视频总数，支持按关键词筛选
      */
-    public long countVideosByUserId(String userId) {
-        return mongoTemplate.count(
-                Query.query(Criteria.where("uploaderId").is(userId)), Video.class);
+    public long countVideosByUserId(String userId, String keyword) {
+        Criteria criteria = Criteria.where("uploaderId").is(userId);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String regex = keyword.trim();
+            criteria.orOperator(
+                    Criteria.where("title").regex(regex, "i"),
+                    Criteria.where("description").regex(regex, "i")
+            );
+        }
+        return mongoTemplate.count(Query.query(criteria), Video.class);
     }
 
     /**
