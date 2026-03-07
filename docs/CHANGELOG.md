@@ -6,6 +6,15 @@
 
 ---
 
+### [PR #21](https://github.com/makewheels/video-2022/pull/21) — 代码审查修复
+
+- 修复 PlaylistRepository 字段名 `isDelete` → `deleted`，与 Playlist 实体一致
+- 修复 CheckTokenInterceptor 双重响应（移除多余的 setStatus(403)）
+- WatchService 添加 null 安全检查
+- 配置文件 URL 改为环境变量 fallback 模式
+- 清理 TODO 注释，FileAccessLogService 改用 RequestUtil.getIp()
+- 修正 API 文档 getRawFileDownloadUrl 响应格式
+
 ## 2026 年 3 月 7 日
 
 ### [PR #20](https://github.com/makewheels/video-2022/pull/20) — 文档全面评审与改进
