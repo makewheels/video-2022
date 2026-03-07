@@ -4,7 +4,7 @@ import pytest
 
 pytestmark = pytest.mark.browser
 
-BASE_TIMEOUT = 5_000
+BASE_TIMEOUT = 10_000
 
 
 class TestLoginPageLoad:

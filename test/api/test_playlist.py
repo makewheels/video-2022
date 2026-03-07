@@ -37,7 +37,10 @@ def test_create_playlist_and_add_video(api_client, create_video, created_playlis
     assert resp.json()["code"] == 0
 
     # Verify playlist appears in listing
-    resp = api_client.get(f"{api_client.base_url}/playlist/getMyPlaylistByPage")
+    resp = api_client.get(
+        f"{api_client.base_url}/playlist/getMyPlaylistByPage",
+        params={"skip": 0, "limit": 20},
+    )
     assert resp.status_code == 200
     listing = resp.json()
     assert listing["code"] == 0
@@ -77,7 +80,10 @@ def test_add_multiple_videos(api_client, create_video, created_playlists):
     assert resp.json()["code"] == 0
 
     # Verify playlist in listing
-    resp = api_client.get(f"{api_client.base_url}/playlist/getMyPlaylistByPage")
+    resp = api_client.get(
+        f"{api_client.base_url}/playlist/getMyPlaylistByPage",
+        params={"skip": 0, "limit": 20},
+    )
     assert resp.status_code == 200
     listing = resp.json()
     assert listing["code"] == 0

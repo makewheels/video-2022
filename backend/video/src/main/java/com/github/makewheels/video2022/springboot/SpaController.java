@@ -14,7 +14,8 @@ public class SpaController {
             "/upload",
             "/edit/**",
             "/watch/**",
-            "/youtube"
+            "/youtube",
+            "/statistics"
     })
     public String forward() {
         return "forward:/index.html";

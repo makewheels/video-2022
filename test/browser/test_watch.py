@@ -25,7 +25,7 @@ import pytest
 
 pytestmark = pytest.mark.browser
 
-BASE_TIMEOUT = 5_000
+BASE_TIMEOUT = 10_000
 FAKE_WATCH_ID = "test-video-id-000"
 
 

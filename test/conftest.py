@@ -106,7 +106,7 @@ def created_playlists(api_client):
 @pytest.fixture
 def create_video(api_client, created_videos):
     """Factory fixture: create a test video and register it for cleanup."""
-    def _create(video_type="SELF_UPLOAD", filename="test.mp4", size=1024):
+    def _create(video_type="USER_UPLOAD", filename="test.mp4", size=1024):
         resp = api_client.post(
             f"{api_client.base_url}/video/create",
             json={"videoType": video_type, "rawFilename": filename, "size": size},
@@ -149,6 +149,7 @@ def page(browser_context):
 def auth_page(page, base_url, auth_token):
     """Page with auth token pre-set in localStorage."""
     page.goto(base_url)
+    page.wait_for_load_state("domcontentloaded")
     page.evaluate(f"localStorage.setItem('token', '{auth_token}')")
     return page
 

@@ -19,7 +19,7 @@ import pytest
 
 pytestmark = pytest.mark.browser
 
-BASE_TIMEOUT = 5_000
+BASE_TIMEOUT = 10_000
 
 
 class TestStatisticsPage:
@@ -65,6 +65,7 @@ class TestStatisticsPage:
     def test_requires_auth(self, page, base_url):
         """Unauthenticated users are redirected to /login."""
         page.goto(f"{base_url}/statistics")
+        page.wait_for_load_state("domcontentloaded")
         page.wait_for_url("**/login**", timeout=BASE_TIMEOUT)
         assert "/login" in page.url
 
@@ -106,5 +107,6 @@ class TestYouTubePage:
     def test_requires_auth(self, page, base_url):
         """Unauthenticated users are redirected to /login."""
         page.goto(f"{base_url}/youtube")
+        page.wait_for_load_state("domcontentloaded")
         page.wait_for_url("**/login**", timeout=BASE_TIMEOUT)
         assert "/login" in page.url

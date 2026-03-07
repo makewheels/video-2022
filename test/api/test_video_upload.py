@@ -27,7 +27,8 @@ def test_create_video_appears_in_my_list(api_client, create_video):
     list_body = list_resp.json()
     assert list_body["code"] == 0
 
-    video_ids = [v["videoId"] for v in list_body["data"]]
+    videos = list_body["data"]["list"] if isinstance(list_body["data"], dict) else list_body["data"]
+    video_ids = [v["videoId"] for v in videos]
     assert video_id in video_ids, f"Video {video_id} not found in user's video list"
 
 
@@ -35,8 +36,8 @@ def test_create_video_appears_in_my_list(api_client, create_video):
 @pytest.mark.parametrize(
     "payload",
     [
-        pytest.param({"videoType": "SELF_UPLOAD", "size": 1024}, id="missing-rawFilename"),
-        pytest.param({"videoType": "SELF_UPLOAD", "rawFilename": "test.mp4"}, id="missing-size"),
+        pytest.param({"videoType": "USER_UPLOAD", "size": 1024}, id="missing-rawFilename"),
+        pytest.param({"videoType": "USER_UPLOAD", "rawFilename": "test.mp4"}, id="missing-size"),
         pytest.param({}, id="empty-body"),
     ],
 )

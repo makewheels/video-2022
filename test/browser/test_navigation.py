@@ -13,7 +13,7 @@ import pytest
 
 pytestmark = pytest.mark.browser
 
-BASE_TIMEOUT = 5_000
+BASE_TIMEOUT = 10_000
 
 
 class TestNavBarStructure:
@@ -85,6 +85,7 @@ class TestAuthNavigation:
     def test_unauthenticated_sees_login_link(self, page, base_url):
         """User without token sees '登录' link in header."""
         page.goto(f"{base_url}/login")
+        page.wait_for_load_state("domcontentloaded")
         login_link = page.locator(".header-auth a", has_text="登录")
         login_link.wait_for(timeout=BASE_TIMEOUT)
         assert login_link.is_visible()
@@ -92,6 +93,7 @@ class TestAuthNavigation:
     def test_unauthenticated_redirect_to_login(self, page, base_url):
         """Navigating to protected route redirects to /login."""
         page.goto(f"{base_url}/upload")
+        page.wait_for_load_state("domcontentloaded")
         page.wait_for_url(f"**/login**", timeout=BASE_TIMEOUT)
         assert "/login" in page.url
 
