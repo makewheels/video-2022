@@ -6,6 +6,13 @@
 
 ---
 
+### [PR #29](https://github.com/makewheels/video-2022/pull/29) — 测试文档添加源码链接
+- 10 个测试文档中 506 个测试方法名添加 GitHub 源码链接
+- 点击方法名可直接跳转到对应测试代码行
+
+### [PR #28](https://github.com/makewheels/video-2022/pull/28) — CHANGELOG 补充时间戳和 PR 链接
+- 每个 PR 条目添加合并时间（HH:MM），所有条目补全 GitHub 链接
+
 ### [PR #27](https://github.com/makewheels/video-2022/pull/27) — API 成功消息改为英文 `18:45`
 - **ErrorCode.SUCCESS**: "成功" → "success"
 - **PlaylistController**: 成功消息改为英文（如 "播放列表创建成功" → "playlist created"），错误消息保持中文
