@@ -7,6 +7,7 @@ import com.github.makewheels.video2022.etc.ding.NotificationService;
 import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
+import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.file.TsFileRepository;
 import com.github.makewheels.video2022.file.bean.TsFile;
@@ -96,6 +97,10 @@ public class WatchService {
         }
 
         Video video = videoRepository.getById(videoId);
+        if (video == null) {
+            log.warn("addWatchLog: 视频不存在, videoId = {}", videoId);
+            return Result.error(ErrorCode.VIDEO_NOT_EXIST);
+        }
         //增加video观看次数
         if (videoStatus.equals(VideoStatus.READY)) {
             videoRepository.addWatchCount(videoId);
@@ -142,6 +147,10 @@ public class WatchService {
      */
     public Result<WatchInfoVO> getWatchInfo(Context context, String watchId) {
         Video video = videoRepository.getByWatchId(watchId);
+        if (video == null) {
+            log.warn("getWatchInfo: 视频不存在, watchId = {}", watchId);
+            return Result.error(ErrorCode.VIDEO_NOT_EXIST);
+        }
         String videoId = video.getId();
         WatchInfoVO watchInfoVO = new WatchInfoVO();
         watchInfoVO.setVideoId(videoId);
@@ -221,6 +230,10 @@ public class WatchService {
         String sessionId = context.getSessionId();
 
         Video video = videoRepository.getById(videoId);
+        if (video == null) {
+            log.warn("getMultivariantPlaylist: 视频不存在, videoId = {}", videoId);
+            return "";
+        }
         List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("#EXTM3U\n");

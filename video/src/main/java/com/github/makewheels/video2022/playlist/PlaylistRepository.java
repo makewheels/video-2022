@@ -83,7 +83,7 @@ public class PlaylistRepository {
      */
     public List<Playlist> getPlaylistByPage(String userId, int skip, int limit) {
         Query query = Query.query(Criteria.where("ownerId").is(userId)
-                        .and("isDelete").is(false))
+                        .and("deleted").is(false))
                 .skip(skip).limit(limit);
         return mongoTemplate.find(query, Playlist.class);
     }

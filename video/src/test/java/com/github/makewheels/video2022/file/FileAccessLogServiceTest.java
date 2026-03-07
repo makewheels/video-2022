@@ -15,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 
@@ -76,6 +78,7 @@ class FileAccessLogServiceTest extends BaseIntegrationTest {
     void saveAccessLog_createsProperRecord() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRemoteAddr("192.168.1.100");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
         FileAccessLog log = fileAccessLogService.saveAccessLog(
                 request, testVideo.getId(), "client_001", "session_001",

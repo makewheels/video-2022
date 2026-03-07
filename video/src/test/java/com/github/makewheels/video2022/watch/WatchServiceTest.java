@@ -203,10 +203,11 @@ class WatchServiceTest extends BaseIntegrationTest {
     }
 
     @Test
-    void getWatchInfo_invalidWatchId_throwsNpe() {
+    void getWatchInfo_invalidWatchId_returnsError() {
         Context ctx = buildContext("v_no_exist", "client_1", "session_1");
-        assertThrows(NullPointerException.class,
-                () -> watchService.getWatchInfo(ctx, "non_existent_watch_id"));
+        Result<WatchInfoVO> result = watchService.getWatchInfo(ctx, "non_existent_watch_id");
+        assertNotNull(result);
+        assertEquals(22, result.getCode());
     }
 
     // ---- getM3u8Content tests ----
