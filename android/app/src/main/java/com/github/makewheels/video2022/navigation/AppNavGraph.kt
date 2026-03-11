@@ -13,8 +13,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.github.makewheels.video2022.ui.components.BottomNavBar
 import com.github.makewheels.video2022.ui.components.bottomNavItems
+import com.github.makewheels.video2022.ui.edit.EditScreen
 import com.github.makewheels.video2022.ui.home.HomeScreen
 import com.github.makewheels.video2022.ui.login.LoginScreen
+import com.github.makewheels.video2022.ui.myvideos.MyVideosScreen
+import com.github.makewheels.video2022.ui.upload.UploadScreen
 import com.github.makewheels.video2022.ui.watch.WatchScreen
 
 @Composable
@@ -52,10 +55,17 @@ fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
                 PlaceholderScreen("播放列表")
             }
             composable(Screen.Upload.route) {
-                PlaceholderScreen("上传")
+                UploadScreen()
             }
             composable(Screen.MyVideos.route) {
-                PlaceholderScreen("我的视频")
+                MyVideosScreen(
+                    onVideoClick = { watchId ->
+                        navController.navigate(Screen.Watch.createRoute(watchId))
+                    },
+                    onEditClick = { videoId ->
+                        navController.navigate(Screen.Edit.createRoute(videoId))
+                    }
+                )
             }
             composable(Screen.Settings.route) {
                 PlaceholderScreen("设置")
@@ -72,7 +82,10 @@ fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
                 arguments = listOf(navArgument("videoId") { type = NavType.StringType })
             ) { entry ->
                 val videoId = entry.arguments?.getString("videoId") ?: return@composable
-                PlaceholderScreen("编辑: $videoId")
+                EditScreen(
+                    onBack = { navController.popBackStack() },
+                    onDeleted = { navController.popBackStack() }
+                )
             }
             composable(
                 Screen.PlaylistDetail.route,
