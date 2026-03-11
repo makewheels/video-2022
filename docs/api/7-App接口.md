@@ -52,3 +52,13 @@ GET /app/checkUpdate?platform={platform}
 | versionName | 版本名称 |
 | versionCode | 版本号（整数） |
 | isForceUpdate | 是否强制更新 |
+
+---
+
+## Android 客户端集成说明
+
+- 技术栈: Kotlin + Jetpack Compose + Retrofit + Hilt
+- 网络层: Retrofit 接口定义在 `android/app/src/main/java/.../network/ApiService.kt`
+- Debug 环境 BASE_URL: `http://10.0.2.2:5022`（模拟器映射本机）
+- Release 环境 BASE_URL: `https://oneclick.video`
+- 认证: OkHttp 拦截器自动从本地存储读取 token 并注入请求头

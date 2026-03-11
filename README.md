@@ -288,6 +288,28 @@ docker run -d -p 5022:5022 --name video-2022 video-2022:latest
 
 ---
 
+## Android 客户端
+
+### 技术栈
+Kotlin + Jetpack Compose + Material 3 + Media3 ExoPlayer + Hilt + Retrofit
+
+### 构建
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+### 安装到模拟器
+```bash
+./gradlew installDebug
+```
+
+### 配置
+- Debug 模式自动连接 `http://10.0.2.2:5022`（模拟器映射本机后端）
+- Release 模式连接 `https://oneclick.video`
+
+---
+
 ## License
 
 MIT
