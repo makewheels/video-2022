@@ -17,8 +17,12 @@ import com.github.makewheels.video2022.ui.edit.EditScreen
 import com.github.makewheels.video2022.ui.home.HomeScreen
 import com.github.makewheels.video2022.ui.login.LoginScreen
 import com.github.makewheels.video2022.ui.myvideos.MyVideosScreen
+import com.github.makewheels.video2022.ui.playlist.PlaylistDetailScreen
+import com.github.makewheels.video2022.ui.playlist.PlaylistScreen
+import com.github.makewheels.video2022.ui.settings.SettingsScreen
 import com.github.makewheels.video2022.ui.upload.UploadScreen
 import com.github.makewheels.video2022.ui.watch.WatchScreen
+import com.github.makewheels.video2022.ui.youtube.YouTubeScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
@@ -52,7 +56,9 @@ fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
                 })
             }
             composable(Screen.Playlist.route) {
-                PlaceholderScreen("播放列表")
+                PlaylistScreen(onPlaylistClick = { id ->
+                    navController.navigate(Screen.PlaylistDetail.createRoute(id))
+                })
             }
             composable(Screen.Upload.route) {
                 UploadScreen()
@@ -68,7 +74,14 @@ fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
                 )
             }
             composable(Screen.Settings.route) {
-                PlaceholderScreen("设置")
+                SettingsScreen(
+                    onNavigateToYouTube = { navController.navigate(Screen.YouTube.route) },
+                    onLogout = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
             }
             composable(
                 Screen.Watch.route,
@@ -92,18 +105,16 @@ fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
                 arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
             ) { entry ->
                 val playlistId = entry.arguments?.getString("playlistId") ?: return@composable
-                PlaceholderScreen("播放列表详情: $playlistId")
+                PlaylistDetailScreen(
+                    onVideoClick = { watchId ->
+                        navController.navigate(Screen.Watch.createRoute(watchId))
+                    },
+                    onBack = { navController.popBackStack() }
+                )
             }
             composable(Screen.YouTube.route) {
-                PlaceholderScreen("YouTube 下载")
+                YouTubeScreen()
             }
         }
-    }
-}
-
-@Composable
-private fun PlaceholderScreen(name: String) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(name, style = MaterialTheme.typography.headlineMedium)
     }
 }
