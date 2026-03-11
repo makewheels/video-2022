@@ -13,7 +13,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.github.makewheels.video2022.ui.components.BottomNavBar
 import com.github.makewheels.video2022.ui.components.bottomNavItems
+import com.github.makewheels.video2022.ui.home.HomeScreen
 import com.github.makewheels.video2022.ui.login.LoginScreen
+import com.github.makewheels.video2022.ui.watch.WatchScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
@@ -42,7 +44,9 @@ fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
                 })
             }
             composable(Screen.Home.route) {
-                PlaceholderScreen("首页")
+                HomeScreen(onVideoClick = { watchId ->
+                    navController.navigate(Screen.Watch.createRoute(watchId))
+                })
             }
             composable(Screen.Playlist.route) {
                 PlaceholderScreen("播放列表")
@@ -61,7 +65,7 @@ fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
                 arguments = listOf(navArgument("watchId") { type = NavType.StringType })
             ) { entry ->
                 val watchId = entry.arguments?.getString("watchId") ?: return@composable
-                PlaceholderScreen("播放: $watchId")
+                WatchScreen(onBack = { navController.popBackStack() })
             }
             composable(
                 Screen.Edit.route,
