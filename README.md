@@ -310,6 +310,41 @@ cd android
 
 ---
 
+## iOS 客户端
+
+基于 Swift + SwiftUI 的原生 iOS 应用。
+
+### 环境要求
+- Xcode 16.0+
+- iOS 17.0+
+- Swift 6.0
+
+### 构建
+```bash
+cd ios
+xcodegen generate
+xcodebuild -project VideoApp.xcodeproj -scheme VideoApp -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
+```
+
+### 功能
+- 手机号验证码登录
+- 首页视频列表（分页加载）
+- HLS 视频播放（AVPlayer）
+- 点赞/踩
+- 评论（查看/发表）
+- 视频上传（相册选择）
+- 我的视频（搜索/删除）
+- 视频编辑（标题/描述/可见性）
+- 播放列表（创建/详情/删除）
+- YouTube 视频下载
+- 设置（用户信息/退出登录）
+
+### 配置
+- Debug 模式连接 `http://localhost:5022`（本机后端）
+- Release 模式连接 `https://oneclick.video`
+
+---
+
 ## License
 
 MIT

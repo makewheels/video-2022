@@ -62,3 +62,13 @@ GET /app/checkUpdate?platform={platform}
 - Debug 环境 BASE_URL: `http://10.0.2.2:5022`（模拟器映射本机）
 - Release 环境 BASE_URL: `https://oneclick.video`
 - 认证: OkHttp 拦截器自动从本地存储读取 token 并注入请求头
+
+---
+
+## iOS 客户端集成说明
+
+- 技术栈: Swift + SwiftUI + URLSession async/await
+- 网络层: APIClient 单例封装所有接口，位于 `ios/VideoApp/Network/APIClient.swift`
+- Debug 环境 BASE_URL: `http://localhost:5022`（本机后端）
+- Release 环境 BASE_URL: `https://oneclick.video`
+- 认证: 每个请求自动注入三个 header：`token`、`clientId`、`sessionId`，由 AuthManager 单例统一管理
