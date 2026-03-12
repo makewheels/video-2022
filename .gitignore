@@ -39,3 +39,19 @@ build/
 node_modules/
 test/venv/
 node_modules/
+
+### iOS ###
+ios/VideoApp.xcodeproj/
+ios/*.xcworkspace/
+ios/DerivedData/
+ios/.build/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
