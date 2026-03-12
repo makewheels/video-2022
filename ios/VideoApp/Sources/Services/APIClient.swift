@@ -22,16 +22,14 @@ enum APIError: LocalizedError {
     }
 }
 
-class APIClient {
+final class APIClient: @unchecked Sendable {
     static let shared = APIClient()
     private let session = URLSession.shared
-    private let decoder: JSONDecoder = {
-        let d = JSONDecoder()
-        return d
-    }()
+    private let decoder = JSONDecoder()
     
     private init() {}
     
+    @MainActor
     private func makeRequest(path: String, method: String = "GET", body: Data? = nil, baseURL: String? = nil) -> URLRequest {
         let base = baseURL ?? AppConfig.apiBaseURL
         var request = URLRequest(url: URL(string: "\(base)\(path)")!)
@@ -54,7 +52,7 @@ class APIClient {
     }
     
     func get<T: Decodable>(_ path: String, baseURL: String? = nil) async throws -> T {
-        let request = makeRequest(path: path, baseURL: baseURL)
+        let request = await makeRequest(path: path, baseURL: baseURL)
         let (data, _) = try await session.data(for: request)
         let response = try decoder.decode(ApiResponse<T>.self, from: data)
         guard response.isSuccess else {
@@ -67,7 +65,7 @@ class APIClient {
     }
     
     func getOptional<T: Decodable>(_ path: String) async throws -> T? {
-        let request = makeRequest(path: path)
+        let request = await makeRequest(path: path)
         let (data, _) = try await session.data(for: request)
         let response = try decoder.decode(ApiResponse<T?>.self, from: data)
         guard response.isSuccess else {
@@ -78,7 +76,7 @@ class APIClient {
     
     func post<T: Decodable>(_ path: String, body: Encodable) async throws -> T {
         let bodyData = try JSONEncoder().encode(body)
-        let request = makeRequest(path: path, method: "POST", body: bodyData)
+        let request = await makeRequest(path: path, method: "POST", body: bodyData)
         let (data, _) = try await session.data(for: request)
         let response = try decoder.decode(ApiResponse<T>.self, from: data)
         guard response.isSuccess else {
@@ -92,7 +90,7 @@ class APIClient {
     
     func postVoid(_ path: String, body: Encodable) async throws {
         let bodyData = try JSONEncoder().encode(body)
-        let request = makeRequest(path: path, method: "POST", body: bodyData)
+        let request = await makeRequest(path: path, method: "POST", body: bodyData)
         let (data, _) = try await session.data(for: request)
         let response = try decoder.decode(ApiResponse<String?>.self, from: data)
         guard response.isSuccess else {
@@ -101,7 +99,7 @@ class APIClient {
     }
     
     func getVoid(_ path: String) async throws {
-        let request = makeRequest(path: path)
+        let request = await makeRequest(path: path)
         let (data, _) = try await session.data(for: request)
         let response = try decoder.decode(ApiResponse<String?>.self, from: data)
         guard response.isSuccess else {
