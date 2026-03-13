@@ -11,6 +11,9 @@ setup(
         "requests>=2.28",
         "tabulate>=0.9",
     ],
+    extras_require={
+        "test": ["pytest>=7.0", "responses>=0.23"],
+    },
     entry_points={
         "console_scripts": [
             "video-cli=video_cli.main:cli",
