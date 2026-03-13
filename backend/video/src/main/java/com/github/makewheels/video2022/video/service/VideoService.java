@@ -166,22 +166,7 @@ public class VideoService {
             BeanUtils.copyProperties(video, videoVO);
             videoVO.setCoverUrl(coverId2UrlMap.get(video.getCoverId()));
             videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-            // 手动映射嵌套对象中的字段（BeanUtils 不处理嵌套属性）
-            if (video.getWatch() != null) {
-                videoVO.setWatchCount(video.getWatch().getWatchCount());
-                videoVO.setWatchId(video.getWatch().getWatchId());
-                videoVO.setWatchUrl(video.getWatch().getWatchUrl());
-                videoVO.setShortUrl(video.getWatch().getShortUrl());
-            }
-            if (video.getMediaInfo() != null) {
-                videoVO.setDuration(video.getMediaInfo().getDuration());
-            }
-            if (VideoType.YOUTUBE.equals(video.getVideoType()) && video.getYouTube() != null) {
-                YouTube youTube = video.getYouTube();
-                if (youTube.getPublishTime() != null) {
-                    videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(youTube.getPublishTime()));
-                }
-            }
+            mapVideoNestedFields(videoVO, video);
             videoVOList.add(videoVO);
         }
         return videoVOList;
@@ -214,6 +199,48 @@ public class VideoService {
         Map<String, String> coverId2UrlMap = coverService.getSignedCoverUrl(coverIdList);
 
         // 获取上传者信息（昵称优先，fallback 手机号脱敏）
+        Map<String, User> uploaderMap = buildUploaderMap(videos);
+
+        List<VideoVO> videoVOList = new ArrayList<>(videos.size());
+        for (Video video : videos) {
+            VideoVO videoVO = new VideoVO();
+            BeanUtils.copyProperties(video, videoVO);
+            videoVO.setCoverUrl(coverId2UrlMap.get(video.getCoverId()));
+            videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
+
+            User uploader = uploaderMap.get(video.getUploaderId());
+            if (uploader != null) {
+                videoVO.setUploaderName(getUploaderDisplayName(uploader));
+                videoVO.setUploaderAvatarUrl(uploader.getAvatarUrl());
+                videoVO.setUploaderId(uploader.getId());
+            } else {
+                videoVO.setUploaderName("未知用户");
+            }
+            mapVideoNestedFields(videoVO, video);
+            videoVOList.add(videoVO);
+        }
+
+        long total = videoRepository.countPublicVideos(keyword);
+        VideoListVO videoListVO = new VideoListVO();
+        videoListVO.setList(videoVOList);
+        videoListVO.setTotal(total);
+        return Result.ok(videoListVO);
+    }
+
+    private String getUploaderDisplayName(User user) {
+        String displayName = user.getNickname();
+        if (displayName == null || displayName.isEmpty()) {
+            String phone = user.getPhone();
+            if (phone != null && phone.length() >= 7) {
+                displayName = phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
+            } else {
+                displayName = "未知用户";
+            }
+        }
+        return displayName;
+    }
+
+    private Map<String, User> buildUploaderMap(List<Video> videos) {
         Set<String> uploaderIds = videos.stream()
                 .map(Video::getUploaderId)
                 .filter(Objects::nonNull)
@@ -225,55 +252,25 @@ public class VideoService {
                 uploaderMap.put(uploaderId, user);
             }
         }
+        return uploaderMap;
+    }
 
-        List<VideoVO> videoVOList = new ArrayList<>(videos.size());
-        for (Video video : videos) {
-            VideoVO videoVO = new VideoVO();
-            BeanUtils.copyProperties(video, videoVO);
-            videoVO.setCoverUrl(coverId2UrlMap.get(video.getCoverId()));
-            videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-
-            User uploader = uploaderMap.get(video.getUploaderId());
-            if (uploader != null) {
-                String displayName = uploader.getNickname();
-                if (displayName == null || displayName.isEmpty()) {
-                    String phone = uploader.getPhone();
-                    if (phone != null && phone.length() >= 7) {
-                        displayName = phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
-                    } else {
-                        displayName = "未知用户";
-                    }
-                }
-                videoVO.setUploaderName(displayName);
-                videoVO.setUploaderAvatarUrl(uploader.getAvatarUrl());
-                videoVO.setUploaderId(uploader.getId());
-            } else {
-                videoVO.setUploaderName("未知用户");
-            }
-            // 手动映射嵌套对象中的字段（BeanUtils 不处理嵌套属性）
-            if (video.getWatch() != null) {
-                videoVO.setWatchCount(video.getWatch().getWatchCount());
-                videoVO.setWatchId(video.getWatch().getWatchId());
-                videoVO.setWatchUrl(video.getWatch().getWatchUrl());
-                videoVO.setShortUrl(video.getWatch().getShortUrl());
-            }
-            if (video.getMediaInfo() != null) {
-                videoVO.setDuration(video.getMediaInfo().getDuration());
-            }
-            if (VideoType.YOUTUBE.equals(video.getVideoType()) && video.getYouTube() != null) {
-                YouTube youTube = video.getYouTube();
-                if (youTube.getPublishTime() != null) {
-                    videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(youTube.getPublishTime()));
-                }
-            }
-            videoVOList.add(videoVO);
+    private void mapVideoNestedFields(VideoVO videoVO, Video video) {
+        if (video.getWatch() != null) {
+            videoVO.setWatchCount(video.getWatch().getWatchCount());
+            videoVO.setWatchId(video.getWatch().getWatchId());
+            videoVO.setWatchUrl(video.getWatch().getWatchUrl());
+            videoVO.setShortUrl(video.getWatch().getShortUrl());
         }
-
-        long total = videoRepository.countPublicVideos(keyword);
-        VideoListVO videoListVO = new VideoListVO();
-        videoListVO.setList(videoVOList);
-        videoListVO.setTotal(total);
-        return Result.ok(videoListVO);
+        if (video.getMediaInfo() != null) {
+            videoVO.setDuration(video.getMediaInfo().getDuration());
+        }
+        if (VideoType.YOUTUBE.equals(video.getVideoType()) && video.getYouTube() != null) {
+            YouTube youTube = video.getYouTube();
+            if (youTube.getPublishTime() != null) {
+                videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(youTube.getPublishTime()));
+            }
+        }
     }
 
     /**

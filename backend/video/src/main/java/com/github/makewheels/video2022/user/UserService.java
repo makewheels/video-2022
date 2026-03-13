@@ -86,14 +86,13 @@ public class UserService {
         //如果redis里已经有了，直接返回
         VerificationCode verificationCode = userRedisService.getVerificationCode(phone);
         if (verificationCode != null) {
-            log.info("Redis已有，手机：{}，验证码：{}", verificationCode.getPhone(),
-                    verificationCode.getCode());
+            log.info("Redis已有，手机：{}，验证码已存在", verificationCode.getPhone());
             return;
         }
 
         //如果redis里没有，发验证码，放redis里，返回
         String code = RandomUtil.randomNumbers(4);
-        log.info("requestVerificationCode 手机：{}，验证码：{}", phone, code);
+        log.info("requestVerificationCode 手机：{}，验证码已发送", phone);
 //        Map<String, String> contentVar = new HashMap<>();
 //        contentVar.put("verificationCode", code);
 //        smsService.sendVerificationCode(phone, contentVar);

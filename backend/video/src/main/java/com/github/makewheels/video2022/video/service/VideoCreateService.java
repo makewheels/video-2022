@@ -47,6 +47,22 @@ public class VideoCreateService {
     /**
      * 创建视频对象
      */
+    private void setupWatchInfo(Video video) {
+        String watchId = idService.nextShortId();
+        Watch watch = video.getWatch();
+        watch.setWatchId(watchId);
+        String watchUrl = environmentService.getInternalBaseUrl() + "/w?v=" + watchId;
+        watch.setWatchUrl(watchUrl);
+
+        //本地开发环境shortUrl就是watchUrl
+        watch.setShortUrl(watchUrl);
+
+//        if (environmentService.isProductionEnv()) {
+//            String shortUrl = shortUrlService.getShortUrl(watchUrl);
+//            watch.setShortUrl(shortUrl);
+//        }
+    }
+
     private Video createVideo(CreateVideoDTO createVideoDTO) {
         User user = UserHolder.get();
         createVideoDTO.setUser(user);
@@ -77,19 +93,7 @@ public class VideoCreateService {
         createVideoDTO.setRawFile(videoFile);
 
         video.setRawFileId(videoFile.getId());
-        String watchId = idService.nextShortId();
-        Watch watch = video.getWatch();
-        watch.setWatchId(watchId);
-        String watchUrl = environmentService.getInternalBaseUrl() + "/w?v=" + watchId;
-        watch.setWatchUrl(watchUrl);
-
-        //本地开发环境shortUrl就是watchUrl
-        watch.setShortUrl(watchUrl);
-
-//        if (environmentService.isProductionEnv()) {
-//            String shortUrl = shortUrlService.getShortUrl(watchUrl);
-//            watch.setShortUrl(shortUrl);
-//        }
+        setupWatchInfo(video);
 
         //设置过期时间
 //        long expireTimeInMillis = Duration.ofDays(30).toMillis();

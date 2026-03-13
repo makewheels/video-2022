@@ -34,6 +34,13 @@ public class PutTokenInterceptor implements HandlerInterceptor, Ordered {
     }
 
     @Override
+    public void afterCompletion(
+            HttpServletRequest request, HttpServletResponse response,
+            Object handler, Exception ex) {
+        UserHolder.remove();
+    }
+
+    @Override
     public int getOrder() {
         return InterceptorOrder.PUT_TOKEN;
     }

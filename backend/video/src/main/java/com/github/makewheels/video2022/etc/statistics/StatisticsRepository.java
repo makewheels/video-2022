@@ -42,7 +42,11 @@ public class StatisticsRepository {
         );
         AggregationResults<JSONObject> result = mongoTemplate.aggregate(
                 aggregation, "fileAccessLog", JSONObject.class);
-        return result.getMappedResults().get(0).getLong("sum");
+        List<JSONObject> mappedResults = result.getMappedResults();
+        if (mappedResults.isEmpty()) {
+            return 0L;
+        }
+        return mappedResults.get(0).getLong("sum");
     }
 
     /**
@@ -85,7 +89,7 @@ public class StatisticsRepository {
         if (document == null) {
             return 0L;
         }
-        return document.getLong("totalSize");
+        return document.getLong("sum");
     }
 
     /**

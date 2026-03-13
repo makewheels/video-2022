@@ -19,6 +19,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 阿里云MPS转码实现类
@@ -123,7 +124,7 @@ public class AliyunMpsTranscodeImpl implements TranscodeService {
         mongoTemplate.save(transcode);
 
         //异步轮询查询阿里云转码状态
-        new Thread(() -> iterateQueryAliyunTranscodeJob(video, transcode)).start();
+        CompletableFuture.runAsync(() -> iterateQueryAliyunTranscodeJob(video, transcode));
     }
 
     /**

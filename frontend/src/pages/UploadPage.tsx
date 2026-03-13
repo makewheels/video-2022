@@ -273,7 +273,7 @@ function PlaylistManager({ playlists, selectedPlaylistId, onSelectPlaylist, onAd
   );
 }
 
-function UploadPage() {
+function useUploadState() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -312,23 +312,38 @@ function UploadPage() {
     }
   }, [file, toast]);
 
+  return {
+    file, uploading, progress, fileInputRef, videoData, videoStatus,
+    title, setTitle, description, setDescription, visibility, setVisibility,
+    playlists, selectedPlaylistId, setSelectedPlaylistId,
+    handleFileSelect, handleUpload, toast,
+  };
+}
+
+function UploadPage() {
+  const state = useUploadState();
+
   return (
     <div className="card">
       <div className="card-header">上传视频</div>
-      <DropZone file={file} uploading={uploading} progress={progress} fileInputRef={fileInputRef} onFileSelect={handleFileSelect} onUpload={handleUpload} />
-      {videoData && (
+      <DropZone
+        file={state.file} uploading={state.uploading} progress={state.progress}
+        fileInputRef={state.fileInputRef} onFileSelect={state.handleFileSelect} onUpload={state.handleUpload}
+      />
+      {state.videoData && (
         <>
-          <StatusDisplay videoStatus={videoStatus} />
+          <StatusDisplay videoStatus={state.videoStatus} />
           <EditForm
-            title={title} description={description} visibility={visibility}
-            onTitleChange={setTitle} onDescriptionChange={setDescription} onVisibilityChange={setVisibility}
-            onUpdateInfo={() => updateVideoInfo(videoData.videoId, title, description, visibility, toast)}
-            onCopy={() => copyVideoInfo(title, videoData.watchUrl, toast)}
+            title={state.title} description={state.description} visibility={state.visibility}
+            onTitleChange={state.setTitle} onDescriptionChange={state.setDescription}
+            onVisibilityChange={state.setVisibility}
+            onUpdateInfo={() => updateVideoInfo(state.videoData!.videoId, state.title, state.description, state.visibility, state.toast)}
+            onCopy={() => copyVideoInfo(state.title, state.videoData!.watchUrl, state.toast)}
           />
           <PlaylistManager
-            playlists={playlists} selectedPlaylistId={selectedPlaylistId}
-            onSelectPlaylist={setSelectedPlaylistId}
-            onAddToPlaylist={() => addToPlaylist(selectedPlaylistId, videoData.videoId, toast)}
+            playlists={state.playlists} selectedPlaylistId={state.selectedPlaylistId}
+            onSelectPlaylist={state.setSelectedPlaylistId}
+            onAddToPlaylist={() => addToPlaylist(state.selectedPlaylistId, state.videoData!.videoId, state.toast)}
           />
         </>
       )}

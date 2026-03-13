@@ -69,7 +69,7 @@ export default function PublicVideoCard({ video, compact }: PublicVideoCardProps
         ) : (
           <div className="yt-card-thumbnail-placeholder">▶</div>
         )}
-        {video.duration > 0 && (
+        {video.duration != null && video.duration > 0 && (
           <span className="yt-card-duration">{formatDuration(video.duration)}</span>
         )}
       </div>

@@ -95,6 +95,8 @@ public class VideoController {
      */
     @GetMapping("getRawFileDownloadUrl")
     public Result<JSONObject> getRawFileDownloadUrl(@RequestParam String videoId) {
+        checkService.checkVideoExist(videoId);
+        checkService.checkVideoBelongsToUser(videoId, UserHolder.getUserId());
         String url = videoService.getRawFileDownloadUrl(videoId);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("url", url);

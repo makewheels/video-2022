@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -25,6 +26,98 @@ import com.github.makewheels.video2022.ui.upload.UploadScreen
 import com.github.makewheels.video2022.ui.watch.WatchScreen
 import com.github.makewheels.video2022.ui.youtube.YouTubeScreen
 
+private fun NavGraphBuilder.authRoutes(navController: NavHostController) {
+    composable(Screen.Login.route) {
+        LoginScreen(onLoginSuccess = {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Login.route) { inclusive = true }
+            }
+        })
+    }
+}
+
+private fun NavGraphBuilder.homeRoutes(navController: NavHostController) {
+    composable(Screen.Home.route) {
+        HomeScreen(onVideoClick = { watchId ->
+            navController.navigate(Screen.Watch.createRoute(watchId))
+        })
+    }
+    composable(Screen.Playlist.route) {
+        PlaylistScreen(onPlaylistClick = { id ->
+            navController.navigate(Screen.PlaylistDetail.createRoute(id))
+        })
+    }
+    composable(Screen.Upload.route) {
+        UploadScreen()
+    }
+    composable(Screen.MyVideos.route) {
+        MyVideosScreen(
+            onVideoClick = { watchId ->
+                navController.navigate(Screen.Watch.createRoute(watchId))
+            },
+            onEditClick = { videoId ->
+                navController.navigate(Screen.Edit.createRoute(videoId))
+            }
+        )
+    }
+    composable(Screen.Settings.route) {
+        SettingsScreen(
+            onNavigateToYouTube = { navController.navigate(Screen.YouTube.route) },
+            onLogout = {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(0) { inclusive = true }
+                }
+            }
+        )
+    }
+}
+
+private fun NavGraphBuilder.videoRoutes(navController: NavHostController) {
+    composable(
+        Screen.Watch.route,
+        arguments = listOf(navArgument("watchId") { type = NavType.StringType })
+    ) { entry ->
+        val watchId = entry.arguments?.getString("watchId") ?: return@composable
+        WatchScreen(onBack = { navController.popBackStack() })
+    }
+    composable(
+        Screen.Edit.route,
+        arguments = listOf(navArgument("videoId") { type = NavType.StringType })
+    ) { entry ->
+        val videoId = entry.arguments?.getString("videoId") ?: return@composable
+        EditScreen(
+            onBack = { navController.popBackStack() },
+            onDeleted = { navController.popBackStack() }
+        )
+    }
+    composable(
+        Screen.PlaylistDetail.route,
+        arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
+    ) { entry ->
+        val playlistId = entry.arguments?.getString("playlistId") ?: return@composable
+        PlaylistDetailScreen(
+            onVideoClick = { watchId ->
+                navController.navigate(Screen.Watch.createRoute(watchId))
+            },
+            onBack = { navController.popBackStack() }
+        )
+    }
+    composable(Screen.YouTube.route) {
+        YouTubeScreen()
+    }
+    composable(
+        Screen.Channel.route,
+        arguments = listOf(navArgument("userId") { type = NavType.StringType })
+    ) { _ ->
+        ChannelScreen(
+            onVideoClick = { watchId ->
+                navController.navigate(Screen.Watch.createRoute(watchId))
+            },
+            onBack = { navController.popBackStack() }
+        )
+    }
+}
+
 @Composable
 fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
     val startDestination = Screen.Home.route
@@ -44,89 +137,9 @@ fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
             startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Login.route) {
-                LoginScreen(onLoginSuccess = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                })
-            }
-            composable(Screen.Home.route) {
-                HomeScreen(onVideoClick = { watchId ->
-                    navController.navigate(Screen.Watch.createRoute(watchId))
-                })
-            }
-            composable(Screen.Playlist.route) {
-                PlaylistScreen(onPlaylistClick = { id ->
-                    navController.navigate(Screen.PlaylistDetail.createRoute(id))
-                })
-            }
-            composable(Screen.Upload.route) {
-                UploadScreen()
-            }
-            composable(Screen.MyVideos.route) {
-                MyVideosScreen(
-                    onVideoClick = { watchId ->
-                        navController.navigate(Screen.Watch.createRoute(watchId))
-                    },
-                    onEditClick = { videoId ->
-                        navController.navigate(Screen.Edit.createRoute(videoId))
-                    }
-                )
-            }
-            composable(Screen.Settings.route) {
-                SettingsScreen(
-                    onNavigateToYouTube = { navController.navigate(Screen.YouTube.route) },
-                    onLogout = {
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
-                    }
-                )
-            }
-            composable(
-                Screen.Watch.route,
-                arguments = listOf(navArgument("watchId") { type = NavType.StringType })
-            ) { entry ->
-                val watchId = entry.arguments?.getString("watchId") ?: return@composable
-                WatchScreen(onBack = { navController.popBackStack() })
-            }
-            composable(
-                Screen.Edit.route,
-                arguments = listOf(navArgument("videoId") { type = NavType.StringType })
-            ) { entry ->
-                val videoId = entry.arguments?.getString("videoId") ?: return@composable
-                EditScreen(
-                    onBack = { navController.popBackStack() },
-                    onDeleted = { navController.popBackStack() }
-                )
-            }
-            composable(
-                Screen.PlaylistDetail.route,
-                arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
-            ) { entry ->
-                val playlistId = entry.arguments?.getString("playlistId") ?: return@composable
-                PlaylistDetailScreen(
-                    onVideoClick = { watchId ->
-                        navController.navigate(Screen.Watch.createRoute(watchId))
-                    },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Screen.YouTube.route) {
-                YouTubeScreen()
-            }
-            composable(
-                Screen.Channel.route,
-                arguments = listOf(navArgument("userId") { type = NavType.StringType })
-            ) { _ ->
-                ChannelScreen(
-                    onVideoClick = { watchId ->
-                        navController.navigate(Screen.Watch.createRoute(watchId))
-                    },
-                    onBack = { navController.popBackStack() }
-                )
-            }
+            authRoutes(navController)
+            homeRoutes(navController)
+            videoRoutes(navController)
         }
     }
 }

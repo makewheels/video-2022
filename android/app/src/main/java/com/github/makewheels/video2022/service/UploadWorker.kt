@@ -75,6 +75,7 @@ class UploadWorker(
             setForeground(createForegroundInfo(100))
             Result.success()
         } catch (e: Exception) {
+            android.util.Log.e("UploadWorker", "Upload failed", e)
             Result.failure()
         }
     }
@@ -89,7 +90,8 @@ class UploadWorker(
             val api = retrofit.create(com.github.makewheels.video2022.data.api.VideoApi::class.java)
             api.uploadFinish(fileId)
             api.rawFileUploadFinish(videoId)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.e("UploadWorker", "Failed to notify upload finish: fileId=$fileId, videoId=$videoId", e)
         }
     }
 

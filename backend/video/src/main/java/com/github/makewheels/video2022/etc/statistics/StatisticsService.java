@@ -59,33 +59,37 @@ public class StatisticsService {
      * }]
      * };
      */
-    public JSONObject toEchartsBarData(List<Document> documents) {
-        List<Document> modifiableDocuments = new ArrayList<>(documents);
-        modifiableDocuments.sort((d1, d2) -> {
+    private List<Document> sortDocumentsByDate(List<Document> documents) {
+        List<Document> sorted = new ArrayList<>(documents);
+        sorted.sort((d1, d2) -> {
             String date1 = d1.getString("_id");
             String date2 = d2.getString("_id");
             return date1.compareTo(date2);
         });
-        documents = modifiableDocuments;
+        return sorted;
+    }
 
-        JSONObject echartsBar = new JSONObject();
-
-        JSONObject xAxis = new JSONObject();
-        JSONArray xAxisData = new JSONArray();
-
-        JSONObject yAxis = new JSONObject();
-        JSONArray yAxisData = new JSONArray();
-
+    private JSONObject buildSeriesWithLabel(JSONArray seriesData) {
         JSONObject series = new JSONObject();
+        series.put("data", seriesData);
+        series.put("type", "bar");
 
+        JSONObject label = new JSONObject();
+        label.put("show", true);
+        label.put("position", "top");
+//        label.put("fontSize", 14);
+//        label.put("color", "#000");
+        series.put("label", label);
+        return series;
+    }
+
+    public JSONObject toEchartsBarData(List<Document> documents) {
+        documents = sortDocumentsByDate(documents);
+
+        JSONArray xAxisData = new JSONArray();
+        JSONArray yAxisData = new JSONArray();
         JSONArray seriesData = new JSONArray();
 
-        /**
-         * { _id: '2023-01-06', totalSize: 179589256 }
-         * { _id: '2023-01-14', totalSize: 316371476 }
-         * { _id: '2023-01-15', totalSize: 123835600 }
-         * { _id: '2023-01-16', totalSize: 49088680 }
-         */
         for (Document document : documents) {
             xAxisData.add(document.getString("_id"));
             Long totalSize = document.getLong("totalSize");
@@ -93,33 +97,18 @@ public class StatisticsService {
             seriesData.add(totalSize);
         }
 
+        JSONObject xAxis = new JSONObject();
         xAxis.put("data", xAxisData);
         xAxis.put("type", "category");
 
+        JSONObject yAxis = new JSONObject();
         yAxis.put("type", "value");
         yAxis.put("data", yAxisData);
 
-        series.put("data", seriesData);
-        series.put("type", "bar");
-
-        /**
-         * label: {
-         *     show: true,
-         *     position: 'top',
-         *     fontSize: 14,
-         *     color: '#000'
-         * }
-         */
-        JSONObject label = new JSONObject();
-        label.put("show", true);
-        label.put("position", "top");
-//        label.put("fontSize", 14);
-//        label.put("color", "#000");
-        series.put("label", label);
-
+        JSONObject echartsBar = new JSONObject();
         echartsBar.put("xAxis", xAxis);
         echartsBar.put("yAxis", yAxis);
-        echartsBar.put("series", series);
+        echartsBar.put("series", buildSeriesWithLabel(seriesData));
 
         return echartsBar;
     }
