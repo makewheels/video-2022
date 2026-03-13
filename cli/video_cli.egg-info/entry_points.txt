@@ -1,0 +1,2 @@
+[console_scripts]
+video-cli = video_cli.main:cli
