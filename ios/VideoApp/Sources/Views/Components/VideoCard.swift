@@ -20,9 +20,29 @@ struct VideoCard: View {
                     .lineLimit(2)
                 
                 if let name = video.uploaderName {
-                    Text(name)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 4) {
+                        if let avatarUrl = video.uploaderAvatarUrl, let url = URL(string: avatarUrl) {
+                            AsyncImage(url: url) { image in
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            } placeholder: {
+                                Circle().fill(Color.blue)
+                                    .frame(width: 24, height: 24)
+                            }
+                            .frame(width: 24, height: 24)
+                            .clipShape(Circle())
+                        } else {
+                            Circle().fill(Color.blue)
+                                .frame(width: 24, height: 24)
+                                .overlay(
+                                    Text(String(name.prefix(1)).uppercased())
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.white)
+                                )
+                        }
+                        Text(name)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 
                 HStack {
