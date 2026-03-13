@@ -61,6 +61,7 @@ def test_valid_token_accesses_protected(base_url):
 
     resp = requests.get(
         f"{base_url}/video/getMyVideoList",
+        params={"skip": 0, "limit": 10},
         headers={"token": token},
         allow_redirects=False,
     )
@@ -75,7 +76,7 @@ def test_valid_token_accesses_protected(base_url):
 
 PROTECTED_ENDPOINTS = [
     ("POST", "/video/create"),
-    ("POST", "/video/rawFileUploadFinish"),
+    ("GET", "/video/rawFileUploadFinish"),
     ("POST", "/video/updateInfo"),
     ("GET", "/video/getMyVideoList"),
     ("GET", "/video/getVideoStatus"),
@@ -91,8 +92,8 @@ PROTECTED_ENDPOINTS = [
     ("GET", "/comment/like"),
     ("POST", "/user/updateProfile"),
     ("GET", "/user/getMyProfile"),
-    ("POST", "/subscription/subscribe"),
-    ("POST", "/subscription/unsubscribe"),
+    ("GET", "/subscription/subscribe"),
+    ("GET", "/subscription/unsubscribe"),
     ("GET", "/subscription/getStatus"),
     ("GET", "/subscription/getMySubscriptions"),
 ]
