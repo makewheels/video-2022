@@ -16,7 +16,9 @@ data class VideoItem(
     val type: String?,
     val coverUrl: String?,
     val youtubePublishTimeString: String?,
-    val uploaderName: String? = null
+    val uploaderName: String? = null,
+    val uploaderAvatarUrl: String? = null,
+    val uploaderId: String? = null
 )
 
 data class VideoListResponse(

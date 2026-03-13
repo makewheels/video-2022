@@ -1,6 +1,8 @@
 package com.github.makewheels.video2022.data.repository
 
 import com.github.makewheels.video2022.data.api.UserApi
+import com.github.makewheels.video2022.data.model.ChannelInfo
+import com.github.makewheels.video2022.data.model.UpdateProfileRequest
 import com.github.makewheels.video2022.data.model.User
 import com.github.makewheels.video2022.util.TokenManager
 import javax.inject.Inject
@@ -38,5 +40,38 @@ class UserRepository @Inject constructor(
 
     suspend fun logout() {
         tokenManager.clearToken()
+    }
+
+    suspend fun updateProfile(request: UpdateProfileRequest): Result<Unit> = runCatching {
+        val response = userApi.updateProfile(request)
+        if (!response.isSuccess) throw Exception(response.message ?: "更新个人资料失败")
+    }
+
+    suspend fun getMyProfile(): Result<User> = runCatching {
+        val response = userApi.getMyProfile()
+        if (!response.isSuccess) throw Exception(response.message ?: "获取个人资料失败")
+        response.data ?: throw Exception("返回数据为空")
+    }
+
+    suspend fun getChannel(userId: String): Result<ChannelInfo> = runCatching {
+        val response = userApi.getChannel(userId)
+        if (!response.isSuccess) throw Exception(response.message ?: "获取频道信息失败")
+        response.data ?: throw Exception("返回数据为空")
+    }
+
+    suspend fun subscribe(channelUserId: String): Result<Unit> = runCatching {
+        val response = userApi.subscribe(channelUserId)
+        if (!response.isSuccess) throw Exception(response.message ?: "订阅失败")
+    }
+
+    suspend fun unsubscribe(channelUserId: String): Result<Unit> = runCatching {
+        val response = userApi.unsubscribe(channelUserId)
+        if (!response.isSuccess) throw Exception(response.message ?: "取消订阅失败")
+    }
+
+    suspend fun getSubscriptionStatus(channelUserId: String): Result<Boolean> = runCatching {
+        val response = userApi.getSubscriptionStatus(channelUserId)
+        if (!response.isSuccess) throw Exception(response.message ?: "获取订阅状态失败")
+        response.data ?: false
     }
 }
