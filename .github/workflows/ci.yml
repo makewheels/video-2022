@@ -249,9 +249,51 @@ jobs:
         working-directory: cli
         run: python -m pytest tests/ -v --tb=short
 
+  android-tests:
+    name: Android 单元测试
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Run Android unit tests
+        working-directory: android
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+  ios-tests:
+    name: iOS 单元测试
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Run iOS unit tests
+        working-directory: ios
+        run: >-
+          xcodebuild test
+          -project VideoApp.xcodeproj
+          -scheme VideoApp
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest'
+          -only-testing:VideoAppTests
+          -quiet
+
   build-and-test:
     name: build-and-test
-    needs: [backend-tests, frontend-tests, api-e2e-tests, browser-e2e-tests, cli-tests]
+    needs: [backend-tests, frontend-tests, api-e2e-tests, browser-e2e-tests, cli-tests, android-tests, ios-tests]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -261,7 +303,9 @@ jobs:
              [ "${{ needs.frontend-tests.result }}" != "success" ] || \
              [ "${{ needs.api-e2e-tests.result }}" != "success" ] || \
              [ "${{ needs.browser-e2e-tests.result }}" != "success" ] || \
-             [ "${{ needs.cli-tests.result }}" != "success" ]; then
+             [ "${{ needs.cli-tests.result }}" != "success" ] || \
+             [ "${{ needs.android-tests.result }}" != "success" ] || \
+             [ "${{ needs.ios-tests.result }}" != "success" ]; then
             echo "One or more jobs failed"
             exit 1
           fi
