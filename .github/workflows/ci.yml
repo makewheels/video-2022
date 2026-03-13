@@ -267,10 +267,22 @@ jobs:
 
   ios-tests:
     name: iOS 单元测试
-    runs-on: macos-latest
+    runs-on: macos-14
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Select Xcode 16
+        run: |
+          ls /Applications/Xcode*.app/Contents/Developer 2>/dev/null | head -5
+          XCODE_PATH=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE_PATH" ]; then
+            echo "No Xcode 16 found, using default"
+          else
+            echo "Using $XCODE_PATH"
+            sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+          fi
+          xcodebuild -version
 
       - name: Install xcodegen
         run: brew install xcodegen
@@ -278,9 +290,6 @@ jobs:
       - name: Generate Xcode project
         working-directory: ios
         run: xcodegen generate
-
-      - name: Install iOS Simulator
-        run: xcodebuild -downloadPlatform iOS
 
       - name: Run iOS unit tests
         working-directory: ios
@@ -294,7 +303,8 @@ jobs:
                       if d.get('isAvailable') and 'iPhone' in d['name']:
                           print(f\"platform=iOS Simulator,id={d['udid']}\")
                           sys.exit(0)
-          " || echo "platform=iOS Simulator,name=iPhone 16,OS=latest")
+          " || echo "platform=iOS Simulator,name=iPhone 15,OS=latest")
+          echo "Using destination: $DEST"
           xcodebuild test \
             -project VideoApp.xcodeproj \
             -scheme VideoApp \
