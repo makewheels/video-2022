@@ -22,6 +22,8 @@ public class VideoVO {
     private String status;
     private String visibility;
 
+    private String uploaderName;
+
     private Date createTime;
     private String createTimeString;
 

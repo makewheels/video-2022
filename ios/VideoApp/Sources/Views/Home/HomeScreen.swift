@@ -42,7 +42,7 @@ struct HomeScreen: View {
     private func loadVideos(refresh: Bool) async {
         isLoading = true
         do {
-            let resp: VideoListResponse = try await api.get("/video/getMyVideoList?skip=0&limit=\(pageSize)")
+            let resp: VideoListResponse = try await api.get("/video/getPublicVideoList?skip=0&limit=\(pageSize)")
             videos = resp.list
             hasMore = resp.list.count >= pageSize
         } catch {}
@@ -53,7 +53,7 @@ struct HomeScreen: View {
         guard !isLoading, hasMore else { return }
         isLoading = true
         do {
-            let resp: VideoListResponse = try await api.get("/video/getMyVideoList?skip=\(videos.count)&limit=\(pageSize)")
+            let resp: VideoListResponse = try await api.get("/video/getPublicVideoList?skip=\(videos.count)&limit=\(pageSize)")
             videos.append(contentsOf: resp.list)
             hasMore = resp.list.count >= pageSize
         } catch {}

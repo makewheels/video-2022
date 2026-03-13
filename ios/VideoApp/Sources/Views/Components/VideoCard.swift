@@ -19,6 +19,12 @@ struct VideoCard: View {
                     .font(.subheadline)
                     .lineLimit(2)
                 
+                if let name = video.uploaderName {
+                    Text(name)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
                 HStack {
                     if let count = video.watchCount {
                         Text("\(count) 次观看")

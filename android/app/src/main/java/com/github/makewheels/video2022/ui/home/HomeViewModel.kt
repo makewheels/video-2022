@@ -34,7 +34,7 @@ class HomeViewModel @Inject constructor(
     fun loadVideos() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
-            videoRepository.getMyVideoList(0, pageSize)
+            videoRepository.getPublicVideoList(0, pageSize)
                 .onSuccess { resp ->
                     _uiState.value = _uiState.value.copy(
                         videos = resp.list,
@@ -52,7 +52,7 @@ class HomeViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isRefreshing = true)
-            videoRepository.getMyVideoList(0, pageSize)
+            videoRepository.getPublicVideoList(0, pageSize)
                 .onSuccess { resp ->
                     _uiState.value = _uiState.value.copy(
                         videos = resp.list,
@@ -72,7 +72,7 @@ class HomeViewModel @Inject constructor(
         if (state.isLoading || !state.hasMore) return
         viewModelScope.launch {
             _uiState.value = state.copy(isLoading = true)
-            videoRepository.getMyVideoList(state.videos.size, pageSize)
+            videoRepository.getPublicVideoList(state.videos.size, pageSize)
                 .onSuccess { resp ->
                     _uiState.value = _uiState.value.copy(
                         videos = _uiState.value.videos + resp.list,

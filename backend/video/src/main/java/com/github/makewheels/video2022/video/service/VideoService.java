@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverService;
 import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.user.UserRepository;
+import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.user.UserHolder;
@@ -26,9 +28,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,6 +47,8 @@ public class VideoService {
 
     @Resource
     private VideoRepository videoRepository;
+    @Resource
+    private UserRepository userRepository;
     @Resource
     private RawFileService rawFileService;
     @Resource
@@ -192,6 +194,67 @@ public class VideoService {
         String userId = UserHolder.getUserId();
         List<VideoVO> videoVOList = getVideoList(userId, skip, limit, keyword);
         long total = videoRepository.countVideosByUserId(userId, keyword);
+        VideoListVO videoListVO = new VideoListVO();
+        videoListVO.setList(videoVOList);
+        videoListVO.setTotal(total);
+        return Result.ok(videoListVO);
+    }
+
+    /**
+     * 分页获取公开视频列表
+     */
+    public Result<VideoListVO> getPublicVideoList(int skip, int limit, String keyword) {
+        List<Video> videos = videoRepository.getPublicVideoList(skip, limit, keyword);
+
+        // 获取封面url
+        List<String> coverIdList = videos.stream()
+                .map(Video::getCoverId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        Map<String, String> coverId2UrlMap = coverService.getSignedCoverUrl(coverIdList);
+
+        // 获取上传者名称（手机号脱敏）
+        Set<String> uploaderIds = videos.stream()
+                .map(Video::getUploaderId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<String, String> uploaderNameMap = new HashMap<>();
+        for (String uploaderId : uploaderIds) {
+            User user = userRepository.getById(uploaderId);
+            if (user != null && user.getPhone() != null) {
+                String phone = user.getPhone();
+                String masked = phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
+                uploaderNameMap.put(uploaderId, masked);
+            }
+        }
+
+        List<VideoVO> videoVOList = new ArrayList<>(videos.size());
+        for (Video video : videos) {
+            VideoVO videoVO = new VideoVO();
+            BeanUtils.copyProperties(video, videoVO);
+            videoVO.setCoverUrl(coverId2UrlMap.get(video.getCoverId()));
+            videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
+            videoVO.setUploaderName(uploaderNameMap.getOrDefault(video.getUploaderId(), "未知用户"));
+            // 手动映射嵌套对象中的字段（BeanUtils 不处理嵌套属性）
+            if (video.getWatch() != null) {
+                videoVO.setWatchCount(video.getWatch().getWatchCount());
+                videoVO.setWatchId(video.getWatch().getWatchId());
+                videoVO.setWatchUrl(video.getWatch().getWatchUrl());
+                videoVO.setShortUrl(video.getWatch().getShortUrl());
+            }
+            if (video.getMediaInfo() != null) {
+                videoVO.setDuration(video.getMediaInfo().getDuration());
+            }
+            if (VideoType.YOUTUBE.equals(video.getVideoType()) && video.getYouTube() != null) {
+                YouTube youTube = video.getYouTube();
+                if (youTube.getPublishTime() != null) {
+                    videoVO.setYoutubePublishTimeString(DateUtil.formatDateTime(youTube.getPublishTime()));
+                }
+            }
+            videoVOList.add(videoVO);
+        }
+
+        long total = videoRepository.countPublicVideos(keyword);
         VideoListVO videoListVO = new VideoListVO();
         videoListVO.setList(videoVOList);
         videoListVO.setTotal(total);
