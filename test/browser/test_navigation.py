@@ -3,7 +3,8 @@
 NavBar structure (from NavBar.tsx):
 - header.page-header
   - Link.logo → "📹 Video" → /
-  - nav.nav-menu with nav-links: 首页(/), 上传(/upload), 统计(/statistics), YouTube(/youtube)
+  - form.nav-search with search input and button
+  - nav.nav-menu with nav-links: 首页(/), 我的视频(/my-videos), 上传(/upload), 统计(/statistics), YouTube(/youtube)
   - .header-right with theme toggle and auth section
   - button.mobile-menu-btn (hamburger)
 - footer.page-footer with "Video Platform"
@@ -27,14 +28,14 @@ class TestNavBarStructure:
         assert "Video" in logo.inner_text()
 
     def test_nav_links_present(self, auth_page, base_url):
-        """All four nav links are present."""
+        """All five nav links are present."""
         auth_page.goto(base_url)
         nav = auth_page.locator("nav.nav-menu")
         nav.wait_for(timeout=BASE_TIMEOUT)
         links = nav.locator("a.nav-link")
-        assert links.count() == 4
-        labels = [links.nth(i).inner_text() for i in range(4)]
-        assert labels == ["首页", "上传", "统计", "YouTube"]
+        assert links.count() == 5
+        labels = [links.nth(i).inner_text() for i in range(5)]
+        assert labels == ["首页", "我的视频", "上传", "统计", "YouTube"]
 
     def test_footer_visible(self, auth_page, base_url):
         """Footer with 'Video Platform' is visible."""
