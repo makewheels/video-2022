@@ -2,11 +2,10 @@ package com.github.makewheels.video2022.user;
 
 import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
+import com.github.makewheels.video2022.user.bean.ChannelVO;
+import com.github.makewheels.video2022.user.bean.UpdateProfileRequest;
 import com.github.makewheels.video2022.user.bean.User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 
@@ -42,6 +41,25 @@ public class UserController {
     public Result<User> getUserById(@RequestParam String userId) {
         User user = userService.getUserById(userId);
         return Result.ok(user);
+    }
+
+    @PostMapping("updateProfile")
+    public Result<Void> updateProfile(@RequestBody UpdateProfileRequest request) {
+        return userService.updateProfile(request);
+    }
+
+    @GetMapping("getChannel")
+    public Result<ChannelVO> getChannel(@RequestParam String userId) {
+        ChannelVO channel = userService.getChannel(userId);
+        if (channel == null) {
+            return Result.error("用户不存在");
+        }
+        return Result.ok(channel);
+    }
+
+    @GetMapping("getMyProfile")
+    public Result<User> getMyProfile() {
+        return Result.ok(userService.getMyProfile());
     }
 
 }

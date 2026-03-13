@@ -26,9 +26,18 @@ public class User {
     @Indexed
     private String token;
 
+    private String nickname;
+    private String avatarUrl;
+    private String bannerUrl;
+    private String bio;
+    private Long subscriberCount;
+    private Long videoCount;
+
     public User() {
         this.createTime = new Date();
         this.updateTime = new Date();
+        this.subscriberCount = 0L;
+        this.videoCount = 0L;
     }
 
     @Override

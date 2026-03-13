@@ -20,6 +20,8 @@ public class Comment {
     private String userId;
 
     private String userPhone;
+    private String userNickname;
+    private String userAvatarUrl;
 
     private String content;
 
@@ -34,6 +36,7 @@ public class Comment {
      */
     private String replyToUserId;
     private String replyToUserPhone;
+    private String replyToUserNickname;
 
     private Integer likeCount;
 

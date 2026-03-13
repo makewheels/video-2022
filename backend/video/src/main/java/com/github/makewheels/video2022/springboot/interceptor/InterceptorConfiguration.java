@@ -50,6 +50,12 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/comment/add")
                 .addPathPatterns("/comment/delete")
                 .addPathPatterns("/comment/like")
+                .addPathPatterns("/user/updateProfile")
+                .addPathPatterns("/user/getMyProfile")
+                .addPathPatterns("/subscription/subscribe")
+                .addPathPatterns("/subscription/unsubscribe")
+                .addPathPatterns("/subscription/getStatus")
+                .addPathPatterns("/subscription/getMySubscriptions")
         ;
 
         // 记录请求日志

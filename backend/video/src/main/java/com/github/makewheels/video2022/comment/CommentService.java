@@ -42,6 +42,8 @@ public class CommentService {
         comment.setVideoId(videoId);
         comment.setUserId(userId);
         comment.setUserPhone(user.getPhone());
+        comment.setUserNickname(user.getNickname());
+        comment.setUserAvatarUrl(user.getAvatarUrl());
         comment.setContent(content);
         comment.setLikeCount(0);
         comment.setReplyCount(0);
@@ -58,6 +60,7 @@ public class CommentService {
             comment.setParentId(topParentId);
             comment.setReplyToUserId(parent.getUserId());
             comment.setReplyToUserPhone(parent.getUserPhone());
+            comment.setReplyToUserNickname(parent.getUserNickname());
 
             // 增加顶级评论的回复数
             mongoTemplate.updateFirst(
