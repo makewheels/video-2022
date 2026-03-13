@@ -1,12 +1,12 @@
 package com.github.makewheels.video2022.springboot.interceptor.token;
 
 import com.github.makewheels.video2022.springboot.interceptor.InterceptorOrder;
-import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.UserService;
 import com.github.makewheels.video2022.user.bean.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -14,8 +14,6 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * 校验需要登录的接口
@@ -25,13 +23,11 @@ import java.net.URISyntaxException;
 public class CheckTokenInterceptor implements HandlerInterceptor, Ordered {
     @Resource
     private UserService userService;
-    @Resource
-    private EnvironmentService environmentService;
 
     @Override
     public boolean preHandle(
             HttpServletRequest request, HttpServletResponse response,
-            Object handler) throws IOException, URISyntaxException {
+            Object handler) throws IOException {
         //通过token获取User
         User user = userService.getUserByRequest(request);
 
@@ -41,11 +37,11 @@ public class CheckTokenInterceptor implements HandlerInterceptor, Ordered {
             return true;
         }
 
-        //如果不通过，让他回登录页
-        String targetUrl = request.getRequestURL().toString();
-        URI targetUri = new URI(targetUrl);
-        response.sendRedirect(targetUri.getScheme() + "://" + targetUri.getHost()
-                + ":" + environmentService.getServerPort() + "/login.html?target=" + targetUrl);
+        //token无效，返回401 JSON响应，由前端处理跳转
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"code\":401,\"message\":\"请先登录\"}");
         return false;
     }
 
