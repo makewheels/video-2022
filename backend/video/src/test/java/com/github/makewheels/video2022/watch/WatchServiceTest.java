@@ -67,7 +67,7 @@ class WatchServiceTest extends BaseIntegrationTest {
         ipInfo.put("province", "北京");
         ipInfo.put("city", "北京");
         ipInfo.put("district", "海淀");
-        when(ipService.getIpWithRedis(anyString())).thenReturn(ipInfo);
+        when(ipService.getIpInfo(anyString())).thenReturn(ipInfo);
         when(environmentService.isProductionEnv()).thenReturn(false);
         when(environmentService.getInternalBaseUrl()).thenReturn("http://localhost:8080");
         when(coverService.getSignedCoverUrl(anyString())).thenReturn("https://cdn.example.com/cover.jpg");

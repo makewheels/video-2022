@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022.user;
 
 import com.github.makewheels.video2022.BaseIntegrationTest;
-import com.github.makewheels.video2022.etc.redis.RedisKey;
 import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.user.bean.User;
@@ -9,6 +8,8 @@ import com.github.makewheels.video2022.user.bean.VerificationCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,25 +21,22 @@ class UserServiceTest extends BaseIntegrationTest {
     private UserService userService;
 
     @Autowired
-    private UserRedisService userRedisService;
-
-    @Autowired
     private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
         cleanDatabase();
-        cleanRedisKeys("video-2022:*");
     }
 
     // ---- requestVerificationCode ----
 
     @Test
-    void requestVerificationCode_shouldStoreCodeInRedis() {
+    void requestVerificationCode_shouldStoreCodeInMongoDB() {
         userService.requestVerificationCode(TEST_PHONE);
 
-        VerificationCode stored = userRedisService.getVerificationCode(TEST_PHONE);
-        assertNotNull(stored, "Verification code should be stored in Redis");
+        VerificationCode stored = mongoTemplate.findOne(
+                new Query(Criteria.where("phone").is(TEST_PHONE)), VerificationCode.class);
+        assertNotNull(stored, "Verification code should be stored in MongoDB");
         assertEquals(TEST_PHONE, stored.getPhone());
         assertNotNull(stored.getCode());
         assertEquals(4, stored.getCode().length(), "Code should be 4 digits");
@@ -47,10 +45,12 @@ class UserServiceTest extends BaseIntegrationTest {
     @Test
     void requestVerificationCode_calledTwice_shouldReturnSameCode() {
         userService.requestVerificationCode(TEST_PHONE);
-        VerificationCode first = userRedisService.getVerificationCode(TEST_PHONE);
+        VerificationCode first = mongoTemplate.findOne(
+                new Query(Criteria.where("phone").is(TEST_PHONE)), VerificationCode.class);
 
         userService.requestVerificationCode(TEST_PHONE);
-        VerificationCode second = userRedisService.getVerificationCode(TEST_PHONE);
+        VerificationCode second = mongoTemplate.findOne(
+                new Query(Criteria.where("phone").is(TEST_PHONE)), VerificationCode.class);
 
         assertEquals(first.getCode(), second.getCode(),
                 "Calling twice should return the same code (already cached)");
@@ -61,7 +61,8 @@ class UserServiceTest extends BaseIntegrationTest {
     @Test
     void submitVerificationCode_withValidCode_shouldCreateUserAndGenerateToken() {
         userService.requestVerificationCode(TEST_PHONE);
-        VerificationCode vc = userRedisService.getVerificationCode(TEST_PHONE);
+        VerificationCode vc = mongoTemplate.findOne(
+                new Query(Criteria.where("phone").is(TEST_PHONE)), VerificationCode.class);
 
         User user = userService.submitVerificationCode(TEST_PHONE, vc.getCode());
 
@@ -129,39 +130,26 @@ class UserServiceTest extends BaseIntegrationTest {
     }
 
     @Test
-    void submitVerificationCode_shouldRemoveVerificationCodeFromRedis() {
+    void submitVerificationCode_shouldRemoveVerificationCodeFromMongoDB() {
         userService.requestVerificationCode(TEST_PHONE);
         userService.submitVerificationCode(TEST_PHONE, "111");
 
-        VerificationCode vc = userRedisService.getVerificationCode(TEST_PHONE);
-        assertNull(vc, "Verification code should be deleted from Redis after successful submit");
+        VerificationCode vc = mongoTemplate.findOne(
+                new Query(Criteria.where("phone").is(TEST_PHONE)), VerificationCode.class);
+        assertNull(vc, "Verification code should be deleted from MongoDB after successful submit");
     }
 
     // ---- getUserByToken ----
 
     @Test
-    void getUserByToken_shouldReturnUserFromRedisCache() {
+    void getUserByToken_shouldReturnUser() {
         userService.requestVerificationCode(TEST_PHONE);
         User created = userService.submitVerificationCode(TEST_PHONE, "111");
 
-        // Token should be cached in Redis after login
-        User cached = userService.getUserByToken(created.getToken());
-        assertNotNull(cached);
-        assertEquals(created.getId(), cached.getId());
-        assertEquals(created.getPhone(), cached.getPhone());
-    }
-
-    @Test
-    void getUserByToken_shouldFallBackToMongoDB() {
-        userService.requestVerificationCode(TEST_PHONE);
-        User created = userService.submitVerificationCode(TEST_PHONE, "111");
-
-        // Clear only the token key from Redis to force a DB lookup
-        cleanRedisKeys(RedisKey.token(created.getToken()));
-
-        User fromDb = userService.getUserByToken(created.getToken());
-        assertNotNull(fromDb, "Should fall back to MongoDB when Redis cache is empty");
-        assertEquals(created.getId(), fromDb.getId());
+        User found = userService.getUserByToken(created.getToken());
+        assertNotNull(found);
+        assertEquals(created.getId(), found.getId());
+        assertEquals(created.getPhone(), found.getPhone());
     }
 
     @Test
@@ -224,8 +212,10 @@ class UserServiceTest extends BaseIntegrationTest {
         userService.requestVerificationCode(phone1);
         userService.requestVerificationCode(phone2);
 
-        VerificationCode vc1 = userRedisService.getVerificationCode(phone1);
-        VerificationCode vc2 = userRedisService.getVerificationCode(phone2);
+        VerificationCode vc1 = mongoTemplate.findOne(
+                new Query(Criteria.where("phone").is(phone1)), VerificationCode.class);
+        VerificationCode vc2 = mongoTemplate.findOne(
+                new Query(Criteria.where("phone").is(phone2)), VerificationCode.class);
 
         assertNotNull(vc1);
         assertNotNull(vc2);

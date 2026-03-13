@@ -3,16 +3,16 @@ package com.github.makewheels.video2022.utils;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.etc.redis.RedisKey;
-import com.github.makewheels.video2022.etc.redis.RedisService;
-import com.github.makewheels.video2022.etc.redis.RedisTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,13 +23,12 @@ import static org.mockito.Mockito.*;
 class IpServiceTest {
 
     @Mock
-    private RedisService redisService;
+    private MongoTemplate mongoTemplate;
 
     @InjectMocks
     private IpService ipService;
 
     private static final String TEST_IP = "45.78.33.111";
-    private static final String REDIS_KEY = RedisKey.ip(TEST_IP);
 
     private JSONObject buildApiResponse() {
         JSONObject result = new JSONObject();
@@ -56,27 +55,30 @@ class IpServiceTest {
     }
 
     @Test
-    void getIpWithRedis_cacheHit_shouldReturnCachedValue() {
+    void getIpInfo_cacheHit_shouldReturnCachedValue() {
         JSONObject cached = new JSONObject();
         cached.put("ip", TEST_IP);
         cached.put("nation", "中国");
-        when(redisService.getForJSONObject(REDIS_KEY)).thenReturn(cached);
 
-        JSONObject result = ipService.getIpWithRedis(TEST_IP);
+        IpCache ipCache = new IpCache();
+        ipCache.setIp(TEST_IP);
+        ipCache.setLocationJson(cached.toJSONString());
+        when(mongoTemplate.findOne(any(Query.class), eq(IpCache.class))).thenReturn(ipCache);
+
+        JSONObject result = ipService.getIpInfo(TEST_IP);
 
         assertNotNull(result);
         assertEquals(TEST_IP, result.getString("ip"));
         assertEquals("中国", result.getString("nation"));
-        verify(redisService).getForJSONObject(REDIS_KEY);
-        // Should not call set — cache already exists
-        verify(redisService, never()).set(anyString(), any(), anyLong());
+        verify(mongoTemplate).findOne(any(Query.class), eq(IpCache.class));
+        // Should not call save — cache already exists
+        verify(mongoTemplate, never()).save(any(IpCache.class));
     }
 
     @Test
-    void getIpWithRedis_cacheMiss_shouldCallApiAndCache() {
+    void getIpInfo_cacheMiss_shouldCallApiAndCache() {
         setupAppCode();
-        when(redisService.getForJSONObject(REDIS_KEY)).thenReturn(null);
-        when(redisService.set(anyString(), any(), anyLong())).thenReturn(true);
+        when(mongoTemplate.findOne(any(Query.class), eq(IpCache.class))).thenReturn(null);
 
         JSONObject apiResponse = buildApiResponse();
         HttpRequest mockHttpRequest = mock(HttpRequest.class);
@@ -88,38 +90,41 @@ class IpServiceTest {
         try (MockedStatic<HttpUtil> httpUtilMock = mockStatic(HttpUtil.class)) {
             httpUtilMock.when(() -> HttpUtil.createGet(anyString())).thenReturn(mockHttpRequest);
 
-            JSONObject result = ipService.getIpWithRedis(TEST_IP);
+            JSONObject result = ipService.getIpInfo(TEST_IP);
 
             assertNotNull(result);
             assertEquals(TEST_IP, result.getString("ip"));
             assertEquals("中国", result.getString("nation"));
             assertEquals("香港特别行政区", result.getString("province"));
 
-            // Verify cached to Redis
-            verify(redisService).set(eq(REDIS_KEY), anyString(), eq(RedisTime.SIX_HOURS));
+            // Verify cached to MongoDB
+            verify(mongoTemplate).save(any(IpCache.class));
         }
     }
 
     @Test
-    void getIpWithRedis_ipv6WithColons_shouldReplaceColonsInRedisKey() {
+    void getIpInfo_ipv6WithColons_shouldReplaceColonsInCacheKey() {
         String ipv6 = "2001:db8::1";
-        String expectedKey = RedisKey.ip("2001_db8__1");
+        String expectedCacheKey = "2001_db8__1";
 
         JSONObject cached = new JSONObject();
         cached.put("ip", ipv6);
-        when(redisService.getForJSONObject(expectedKey)).thenReturn(cached);
 
-        JSONObject result = ipService.getIpWithRedis(ipv6);
+        IpCache ipCache = new IpCache();
+        ipCache.setIp(expectedCacheKey);
+        ipCache.setLocationJson(cached.toJSONString());
+        when(mongoTemplate.findOne(any(Query.class), eq(IpCache.class))).thenReturn(ipCache);
+
+        JSONObject result = ipService.getIpInfo(ipv6);
 
         assertNotNull(result);
-        verify(redisService).getForJSONObject(expectedKey);
+        verify(mongoTemplate).findOne(any(Query.class), eq(IpCache.class));
     }
 
     @Test
-    void getIpWithRedis_cacheMiss_shouldFlattenResultField() {
+    void getIpInfo_cacheMiss_shouldFlattenResultField() {
         setupAppCode();
-        when(redisService.getForJSONObject(REDIS_KEY)).thenReturn(null);
-        when(redisService.set(anyString(), any(), anyLong())).thenReturn(true);
+        when(mongoTemplate.findOne(any(Query.class), eq(IpCache.class))).thenReturn(null);
 
         JSONObject apiResponse = buildApiResponse();
         HttpRequest mockHttpRequest = mock(HttpRequest.class);
@@ -131,7 +136,7 @@ class IpServiceTest {
         try (MockedStatic<HttpUtil> httpUtilMock = mockStatic(HttpUtil.class)) {
             httpUtilMock.when(() -> HttpUtil.createGet(anyString())).thenReturn(mockHttpRequest);
 
-            JSONObject result = ipService.getIpWithRedis(TEST_IP);
+            JSONObject result = ipService.getIpInfo(TEST_IP);
 
             // "result" nested object should be flattened into the top level
             assertNull(result.getJSONObject("result"), "Nested 'result' should be removed");

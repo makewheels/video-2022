@@ -3,14 +3,15 @@ package com.github.makewheels.video2022.utils;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.github.makewheels.video2022.etc.redis.RedisKey;
-import com.github.makewheels.video2022.etc.redis.RedisService;
-import com.github.makewheels.video2022.etc.redis.RedisTime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+import java.util.Date;
 
 @Service
 @Slf4j
@@ -19,24 +20,8 @@ public class IpService {
     private String appCode;
 
     @Resource
-    private RedisService redisService;
+    private MongoTemplate mongoTemplate;
 
-    /**
-     * 从云市场获取ip信息
-     * 示例返回值：
-     * {"code":100,"message":"success","ip":"45.78.33.111",
-     * "result":{
-     * "en_short":"CN",
-     * "en_name":"China",
-     * "nation":"中国",
-     * "province":"香港特别行政区",
-     * "city":"",
-     * "district":"",
-     * "adcode":"810000",
-     * "lat":22.27628,
-     * "lng":114.16383}
-     * }
-     */
     private JSONObject getIpInfoFromApi(String ip) {
         String json = HttpUtil.createGet("https://ips.market.alicloudapi.com/iplocaltion?ip=" + ip)
                 .header("Authorization", "APPCODE " + appCode).execute().body();
@@ -44,33 +29,33 @@ public class IpService {
         return JSON.parseObject(json);
     }
 
-    /**
-     * 处理响应结果
-     */
     private void handleApiResponse(String ip, JSONObject result) {
         result.put("ip", ip);
-
-        //把响应里的result提到外层
         result.putAll(result.getJSONObject("result"));
         result.remove("result");
         log.debug("处理ip响应结果handleApiResponse " + result.toJSONString());
     }
 
-    public JSONObject getIpWithRedis(String ip) {
-        String ipRedisKey = ip.replace(":", "_");
-        //如果Redis有，直接返回
-        JSONObject result = redisService.getForJSONObject(RedisKey.ip(ipRedisKey));
-        if (result != null) {
-            return result;
+    public JSONObject getIpInfo(String ip) {
+        String cacheKey = ip.replace(":", "_");
+        // Check MongoDB cache
+        IpCache cached = mongoTemplate.findOne(
+                new Query(Criteria.where("ip").is(cacheKey)), IpCache.class);
+        if (cached != null) {
+            return JSON.parseObject(cached.getLocationJson());
         }
 
-        //如果Redis没有，调阿里云接口
-        result = getIpInfoFromApi(ip);
+        // Cache miss — call API
+        JSONObject result = getIpInfoFromApi(ip);
         handleApiResponse(ip, result);
 
-        //缓存到Redis
-        redisService.set(RedisKey.ip(ipRedisKey), result.toJSONString(), RedisTime.SIX_HOURS);
+        // Save to MongoDB cache
+        IpCache ipCache = new IpCache();
+        ipCache.setIp(cacheKey);
+        ipCache.setLocationJson(result.toJSONString());
+        ipCache.setCreatedAt(new Date());
+        mongoTemplate.save(ipCache);
+
         return result;
     }
-
 }
