@@ -29,3 +29,14 @@ targets:
           OTHER_SWIFT_FLAGS: ["-DDEBUG"]
         Release: {}
     dependencies: []
+  VideoAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: VideoAppTests
+    dependencies:
+      - target: VideoApp
+    settings:
+      base:
+        INFOPLIST_FILE: ""
+        GENERATE_INFOPLIST_FILE: YES

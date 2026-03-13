@@ -8,13 +8,17 @@ token refresh on re-login, and error handling for bad inputs.
 import requests
 import pytest
 
-from conftest import login, TEST_PHONE, TEST_CODE
+from conftest import login, TEST_CODE
+
+# Use a dedicated phone for login tests to avoid invalidating the
+# session-scoped auth_token fixture (which uses TEST_PHONE).
+LOGIN_TEST_PHONE = "19900009999"
 
 
 @pytest.mark.api
 def test_login_flow_and_token_validation(base_url):
     """Login with test phone, then use the token to access a protected endpoint."""
-    result = login(base_url, TEST_PHONE, TEST_CODE)
+    result = login(base_url, LOGIN_TEST_PHONE, TEST_CODE)
     assert result["code"] == 0, f"Login failed: {result}"
     token = result["data"]["token"]
 
@@ -43,7 +47,7 @@ def test_invalid_token_returns_error(base_url):
 @pytest.mark.api
 def test_get_user_by_token(base_url):
     """Login, then retrieve user info via getUserByToken and verify key fields."""
-    result = login(base_url, TEST_PHONE, TEST_CODE)
+    result = login(base_url, LOGIN_TEST_PHONE, TEST_CODE)
     assert result["code"] == 0, f"Login failed: {result}"
     token = result["data"]["token"]
 
@@ -64,10 +68,10 @@ def test_get_user_by_token(base_url):
 @pytest.mark.api
 def test_relogin_refreshes_token(base_url):
     """Logging in twice with the same phone should keep the userId but issue a new token."""
-    first = login(base_url, TEST_PHONE, TEST_CODE)
+    first = login(base_url, LOGIN_TEST_PHONE, TEST_CODE)
     assert first["code"] == 0, f"First login failed: {first}"
 
-    second = login(base_url, TEST_PHONE, TEST_CODE)
+    second = login(base_url, LOGIN_TEST_PHONE, TEST_CODE)
     assert second["code"] == 0, f"Second login failed: {second}"
 
     assert first["data"]["id"] == second["data"]["id"], "userId should stay the same"
@@ -97,12 +101,12 @@ def test_wrong_verification_code(base_url):
     """Correct phone but wrong verification code should be rejected."""
     requests.get(
         f"{base_url}/user/requestVerificationCode",
-        params={"phone": TEST_PHONE},
+        params={"phone": LOGIN_TEST_PHONE},
     )
 
     resp = requests.get(
         f"{base_url}/user/submitVerificationCode",
-        params={"phone": TEST_PHONE, "code": "999"},
+        params={"phone": LOGIN_TEST_PHONE, "code": "999"},
     )
     body = resp.json()
     assert body["code"] != 0, f"Expected error for wrong code, got: {body}"

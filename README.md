@@ -73,6 +73,9 @@ cd frontend && npm run dev  # 端口 5173，自动代理 API 到 5022
 - `backend/` - Java Spring Boot 后端 (Maven 多模块)
   - `video/` - 核心视频服务模块
   - `youtube/` - YouTube 下载服务模块
+- `android/` - Android 原生客户端 (Kotlin + Jetpack Compose)
+- `ios/` - iOS 原生客户端 (Swift + SwiftUI)
+- `cli/` - 命令行工具 (Python)
 - `test/` - Python E2E 测试 (pytest + Playwright)
 
 ### 核心模块分包结构 (video 模块)
@@ -81,7 +84,8 @@ cd frontend && npm run dev  # 端口 5173，自动代理 API 到 5022
 
 | 包名 | 职责 |
 |------|------|
-| `user/` | 用户认证（手机验证码登录）、Session 管理、Client 管理 |
+| `user/` | 用户认证（手机验证码登录）、Session 管理、Client 管理、用户资料、频道 |
+| `subscription/` | 频道订阅/取消订阅、订阅列表 |
 | `video/` | 视频实体、创建、状态管理、元数据 |
 | `file/` | 文件上传、OSS STS 凭证、TsFile（HLS 分片）管理 |
 | `transcode/` | 视频转码，工厂模式，支持 MPS / 云函数 / GPU 云函数 |
@@ -106,6 +110,8 @@ cd frontend && npm run dev  # 端口 5173，自动代理 API 到 5022
 - **阿里云 MPS** - 视频转码服务（480p/720p/1080p HLS）
 - **阿里云函数计算** - GPU 云函数转码、MD5 计算
 - **阿里云 API 网关** - IP 地理位置查询
+- **Kotlin + Jetpack Compose** - Android 客户端
+- **Swift + SwiftUI** - iOS 客户端
 - **pytest + Playwright** - E2E 测试（API + 浏览器）
 
 ### 云服务依赖
@@ -217,22 +223,53 @@ curl -H "token: {your_token}" "http://localhost:5022/video/getMyVideoList"
 
 ## 测试
 
-```bash
-# 后端单元/集成测试 (451 tests)
-cd backend && export $(grep -v '^#' .env | grep -v '^$' | xargs)
-mvn test -pl video -Pspringboot
+### 环境要求
+- Java 21, Node.js 20+, Python 3.12+（E2E 测试）
+- Android: JDK 21 + Gradle（Android 测试）
+- iOS: Xcode 16+ + xcodegen（iOS 测试）
 
-# 前端单元测试 (14 tests)
+### 运行测试
+
+```bash
+# 后端单元/集成测试
+cd backend && mvn test -pl video -Pspringboot
+
+# 前端单元测试 (24 tests)
 cd frontend && npx vitest run
 
 # API E2E 测试 (需要后端运行中)
-cd test && source venv/bin/activate && pytest api/ -v
+cd test && pip install -r requirements.txt && pytest api/ -v
 
 # 浏览器 E2E 测试 (需要后端运行中)
-cd test && source venv/bin/activate && pytest browser/ -v
+cd test && python -m playwright install chromium --with-deps
+pytest browser/ -v
+
+# Android 单元测试
+cd android && ./gradlew testDebugUnitTest
+
+# iOS 单元测试
+cd ios && xcodegen generate
+xcodebuild test -project VideoApp.xcodeproj -scheme VideoApp \
+  -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' \
+  -only-testing:VideoAppTests
+
+# CLI 工具测试
+cd cli && pip install -e ".[test]" && pytest tests/ -v
 ```
 
-CI 自动运行 4 个 Job：后端测试、前端测试、API E2E、浏览器 E2E。
+### CI 流水线
+
+GitHub Actions 自动运行 **7 个 Job**：
+
+| Job | 平台 | 说明 |
+|-----|------|------|
+| 后端测试 | ubuntu | Maven JUnit 测试 |
+| 前端测试 | ubuntu | Vitest 组件测试 |
+| API E2E | ubuntu | Python pytest API 测试 |
+| 浏览器 E2E | ubuntu | Playwright 浏览器测试 |
+| CLI 测试 | ubuntu | CLI 工具测试 |
+| Android 测试 | ubuntu | Gradle 单元测试 |
+| iOS 测试 | macOS | XCTest 单元测试 |
 
 ---
 
@@ -337,11 +374,27 @@ xcodebuild -project VideoApp.xcodeproj -scheme VideoApp -destination 'platform=i
 - 视频编辑（标题/描述/可见性）
 - 播放列表（创建/详情/删除）
 - YouTube 视频下载
+- 用户资料编辑（昵称/简介）
+- 频道页（查看他人主页）
+- 频道订阅/取消订阅
 - 设置（用户信息/退出登录）
+
+### 测试
+```bash
+cd android && ./gradlew testDebugUnitTest
+```
 
 ### 配置
 - Debug 模式连接 `http://localhost:5022`（本机后端）
 - Release 模式连接 `https://oneclick.video`
+
+### 测试
+```bash
+cd ios && xcodegen generate
+xcodebuild test -project VideoApp.xcodeproj -scheme VideoApp \
+  -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' \
+  -only-testing:VideoAppTests
+```
 
 ---
 
