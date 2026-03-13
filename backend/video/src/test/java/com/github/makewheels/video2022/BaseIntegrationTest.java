@@ -13,14 +13,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * Base class for integration tests.
  * <p>
- * Uses real MongoDB (video-2022-test) and Redis, but mocks all external HTTP services
+ * Uses real MongoDB (video-2022-test), but mocks all external HTTP services
  * (OSS, MPS, DingTalk, IP API, cloud functions, YouTube).
  * <p>
  * Subclasses should call {@link #cleanDatabase()} in @BeforeEach if they need a clean state.
@@ -31,9 +30,6 @@ public abstract class BaseIntegrationTest {
 
     @Autowired
     protected MongoTemplate mongoTemplate;
-
-    @Autowired
-    protected StringRedisTemplate stringRedisTemplate;
 
     // Mock all external services to prevent real HTTP calls
     @MockitoBean
@@ -69,16 +65,6 @@ public abstract class BaseIntegrationTest {
     protected void cleanDatabase() {
         for (String name : mongoTemplate.getCollectionNames()) {
             mongoTemplate.dropCollection(name);
-        }
-    }
-
-    /**
-     * Clean Redis keys matching a pattern. Use with care.
-     */
-    protected void cleanRedisKeys(String pattern) {
-        var keys = stringRedisTemplate.keys(pattern);
-        if (keys != null && !keys.isEmpty()) {
-            stringRedisTemplate.delete(keys);
         }
     }
 }

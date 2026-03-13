@@ -50,7 +50,6 @@ class CoverServiceTest extends BaseIntegrationTest {
     @BeforeEach
     void setUp() {
         cleanDatabase();
-        cleanRedisKeys("video-2022:*");
 
         testUser = new User();
         testUser.setPhone("13800000001");

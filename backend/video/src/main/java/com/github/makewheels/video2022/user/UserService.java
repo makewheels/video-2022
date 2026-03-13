@@ -15,16 +15,17 @@ import com.github.makewheels.video2022.utils.IdService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 @Service
 @Slf4j
 public class UserService {
-    @Resource
-    private UserRedisService userRedisService;
     @Resource
     private MongoTemplate mongoTemplate;
     @Resource
@@ -36,39 +37,14 @@ public class UserService {
     @Resource
     private EnvironmentService environmentService;
 
-    /**
-     * 根据登录token获取用户
-     */
     public User getUserByToken(String token) {
         if (token == null) {
             return null;
         }
-        //先看redis有没有
-        User user = userRedisService.getUserByToken(token);
-        //如果redis已经有了，返回ok
-        if (user != null) {
-            return user;
-        }
-
-        //如果redis没有，查mongo
-        user = userRepository.getByToken(token);
-
-        //如果mongo有，放到redis里，返回ok
-        if (user != null) {
-            userRedisService.setUserByToken(user);
-            return user;
-        }
-
-        //如果mongo也没有，那这时候它需要重新登录了
-        return null;
+        return userRepository.getByToken(token);
     }
 
-    /**
-     * 获取用户登录信息
-     */
     public User getUserByRequest(HttpServletRequest request) {
-        //为了更简单的，兼容YouTube搬运海外服务器，获取上传凭证时的，用户校验，
-        //获取token方式有两种，header和url参数
         String token = request.getHeader("token");
         if (StringUtils.isEmpty(token)) {
             String[] tokens = request.getParameterMap().get("token");
@@ -79,69 +55,51 @@ public class UserService {
         return getUserByToken(token);
     }
 
-    /**
-     * 请求验证码
-     */
     public void requestVerificationCode(String phone) {
-        //如果redis里已经有了，直接返回
-        VerificationCode verificationCode = userRedisService.getVerificationCode(phone);
-        if (verificationCode != null) {
-            log.info("Redis已有，手机：{}，验证码已存在", verificationCode.getPhone());
+        VerificationCode existing = mongoTemplate.findOne(
+                new Query(Criteria.where("phone").is(phone)), VerificationCode.class);
+        if (existing != null) {
+            log.info("MongoDB已有，手机：{}，验证码已存在", phone);
             return;
         }
 
-        //如果redis里没有，发验证码，放redis里，返回
         String code = RandomUtil.randomNumbers(4);
         log.info("requestVerificationCode 手机：{}，验证码已发送", phone);
-//        Map<String, String> contentVar = new HashMap<>();
-//        contentVar.put("verificationCode", code);
-//        smsService.sendVerificationCode(phone, contentVar);
 
-        userRedisService.setVerificationCode(phone, code);
+        VerificationCode verificationCode = new VerificationCode();
+        verificationCode.setPhone(phone);
+        verificationCode.setCode(code);
+        verificationCode.setCreatedAt(new Date());
+        mongoTemplate.save(verificationCode);
     }
 
-    /**
-     * 提交验证码
-     */
     public User submitVerificationCode(String phone, String code) {
-        VerificationCode verificationCode = userRedisService.getVerificationCode(phone);
+        VerificationCode verificationCode = mongoTemplate.findOne(
+                new Query(Criteria.where("phone").is(phone)), VerificationCode.class);
         if (verificationCode == null) {
             throw new VideoException(ErrorCode.USER_PHONE_VERIFICATION_CODE_EXPIRED);
         }
-        //验证码校验失败
         boolean codeMatches = verificationCode.getCode().equals(code);
         boolean isDevBypass = !environmentService.isProductionEnv() && code.equals("111");
         if (!codeMatches && !isDevBypass) {
             throw new VideoException(ErrorCode.USER_PHONE_VERIFICATION_CODE_WRONG);
         }
-        //验证码校验成功
-        //干掉Redis
-        userRedisService.delVerificationCode(phone);
-        //先查询用户
+        // Delete verification code from MongoDB
+        mongoTemplate.remove(new Query(Criteria.where("phone").is(phone)), VerificationCode.class);
+
         User user = userRepository.getByPhone(phone);
-        //不存在，创建新用户
         if (user == null) {
             user = new User();
             user.setId(idService.getUserId());
             user.setPhone(phone);
             log.info("创建新用户 " + user);
         }
-        //刷新token
-        userRedisService.delUserByToken(user.getToken());
-        //因为重新登录了所以设置新的token前端需要保存
         user.setToken(IdUtil.getSnowflakeNextIdStr());
-        //保存或更新用户
         mongoTemplate.save(user);
-        //创建钱包
         walletService.createWallet(user.getId());
-        //登陆信息存入redis
-        userRedisService.setUserByToken(user);
         return user;
     }
 
-    /**
-     * 根据id查用户
-     */
     public User getUserById(String userId) {
         User user = userRepository.getById(userId);
         if (user != null) {
@@ -150,9 +108,6 @@ public class UserService {
         return user;
     }
 
-    /**
-     * 更新用户资料（昵称、简介）
-     */
     public Result<Void> updateProfile(UpdateProfileRequest request) {
         String userId = UserHolder.getUserId();
         String nickname = request.getNickname();
@@ -166,17 +121,9 @@ public class UserService {
         }
 
         userRepository.updateProfile(userId, nickname, bio);
-        // 清除 Redis 缓存
-        User user = userRepository.getById(userId);
-        if (user != null) {
-            userRedisService.setUserByToken(user);
-        }
         return Result.ok();
     }
 
-    /**
-     * 获取频道信息
-     */
     public ChannelVO getChannel(String channelUserId) {
         User user = userRepository.getById(channelUserId);
         if (user == null) {
@@ -194,9 +141,6 @@ public class UserService {
         return vo;
     }
 
-    /**
-     * 获取当前用户资料
-     */
     public User getMyProfile() {
         User user = userRepository.getById(UserHolder.getUserId());
         if (user != null) {
@@ -204,5 +148,4 @@ public class UserService {
         }
         return user;
     }
-
 }
