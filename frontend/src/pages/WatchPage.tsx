@@ -7,6 +7,7 @@ import VideoPlayer from '../components/VideoPlayer';
 import CommentSection from '../components/CommentSection';
 import LikeButtons from '../components/LikeButtons';
 import PlaylistSidebar from '../components/PlaylistSidebar';
+import RecommendedVideos from '../components/RecommendedVideos';
 
 async function ensureClientId(): Promise<string> {
   let clientId = localStorage.getItem('clientId');
@@ -120,9 +121,13 @@ function WatchPage() {
         </div>
         <CommentSection videoId={watchInfo.videoId} />
       </div>
-      {listParam && (
+      {listParam ? (
         <div className="watch-sidebar">
           <PlaylistSidebar playlistId={listParam} currentVideoId={watchInfo.videoId} />
+        </div>
+      ) : (
+        <div className="watch-sidebar">
+          <RecommendedVideos currentVideoId={watchInfo.videoId} />
         </div>
       )}
     </div>

@@ -16,6 +16,7 @@ struct VideoItem: Decodable, Identifiable {
     let type: String?
     let coverUrl: String?
     let youtubePublishTimeString: String?
+    let uploaderName: String?
 }
 
 struct VideoListResponse: Decodable {

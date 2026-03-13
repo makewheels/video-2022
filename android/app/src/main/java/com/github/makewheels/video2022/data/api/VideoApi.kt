@@ -32,6 +32,13 @@ interface VideoApi {
         @Query("keyword") keyword: String? = null
     ): ApiResponse<VideoListResponse>
 
+    @GET("/video/getPublicVideoList")
+    suspend fun getPublicVideoList(
+        @Query("skip") skip: Int,
+        @Query("limit") limit: Int,
+        @Query("keyword") keyword: String? = null
+    ): ApiResponse<VideoListResponse>
+
     @GET("/video/getRawFileDownloadUrl")
     suspend fun getRawFileDownloadUrl(@Query("videoId") videoId: String): ApiResponse<Map<String, String>>
 

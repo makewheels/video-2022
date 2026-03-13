@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import AuthCallback from './pages/AuthCallback';
+import HomePage from './pages/HomePage';
 import MyVideosPage from './pages/MyVideosPage';
 import UploadPage from './pages/UploadPage';
 import EditPage from './pages/EditPage';
@@ -29,12 +30,13 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/watch/:videoId" element={<WatchPage />} />
 
         <Route element={<PrivateRoute />}>
-          <Route path="/" element={<MyVideosPage />} />
+          <Route path="/my-videos" element={<MyVideosPage />} />
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/edit/:videoId" element={<EditPage />} />
           <Route path="/statistics" element={<StatisticsPage />} />

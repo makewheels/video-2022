@@ -17,6 +17,12 @@ class VideoRepository @Inject constructor(
         resp.data ?: throw Exception("数据为空")
     }
 
+    suspend fun getPublicVideoList(skip: Int, limit: Int, keyword: String? = null): Result<VideoListResponse> = runCatching {
+        val resp = videoApi.getPublicVideoList(skip, limit, keyword)
+        if (!resp.isSuccess) throw Exception(resp.message ?: "获取公开视频列表失败")
+        resp.data ?: throw Exception("数据为空")
+    }
+
     suspend fun getVideoDetail(videoId: String): Result<VideoItem> = runCatching {
         val resp = videoApi.getVideoDetail(videoId)
         if (!resp.isSuccess) throw Exception(resp.message ?: "获取视频详情失败")

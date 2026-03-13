@@ -99,6 +99,44 @@ public class VideoRepository {
     }
 
     /**
+     * 分页获取公开视频列表，支持按关键词搜索
+     */
+    public List<Video> getPublicVideoList(int skip, int limit, String keyword) {
+        Criteria criteria = Criteria.where("visibility").is("PUBLIC");
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String regex = keyword.trim();
+            criteria.andOperator(
+                    new Criteria().orOperator(
+                            Criteria.where("title").regex(regex, "i"),
+                            Criteria.where("description").regex(regex, "i")
+                    )
+            );
+        }
+        Query query = Query.query(criteria)
+                .with(Sort.by(Sort.Direction.DESC, "createTime"))
+                .skip(skip)
+                .limit(limit);
+        return mongoTemplate.find(query, Video.class);
+    }
+
+    /**
+     * 统计公开视频总数，支持按关键词筛选
+     */
+    public long countPublicVideos(String keyword) {
+        Criteria criteria = Criteria.where("visibility").is("PUBLIC");
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String regex = keyword.trim();
+            criteria.andOperator(
+                    new Criteria().orOperator(
+                            Criteria.where("title").regex(regex, "i"),
+                            Criteria.where("description").regex(regex, "i")
+                    )
+            );
+        }
+        return mongoTemplate.count(Query.query(criteria), Video.class);
+    }
+
+    /**
      * 增加观看次数
      */
     public void addWatchCount(String videoId) {

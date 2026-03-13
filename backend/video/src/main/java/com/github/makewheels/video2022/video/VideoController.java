@@ -81,6 +81,16 @@ public class VideoController {
     }
 
     /**
+     * 分页获取公开视频列表（无需登录）
+     */
+    @GetMapping("getPublicVideoList")
+    public Result<VideoListVO> getPublicVideoList(
+            @RequestParam int skip, @RequestParam int limit,
+            @RequestParam(required = false) String keyword) {
+        return videoService.getPublicVideoList(skip, limit, keyword);
+    }
+
+    /**
      * 获取原始文件下载地址
      */
     @GetMapping("getRawFileDownloadUrl")

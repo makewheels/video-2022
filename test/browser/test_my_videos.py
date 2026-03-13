@@ -1,5 +1,7 @@
 """Browser E2E tests for the My Videos page (React SPA).
 
+MyVideosPage is at /my-videos (requires auth).
+
 MyVideosPage structure (from MyVideosPage.tsx):
 - div.page-container
   - div.section-header with h2.section-title "我的视频" and span.video-count
@@ -22,28 +24,28 @@ class TestMyVideosPageLoad:
 
     def test_page_title_visible(self, auth_page, base_url):
         """Page shows '我的视频' section title."""
-        auth_page.goto(base_url)
+        auth_page.goto(f"{base_url}/my-videos")
         title = auth_page.locator("h2.section-title")
         title.wait_for(timeout=BASE_TIMEOUT)
         assert title.inner_text() == "我的视频"
 
     def test_video_count_visible(self, auth_page, base_url):
         """Page shows video count badge."""
-        auth_page.goto(base_url)
+        auth_page.goto(f"{base_url}/my-videos")
         count = auth_page.locator("span.video-count")
         count.wait_for(timeout=BASE_TIMEOUT)
         assert "共" in count.inner_text()
 
     def test_search_input_present(self, auth_page, base_url):
         """Search input is present on the page."""
-        auth_page.goto(base_url)
+        auth_page.goto(f"{base_url}/my-videos")
         search = auth_page.locator("input.form-input[placeholder='搜索视频...']")
         search.wait_for(timeout=BASE_TIMEOUT)
         assert search.is_visible()
 
     def test_shows_empty_or_table(self, auth_page, base_url):
         """Page shows either the empty state or a video table."""
-        auth_page.goto(base_url)
+        auth_page.goto(f"{base_url}/my-videos")
         auth_page.locator("h2.section-title").wait_for(timeout=BASE_TIMEOUT)
         empty = auth_page.locator(".empty-state")
         table = auth_page.locator("table.video-table")
@@ -57,7 +59,7 @@ class TestMyVideosAuth:
 
     def test_requires_auth(self, page, base_url):
         """Unauthenticated users are redirected to /login."""
-        page.goto(base_url)
+        page.goto(f"{base_url}/my-videos")
         page.wait_for_function("() => window.location.pathname.includes('/login')", timeout=BASE_TIMEOUT)
         assert "/login" in page.url
 
@@ -67,7 +69,7 @@ class TestMyVideosSearch:
 
     def test_search_input_accepts_text(self, auth_page, base_url):
         """Typing into search input updates value and URL param."""
-        auth_page.goto(base_url)
+        auth_page.goto(f"{base_url}/my-videos")
         search = auth_page.locator("input.form-input[placeholder='搜索视频...']")
         search.wait_for(timeout=BASE_TIMEOUT)
         search.fill("test keyword")

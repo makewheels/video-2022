@@ -1375,3 +1375,263 @@ textarea.form-input {
 [data-theme="dark"] .video-js .vjs-http-source-selector .vjs-menu-item {
     color: var(--text-primary);
 }
+
+/* ===== NavBar Search ===== */
+.nav-search {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 540px;
+    margin: 0 16px;
+}
+
+.nav-search-input {
+    flex: 1;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--border-color);
+    border-right: none;
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.nav-search-input:focus {
+    border-color: var(--accent);
+}
+
+.nav-search-btn {
+    height: 36px;
+    width: 48px;
+    border: 1px solid var(--border-color);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+}
+
+.nav-search-btn:hover {
+    background: var(--bg-tertiary);
+}
+
+/* ===== YouTube-Style Video Card ===== */
+.yt-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: transform 0.15s ease;
+}
+
+.yt-card:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.yt-card:hover .yt-card-thumbnail img {
+    transform: scale(1.02);
+}
+
+.yt-card-thumbnail {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.yt-card-thumbnail img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.yt-card-thumbnail-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--text-disabled);
+}
+
+.yt-card-duration {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1.2;
+}
+
+.yt-card-info {
+    display: flex;
+    gap: 12px;
+    padding: 12px 4px 4px;
+}
+
+.yt-card-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--text-on-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.yt-card-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.yt-card-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.yt-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.yt-card-uploader {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.yt-card-stats {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* ===== Compact Card (for sidebar) ===== */
+.yt-card-compact {
+    flex-direction: row;
+    gap: 8px;
+    border-radius: var(--radius-md);
+    padding: 4px 0;
+}
+
+.yt-card-compact .yt-card-thumbnail {
+    width: 168px;
+    min-width: 168px;
+    padding-top: 0;
+    height: 94px;
+    border-radius: var(--radius-md);
+}
+
+.yt-card-compact .yt-card-info {
+    padding: 0;
+    gap: 0;
+}
+
+.yt-card-compact .yt-card-avatar {
+    display: none;
+}
+
+.yt-card-compact .yt-card-title {
+    font-size: 0.813rem;
+    line-height: 1.3;
+}
+
+.yt-card-compact .yt-card-meta {
+    gap: 0;
+}
+
+/* ===== Video Grid ===== */
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px 16px;
+}
+
+@media (max-width: 1200px) {
+    .video-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .video-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 550px) {
+    .video-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== Home Page ===== */
+.home-page {
+    max-width: 1400px;
+}
+
+/* ===== Recommended Videos Sidebar ===== */
+.recommended-videos {
+    padding: 0;
+}
+
+.recommended-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.recommended-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* ===== Mobile: Search & Grid ===== */
+@media (max-width: 768px) {
+    .nav-search {
+        display: none;
+    }
+
+    .yt-card-compact .yt-card-thumbnail {
+        width: 120px;
+        min-width: 120px;
+        height: 68px;
+    }
+}

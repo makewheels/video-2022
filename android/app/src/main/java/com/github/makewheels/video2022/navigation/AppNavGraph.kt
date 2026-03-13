@@ -26,7 +26,7 @@ import com.github.makewheels.video2022.ui.youtube.YouTubeScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
-    val startDestination = if (isLoggedIn) Screen.Home.route else Screen.Login.route
+    val startDestination = Screen.Home.route
 
     Scaffold(
         bottomBar = {

@@ -14,6 +14,7 @@ export interface Video {
   type: string;
   coverUrl?: string;
   youtubePublishTimeString?: string;
+  uploaderName?: string;
 }
 
 export interface Comment {
