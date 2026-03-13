@@ -1,4 +1,5 @@
 import XCTest
+import Security
 @testable import VideoApp
 
 final class AuthManagerTests: XCTestCase {
@@ -7,10 +8,25 @@ final class AuthManagerTests: XCTestCase {
     private let clientIdKey = "clientId"
     private let sessionIdKey = "sessionId"
     private let userPhoneKey = "userPhone"
+    private let serviceName = "com.github.makewheels.video2022"
 
     @MainActor
     private func cleanState() {
         AuthManager.shared.logout()
+    }
+
+    private func readFromKeychain(key: String) -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: serviceName,
+            kSecAttrAccount as String: key,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        guard status == errSecSuccess, let data = item as? Data else { return nil }
+        return String(data: data, encoding: .utf8)
     }
 
     // MARK: - Initial / Clean State
@@ -39,12 +55,12 @@ final class AuthManagerTests: XCTestCase {
     }
 
     @MainActor
-    func testSetTokenPersistsToUserDefaults() {
+    func testSetTokenPersistsToKeychain() {
         cleanState()
         let manager = AuthManager.shared
         manager.setToken("persisted-token")
 
-        let stored = UserDefaults.standard.string(forKey: tokenKey)
+        let stored = readFromKeychain(key: tokenKey)
         XCTAssertEqual(stored, "persisted-token")
     }
 
@@ -57,7 +73,7 @@ final class AuthManagerTests: XCTestCase {
         manager.setClientId("client-abc")
 
         XCTAssertEqual(manager.clientId, "client-abc")
-        XCTAssertEqual(UserDefaults.standard.string(forKey: clientIdKey), "client-abc")
+        XCTAssertEqual(readFromKeychain(key: clientIdKey), "client-abc")
     }
 
     // MARK: - setSessionId
@@ -69,7 +85,7 @@ final class AuthManagerTests: XCTestCase {
         manager.setSessionId("sess-xyz")
 
         XCTAssertEqual(manager.sessionId, "sess-xyz")
-        XCTAssertEqual(UserDefaults.standard.string(forKey: sessionIdKey), "sess-xyz")
+        XCTAssertEqual(readFromKeychain(key: sessionIdKey), "sess-xyz")
     }
 
     // MARK: - setUserPhone
@@ -81,7 +97,7 @@ final class AuthManagerTests: XCTestCase {
         manager.setUserPhone("13800138000")
 
         XCTAssertEqual(manager.userPhone, "13800138000")
-        XCTAssertEqual(UserDefaults.standard.string(forKey: userPhoneKey), "13800138000")
+        XCTAssertEqual(readFromKeychain(key: userPhoneKey), "13800138000")
     }
 
     // MARK: - Logout
@@ -112,10 +128,9 @@ final class AuthManagerTests: XCTestCase {
     }
 
     @MainActor
-    func testLogoutClearsUserDefaults() {
+    func testLogoutClearsKeychain() {
         cleanState()
         let manager = AuthManager.shared
-        let defaults = UserDefaults.standard
 
         manager.setToken("tok")
         manager.setClientId("cid")
@@ -124,10 +139,10 @@ final class AuthManagerTests: XCTestCase {
 
         manager.logout()
 
-        XCTAssertNil(defaults.string(forKey: tokenKey))
-        XCTAssertNil(defaults.string(forKey: clientIdKey))
-        XCTAssertNil(defaults.string(forKey: sessionIdKey))
-        XCTAssertNil(defaults.string(forKey: userPhoneKey))
+        XCTAssertNil(readFromKeychain(key: tokenKey))
+        XCTAssertNil(readFromKeychain(key: clientIdKey))
+        XCTAssertNil(readFromKeychain(key: sessionIdKey))
+        XCTAssertNil(readFromKeychain(key: userPhoneKey))
     }
 
     // MARK: - APIError
@@ -175,7 +190,7 @@ final class AuthManagerTests: XCTestCase {
 
         let response = try JSONDecoder().decode(ApiResponse<String?>.self, from: json)
         XCTAssertTrue(response.isSuccess)
-        XCTAssertNil(response.data)
+        XCTAssertNil(response.data as Any?)
         XCTAssertNil(response.message)
     }
 }
