@@ -72,7 +72,6 @@ jobs:
 
   api-e2e-tests:
     name: API E2E 测试
-    needs: [backend-tests]
     runs-on: ubuntu-latest
 
     services:
@@ -144,7 +143,6 @@ jobs:
 
   browser-e2e-tests:
     name: 浏览器 E2E 测试
-    needs: [backend-tests, frontend-tests]
     runs-on: ubuntu-latest
 
     services:
@@ -269,7 +267,7 @@ jobs:
 
   ios-tests:
     name: iOS 单元测试
-    runs-on: macos-latest
+    runs-on: macos-14
 
     steps:
       - uses: actions/checkout@v4
@@ -287,7 +285,7 @@ jobs:
           xcodebuild test
           -project VideoApp.xcodeproj
           -scheme VideoApp
-          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest'
+          -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=latest'
           -only-testing:VideoAppTests
           -quiet
 
