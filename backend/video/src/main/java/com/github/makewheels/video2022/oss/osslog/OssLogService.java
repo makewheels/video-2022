@@ -153,41 +153,49 @@ public class OssLogService {
         List<String> lines = Arrays.asList(logContent.split("\n"));
         List<OssAccessLog> ossAccessLogList = new ArrayList<>(lines.size());
         for (String line : lines) {
-            List<String> row = readLine(line);
-            OssAccessLog ossAccessLog = new OssAccessLog();
-            ossAccessLog.setProgramBatchId(generateOssAccessLogDTO.getProgramBatchId());
-            ossAccessLog.setLogFileId(ossAccessLogFile.getId());
-            ossAccessLog.setLine(line);
-            ossAccessLog.setMd5(DigestUtil.md5Hex(line));
-            ossAccessLog.setRemoteIp(row.get(0));
-            ossAccessLog.setReserved1(row.get(1));
-            ossAccessLog.setReserved2(row.get(2));
-            ossAccessLog.setTime(DateUtil.parse(row.get(3), "dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH));
-            ossAccessLog.setRequestUrl(row.get(4));
-            ossAccessLog.setHttpStatus(Integer.parseInt(row.get(5)));
-            ossAccessLog.setSentBytes(Long.parseLong(row.get(6)));
-            ossAccessLog.setRequestTime(Long.parseLong(row.get(7)));
-            ossAccessLog.setReferer(row.get(8));
-            ossAccessLog.setUserAgent(row.get(9));
-            ossAccessLog.setHostName(row.get(10));
-            ossAccessLog.setRequestId(row.get(11));
-            ossAccessLog.setLoggingFlag(Boolean.parseBoolean(row.get(12)));
-            ossAccessLog.setRequesterAliyunId(row.get(13));
-            ossAccessLog.setOperation(row.get(14));
-            ossAccessLog.setBucketName(row.get(15));
-            ossAccessLog.setObjectName(row.get(16));
-            ossAccessLog.setObjectSize(row.get(17).equals("-") ? 0 : Long.parseLong(row.get(17)));
-            ossAccessLog.setServerCostTime(row.get(18).equals("-") ? 0 : Long.parseLong(row.get(18)));
-            ossAccessLog.setErrorCode(row.get(19));
-            ossAccessLog.setRequestLength(Integer.parseInt(row.get(20)));
-            ossAccessLog.setUserId(row.get(21));
-            ossAccessLog.setDeltaDataSize(row.get(22).equals("-") ? 0 : Long.parseLong(row.get(22)));
-            ossAccessLog.setSyncRequest(row.get(23));
-            ossAccessLog.setStorageClass(row.get(24));
-            ossAccessLog.setTargetStorageClass(row.get(25));
-            ossAccessLog.setTransmissionAccelerationAccessPoint(row.get(26));
-            ossAccessLog.setAccessKeyId(row.get(27));
-            ossAccessLogList.add(ossAccessLog);
+            try {
+                List<String> row = readLine(line);
+                if (row.size() < 28) {
+                    log.warn("日志行字段不足，跳过: {}", line);
+                    continue;
+                }
+                OssAccessLog ossAccessLog = new OssAccessLog();
+                ossAccessLog.setProgramBatchId(generateOssAccessLogDTO.getProgramBatchId());
+                ossAccessLog.setLogFileId(ossAccessLogFile.getId());
+                ossAccessLog.setLine(line);
+                ossAccessLog.setMd5(DigestUtil.md5Hex(line));
+                ossAccessLog.setRemoteIp(row.get(0));
+                ossAccessLog.setReserved1(row.get(1));
+                ossAccessLog.setReserved2(row.get(2));
+                ossAccessLog.setTime(DateUtil.parse(row.get(3), "dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH));
+                ossAccessLog.setRequestUrl(row.get(4));
+                ossAccessLog.setHttpStatus(Integer.parseInt(row.get(5)));
+                ossAccessLog.setSentBytes(Long.parseLong(row.get(6)));
+                ossAccessLog.setRequestTime(Long.parseLong(row.get(7)));
+                ossAccessLog.setReferer(row.get(8));
+                ossAccessLog.setUserAgent(row.get(9));
+                ossAccessLog.setHostName(row.get(10));
+                ossAccessLog.setRequestId(row.get(11));
+                ossAccessLog.setLoggingFlag(Boolean.parseBoolean(row.get(12)));
+                ossAccessLog.setRequesterAliyunId(row.get(13));
+                ossAccessLog.setOperation(row.get(14));
+                ossAccessLog.setBucketName(row.get(15));
+                ossAccessLog.setObjectName(row.get(16));
+                ossAccessLog.setObjectSize(row.get(17).equals("-") ? 0 : Long.parseLong(row.get(17)));
+                ossAccessLog.setServerCostTime(row.get(18).equals("-") ? 0 : Long.parseLong(row.get(18)));
+                ossAccessLog.setErrorCode(row.get(19));
+                ossAccessLog.setRequestLength(Integer.parseInt(row.get(20)));
+                ossAccessLog.setUserId(row.get(21));
+                ossAccessLog.setDeltaDataSize(row.get(22).equals("-") ? 0 : Long.parseLong(row.get(22)));
+                ossAccessLog.setSyncRequest(row.get(23));
+                ossAccessLog.setStorageClass(row.get(24));
+                ossAccessLog.setTargetStorageClass(row.get(25));
+                ossAccessLog.setTransmissionAccelerationAccessPoint(row.get(26));
+                ossAccessLog.setAccessKeyId(row.get(27));
+                ossAccessLogList.add(ossAccessLog);
+            } catch (Exception e) {
+                log.warn("解析日志行失败，跳过: {}", line, e);
+            }
         }
         return ossAccessLogList;
     }

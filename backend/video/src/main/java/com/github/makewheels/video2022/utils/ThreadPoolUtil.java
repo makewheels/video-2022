@@ -54,7 +54,6 @@ public class ThreadPoolUtil {
             });
         }
 
-        executor.shutdown();
         return futures.stream()
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());

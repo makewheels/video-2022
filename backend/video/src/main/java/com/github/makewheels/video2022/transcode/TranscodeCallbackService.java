@@ -213,7 +213,9 @@ public class TranscodeCallbackService {
 
         //计算最高码率
         Integer maxBitrate = tsFiles.stream()
-                .max(Comparator.comparing(TsFile::getBitrate)).get().getBitrate();
+                .max(Comparator.comparing(TsFile::getBitrate))
+                .orElseThrow(() -> new IllegalStateException("No ts files found for transcode: " + transcode.getId()))
+                .getBitrate();
         transcode.setMaxBitrate(maxBitrate);
 
         mongoTemplate.save(transcode);

@@ -34,6 +34,9 @@ public class IdService {
         // 生成序列号
         String redisKey = RedisKey.increaseLongId(timeUnit);
         Long redisIncreaseId = stringRedisTemplate.opsForValue().increment(redisKey);
+        if (redisIncreaseId == null) {
+            redisIncreaseId = 0L;
+        }
         stringRedisTemplate.expire(redisKey, duration.plus(duration));
 
         String serialNumber = new DecimalFormat(StringUtils.repeat("0", serialNumberLength))

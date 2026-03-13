@@ -33,8 +33,8 @@ public class TransactionService {
             log.info("billIds为空，生成交易跳过");
             return;
         }
-        Transaction transaction = new Transaction();
         for (Bill bill : bills) {
+            Transaction transaction = new Transaction();
             String userId = bill.getUserId();
             transaction.setUserId(userId);
             Wallet wallet = walletService.getByUserId(userId);

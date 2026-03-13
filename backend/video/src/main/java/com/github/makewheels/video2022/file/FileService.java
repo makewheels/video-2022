@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -123,9 +124,8 @@ public class FileService {
 
         // 异步处理访问File记录
         HttpServletRequest request = RequestUtil.getRequest();
-        new Thread(() -> fileAccessLogService.handleAccessLog(
-                request, videoId, clientId, sessionId, resolution, fileId))
-                .start();
+        CompletableFuture.runAsync(() -> fileAccessLogService.handleAccessLog(
+                request, videoId, clientId, sessionId, resolution, fileId));
 
         // 设置返回结果
         String key = tsFileRepository.getKeyById(fileId);

@@ -113,6 +113,24 @@ public class CommentService {
     /**
      * 删除评论
      */
+    private void deleteCommentLikes(String commentId) {
+        mongoTemplate.remove(
+                Query.query(Criteria.where("commentId").is(commentId)),
+                CommentLike.class);
+    }
+
+    private int deleteTopLevelCommentReplies(String commentId) {
+        Query replyQuery = Query.query(Criteria.where("parentId").is(commentId));
+        List<Comment> replies = mongoTemplate.find(replyQuery, Comment.class);
+
+        for (Comment reply : replies) {
+            deleteCommentLikes(reply.getId());
+        }
+
+        mongoTemplate.remove(replyQuery, Comment.class);
+        return replies.size();
+    }
+
     public Result<Void> deleteComment(String commentId) {
         Comment comment = mongoTemplate.findById(commentId, Comment.class);
         if (comment == null) {
@@ -129,35 +147,17 @@ public class CommentService {
 
         int deletedCount = 1;
         if (comment.getParentId() == null) {
-            // 顶级评论：先查回复，再删除
-            Query replyQuery = Query.query(Criteria.where("parentId").is(commentId));
-            List<Comment> replies = mongoTemplate.find(replyQuery, Comment.class);
-            deletedCount += replies.size();
-
-            // 删除回复的点赞
-            for (Comment reply : replies) {
-                mongoTemplate.remove(
-                        Query.query(Criteria.where("commentId").is(reply.getId())),
-                        CommentLike.class);
-            }
-
-            // 删除回复
-            mongoTemplate.remove(replyQuery, Comment.class);
+            deletedCount += deleteTopLevelCommentReplies(commentId);
         } else {
-            // 子评论：减少父评论回复数
             mongoTemplate.updateFirst(
                     Query.query(Criteria.where("_id").is(comment.getParentId())),
                     new Update().inc("replyCount", -1),
                     Comment.class);
         }
 
-        // 删除评论本身的点赞
-        mongoTemplate.remove(
-                Query.query(Criteria.where("commentId").is(commentId)),
-                CommentLike.class);
+        deleteCommentLikes(commentId);
         mongoTemplate.remove(comment);
 
-        // 更新 Video 的 commentCount
         mongoTemplate.updateFirst(
                 Query.query(Criteria.where("_id").is(comment.getVideoId())),
                 new Update().inc("commentCount", -deletedCount),

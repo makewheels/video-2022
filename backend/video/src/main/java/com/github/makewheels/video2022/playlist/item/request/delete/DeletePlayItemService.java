@@ -46,8 +46,7 @@ public class DeletePlayItemService {
                         .collect(Collectors.toList());
             case DeleteMode.SINGLE_INDEX:
                 Integer singleIndex = deletePlayItemRequest.getSingleIndex();
-                Lists.newArrayList(playItemList.get(singleIndex));
-                break;
+                return Lists.newArrayList(playItemList.get(singleIndex));
             case DeleteMode.INDEX_LIST:
                 List<Integer> indexList = deletePlayItemRequest.getIndexList();
                 List<PlayItem> result = new ArrayList<>(indexList.size());

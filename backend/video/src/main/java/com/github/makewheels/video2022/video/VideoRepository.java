@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Repository
@@ -70,7 +71,7 @@ public class VideoRepository {
     public List<Video> getVideosByUserId(String userId, int skip, int limit, String keyword) {
         Criteria criteria = Criteria.where("uploaderId").is(userId);
         if (keyword != null && !keyword.trim().isEmpty()) {
-            String regex = keyword.trim();
+            String regex = Pattern.quote(keyword.trim());
             criteria.orOperator(
                     Criteria.where("title").regex(regex, "i"),
                     Criteria.where("description").regex(regex, "i")
@@ -89,7 +90,7 @@ public class VideoRepository {
     public long countVideosByUserId(String userId, String keyword) {
         Criteria criteria = Criteria.where("uploaderId").is(userId);
         if (keyword != null && !keyword.trim().isEmpty()) {
-            String regex = keyword.trim();
+            String regex = Pattern.quote(keyword.trim());
             criteria.orOperator(
                     Criteria.where("title").regex(regex, "i"),
                     Criteria.where("description").regex(regex, "i")
@@ -104,7 +105,7 @@ public class VideoRepository {
     public List<Video> getPublicVideoList(int skip, int limit, String keyword) {
         Criteria criteria = Criteria.where("visibility").is("PUBLIC");
         if (keyword != null && !keyword.trim().isEmpty()) {
-            String regex = keyword.trim();
+            String regex = Pattern.quote(keyword.trim());
             criteria.andOperator(
                     new Criteria().orOperator(
                             Criteria.where("title").regex(regex, "i"),
@@ -125,7 +126,7 @@ public class VideoRepository {
     public long countPublicVideos(String keyword) {
         Criteria criteria = Criteria.where("visibility").is("PUBLIC");
         if (keyword != null && !keyword.trim().isEmpty()) {
-            String regex = keyword.trim();
+            String regex = Pattern.quote(keyword.trim());
             criteria.andOperator(
                     new Criteria().orOperator(
                             Criteria.where("title").regex(regex, "i"),
