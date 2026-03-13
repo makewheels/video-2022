@@ -213,18 +213,16 @@ public class VideoService {
                 .collect(Collectors.toList());
         Map<String, String> coverId2UrlMap = coverService.getSignedCoverUrl(coverIdList);
 
-        // 获取上传者名称（手机号脱敏）
+        // 获取上传者信息（昵称优先，fallback 手机号脱敏）
         Set<String> uploaderIds = videos.stream()
                 .map(Video::getUploaderId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        Map<String, String> uploaderNameMap = new HashMap<>();
+        Map<String, User> uploaderMap = new HashMap<>();
         for (String uploaderId : uploaderIds) {
             User user = userRepository.getById(uploaderId);
-            if (user != null && user.getPhone() != null) {
-                String phone = user.getPhone();
-                String masked = phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
-                uploaderNameMap.put(uploaderId, masked);
+            if (user != null) {
+                uploaderMap.put(uploaderId, user);
             }
         }
 
@@ -234,7 +232,24 @@ public class VideoService {
             BeanUtils.copyProperties(video, videoVO);
             videoVO.setCoverUrl(coverId2UrlMap.get(video.getCoverId()));
             videoVO.setCreateTimeString(DateUtil.formatDateTime(video.getCreateTime()));
-            videoVO.setUploaderName(uploaderNameMap.getOrDefault(video.getUploaderId(), "未知用户"));
+
+            User uploader = uploaderMap.get(video.getUploaderId());
+            if (uploader != null) {
+                String displayName = uploader.getNickname();
+                if (displayName == null || displayName.isEmpty()) {
+                    String phone = uploader.getPhone();
+                    if (phone != null && phone.length() >= 7) {
+                        displayName = phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
+                    } else {
+                        displayName = "未知用户";
+                    }
+                }
+                videoVO.setUploaderName(displayName);
+                videoVO.setUploaderAvatarUrl(uploader.getAvatarUrl());
+                videoVO.setUploaderId(uploader.getId());
+            } else {
+                videoVO.setUploaderName("未知用户");
+            }
             // 手动映射嵌套对象中的字段（BeanUtils 不处理嵌套属性）
             if (video.getWatch() != null) {
                 videoVO.setWatchCount(video.getWatch().getWatchCount());

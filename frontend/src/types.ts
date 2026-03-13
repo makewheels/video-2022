@@ -15,17 +15,22 @@ export interface Video {
   coverUrl?: string;
   youtubePublishTimeString?: string;
   uploaderName?: string;
+  uploaderAvatarUrl?: string;
+  uploaderId?: string;
 }
 
 export interface Comment {
   id: string;
   content: string;
   userPhone: string;
+  userNickname?: string;
+  userAvatarUrl?: string;
   createTime: string;
   likeCount: number;
   replyCount: number;
   parentId?: string;
   replyToUserPhone?: string;
+  replyToUserNickname?: string;
 }
 
 export interface PlaylistItem {
@@ -62,4 +67,24 @@ export interface UploadCredentials {
   accessKeyId: string;
   secretKey: string;
   sessionToken: string;
+}
+
+export interface ChannelInfo {
+  userId: string;
+  nickname: string;
+  avatarUrl?: string;
+  bannerUrl?: string;
+  bio?: string;
+  subscriberCount: number;
+  videoCount: number;
+  isSubscribed: boolean;
+}
+
+export interface UserProfile {
+  id: string;
+  phone: string;
+  nickname?: string;
+  avatarUrl?: string;
+  bannerUrl?: string;
+  bio?: string;
 }

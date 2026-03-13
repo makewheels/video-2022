@@ -84,80 +84,94 @@ export default function CommentItem({ comment, videoId, isReply, onRefresh }: Co
     }
   };
 
+  const displayName = comment.userNickname || maskPhone(comment.userPhone);
+  const displayInitial = displayName[0].toUpperCase();
+
   return (
     <div className={`comment-item${isReply ? ' comment-reply' : ''}`}>
-      <div className="comment-header">
-        <span className="comment-user">{maskPhone(comment.userPhone)}</span>
-        <span className="comment-time">{timeAgo(comment.createTime)}</span>
-      </div>
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div className="comment-avatar">
+          {comment.userAvatarUrl ? (
+            <img src={comment.userAvatarUrl} alt="" />
+          ) : (
+            displayInitial
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="comment-header">
+            <span className="comment-user">{displayName}</span>
+            <span className="comment-time">{timeAgo(comment.createTime)}</span>
+          </div>
 
-      <div className="comment-content">
-        {isReply && comment.replyToUserPhone && (
-          <span className="comment-reply-to">@{maskPhone(comment.replyToUserPhone)} </span>
-        )}
-        {comment.content}
-      </div>
+          <div className="comment-content">
+            {isReply && comment.replyToUserPhone && (
+              <span className="comment-reply-to">@{comment.replyToUserNickname || maskPhone(comment.replyToUserPhone)} </span>
+            )}
+            {comment.content}
+          </div>
 
-      <div className="comment-actions">
-        <button className="btn-link" onClick={handleLike}>
-          👍 {comment.likeCount > 0 ? comment.likeCount : ''}
-        </button>
-        <button className="btn-link" onClick={() => setShowReplyInput(!showReplyInput)}>
-          回复
-        </button>
-        <button className="btn-link" onClick={handleDelete}>
-          删除
-        </button>
-      </div>
-
-      {showReplyInput && (
-        <div className="reply-input">
-          <textarea
-            value={replyContent}
-            onChange={(e) => setReplyContent(e.target.value)}
-            placeholder="写下你的回复..."
-            rows={2}
-          />
-          <div className="reply-input-actions">
-            <button className="btn btn-secondary btn-sm" onClick={() => setShowReplyInput(false)}>
-              取消
+          <div className="comment-actions">
+            <button className="btn-link" onClick={handleLike}>
+              👍 {comment.likeCount > 0 ? comment.likeCount : ''}
             </button>
-            <button className="btn btn-primary btn-sm" onClick={handleReplySubmit}>
+            <button className="btn-link" onClick={() => setShowReplyInput(!showReplyInput)}>
               回复
             </button>
+            <button className="btn-link" onClick={handleDelete}>
+              删除
+            </button>
           </div>
-        </div>
-      )}
 
-      {!isReply && comment.replyCount > 0 && (
-        <div className="comment-replies-toggle">
-          {showReplies ? (
-            <button className="btn-link" onClick={() => setShowReplies(false)}>
-              收起回复
-            </button>
-          ) : (
-            <button className="btn-link" onClick={loadReplies}>
-              查看 {comment.replyCount} 条回复
-            </button>
+          {showReplyInput && (
+            <div className="reply-input">
+              <textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder="写下你的回复..."
+                rows={2}
+              />
+              <div className="reply-input-actions">
+                <button className="btn btn-secondary btn-sm" onClick={() => setShowReplyInput(false)}>
+                  取消
+                </button>
+                <button className="btn btn-primary btn-sm" onClick={handleReplySubmit}>
+                  回复
+                </button>
+              </div>
+            </div>
           )}
-          {showReplies && (
-            <div className="comment-replies">
-              {replies.map((reply) => (
-                <CommentItem
-                  key={reply.id}
-                  comment={reply}
-                  videoId={videoId}
-                  isReply
-                  onRefresh={() => {
-                    onRefresh();
-                    loadReplies();
-                  }}
-                />
-              ))}
+
+          {!isReply && comment.replyCount > 0 && (
+            <div className="comment-replies-toggle">
+              {showReplies ? (
+                <button className="btn-link" onClick={() => setShowReplies(false)}>
+                  收起回复
+                </button>
+              ) : (
+                <button className="btn-link" onClick={loadReplies}>
+                  查看 {comment.replyCount} 条回复
+                </button>
+              )}
+              {showReplies && (
+                <div className="comment-replies">
+                  {replies.map((reply) => (
+                    <CommentItem
+                      key={reply.id}
+                      comment={reply}
+                      videoId={videoId}
+                      isReply
+                      onRefresh={() => {
+                        onRefresh();
+                        loadReplies();
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

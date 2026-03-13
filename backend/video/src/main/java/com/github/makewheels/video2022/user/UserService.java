@@ -4,10 +4,13 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.system.response.ErrorCode;
+import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.finance.wallet.WalletService;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.user.bean.VerificationCode;
+import com.github.makewheels.video2022.user.bean.ChannelVO;
+import com.github.makewheels.video2022.user.bean.UpdateProfileRequest;
 import com.github.makewheels.video2022.utils.IdService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -142,6 +145,61 @@ public class UserService {
      */
     public User getUserById(String userId) {
         User user = userRepository.getById(userId);
+        if (user != null) {
+            user.setToken(null);
+        }
+        return user;
+    }
+
+    /**
+     * 更新用户资料（昵称、简介）
+     */
+    public Result<Void> updateProfile(UpdateProfileRequest request) {
+        String userId = UserHolder.getUserId();
+        String nickname = request.getNickname();
+        String bio = request.getBio();
+
+        if (nickname != null && nickname.length() > 30) {
+            return Result.error("昵称不能超过30字");
+        }
+        if (bio != null && bio.length() > 200) {
+            return Result.error("简介不能超过200字");
+        }
+
+        userRepository.updateProfile(userId, nickname, bio);
+        // 清除 Redis 缓存
+        User user = userRepository.getById(userId);
+        if (user != null) {
+            userRedisService.setUserByToken(user);
+        }
+        return Result.ok();
+    }
+
+    /**
+     * 获取频道信息
+     */
+    public ChannelVO getChannel(String channelUserId) {
+        User user = userRepository.getById(channelUserId);
+        if (user == null) {
+            return null;
+        }
+        ChannelVO vo = new ChannelVO();
+        vo.setUserId(user.getId());
+        vo.setNickname(user.getNickname());
+        vo.setAvatarUrl(user.getAvatarUrl());
+        vo.setBannerUrl(user.getBannerUrl());
+        vo.setBio(user.getBio());
+        vo.setSubscriberCount(user.getSubscriberCount() != null ? user.getSubscriberCount() : 0L);
+        vo.setVideoCount(user.getVideoCount() != null ? user.getVideoCount() : 0L);
+        vo.setIsSubscribed(false);
+        return vo;
+    }
+
+    /**
+     * 获取当前用户资料
+     */
+    public User getMyProfile() {
+        User user = userRepository.getById(UserHolder.getUserId());
         if (user != null) {
             user.setToken(null);
         }

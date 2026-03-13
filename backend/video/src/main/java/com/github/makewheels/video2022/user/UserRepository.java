@@ -4,9 +4,11 @@ import com.github.makewheels.video2022.user.bean.User;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import jakarta.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -34,5 +36,30 @@ public class UserRepository {
     public User getByToken(String token) {
         Query query = Query.query(Criteria.where("token").is(token));
         return mongoTemplate.findOne(query, User.class);
+    }
+
+    public void updateProfile(String userId, String nickname, String bio) {
+        Query query = Query.query(Criteria.where("_id").is(userId));
+        Update update = new Update()
+                .set("nickname", nickname)
+                .set("bio", bio)
+                .set("updateTime", new Date());
+        mongoTemplate.updateFirst(query, update, User.class);
+    }
+
+    public void updateAvatarUrl(String userId, String avatarUrl) {
+        Query query = Query.query(Criteria.where("_id").is(userId));
+        Update update = new Update()
+                .set("avatarUrl", avatarUrl)
+                .set("updateTime", new Date());
+        mongoTemplate.updateFirst(query, update, User.class);
+    }
+
+    public void updateBannerUrl(String userId, String bannerUrl) {
+        Query query = Query.query(Criteria.where("_id").is(userId));
+        Update update = new Update()
+                .set("bannerUrl", bannerUrl)
+                .set("updateTime", new Date());
+        mongoTemplate.updateFirst(query, update, User.class);
     }
 }

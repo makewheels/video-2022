@@ -13,6 +13,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.github.makewheels.video2022.ui.components.BottomNavBar
 import com.github.makewheels.video2022.ui.components.bottomNavItems
+import com.github.makewheels.video2022.ui.channel.ChannelScreen
 import com.github.makewheels.video2022.ui.edit.EditScreen
 import com.github.makewheels.video2022.ui.home.HomeScreen
 import com.github.makewheels.video2022.ui.login.LoginScreen
@@ -114,6 +115,17 @@ fun AppNavGraph(navController: NavHostController, isLoggedIn: Boolean) {
             }
             composable(Screen.YouTube.route) {
                 YouTubeScreen()
+            }
+            composable(
+                Screen.Channel.route,
+                arguments = listOf(navArgument("userId") { type = NavType.StringType })
+            ) { _ ->
+                ChannelScreen(
+                    onVideoClick = { watchId ->
+                        navController.navigate(Screen.Watch.createRoute(watchId))
+                    },
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }

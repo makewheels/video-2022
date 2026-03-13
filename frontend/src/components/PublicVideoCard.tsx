@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { Video } from '../types';
 
 interface PublicVideoCardProps {
@@ -42,7 +42,24 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 export default function PublicVideoCard({ video, compact }: PublicVideoCardProps) {
+  const navigate = useNavigate();
   const uploaderInitial = (video.uploaderName || '?')[0].toUpperCase();
+
+  const handleAvatarClick = (e: React.MouseEvent) => {
+    if (video.uploaderId) {
+      e.preventDefault();
+      e.stopPropagation();
+      navigate(`/channel/${video.uploaderId}`);
+    }
+  };
+
+  const handleUploaderClick = (e: React.MouseEvent) => {
+    if (video.uploaderId) {
+      e.preventDefault();
+      e.stopPropagation();
+      navigate(`/channel/${video.uploaderId}`);
+    }
+  };
 
   return (
     <Link to={`/watch/${video.watchId}`} className={`yt-card${compact ? ' yt-card-compact' : ''}`}>
@@ -57,13 +74,30 @@ export default function PublicVideoCard({ video, compact }: PublicVideoCardProps
         )}
       </div>
       <div className="yt-card-info">
-        <div className="yt-card-avatar" title={video.uploaderName}>
-          {uploaderInitial}
+        <div
+          className="yt-card-avatar"
+          title={video.uploaderName}
+          onClick={handleAvatarClick}
+          role="button"
+          tabIndex={0}
+        >
+          {video.uploaderAvatarUrl ? (
+            <img src={video.uploaderAvatarUrl} alt="" className="yt-card-avatar-img" />
+          ) : (
+            uploaderInitial
+          )}
         </div>
         <div className="yt-card-text">
           <h3 className="yt-card-title">{video.title}</h3>
           <div className="yt-card-meta">
-            <span className="yt-card-uploader">{video.uploaderName || '未知用户'}</span>
+            <span
+              className="yt-card-uploader"
+              onClick={handleUploaderClick}
+              role="button"
+              tabIndex={0}
+            >
+              {video.uploaderName || '未知用户'}
+            </span>
             <span className="yt-card-stats">
               {formatViewCount(video.watchCount)} · {formatRelativeTime(video.createTime)}
             </span>

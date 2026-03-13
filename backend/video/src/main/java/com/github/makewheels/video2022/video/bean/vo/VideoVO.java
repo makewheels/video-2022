@@ -23,6 +23,8 @@ public class VideoVO {
     private String visibility;
 
     private String uploaderName;
+    private String uploaderAvatarUrl;
+    private String uploaderId;
 
     private Date createTime;
     private String createTimeString;

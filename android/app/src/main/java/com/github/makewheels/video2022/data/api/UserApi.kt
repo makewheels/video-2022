@@ -1,7 +1,11 @@
 package com.github.makewheels.video2022.data.api
 
 import com.github.makewheels.video2022.data.model.*
+import com.github.makewheels.video2022.data.model.ChannelInfo
+import com.github.makewheels.video2022.data.model.UpdateProfileRequest
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface UserApi {
@@ -22,4 +26,22 @@ interface UserApi {
 
     @GET("/session/requestSessionId")
     suspend fun requestSessionId(): ApiResponse<Map<String, String>>
+
+    @POST("/user/updateProfile")
+    suspend fun updateProfile(@Body request: UpdateProfileRequest): ApiResponse<Any?>
+
+    @GET("/user/getMyProfile")
+    suspend fun getMyProfile(): ApiResponse<User>
+
+    @GET("/user/getChannel")
+    suspend fun getChannel(@Query("userId") userId: String): ApiResponse<ChannelInfo>
+
+    @GET("/subscription/subscribe")
+    suspend fun subscribe(@Query("channelUserId") channelUserId: String): ApiResponse<Any?>
+
+    @GET("/subscription/unsubscribe")
+    suspend fun unsubscribe(@Query("channelUserId") channelUserId: String): ApiResponse<Any?>
+
+    @GET("/subscription/getStatus")
+    suspend fun getSubscriptionStatus(@Query("channelUserId") channelUserId: String): ApiResponse<Boolean>
 }
