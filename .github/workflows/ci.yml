@@ -279,15 +279,28 @@ jobs:
         working-directory: ios
         run: xcodegen generate
 
+      - name: Install iOS Simulator
+        run: xcodebuild -downloadPlatform iOS
+
       - name: Run iOS unit tests
         working-directory: ios
-        run: >-
-          xcodebuild test
-          -project VideoApp.xcodeproj
-          -scheme VideoApp
-          -destination 'platform=macOS,variant=Designed for [iPad,iPhone]'
-          -only-testing:VideoAppTests
-          -quiet
+        run: |
+          DEST=$(xcrun simctl list devices available -j | python3 -c "
+          import sys,json
+          data=json.load(sys.stdin)
+          for runtime,devs in data['devices'].items():
+              if 'iOS' in runtime:
+                  for d in devs:
+                      if d.get('isAvailable') and 'iPhone' in d['name']:
+                          print(f\"platform=iOS Simulator,id={d['udid']}\")
+                          sys.exit(0)
+          " || echo "platform=iOS Simulator,name=iPhone 16,OS=latest")
+          xcodebuild test \
+            -project VideoApp.xcodeproj \
+            -scheme VideoApp \
+            -destination "$DEST" \
+            -only-testing:VideoAppTests \
+            -quiet
 
   build-and-test:
     name: build-and-test
