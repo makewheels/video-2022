@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getToken } from './auth';
+import { getToken, removeToken } from './auth';
 
 const api = axios.create();
 
@@ -19,7 +19,14 @@ api.interceptors.response.use(
     }
     return response;
   },
-  (error) => Promise.reject(error),
+  (error) => {
+    if (error.response?.status === 401) {
+      removeToken();
+      const target = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `/login?target=${target}`;
+    }
+    return Promise.reject(error);
+  },
 );
 
 export default api;
