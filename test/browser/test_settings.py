@@ -60,3 +60,30 @@ class TestSettingsAuth:
             timeout=BASE_TIMEOUT,
         )
         assert "/login" in page.url
+
+
+class TestSettingsFormValidation:
+    """Settings表单交互验证."""
+
+    def test_bio_character_count_visible(self, auth_page, base_url):
+        """简介字符计数器显示."""
+        auth_page.goto(f"{base_url}/settings")
+        counter = auth_page.locator("text=/\\d+\\/200/")
+        counter.wait_for(timeout=BASE_TIMEOUT)
+        assert counter.is_visible()
+
+    def test_nickname_accepts_input(self, auth_page, base_url):
+        """昵称输入框可输入文字."""
+        auth_page.goto(f"{base_url}/settings")
+        nickname_input = auth_page.locator("input[placeholder='输入昵称']")
+        nickname_input.wait_for(timeout=BASE_TIMEOUT)
+        nickname_input.fill("测试昵称")
+        assert nickname_input.input_value() == "测试昵称"
+
+    def test_bio_accepts_input(self, auth_page, base_url):
+        """简介文本域可输入文字."""
+        auth_page.goto(f"{base_url}/settings")
+        bio_textarea = auth_page.locator("textarea")
+        bio_textarea.wait_for(timeout=BASE_TIMEOUT)
+        bio_textarea.fill("测试简介")
+        assert bio_textarea.input_value() == "测试简介"

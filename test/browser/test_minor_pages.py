@@ -62,6 +62,30 @@ class TestStatisticsPage:
         chart.wait_for(timeout=BASE_TIMEOUT)
         assert chart.is_visible()
 
+    def test_7day_button_active_by_default(self, auth_page, base_url):
+        """'最近7天'按钮默认应为激活状态(btn-primary)."""
+        auth_page.goto(f"{base_url}/statistics")
+        btn7 = auth_page.locator("button", has_text="最近7天")
+        btn7.wait_for(timeout=BASE_TIMEOUT)
+        assert "btn-primary" in (btn7.get_attribute("class") or "")
+
+    def test_date_inputs_have_default_values(self, auth_page, base_url):
+        """日期输入框应有默认值."""
+        auth_page.goto(f"{base_url}/statistics")
+        date_inputs = auth_page.locator("input[type='date']")
+        date_inputs.first.wait_for(timeout=BASE_TIMEOUT)
+        start_val = date_inputs.nth(0).input_value()
+        end_val = date_inputs.nth(1).input_value()
+        assert start_val != "", "Start date should have a default value"
+        assert end_val != "", "End date should have a default value"
+
+    def test_query_button_present(self, auth_page, base_url):
+        """'查询'按钮可见."""
+        auth_page.goto(f"{base_url}/statistics")
+        query_btn = auth_page.locator("button.btn-primary", has_text="查询")
+        query_btn.wait_for(timeout=BASE_TIMEOUT)
+        assert query_btn.is_visible()
+
     def test_requires_auth(self, page, base_url):
         """Unauthenticated users are redirected to /login."""
         page.goto(f"{base_url}/statistics")
