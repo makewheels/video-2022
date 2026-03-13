@@ -10,6 +10,8 @@ import EditPage from './pages/EditPage';
 import WatchPage from './pages/WatchPage';
 import StatisticsPage from './pages/StatisticsPage';
 import YouTubePage from './pages/YouTubePage';
+import SettingsPage from './pages/SettingsPage';
+import ChannelPage from './pages/ChannelPage';
 import { isLoggedIn } from './utils/auth';
 
 function PrivateRoute() {
@@ -34,6 +36,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/watch/:videoId" element={<WatchPage />} />
+        <Route path="/channel/:userId" element={<ChannelPage />} />
 
         <Route element={<PrivateRoute />}>
           <Route path="/my-videos" element={<MyVideosPage />} />
@@ -41,6 +44,7 @@ export default function App() {
           <Route path="/edit/:videoId" element={<EditPage />} />
           <Route path="/statistics" element={<StatisticsPage />} />
           <Route path="/youtube" element={<YouTubePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
