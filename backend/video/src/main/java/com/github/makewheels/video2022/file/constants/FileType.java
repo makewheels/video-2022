@@ -9,4 +9,5 @@ public interface FileType {
     String TRANSCODE_M3U8 = "TRANSCODE_M3U8";
     String TRANSCODE_TS = "TRANSCODE_TS";
     String QR_CODE = "QR_CODE";
+    String AVATAR = "AVATAR";
 }

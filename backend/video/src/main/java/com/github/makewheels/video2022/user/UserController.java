@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.user;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.user.bean.ChannelVO;
@@ -60,6 +61,31 @@ public class UserController {
     @GetMapping("getMyProfile")
     public Result<User> getMyProfile() {
         return Result.ok(userService.getMyProfile());
+    }
+
+    /**
+     * 创建头像文件记录
+     */
+    @GetMapping("avatar/createFile")
+    public Result<JSONObject> createAvatarFile() {
+        return Result.ok(userService.createAvatarFile());
+    }
+
+    /**
+     * 获取头像上传凭证
+     */
+    @GetMapping("avatar/getUploadCredentials")
+    public Result<JSONObject> getAvatarUploadCredentials(@RequestParam String fileId) {
+        return Result.ok(userService.getAvatarUploadCredentials(fileId));
+    }
+
+    /**
+     * 头像上传完成
+     */
+    @GetMapping("avatar/uploadFinish")
+    public Result<Void> avatarUploadFinish(@RequestParam String fileId) {
+        userService.avatarUploadFinish(fileId);
+        return Result.ok();
     }
 
 }
