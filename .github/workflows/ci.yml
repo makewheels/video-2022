@@ -23,10 +23,10 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -43,10 +43,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: npm
@@ -60,94 +60,23 @@ jobs:
         working-directory: frontend
         run: npx vitest run
 
-  api-e2e-tests:
-    name: API E2E 测试
+  # 构建产物，供 E2E 测试共享
+  build-e2e-artifacts:
+    name: 构建 E2E 产物
     runs-on: ubuntu-latest
 
-    services:
-      mongodb:
-        image: mongo:7
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.runCommand({ping:1})'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Build backend
-        working-directory: backend
-        run: >-
-          mvn clean package -pl video -Pspringboot
-          -Dmaven.test.skip=true
-          --batch-mode --no-transfer-progress
-
-      - name: Start backend
-        working-directory: backend
-        env:
-          ALIYUN_OSS_VIDEO_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_VIDEO_ACCESS_KEY_ID }}
-          ALIYUN_OSS_VIDEO_SECRET_KEY: ${{ secrets.ALIYUN_OSS_VIDEO_SECRET_KEY }}
-          ALIYUN_OSS_DATA_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_DATA_ACCESS_KEY_ID }}
-          ALIYUN_OSS_DATA_SECRET_KEY: ${{ secrets.ALIYUN_OSS_DATA_SECRET_KEY }}
-          ALIYUN_MPS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_MPS_ACCESS_KEY_ID }}
-          ALIYUN_MPS_SECRET_KEY: ${{ secrets.ALIYUN_MPS_SECRET_KEY }}
-          ALIYUN_APIGATEWAY_IP_APPCODE: ${{ secrets.ALIYUN_APIGATEWAY_IP_APPCODE }}
-        run: |
-          java -jar video/target/video-0.0.1-SNAPSHOT.jar &
-          for i in $(seq 1 60); do
-            curl -sf http://localhost:5022/healthCheck && break || sleep 2
-          done
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install test dependencies
-        working-directory: test
-        run: pip install -r requirements.txt
-
-      - name: Run API E2E tests
-        working-directory: test
-        run: pytest api/ -v --tb=short
-
-  browser-e2e-tests:
-    name: 浏览器 E2E 测试
-    runs-on: ubuntu-latest
-
-    services:
-      mongodb:
-        image: mongo:7
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.runCommand({ping:1})'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: npm
@@ -164,8 +93,53 @@ jobs:
           -Dmaven.test.skip=true
           --batch-mode --no-transfer-progress
 
+      - name: Upload backend JAR
+        uses: actions/upload-artifact@v5
+        with:
+          name: backend-jar
+          path: backend/video/target/video-0.0.1-SNAPSHOT.jar
+          retention-days: 1
+
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v5
+        with:
+          name: frontend-build
+          path: backend/video/src/main/resources/static
+          retention-days: 1
+
+  api-e2e-tests:
+    name: API E2E 测试
+    needs: build-e2e-artifacts
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping:1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Download backend JAR
+        uses: actions/download-artifact@v5
+        with:
+          name: backend-jar
+          path: backend/video/target
+
       - name: Start backend
-        working-directory: backend
+        working-directory: backend/video/target
         env:
           ALIYUN_OSS_VIDEO_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_VIDEO_ACCESS_KEY_ID }}
           ALIYUN_OSS_VIDEO_SECRET_KEY: ${{ secrets.ALIYUN_OSS_VIDEO_SECRET_KEY }}
@@ -175,23 +149,107 @@ jobs:
           ALIYUN_MPS_SECRET_KEY: ${{ secrets.ALIYUN_MPS_SECRET_KEY }}
           ALIYUN_APIGATEWAY_IP_APPCODE: ${{ secrets.ALIYUN_APIGATEWAY_IP_APPCODE }}
         run: |
-          java -jar video/target/video-0.0.1-SNAPSHOT.jar &
+          java -jar video-0.0.1-SNAPSHOT.jar &
           for i in $(seq 1 60); do
             curl -sf http://localhost:5022/healthCheck && break || sleep 2
           done
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: test/requirements.txt
 
       - name: Install test dependencies
         working-directory: test
         run: pip install -r requirements.txt
 
+      - name: Run API E2E tests
+        working-directory: test
+        run: pytest api/ -v --tb=short
+
+  browser-e2e-tests:
+    name: 浏览器 E2E 测试
+    needs: build-e2e-artifacts
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping:1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Download backend JAR
+        uses: actions/download-artifact@v5
+        with:
+          name: backend-jar
+          path: backend/video/target
+
+      - name: Download frontend build
+        uses: actions/download-artifact@v5
+        with:
+          name: frontend-build
+          path: backend/video/src/main/resources/static
+
+      - name: Start backend
+        working-directory: backend/video/target
+        env:
+          ALIYUN_OSS_VIDEO_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_VIDEO_ACCESS_KEY_ID }}
+          ALIYUN_OSS_VIDEO_SECRET_KEY: ${{ secrets.ALIYUN_OSS_VIDEO_SECRET_KEY }}
+          ALIYUN_OSS_DATA_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_DATA_ACCESS_KEY_ID }}
+          ALIYUN_OSS_DATA_SECRET_KEY: ${{ secrets.ALIYUN_OSS_DATA_SECRET_KEY }}
+          ALIYUN_MPS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_MPS_ACCESS_KEY_ID }}
+          ALIYUN_MPS_SECRET_KEY: ${{ secrets.ALIYUN_MPS_SECRET_KEY }}
+          ALIYUN_APIGATEWAY_IP_APPCODE: ${{ secrets.ALIYUN_APIGATEWAY_IP_APPCODE }}
+        run: |
+          java -jar video-0.0.1-SNAPSHOT.jar &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:5022/healthCheck && break || sleep 2
+          done
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: test/requirements.txt
+
+      - name: Install test dependencies
+        working-directory: test
+        run: pip install -r requirements.txt
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('test/requirements.txt') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
       - name: Install Playwright browsers
         working-directory: test
-        run: python -m playwright install chromium --with-deps
+        run: |
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" == "true" ]; then
+            python -m playwright install-deps chromium
+          else
+            python -m playwright install chromium --with-deps
+          fi
 
       - name: Run browser E2E tests
         working-directory: test
@@ -202,12 +260,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: cli/requirements.txt
 
       - name: Install CLI and test dependencies
         working-directory: cli
@@ -222,10 +282,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -240,7 +300,7 @@ jobs:
     runs-on: macos-14
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Select Xcode 16
         run: |

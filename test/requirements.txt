@@ -1,4 +1,5 @@
 pytest>=8.0
 pytest-playwright>=0.5
+pytest-xdist>=3.0
 playwright>=1.40
 requests>=2.31
