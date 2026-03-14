@@ -167,7 +167,7 @@ jobs:
 
       - name: Run API E2E tests
         working-directory: test
-        run: pytest api/ -v --tb=short
+        run: pytest api/ -v --tb=short -n auto
 
   browser-e2e-tests:
     name: 浏览器 E2E 测试
@@ -253,7 +253,7 @@ jobs:
 
       - name: Run browser E2E tests
         working-directory: test
-        run: pytest browser/ -v --tb=short
+        run: pytest browser/ -v --tb=short -n 4
 
   cli-tests:
     name: CLI 工具测试
@@ -275,7 +275,7 @@ jobs:
 
       - name: Run CLI tests
         working-directory: cli
-        run: python -m pytest tests/ -v --tb=short
+        run: python -m pytest tests/ -v --tb=short -n auto
 
   android-tests:
     name: Android 单元测试
