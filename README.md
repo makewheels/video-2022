@@ -280,15 +280,16 @@ GitHub Actions 自动运行 **7 个 Job**：
 ### Docker 部署
 
 ```bash
-# 构建前端
-cd web && npm ci && npm run build && cd ..
-
-# 构建镜像
-docker build -f server/video/Dockerfile-video -t video-2022:latest server/
+# 本地构建镜像（多阶段构建，自动编译前端 + 后端）
+docker build -t video-2022:latest .
 
 # 运行容器
-docker run -d -p 5022:5022 --name video-2022 video-2022:latest
+docker run -d -p 5022:5022 --name video-2022 \
+  --env-file /path/to/.env \
+  video-2022:latest
 ```
+
+生产部署通过 CI 自动完成：推送到 master → 构建 Docker 镜像 → 推送阿里云容器服务 → 服务器拉取运行。
 
 ---
 

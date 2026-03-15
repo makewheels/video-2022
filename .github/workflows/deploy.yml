@@ -9,6 +9,10 @@ concurrency:
   group: deploy
   cancel-in-progress: false
 
+env:
+  DOCKER_REGISTRY: registry.cn-beijing.aliyuncs.com
+  DOCKER_IMAGE: registry.cn-beijing.aliyuncs.com/b4/docker-repo
+
 jobs:
   test:
     name: 测试
@@ -39,13 +43,85 @@ jobs:
         working-directory: server
         run: mvn test -pl video -Pspringboot --batch-mode --no-transfer-progress
 
-  deploy:
-    name: 部署到服务器
+  build-and-push:
+    name: 构建 Docker 镜像
+    needs: test
+    runs-on: ubuntu-latest
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 生成镜像标签
+        id: meta
+        run: |
+          SHA_SHORT=$(echo "${{ github.sha }}" | head -c 7)
+          echo "image_tag=video-2022-${SHA_SHORT}" >> "$GITHUB_OUTPUT"
+          echo "镜像标签: video-2022-${SHA_SHORT}"
+
+      - name: 登录阿里云容器镜像服务
+        run: |
+          echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | \
+            docker login --username "${{ secrets.DOCKER_REGISTRY_USERNAME }}" \
+            --password-stdin ${{ env.DOCKER_REGISTRY }}
+
+      - name: 构建并推送镜像
+        run: |
+          IMAGE_TAG="${{ steps.meta.outputs.image_tag }}"
+
+          docker build \
+            --tag "${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}" \
+            --tag "${{ env.DOCKER_IMAGE }}:video-2022-latest" \
+            .
+
+          docker push "${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}"
+          docker push "${{ env.DOCKER_IMAGE }}:video-2022-latest"
+
+          echo "✅ 镜像推送完成: ${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}"
+
+  build-console:
+    name: 构建控制台
     needs: test
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: console/package-lock.json
+
+      - name: 构建控制台
+        working-directory: console
+        run: |
+          npm ci
+          npm run build
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: console-dist
+          path: console/dist/
+          retention-days: 1
+
+  deploy:
+    name: 部署到服务器
+    needs: [build-and-push, build-console]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 下载控制台产物
+        uses: actions/download-artifact@v4
+        with:
+          name: console-dist
+          path: console-dist/
 
       - name: 配置 SSH
         run: |
@@ -54,38 +130,46 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.DEPLOY_SERVER_IP }} >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: 同步源码到服务器
+      - name: 部署控制台静态文件
         run: |
-          tar czf /tmp/source.tar.gz \
-            --exclude='.git' \
-            --exclude='node_modules' \
-            --exclude='target' \
-            --exclude='build' \
-            --exclude='*.jar' \
-            .
-
-          scp -i ~/.ssh/deploy_key /tmp/source.tar.gz \
-            root@${{ secrets.DEPLOY_SERVER_IP }}:/tmp/video-2022-source.tar.gz
+          tar czf /tmp/console-dist.tar.gz -C console-dist .
+          scp -i ~/.ssh/deploy_key /tmp/console-dist.tar.gz \
+            root@${{ secrets.DEPLOY_SERVER_IP }}:/tmp/console-dist.tar.gz
 
           ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_SERVER_IP }} << 'EOF'
-          rm -rf /opt/video-2022/repo/*
-          cd /opt/video-2022/repo
-          tar xzf /tmp/video-2022-source.tar.gz
-          rm /tmp/video-2022-source.tar.gz
-          echo "源码同步完成"
+          mkdir -p /opt/video-2022/console
+          rm -rf /opt/video-2022/console/*
+          tar xzf /tmp/console-dist.tar.gz -C /opt/video-2022/console
+          rm /tmp/console-dist.tar.gz
+          echo "✅ 控制台部署完成"
           EOF
 
-      - name: 远程构建并部署
+      - name: 同步部署脚本
         run: |
+          scp -i ~/.ssh/deploy_key scripts/deploy.sh \
+            root@${{ secrets.DEPLOY_SERVER_IP }}:/opt/video-2022/deploy.sh
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_SERVER_IP }} \
+            'chmod +x /opt/video-2022/deploy.sh'
+
+      - name: 部署 Docker 容器
+        run: |
+          IMAGE_TAG="${{ needs.build-and-push.outputs.image_tag }}"
           ssh -i ~/.ssh/deploy_key \
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=10 \
-            root@${{ secrets.DEPLOY_SERVER_IP }} '/opt/video-2022/repo/scripts/deploy.sh'
+            root@${{ secrets.DEPLOY_SERVER_IP }} \
+            "DOCKER_REGISTRY='${{ env.DOCKER_REGISTRY }}' \
+             DOCKER_IMAGE='${{ env.DOCKER_IMAGE }}' \
+             IMAGE_TAG='${IMAGE_TAG}' \
+             DOCKER_USERNAME='${{ secrets.DOCKER_REGISTRY_USERNAME }}' \
+             DOCKER_PASSWORD='${{ secrets.DOCKER_REGISTRY_PASSWORD }}' \
+             /opt/video-2022/deploy.sh"
 
       - name: 部署完成通知
         if: always()
         run: |
           echo "## 部署结果" >> $GITHUB_STEP_SUMMARY
           echo "- **提交**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **镜像**: ${{ env.DOCKER_IMAGE }}:${{ needs.build-and-push.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
           echo "- **时间**: $(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_STEP_SUMMARY
           echo "- **触发者**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
