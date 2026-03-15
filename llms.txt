@@ -1,0 +1,99 @@
+# video-2022
+
+> 视频分享平台 — 支持上传、转码、播放、YouTube 搬运
+
+## 项目概述
+
+这是一个全栈视频分享平台，包含后端服务、Web 前端、Android/iOS 客户端、CLI 工具、开发者控制台和 OpenAPI。
+
+## 架构
+
+- **后端**: Java 21 + Spring Boot 4.0.3 + MongoDB + Redis + Aliyun OSS/MPS
+- **Web 前端**: React 19 + TypeScript + Vite
+- **Android**: Kotlin + Jetpack Compose + Hilt + Retrofit
+- **iOS**: Swift 6 + SwiftUI + URLSession
+- **CLI**: Python 3.12 + Click
+- **开发者控制台**: React + TypeScript（OAuth 应用管理、API 文档、统计）
+- **部署**: GitHub Actions CI/CD → 腾讯云服务器
+
+## 目录结构
+
+- `server/` — Java Spring Boot 后端（核心业务逻辑）
+- `web/` — React Web 前端
+- `android/` — Android 客户端
+- `ios/` — iOS 客户端
+- `cli/` — Python 命令行工具
+- `console/` — 开发者控制台（OAuth、API 文档、Webhook）
+- `test/` — E2E 测试（pytest + Playwright）
+- `docs/` — 项目文档（业务设计、API 规范、测试文档）
+- `scripts/` — 部署脚本
+- `.github/workflows/` — CI/CD 流水线
+
+## 关键文件
+
+- `server/video/src/main/java/.../` — 后端 Java 源码
+- `server/video/pom.xml` — Maven 配置
+- `web/src/` — 前端 React 组件和页面
+- `console/src/` — 开发者控制台 React 代码
+- `.github/workflows/ci.yml` — CI 流水线（9 个 Job）
+- `.github/workflows/deploy.yml` — 自动部署流水线
+- `scripts/deploy.sh` — 服务器端部署脚本
+- `CONTRIBUTING.md` — 开发流程规范
+
+## 后端核心模块
+
+| 模块 | 路径 | 说明 |
+|------|------|------|
+| 用户系统 | `user/` | 手机号登录、Token 鉴权、设备管理 |
+| 视频管理 | `video/` | 上传、转码、播放、删除、YouTube 搬运 |
+| 文件存储 | `file/` | 阿里云 OSS 直传、MD5 去重 |
+| 转码服务 | `transcode/` | 阿里云 MPS + 云函数双通道 |
+| 播放系统 | `watch/` | 播放记录、心跳、进度 |
+| 评论系统 | `comment/` | 两级评论、点赞 |
+| 播放列表 | `playlist/` | CRUD + 排序 |
+| 计费系统 | `finance/` | OSS 访问费、日账单、钱包 |
+| 封面提取 | `cover/` | MPS 截帧 + YouTube 封面 |
+| OpenAPI | `openapi/` | 开发者 OAuth、API v1、Webhook、限流 |
+| 应用版本 | `etc/app/` | App 版本检查和发布 |
+
+## API 端点概览
+
+- `POST /user/loginByPhone` — 手机号登录
+- `POST /video/create` — 创建视频
+- `GET /video/getById` — 获取视频信息
+- `GET /watch/getWatchInfo` — 获取播放信息
+- `POST /comment/add` — 添加评论
+- `GET /app/checkUpdate` — 检查应用更新
+- `POST /app/publishVersion` — 发布新版本（Admin API Key 鉴权）
+- `POST /developer/register` — 开发者注册
+- `POST /developer/login` — 开发者登录
+- `POST /oauth/token` — OAuth 令牌签发
+- `GET /api/v1/videos/{videoId}` — OpenAPI 获取视频
+
+## 开发
+
+```bash
+# 后端测试
+cd server/video && mvn test
+
+# 前端开发
+cd web && npm install && npm run dev
+
+# Android 测试
+cd android && ./gradlew testDebugUnitTest
+
+# iOS 测试
+cd ios && xcodegen generate && xcodebuild test ...
+
+# E2E 测试
+cd test && pytest
+```
+
+## 文档
+
+- [README.md](README.md) — 项目总览
+- [CONTRIBUTING.md](CONTRIBUTING.md) — 开发流程规范
+- [docs/业务/](docs/业务/) — 13 个业务模块设计文档
+- [docs/api/](docs/api/) — 10 个 API 接口文档
+- [docs/测试/](docs/测试/) — 测试策略文档
+- [docs/CHANGELOG.md](docs/CHANGELOG.md) — 变更日志
