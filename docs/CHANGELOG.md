@@ -6,6 +6,14 @@
 
 ---
 
+### [PR #74](https://github.com/makewheels/video-2022/pull/74) — Docker 部署迁移
+- 新增 `Dockerfile` — 多阶段构建 (Node→Maven→JRE)
+- 新增 `.dockerignore` — 优化构建上下文
+- 重构 `deploy.yml` — CI 构建镜像并推送阿里云容器服务，控制台单独构建部署
+- 重构 `deploy.sh` — Docker pull + run 模式，自动安装 Docker
+- 新增 GitHub Secrets: DOCKER_REGISTRY_USERNAME, DOCKER_REGISTRY_PASSWORD
+- 更新 CONTRIBUTING.md 部署章节
+
 ### [PR #72](https://github.com/makewheels/video-2022/pull/72) — 重命名项目目录结构
 - `backend/` → `server/`（后端服务）
 - `frontend/` → `web/`（Web 前端）

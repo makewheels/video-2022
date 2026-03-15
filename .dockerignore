@@ -1,0 +1,40 @@
+# Build context 排除
+.git
+.github
+.gitignore
+
+# Node 依赖 (Docker 内重新安装)
+web/node_modules
+console/node_modules
+
+# 构建产物
+server/video/target
+server/youtube/target
+web/dist
+console/dist
+
+# IDE
+.idea
+.vscode
+*.iml
+.project
+.settings
+
+# 测试/文档 (不需要进镜像)
+test/
+docs/
+*.md
+!server/**/README.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 移动端 (不需要进镜像)
+android/
+ios/
+cli/
+
+# 其他
+scripts/
+llms.txt

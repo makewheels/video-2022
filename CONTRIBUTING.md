@@ -224,11 +224,15 @@ public class XxxRequest {
 ### 6.3 部署流程
 
 ```
-push to master → CI 9 Job → SCP 源码到服务器 → 远程构建 → 重启服务 → 健康检查
+push to master → CI 测试 → 构建 Docker 镜像 → 推送阿里云镜像仓库
+                         → 构建控制台 → 部署控制台静态文件
+                                      → Docker pull → 启动容器 → 健康检查
 ```
 
-- 部署脚本：`scripts/deploy.sh`
+- Dockerfile：`Dockerfile`（多阶段构建：Node→Maven→JRE）
+- 部署脚本：`scripts/deploy.sh`（Docker pull + run）
 - 部署流水线：`.github/workflows/deploy.yml`
+- Docker 镜像：`registry.cn-beijing.aliyuncs.com/b4/docker-repo:video-2022-*`
 - **禁止直接在服务器上操作代码，所有变更必须通过 Git + CI**
 
 ---
@@ -301,7 +305,7 @@ xcodebuild test -project VideoApp.xcodeproj -scheme VideoApp ...
 A: 查看 GitHub Actions 日志，修复问题后推送新 commit，CI 会重新运行。
 
 ### Q: 部署后服务不正常怎么办？
-A: 检查 `scripts/deploy.sh` 的健康检查步骤，SSH 到服务器查看 `journalctl -u video-2022` 日志。
+A: SSH 到服务器，运行 `docker logs video-2022` 查看容器日志。检查 `scripts/deploy.sh` 的健康检查步骤。
 
 ### Q: 修改了后端接口，忘了更新客户端怎么办？
 A: E2E 测试会覆盖大部分场景。但最好参照本文档第三节的影响矩阵，逐一检查。
