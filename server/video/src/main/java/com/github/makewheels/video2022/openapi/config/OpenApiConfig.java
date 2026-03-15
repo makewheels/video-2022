@@ -19,7 +19,7 @@ public class OpenApiConfig {
                         .version("v1")
                         .description("视频平台开放API - 提供视频上传、播放、管理等全部功能\n\n" +
                                 "## 快速开始\n\n" +
-                                "1. 在[开发者平台](/developer-portal/)注册账号\n" +
+                                "1. 在[开发者平台](/console/)注册账号\n" +
                                 "2. 创建 OAuth 应用获取 `client_id` 和 `client_secret`\n" +
                                 "3. 调用 `POST /oauth/token` 获取访问令牌\n" +
                                 "4. 在请求头中携带 `Authorization: Bearer <token>` 调用 API\n\n" +

@@ -7,10 +7,10 @@ set -e
 # ==========================================
 
 REPO_DIR="/opt/video-2022/repo"
-APP_DIR="/opt/video-2022/backend"
+APP_DIR="/opt/video-2022/server"
 CURRENT_DIR="$APP_DIR/current"
 RELEASE_DIR="$APP_DIR/releases/$(date +%Y%m%d%H%M%S)"
-PORTAL_DIR="/opt/video-2022/developer-portal"
+PORTAL_DIR="/opt/video-2022/console"
 ENV_FILE="$APP_DIR/.env"
 SERVICE_NAME="video-2022"
 
@@ -88,8 +88,8 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/video-2022/backend/current
-EnvironmentFile=/opt/video-2022/backend/.env
+WorkingDirectory=/opt/video-2022/server/current
+EnvironmentFile=/opt/video-2022/server/.env
 ExecStart=/usr/bin/java -jar app.jar
 Restart=on-failure
 RestartSec=10
@@ -114,9 +114,9 @@ server {
     listen 80;
     server_name _;
 
-    location /developer-portal/ {
-        alias /opt/video-2022/developer-portal/;
-        try_files $uri $uri/ /developer-portal/index.html;
+    location /console/ {
+        alias /opt/video-2022/console/;
+        try_files $uri $uri/ /console/index.html;
     }
 
     location / {
@@ -191,30 +191,30 @@ setup_env_file
 
 echo ""
 echo "=== 构建前端 ==="
-cd "$REPO_DIR/frontend"
+cd "$REPO_DIR/web"
 npm ci --prefer-offline 2>/dev/null || npm install
 npm run build
 
 echo ""
 echo "=== 构建开发者门户 ==="
-cd "$REPO_DIR/developer-portal"
+cd "$REPO_DIR/console"
 npm ci --prefer-offline 2>/dev/null || npm install
 npm run build
 
 echo ""
 echo "=== 部署开发者门户 ==="
 rm -rf "$PORTAL_DIR"/*
-cp -r "$REPO_DIR/developer-portal/dist"/* "$PORTAL_DIR/"
+cp -r "$REPO_DIR/console/dist"/* "$PORTAL_DIR/"
 
 echo ""
 echo "=== 构建后端 ==="
-cd "$REPO_DIR/backend"
+cd "$REPO_DIR/server"
 mvn package -DskipTests -pl video -am -Pspringboot --batch-mode --no-transfer-progress
 
 echo ""
 echo "=== 部署后端 ==="
 mkdir -p "$RELEASE_DIR"
-cp "$REPO_DIR/backend/video/target/video-0.0.1-SNAPSHOT.jar" "$RELEASE_DIR/app.jar"
+cp "$REPO_DIR/server/video/target/video-0.0.1-SNAPSHOT.jar" "$RELEASE_DIR/app.jar"
 cp "$RELEASE_DIR/app.jar" "$CURRENT_DIR/app.jar"
 
 echo ""

@@ -6,6 +6,14 @@
 
 ---
 
+### [PR #72](https://github.com/makewheels/video-2022/pull/72) — 重命名项目目录结构
+- `backend/` → `server/`（后端服务）
+- `frontend/` → `web/`（Web 前端）
+- `developer-portal/` → `console/`（开发者控制台）
+- 更新所有 CI/CD 工作流、部署脚本、Nginx 配置、React Router basename
+- 更新 README.md、CONTRIBUTING.md、.gitignore、所有文档
+- 467 个后端测试全部通过
+
 ### [PR #68](https://github.com/makewheels/video-2022/pull/68) — 添加应用版本检查功能的测试
 - 后端 `AppServiceTest`: 10个集成测试（checkUpdate 7场景 + publishVersion 3场景）
 - Android `UpdateViewModelTest`: 7个单元测试（版本检查、强制更新、dismiss、API错误）

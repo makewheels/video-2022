@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 export default function DocsPage() {
   const { developer } = useAuth();
-  const base = import.meta.env.BASE_URL || '/developer-portal/';
+  const base = import.meta.env.BASE_URL || '/console/';
   const docsUrl = `${base}api-docs.html`;
 
   return (
