@@ -4,6 +4,7 @@ import com.github.makewheels.video2022.cover.Cover;
 import com.github.makewheels.video2022.file.FileService;
 import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.bean.TsFile;
+import com.github.makewheels.video2022.openapi.webhook.WebhookEventPublisher;
 import com.github.makewheels.video2022.oss.service.OssVideoService;
 import com.github.makewheels.video2022.playlist.item.PlayItem;
 import com.github.makewheels.video2022.playlist.list.bean.IdBean;
@@ -35,6 +36,8 @@ public class VideoDeleteService {
     private FileService fileService;
     @Resource
     private OssVideoService ossVideoService;
+    @Resource
+    private WebhookEventPublisher webhookEventPublisher;
 
     /**
      * 删除视频及其所有关联数据
@@ -42,6 +45,9 @@ public class VideoDeleteService {
     public void deleteVideo(String videoId) {
         Video video = videoRepository.getById(videoId);
         log.info("开始删除视频: videoId={}, title={}", videoId, video.getTitle());
+
+        // 触发 webhook: 视频删除（在实际删除之前派发，确保数据还可访问）
+        webhookEventPublisher.publishVideoDeleted(videoId);
 
         // 1. 从所有播放列表中移除该视频
         removeFromPlaylists(videoId);

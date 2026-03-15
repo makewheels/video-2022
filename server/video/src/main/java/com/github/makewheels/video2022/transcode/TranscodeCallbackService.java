@@ -9,6 +9,7 @@ import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
+import com.github.makewheels.video2022.openapi.webhook.WebhookEventPublisher;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.utils.IdService;
 import com.github.makewheels.video2022.video.VideoRepository;
@@ -52,6 +53,9 @@ public class TranscodeCallbackService {
     private VideoReadyService videoReadyService;
 
     @Resource
+    private WebhookEventPublisher webhookEventPublisher;
+
+    @Resource
     private IdService idService;
 
     /**
@@ -71,6 +75,9 @@ public class TranscodeCallbackService {
 
         //保存对象存储中的ts文件
         saveS3Files(video, transcode);
+
+        // 触发 webhook: 转码完成
+        webhookEventPublisher.publishTranscodeCompleted(videoId, transcode.getId(), "");
 
         // 回调视频就绪
         if (VideoStatus.READY.equals(video.getStatus())) {

@@ -2,6 +2,7 @@ package com.github.makewheels.video2022.video.service;
 
 import com.aliyun.oss.model.StorageClass;
 import com.github.makewheels.video2022.file.FileService;
+import com.github.makewheels.video2022.openapi.webhook.WebhookEventPublisher;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,8 @@ public class VideoReadyService {
     private VideoRepository videoRepository;
     @Resource
     private FileService fileService;
+    @Resource
+    private WebhookEventPublisher webhookEventPublisher;
 
     /**
      * 当视频就绪时回调
@@ -31,5 +34,8 @@ public class VideoReadyService {
         if (!video.getLink().getHasLink()) {
             fileService.changeStorageClass(video.getRawFileId(), StorageClass.IA.toString());
         }
+
+        // 触发 webhook: 视频就绪
+        webhookEventPublisher.publishVideoUploadCompleted(videoId, video.getUploaderId());
     }
 }

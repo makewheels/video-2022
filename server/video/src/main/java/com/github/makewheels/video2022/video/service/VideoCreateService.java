@@ -10,6 +10,8 @@ import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.utils.IdService;
 import com.github.makewheels.video2022.utils.OssPathUtil;
+import com.github.makewheels.video2022.openapi.oauth.OAuthContext;
+import com.github.makewheels.video2022.openapi.oauth.entity.OAuthApp;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.Watch;
@@ -74,6 +76,12 @@ public class VideoCreateService {
         createVideoDTO.setVideo(video);
         video.setUploaderId(userId);
         video.setOwnerId(userId);
+
+        // 如果通过 API 创建，记录关联的应用 ID
+        OAuthApp currentApp = OAuthContext.getCurrentApp();
+        if (currentApp != null) {
+            video.setApiAppId(currentApp.getId());
+        }
 
         String videoType = createVideoDTO.getVideoType();
         video.setVideoType(videoType);

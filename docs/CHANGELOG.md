@@ -6,6 +6,13 @@
 
 ---
 
+### [PR #75](https://github.com/makewheels/video-2022/pull/75) — Webhook 事件派发完善
+- Video 实体新增 `apiAppId` 字段，API 创建视频时自动关联 OAuthApp
+- WebhookEventPublisher 完整实现：查找 apiAppId，调用 WebhookDispatchService 派发
+- 集成调用：VideoReadyService、TranscodeCallbackService、VideoDeleteService
+- 新增 WebhookEventPublisherTest: 11 个单元测试
+- 477 个后端测试全部通过
+
 ### [PR #74](https://github.com/makewheels/video-2022/pull/74) — Docker 部署迁移
 - 新增 `Dockerfile` — 多阶段构建 (Node→Maven→JRE)
 - 新增 `.dockerignore` — 优化构建上下文
