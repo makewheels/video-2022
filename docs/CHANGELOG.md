@@ -11,6 +11,27 @@
 - Android `UpdateViewModelTest`: 7个单元测试（版本检查、强制更新、dismiss、API错误）
 - iOS `UpdateCheckManagerTests`: 12个单元测试（版本检查、强制更新、网络错误、JSON解码）
 - 全部测试通过：后端451、Android 13、iOS 51
+### [PR #69](https://github.com/makewheels/video-2022/pull/69) — 移除钉钉通知功能
+- 删除 `etc/ding/` 包下全部 5 个类（DingService、NotificationService、RobotFactory、RobotConfig、RobotType）
+- 删除 DingApi 模型类
+- 清理调用方：GlobalExceptionHandler、VideoReadyService、WatchService 移除钉钉推送
+- 移除 4 个 properties 文件中的 `dingtalk.*` 配置
+- 移除 pom.xml 中 `alibaba-dingtalk-service-sdk` 依赖
+- 移除测试中的 @MockitoBean
+- 更新 10-系统服务.md 等文档
+- 428 个后端测试全部通过
+
+### [PR #68](https://github.com/makewheels/video-2022/pull/68) — 添加应用版本检查功能的测试
+- 后端 AppServiceTest：10 个测试（checkUpdate 各场景、强制更新、publishVersion）
+- Android UpdateViewModelTest：7 个测试（对话框显示/隐藏、API 错误、字段验证）
+- iOS UpdateCheckManagerTests：12 个测试（更新检测、JSON 解码、状态管理）
+- 测试结果：后端 451 ✅、Android BUILD SUCCESSFUL ✅、iOS 51 ✅
+
+### [PR #67](https://github.com/makewheels/video-2022/pull/67) — API文档示例 + OpenAPI控制器单元测试
+- 15 个 DTO 文件（56 个字段）添加 `@Schema` 注解（中文描述和示例值）
+- DeveloperControllerTest：14 个测试（注册、登录、JWT 验证、应用管理）
+- OAuthControllerTest：15 个测试（令牌签发、刷新、吊销、验证）
+- 全部 470 个测试通过（441 + 29 新增）
 
 ### [PR #44](https://github.com/makewheels/video-2022/pull/44) — 项目重构：前后端分离
 - 项目结构拆分为 `frontend/`、`backend/`、`test/` 三子项目

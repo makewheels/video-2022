@@ -38,7 +38,13 @@ build/
 ### Node ###
 node_modules/
 test/venv/
-node_modules/
+
+### Build artifacts ###
+backend/video/src/main/resources/static/
+developer-portal/dist/
+
+### Python ###
+**/__pycache__/
 
 ### iOS ###
 ios/VideoApp.xcodeproj/
