@@ -211,7 +211,7 @@ curl -H "token: {your_token}" "http://localhost:5022/video/getMyVideoList"
 | [封面提取](docs/业务/7-封面提取.md) | 帧提取、YouTube 缩略图、签名 URL |
 | [计费系统](docs/业务/8-计费系统.md) | 流量费用、钱包、账单、自动计费任务 |
 | [播放列表](docs/业务/9-播放列表.md) | CRUD、排序、分享 |
-| [系统服务](docs/业务/10-系统服务.md) | ID 生成、钉钉通知、异常处理、IP 定位、定时任务 |
+| [系统服务](docs/业务/10-系统服务.md) | ID 生成、异常处理、IP 定位、定时任务 |
 
 ---
 

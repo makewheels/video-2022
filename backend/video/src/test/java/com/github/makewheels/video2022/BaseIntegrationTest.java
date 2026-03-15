@@ -1,7 +1,5 @@
 package com.github.makewheels.video2022;
 
-import com.github.makewheels.video2022.etc.ding.DingService;
-import com.github.makewheels.video2022.etc.ding.NotificationService;
 import com.github.makewheels.video2022.file.md5.Md5CfService;
 import com.github.makewheels.video2022.oss.service.OssDataService;
 import com.github.makewheels.video2022.oss.service.OssVideoService;
@@ -20,7 +18,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
  * Base class for integration tests.
  * <p>
  * Uses real MongoDB (video-2022-test), but mocks all external HTTP services
- * (OSS, MPS, DingTalk, IP API, cloud functions, YouTube).
+ * (OSS, MPS, IP API, cloud functions, YouTube).
  * <p>
  * Subclasses should call {@link #cleanDatabase()} in @BeforeEach if they need a clean state.
  */
@@ -43,12 +41,6 @@ public abstract class BaseIntegrationTest {
 
     @MockitoBean
     protected CloudFunctionTranscodeService cloudFunctionTranscodeService;
-
-    @MockitoBean
-    protected DingService dingService;
-
-    @MockitoBean
-    protected NotificationService notificationService;
 
     @MockitoBean
     protected IpService ipService;
