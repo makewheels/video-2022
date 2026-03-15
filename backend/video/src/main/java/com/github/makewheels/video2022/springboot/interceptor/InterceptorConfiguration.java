@@ -1,5 +1,7 @@
 package com.github.makewheels.video2022.springboot.interceptor;
 
+import com.github.makewheels.video2022.openapi.oauth.OAuthInterceptor;
+import com.github.makewheels.video2022.openapi.ratelimit.RateLimitInterceptor;
 import com.github.makewheels.video2022.springboot.interceptor.admin.AdminApiKeyInterceptor;
 import com.github.makewheels.video2022.springboot.interceptor.token.CheckTokenInterceptor;
 import com.github.makewheels.video2022.springboot.interceptor.token.PutTokenInterceptor;
@@ -30,6 +32,16 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
     @Bean
     public RequestLogInterceptor getRequestLogInterceptor() {
         return new RequestLogInterceptor();
+    }
+
+    @Bean
+    public OAuthInterceptor getOAuthInterceptor() {
+        return new OAuthInterceptor();
+    }
+
+    @Bean
+    public RateLimitInterceptor getRateLimitInterceptor() {
+        return new RateLimitInterceptor();
     }
 
     @Override
@@ -71,5 +83,14 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
         // 记录请求日志
         registry.addInterceptor(getRequestLogInterceptor())
                 .addPathPatterns("/**");
+
+        // OAuth鉴权
+        registry.addInterceptor(getOAuthInterceptor())
+                .addPathPatterns("/api/v1/**");
+
+        // API rate limiting
+        registry.addInterceptor(getRateLimitInterceptor())
+                .addPathPatterns("/api/v1/**")
+                .order(InterceptorOrder.RATE_LIMIT);
     }
 }
