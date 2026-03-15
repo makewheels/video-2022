@@ -224,7 +224,7 @@ systemctl restart "$SERVICE_NAME"
 echo ""
 echo "=== 等待启动 ==="
 for i in $(seq 1 30); do
-    if curl -sf -o /dev/null http://localhost:5022/app/checkUpdate?platform=android\&versionCode=1 2>/dev/null; then
+    if curl -sf -o /dev/null http://localhost:5022/healthCheck 2>/dev/null; then
         echo "✅ 后端启动成功"
         break
     fi

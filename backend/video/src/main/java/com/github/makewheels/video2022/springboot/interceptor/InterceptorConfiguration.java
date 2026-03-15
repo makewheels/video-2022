@@ -86,11 +86,13 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
 
         // OAuth鉴权
         registry.addInterceptor(getOAuthInterceptor())
-                .addPathPatterns("/api/v1/**");
+                .addPathPatterns("/api/v1/**")
+                .excludePathPatterns("/api/v1/openapi/**");
 
         // API rate limiting
         registry.addInterceptor(getRateLimitInterceptor())
                 .addPathPatterns("/api/v1/**")
+                .excludePathPatterns("/api/v1/openapi/**")
                 .order(InterceptorOrder.RATE_LIMIT);
     }
 }

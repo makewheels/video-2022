@@ -28,6 +28,9 @@ export default function HomePage() {
         <Link to={developer ? '/dashboard' : '/register'} className="btn btn-primary btn-lg">
           开始使用 →
         </Link>
+        <Link to="/docs" className="btn btn-outline btn-lg" style={{ marginLeft: '12px' }}>
+          📖 API 文档
+        </Link>
       </section>
 
       <section className="features">
