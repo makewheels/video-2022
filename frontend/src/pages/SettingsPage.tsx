@@ -71,11 +71,11 @@ export default function SettingsPage() {
 
     try {
       // 1. 创建头像文件记录
-      const createRes = await api.get('/user/avatar/createFile');
+      const createRes = await api.get('/user/createAvatarFile');
       const { fileId } = createRes.data.data;
 
       // 2. 获取上传凭证
-      const credRes = await api.get('/user/avatar/getUploadCredentials', {
+      const credRes = await api.get('/user/getAvatarUploadCredentials', {
         params: { fileId },
       });
       const creds = credRes.data.data as UploadCredentials;
@@ -94,7 +94,7 @@ export default function SettingsPage() {
       });
 
       // 4. 通知上传完成
-      await api.get('/user/avatar/uploadFinish', { params: { fileId } });
+      await api.get('/user/avatarUploadFinish', { params: { fileId } });
 
       toast('头像更新成功', 'success');
       loadProfile();

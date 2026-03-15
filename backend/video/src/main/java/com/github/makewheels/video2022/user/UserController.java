@@ -66,7 +66,7 @@ public class UserController {
     /**
      * 创建头像文件记录
      */
-    @GetMapping("avatar/createFile")
+    @GetMapping("createAvatarFile")
     public Result<JSONObject> createAvatarFile() {
         return Result.ok(userService.createAvatarFile());
     }
@@ -74,7 +74,7 @@ public class UserController {
     /**
      * 获取头像上传凭证
      */
-    @GetMapping("avatar/getUploadCredentials")
+    @GetMapping("getAvatarUploadCredentials")
     public Result<JSONObject> getAvatarUploadCredentials(@RequestParam String fileId) {
         return Result.ok(userService.getAvatarUploadCredentials(fileId));
     }
@@ -82,7 +82,7 @@ public class UserController {
     /**
      * 头像上传完成
      */
-    @GetMapping("avatar/uploadFinish")
+    @GetMapping("avatarUploadFinish")
     public Result<Void> avatarUploadFinish(@RequestParam String fileId) {
         userService.avatarUploadFinish(fileId);
         return Result.ok();
