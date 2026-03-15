@@ -6,6 +6,12 @@
 
 ---
 
+### [PR #77](https://github.com/makewheels/video-2022/pull/77) — 多端测试补充
+- Android: 新增 5 个 ViewModel 测试 (Comment, Watch, Upload, Settings, MyVideos) — 24 个测试
+- iOS: 新增 APIClientTests — 10 个测试
+- Web: 新增 WatchPage, UploadPage, YouTubePage 测试 — 11 个测试
+- 全平台测试: Android 101, iOS 61, Web 36
+
 ### [PR #76](https://github.com/makewheels/video-2022/pull/76) — 控制台页面实现
 - Stats 页面：应用总数统计、应用列表详情
 - Webhooks 页面：应用选择器、Webhook 配置表单、事件类型勾选、列表管理
