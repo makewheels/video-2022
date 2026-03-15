@@ -6,6 +6,12 @@
 
 ---
 
+### [PR #68](https://github.com/makewheels/video-2022/pull/68) — 添加应用版本检查功能的测试
+- 后端 `AppServiceTest`: 10个集成测试（checkUpdate 7场景 + publishVersion 3场景）
+- Android `UpdateViewModelTest`: 7个单元测试（版本检查、强制更新、dismiss、API错误）
+- iOS `UpdateCheckManagerTests`: 12个单元测试（版本检查、强制更新、网络错误、JSON解码）
+- 全部测试通过：后端451、Android 13、iOS 51
+
 ### [PR #44](https://github.com/makewheels/video-2022/pull/44) — 项目重构：前后端分离
 - 项目结构拆分为 `frontend/`、`backend/`、`test/` 三子项目
 - 新建 React + Vite + TypeScript 前端：8 个页面、11 个组件、14 个前端测试
