@@ -42,6 +42,8 @@ public class Video {
     private String rawFileId;       // 用户上传原始视频文件id
     @Indexed
     private String coverId;         // 封面id
+    @Indexed
+    private String apiAppId;        // 通过 API 创建时关联的 OAuthApp ID
     // 关联id
     private List<String> transcodeIds;  // 转码id列表
 
