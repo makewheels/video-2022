@@ -5,7 +5,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export default function DocsPage() {
   const { developer } = useAuth();
-  const docsUrl = API_BASE ? `${API_BASE}/api/docs` : '/api/docs';
+  const docsUrl = API_BASE ? `${API_BASE}/api/docs` : '/api/swagger-ui/index.html';
 
   return (
     <div className="docs-standalone">
