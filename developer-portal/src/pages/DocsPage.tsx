@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
-
 export default function DocsPage() {
   const { developer } = useAuth();
-  const docsUrl = API_BASE ? `${API_BASE}/api/docs` : '/api/swagger-ui/index.html';
+  const base = import.meta.env.BASE_URL || '/developer-portal/';
+  const docsUrl = `${base}api-docs.html`;
 
   return (
     <div className="docs-standalone">

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API 文档 - Video Platform</title>
+  <style>
+    body { margin: 0; padding: 0; }
+  </style>
+</head>
+<body>
+  <div id="redoc-container"></div>
+  <script src="https://cdn.redoc.ly/redoc/v2.1.5/bundles/redoc.standalone.js"></script>
+  <script>
+    Redoc.init('/api/v1/openapi', {
+      scrollYOffset: 0,
+      hideDownloadButton: false,
+      expandResponses: '200',
+      pathInMiddlePanel: true,
+      theme: {
+        colors: {
+          primary: { main: '#4f46e5' }
+        },
+        sidebar: {
+          width: '260px',
+          backgroundColor: '#fafafa'
+        },
+        typography: {
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+          fontSize: '15px',
+          headings: {
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+          }
+        },
+        rightPanel: {
+          backgroundColor: '#1e293b'
+        }
+      }
+    }, document.getElementById('redoc-container'));
+  </script>
+</body>
+</html>
