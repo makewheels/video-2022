@@ -13,6 +13,10 @@
 - 更新所有 CI/CD 工作流、部署脚本、Nginx 配置、React Router basename
 - 更新 README.md、CONTRIBUTING.md、.gitignore、所有文档
 - 467 个后端测试全部通过
+### [PR #73](https://github.com/makewheels/video-2022/pull/73) — 新增 AI 友好文件和功能分析
+- 新增 `llms.txt` — 遵循 llms.txt 标准，为 LLM 提供项目结构化信息
+- 新增 `.github/copilot-instructions.md` — GitHub Copilot 开发指引
+- 更新 CHANGELOG.md
 
 ### [PR #68](https://github.com/makewheels/video-2022/pull/68) — 添加应用版本检查功能的测试
 - 后端 `AppServiceTest`: 10个集成测试（checkUpdate 7场景 + publishVersion 3场景）
