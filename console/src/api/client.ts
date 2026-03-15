@@ -29,6 +29,16 @@ export interface LoginResponse {
   token: string;
 }
 
+export interface WebhookConfig {
+  id: string;
+  appId: string;
+  url: string;
+  events: string[];
+  secret: string;
+  status: string;
+  createTime: string;
+}
+
 class ApiClient {
   private token: string | null = localStorage.getItem('dev_token');
 
@@ -111,6 +121,24 @@ class ApiClient {
 
   async deleteApp(id: string) {
     return this.request<void>(`/developer/apps/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Webhooks
+  async listWebhooks(appId: string) {
+    return this.request<WebhookConfig[]>(`/developer/apps/${appId}/webhooks`);
+  }
+
+  async createWebhook(appId: string, data: { url: string; events: string[] }) {
+    return this.request<WebhookConfig>(`/developer/apps/${appId}/webhooks`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteWebhook(appId: string, webhookId: string) {
+    return this.request<void>(`/developer/apps/${appId}/webhooks/${webhookId}`, {
       method: 'DELETE',
     });
   }

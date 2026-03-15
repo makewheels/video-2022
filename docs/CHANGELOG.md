@@ -6,6 +6,12 @@
 
 ---
 
+### [PR #76](https://github.com/makewheels/video-2022/pull/76) — 控制台页面实现
+- Stats 页面：应用总数统计、应用列表详情
+- Webhooks 页面：应用选择器、Webhook 配置表单、事件类型勾选、列表管理
+- API Client 新增 webhook 管理方法
+- 新增 CSS 样式（alert-warning, webhook-select, webhook-active）
+
 ### [PR #75](https://github.com/makewheels/video-2022/pull/75) — Webhook 事件派发完善
 - Video 实体新增 `apiAppId` 字段，API 创建视频时自动关联 OAuthApp
 - WebhookEventPublisher 完整实现：查找 apiAppId，调用 WebhookDispatchService 派发
