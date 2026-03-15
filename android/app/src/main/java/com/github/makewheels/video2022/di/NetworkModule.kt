@@ -90,4 +90,7 @@ object NetworkModule {
 
     @Provides @Singleton
     fun provideYouTubeApi(@Named("youtube") retrofit: Retrofit): YouTubeApi = retrofit.create(YouTubeApi::class.java)
+
+    @Provides @Singleton
+    fun provideAppApi(@Named("main") retrofit: Retrofit): AppApi = retrofit.create(AppApi::class.java)
 }

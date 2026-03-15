@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.ui.settings
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,21 +9,29 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.makewheels.video2022.BuildConfig
+import com.github.makewheels.video2022.ui.update.UpdateDialog
+import com.github.makewheels.video2022.ui.update.UpdateViewModel
 
 @Composable
 fun SettingsScreen(
     onNavigateToYouTube: () -> Unit,
     onLogout: () -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel()
+    viewModel: SettingsViewModel = hiltViewModel(),
+    updateViewModel: UpdateViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val updateState by updateViewModel.updateUiState.collectAsState()
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -118,6 +127,52 @@ fun SettingsScreen(
 
         Spacer(Modifier.weight(1f))
 
+        // Check update button
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    updateViewModel.checkForUpdate()
+                    if (!updateState.showDialog) {
+                        Toast
+                            .makeText(context, "已是最新版本", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                },
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Filled.SystemUpdate,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.width(16.dp))
+                Text("检查更新", modifier = Modifier.weight(1f))
+                Icon(
+                    Icons.AutoMirrored.Filled.NavigateNext,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Update dialog
+        if (updateState.showDialog) {
+            UpdateDialog(
+                state = updateState,
+                onUpdate = { updateViewModel.startDownload(context) },
+                onDismiss = if (!updateState.isForceUpdate) {
+                    { updateViewModel.dismissDialog() }
+                } else null
+            )
+        }
+
         // App version info
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -132,7 +187,7 @@ fun SettingsScreen(
             )
             Spacer(Modifier.width(4.dp))
             Text(
-                text = "版本 1.0.0",
+                text = "版本 ${BuildConfig.VERSION_NAME}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
