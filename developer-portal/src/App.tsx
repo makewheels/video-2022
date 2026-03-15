@@ -16,12 +16,12 @@ export default function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/docs" element={<DocsPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/apps" element={<AppsPage />} />
-          <Route path="/docs" element={<DocsPage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/webhooks" element={<WebhooksPage />} />
         </Route>

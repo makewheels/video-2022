@@ -653,6 +653,38 @@ a:hover {
   max-width: none;
 }
 
+.docs-standalone {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.docs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.docs-logo {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.docs-logo:hover {
+  text-decoration: none;
+}
+
+.docs-nav {
+  display: flex;
+  gap: 8px;
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;
