@@ -6,6 +6,9 @@
 
 ---
 
+### [PR #78](https://github.com/makewheels/video-2022/pull/78) — 功能分析与改进建议
+- 新增 `docs/功能分析报告.md`：功能完成度、代码质量发现、UX 测试结果、改进建议
+
 ### [PR #77](https://github.com/makewheels/video-2022/pull/77) — 多端测试补充
 - Android: 新增 5 个 ViewModel 测试 (Comment, Watch, Upload, Settings, MyVideos) — 24 个测试
 - iOS: 新增 APIClientTests — 10 个测试
