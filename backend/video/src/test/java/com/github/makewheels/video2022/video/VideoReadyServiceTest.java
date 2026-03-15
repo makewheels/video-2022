@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Tests for {@link VideoReadyService}.
@@ -76,33 +75,5 @@ class VideoReadyServiceTest extends BaseIntegrationTest {
         assertNotNull(updatedFile);
         assertNull(updatedFile.getStorageClass(),
                 "Linked video should NOT change raw file storage class");
-    }
-
-    @Test
-    void onVideoReady_testEnv_doesNotSendDingNotification() {
-        File file = createFileInDb("f_ding-1", "videos/test/raw/ding.mp4");
-        createVideoInDb("v_ding-1", false, file.getId());
-
-        videoReadyService.onVideoReady("v_ding-1");
-
-        // In test env (non-production), notification should never be sent
-        verify(notificationService, never()).sendVideoReadyMessage(any(Video.class));
-    }
-
-    @Test
-    void onVideoReady_nonReadyStatus_doesNotSendDingNotification() {
-        File file = createFileInDb("f_notready", "videos/test/raw/notready.mp4");
-
-        Video video = new Video();
-        video.setId("v_notready");
-        video.setTitle("Not Ready Video");
-        video.setStatus(VideoStatus.TRANSCODING);
-        video.setRawFileId(file.getId());
-        video.getLink().setHasLink(false);
-        mongoTemplate.save(video);
-
-        videoReadyService.onVideoReady("v_notready");
-
-        verify(notificationService, never()).sendVideoReadyMessage(any(Video.class));
     }
 }

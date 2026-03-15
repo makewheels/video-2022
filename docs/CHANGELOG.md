@@ -306,7 +306,6 @@
 - 接入保存对象存储访问日志
 
 ### 2023 年 5 月
-- 改造钉钉通知类 NotificationService，异常发送到钉钉
 - 把 video 对象抽出 MediaInfo 子类
 - 抽出 EnvironmentService，取消 @Value 注入
 - 改造登录拦截器

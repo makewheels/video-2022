@@ -3,7 +3,6 @@ package com.github.makewheels.video2022.watch.play;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverService;
-import com.github.makewheels.video2022.etc.ding.NotificationService;
 import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
@@ -55,8 +54,6 @@ public class WatchService {
 
     @Resource
     private CoverService coverService;
-    @Resource
-    private NotificationService notificationService;
     @Resource
     private EnvironmentService environmentService;
     @Resource
@@ -117,11 +114,6 @@ public class WatchService {
         String district = ipResult.getString("district");
         log.info("观看记录：videoId = {}, title = {}, {} {} {} {}",
                 videoId, video.getTitle(), ip, province, city, district);
-
-        //推送钉钉
-        if (environmentService.isProductionEnv()) {
-            notificationService.sendWatchLogMessage(video, ipResult);
-        }
 
         return Result.ok();
     }
