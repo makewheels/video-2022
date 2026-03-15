@@ -4,17 +4,6 @@ on:
   push:
     branches: [ master ]
   workflow_dispatch:
-    inputs:
-      components:
-        description: '部署组件'
-        required: true
-        default: 'all'
-        type: choice
-        options:
-          - all
-          - backend
-          - frontend
-          - developer-portal
 
 concurrency:
   group: deploy
@@ -25,8 +14,8 @@ env:
   SSH_USER: root
 
 jobs:
-  build:
-    name: 构建
+  test:
+    name: 测试
     runs-on: ubuntu-latest
 
     services:
@@ -44,68 +33,24 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Set up JDK 21
-        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
         uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
 
-      - name: Set up Node.js
-        if: inputs.components == 'all' || inputs.components == 'frontend' || inputs.components == '' || inputs.components == 'developer-portal' || inputs.components == ''
-        uses: actions/setup-node@v5
-        with:
-          node-version: '20'
-
-      # Backend: test + build
       - name: 后端测试
-        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
         working-directory: backend
         run: mvn test -pl video -Pspringboot --batch-mode --no-transfer-progress
 
-      - name: 后端打包
-        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
-        working-directory: backend
-        run: mvn package -DskipTests -pl video -am -Pspringboot --batch-mode --no-transfer-progress
-
-      - name: Upload backend artifact
-        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-jar
-          path: backend/video/target/video-0.0.1-SNAPSHOT.jar
-          retention-days: 3
-
-      # Frontend: build (embedded in JAR via vite outDir, but also standalone)
-      - name: 前端构建
-        if: inputs.components == 'all' || inputs.components == 'frontend' || inputs.components == ''
-        working-directory: frontend
-        run: |
-          npm ci
-          npm run build
-
-      # Developer Portal: build
-      - name: 开发者门户构建
-        if: inputs.components == 'all' || inputs.components == 'developer-portal' || inputs.components == ''
-        working-directory: developer-portal
-        run: |
-          npm ci
-          npm run build
-
-      - name: Upload developer-portal artifact
-        if: inputs.components == 'all' || inputs.components == 'developer-portal' || inputs.components == ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: developer-portal-dist
-          path: developer-portal/dist/
-          retention-days: 3
-
   deploy:
     name: 部署到服务器
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v5
+
       - name: 配置 SSH
         run: |
           mkdir -p ~/.ssh
@@ -113,94 +58,42 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ env.APP_SERVER }} >> ~/.ssh/known_hosts 2>/dev/null
 
-      # Deploy backend
-      - name: Download backend artifact
-        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-jar
-          path: ./artifacts/backend
-
-      - name: 部署后端
-        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
+      - name: 同步源码到服务器
         run: |
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-          RELEASE_DIR="/opt/video-2022/backend/releases/${TIMESTAMP}"
+          # Create source archive (exclude .git, node_modules, build artifacts)
+          tar czf /tmp/source.tar.gz \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='target' \
+            --exclude='build' \
+            --exclude='*.jar' \
+            .
 
-          # Upload JAR
-          scp -i ~/.ssh/deploy_key \
-            ./artifacts/backend/video-0.0.1-SNAPSHOT.jar \
-            ${{ env.SSH_USER }}@${{ env.APP_SERVER }}:/tmp/app-${TIMESTAMP}.jar
+          # Upload to server
+          scp -i ~/.ssh/deploy_key /tmp/source.tar.gz \
+            ${{ env.SSH_USER }}@${{ env.APP_SERVER }}:/tmp/video-2022-source.tar.gz
 
-          # Deploy on server
-          ssh -i ~/.ssh/deploy_key ${{ env.SSH_USER }}@${{ env.APP_SERVER }} << DEPLOY_EOF
-          set -e
+          # Extract on server
+          ssh -i ~/.ssh/deploy_key ${{ env.SSH_USER }}@${{ env.APP_SERVER }} << 'EOF'
+          rm -rf /opt/video-2022/repo/*
+          cd /opt/video-2022/repo
+          tar xzf /tmp/video-2022-source.tar.gz
+          rm /tmp/video-2022-source.tar.gz
+          echo "源码同步完成"
+          EOF
 
-          # Create release directory
-          mkdir -p ${RELEASE_DIR}
-          mv /tmp/app-${TIMESTAMP}.jar ${RELEASE_DIR}/app.jar
-
-          # Update symlink
-          ln -sfn ${RELEASE_DIR}/app.jar /opt/video-2022/backend/current/app.jar
-
-          # Restart service
-          systemctl restart video-2022
-
-          # Wait for startup
-          echo "等待后端启动..."
-          for i in \$(seq 1 30); do
-            if curl -sf -o /dev/null http://localhost:5022/app/checkUpdate?platform=android\&versionCode=1 2>/dev/null; then
-              echo "后端启动成功！"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "后端启动超时"
-          journalctl -u video-2022 --no-pager -n 50
-          exit 1
-          DEPLOY_EOF
-
-      # Deploy developer portal
-      - name: Download developer-portal artifact
-        if: inputs.components == 'all' || inputs.components == 'developer-portal' || inputs.components == ''
-        uses: actions/download-artifact@v4
-        with:
-          name: developer-portal-dist
-          path: ./artifacts/developer-portal
-
-      - name: 部署开发者门户
-        if: inputs.components == 'all' || inputs.components == 'developer-portal' || inputs.components == ''
+      - name: 远程构建并部署
         run: |
-          # Upload and extract
-          tar czf /tmp/devportal.tar.gz -C ./artifacts/developer-portal .
-          scp -i ~/.ssh/deploy_key /tmp/devportal.tar.gz \
-            ${{ env.SSH_USER }}@${{ env.APP_SERVER }}:/tmp/devportal.tar.gz
-
-          ssh -i ~/.ssh/deploy_key ${{ env.SSH_USER }}@${{ env.APP_SERVER }} << 'DEPLOY_EOF'
-          set -e
-          rm -rf /opt/video-2022/developer-portal/*
-          cd /opt/video-2022/developer-portal
-          tar xzf /tmp/devportal.tar.gz
-          rm /tmp/devportal.tar.gz
-          echo "开发者门户部署完成"
-          DEPLOY_EOF
-
-      # Cleanup old releases (keep last 5)
-      - name: 清理旧版本
-        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
-        run: |
-          ssh -i ~/.ssh/deploy_key ${{ env.SSH_USER }}@${{ env.APP_SERVER }} << 'CLEANUP_EOF'
-          cd /opt/video-2022/backend/releases
-          ls -dt */ 2>/dev/null | tail -n +6 | xargs rm -rf 2>/dev/null || true
-          echo "清理完成，当前保留版本："
-          ls -dt */ 2>/dev/null | head -5
-          CLEANUP_EOF
+          ssh -i ~/.ssh/deploy_key \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=10 \
+            ${{ env.SSH_USER }}@${{ env.APP_SERVER }} '/opt/video-2022/deploy.sh'
 
       - name: 部署完成通知
         if: always()
         run: |
           echo "## 部署结果" >> $GITHUB_STEP_SUMMARY
-          echo "- **组件**: ${{ inputs.components || 'all' }}" >> $GITHUB_STEP_SUMMARY
           echo "- **服务器**: ${{ env.APP_SERVER }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **提交**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- **时间**: $(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_STEP_SUMMARY
           echo "- **触发者**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
