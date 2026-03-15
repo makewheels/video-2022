@@ -32,6 +32,17 @@
 - DeveloperControllerTest：14 个测试（注册、登录、JWT 验证、应用管理）
 - OAuthControllerTest：15 个测试（令牌签发、刷新、吊销、验证）
 - 全部 470 个测试通过（441 + 29 新增）
+### [PR #71](https://github.com/makewheels/video-2022/pull/71) — 开发流程规范文档
+- 新增 `CONTRIBUTING.md` — 完整的开发流程规范
+  - 开发前准备（必须先阅读文档）
+  - 分支和 PR 规范
+  - 多端同步修改影响矩阵
+  - 单元测试要求和模式
+  - OpenAPI 接口修改规范
+  - 部署影响评估
+  - 文档更新规范
+  - 代码审查清单
+- 更新 README.md 引用 CONTRIBUTING.md
 
 ### [PR #44](https://github.com/makewheels/video-2022/pull/44) — 项目重构：前后端分离
 - 项目结构拆分为 `frontend/`、`backend/`、`test/` 三子项目
