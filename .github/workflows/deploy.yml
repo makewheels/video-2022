@@ -9,10 +9,6 @@ concurrency:
   group: deploy
   cancel-in-progress: false
 
-env:
-  APP_SERVER: 81.70.242.253
-  SSH_USER: root
-
 jobs:
   test:
     name: 测试
@@ -56,11 +52,10 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ env.APP_SERVER }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H ${{ secrets.DEPLOY_SERVER_IP }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: 同步源码到服务器
         run: |
-          # Create source archive (exclude .git, node_modules, build artifacts)
           tar czf /tmp/source.tar.gz \
             --exclude='.git' \
             --exclude='node_modules' \
@@ -69,12 +64,10 @@ jobs:
             --exclude='*.jar' \
             .
 
-          # Upload to server
           scp -i ~/.ssh/deploy_key /tmp/source.tar.gz \
-            ${{ env.SSH_USER }}@${{ env.APP_SERVER }}:/tmp/video-2022-source.tar.gz
+            root@${{ secrets.DEPLOY_SERVER_IP }}:/tmp/video-2022-source.tar.gz
 
-          # Extract on server
-          ssh -i ~/.ssh/deploy_key ${{ env.SSH_USER }}@${{ env.APP_SERVER }} << 'EOF'
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_SERVER_IP }} << 'EOF'
           rm -rf /opt/video-2022/repo/*
           cd /opt/video-2022/repo
           tar xzf /tmp/video-2022-source.tar.gz
@@ -87,13 +80,12 @@ jobs:
           ssh -i ~/.ssh/deploy_key \
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=10 \
-            ${{ env.SSH_USER }}@${{ env.APP_SERVER }} '/opt/video-2022/deploy.sh'
+            root@${{ secrets.DEPLOY_SERVER_IP }} '/opt/video-2022/repo/scripts/deploy.sh'
 
       - name: 部署完成通知
         if: always()
         run: |
           echo "## 部署结果" >> $GITHUB_STEP_SUMMARY
-          echo "- **服务器**: ${{ env.APP_SERVER }}" >> $GITHUB_STEP_SUMMARY
           echo "- **提交**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- **时间**: $(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_STEP_SUMMARY
           echo "- **触发者**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
