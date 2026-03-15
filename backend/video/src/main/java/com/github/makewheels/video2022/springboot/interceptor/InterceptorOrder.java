@@ -8,4 +8,6 @@ public interface InterceptorOrder {
     int PUT_TOKEN = 1001;
     int CHECK_TOKEN = 1002;
     int REQUEST_LOG = 1003;
+    int OAUTH = 1004;
+    int RATE_LIMIT = 1005;
 }
