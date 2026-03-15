@@ -26,14 +26,22 @@ public class DeveloperController {
     private OAuthAppService oAuthAppService;
 
     /**
-     * 开发者注册
+     * 开发者注册，注册成功后自动登录返回JWT
      */
     @PostMapping("register")
-    public Result<DeveloperVO> register(@RequestBody DeveloperRegisterRequest request) {
+    public Result<DeveloperLoginResponse> register(@RequestBody DeveloperRegisterRequest request) {
         Developer developer = developerService.register(
                 request.getEmail(), request.getPassword(),
                 request.getName(), request.getCompany());
-        return Result.ok(toDeveloperVO(developer));
+
+        String token = developerService.login(request.getEmail(), request.getPassword());
+
+        DeveloperLoginResponse response = new DeveloperLoginResponse();
+        response.setToken(token);
+        response.setDeveloperId(developer.getId());
+        response.setEmail(developer.getEmail());
+        response.setName(developer.getName());
+        return Result.ok(response);
     }
 
     /**
