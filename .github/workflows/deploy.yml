@@ -1,6 +1,8 @@
 name: 部署
 
 on:
+  push:
+    branches: [ master ]
   workflow_dispatch:
     inputs:
       components:
@@ -42,7 +44,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Set up JDK 21
-        if: inputs.components == 'all' || inputs.components == 'backend'
+        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
         uses: actions/setup-java@v5
         with:
           java-version: '21'
@@ -50,24 +52,24 @@ jobs:
           cache: maven
 
       - name: Set up Node.js
-        if: inputs.components == 'all' || inputs.components == 'frontend' || inputs.components == 'developer-portal'
+        if: inputs.components == 'all' || inputs.components == 'frontend' || inputs.components == '' || inputs.components == 'developer-portal' || inputs.components == ''
         uses: actions/setup-node@v5
         with:
           node-version: '20'
 
       # Backend: test + build
       - name: 后端测试
-        if: inputs.components == 'all' || inputs.components == 'backend'
+        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
         working-directory: backend
         run: mvn test -pl video -Pspringboot --batch-mode --no-transfer-progress
 
       - name: 后端打包
-        if: inputs.components == 'all' || inputs.components == 'backend'
+        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
         working-directory: backend
         run: mvn package -DskipTests -pl video -am -Pspringboot --batch-mode --no-transfer-progress
 
       - name: Upload backend artifact
-        if: inputs.components == 'all' || inputs.components == 'backend'
+        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
         uses: actions/upload-artifact@v4
         with:
           name: backend-jar
@@ -76,7 +78,7 @@ jobs:
 
       # Frontend: build (embedded in JAR via vite outDir, but also standalone)
       - name: 前端构建
-        if: inputs.components == 'all' || inputs.components == 'frontend'
+        if: inputs.components == 'all' || inputs.components == 'frontend' || inputs.components == ''
         working-directory: frontend
         run: |
           npm ci
@@ -84,14 +86,14 @@ jobs:
 
       # Developer Portal: build
       - name: 开发者门户构建
-        if: inputs.components == 'all' || inputs.components == 'developer-portal'
+        if: inputs.components == 'all' || inputs.components == 'developer-portal' || inputs.components == ''
         working-directory: developer-portal
         run: |
           npm ci
           npm run build
 
       - name: Upload developer-portal artifact
-        if: inputs.components == 'all' || inputs.components == 'developer-portal'
+        if: inputs.components == 'all' || inputs.components == 'developer-portal' || inputs.components == ''
         uses: actions/upload-artifact@v4
         with:
           name: developer-portal-dist
@@ -113,14 +115,14 @@ jobs:
 
       # Deploy backend
       - name: Download backend artifact
-        if: inputs.components == 'all' || inputs.components == 'backend'
+        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
         uses: actions/download-artifact@v4
         with:
           name: backend-jar
           path: ./artifacts/backend
 
       - name: 部署后端
-        if: inputs.components == 'all' || inputs.components == 'backend'
+        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
         run: |
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           RELEASE_DIR="/opt/video-2022/backend/releases/${TIMESTAMP}"
@@ -160,14 +162,14 @@ jobs:
 
       # Deploy developer portal
       - name: Download developer-portal artifact
-        if: inputs.components == 'all' || inputs.components == 'developer-portal'
+        if: inputs.components == 'all' || inputs.components == 'developer-portal' || inputs.components == ''
         uses: actions/download-artifact@v4
         with:
           name: developer-portal-dist
           path: ./artifacts/developer-portal
 
       - name: 部署开发者门户
-        if: inputs.components == 'all' || inputs.components == 'developer-portal'
+        if: inputs.components == 'all' || inputs.components == 'developer-portal' || inputs.components == ''
         run: |
           # Upload and extract
           tar czf /tmp/devportal.tar.gz -C ./artifacts/developer-portal .
@@ -185,7 +187,7 @@ jobs:
 
       # Cleanup old releases (keep last 5)
       - name: 清理旧版本
-        if: inputs.components == 'all' || inputs.components == 'backend'
+        if: inputs.components == 'all' || inputs.components == 'backend' || inputs.components == ''
         run: |
           ssh -i ~/.ssh/deploy_key ${{ env.SSH_USER }}@${{ env.APP_SERVER }} << 'CLEANUP_EOF'
           cd /opt/video-2022/backend/releases
@@ -198,7 +200,7 @@ jobs:
         if: always()
         run: |
           echo "## 部署结果" >> $GITHUB_STEP_SUMMARY
-          echo "- **组件**: ${{ inputs.components }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **组件**: ${{ inputs.components || 'all' }}" >> $GITHUB_STEP_SUMMARY
           echo "- **服务器**: ${{ env.APP_SERVER }}" >> $GITHUB_STEP_SUMMARY
           echo "- **时间**: $(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_STEP_SUMMARY
           echo "- **触发者**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
