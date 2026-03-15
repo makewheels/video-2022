@@ -6,6 +6,8 @@ import com.github.makewheels.video2022.openapi.oauth.entity.OAuthToken;
 import com.github.makewheels.video2022.openapi.oauth.service.OAuthAppService;
 import com.github.makewheels.video2022.openapi.oauth.service.OAuthTokenService;
 import com.github.makewheels.video2022.system.response.Result;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +21,7 @@ import java.util.Base64;
 @RestController
 @RequestMapping("oauth")
 @Slf4j
+@Tag(name = "OAuth", description = "OAuth 2.0 认证")
 public class OAuthController {
     @Resource
     private OAuthAppService oAuthAppService;
@@ -29,6 +32,7 @@ public class OAuthController {
     /**
      * OAuth token端点，支持client_credentials和refresh_token两种grant_type
      */
+    @Operation(summary = "获取访问令牌", description = "支持 client_credentials 和 refresh_token 两种授权方式。可通过参数传递 client_id/client_secret，也支持 HTTP Basic Auth。")
     @PostMapping("token")
     public Result<OAuthTokenResponse> token(
             @RequestParam("grant_type") String grantType,
@@ -49,6 +53,7 @@ public class OAuthController {
     /**
      * 撤销token
      */
+    @Operation(summary = "撤销令牌", description = "撤销指定的访问令牌，撤销后该令牌将无法再使用。")
     @PostMapping("revoke")
     public Result<Void> revoke(@RequestParam String token) {
         oAuthTokenService.revokeToken(token);

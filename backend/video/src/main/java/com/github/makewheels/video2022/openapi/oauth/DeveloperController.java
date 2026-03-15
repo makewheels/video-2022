@@ -6,6 +6,8 @@ import com.github.makewheels.video2022.openapi.oauth.entity.OAuthApp;
 import com.github.makewheels.video2022.openapi.oauth.service.DeveloperService;
 import com.github.makewheels.video2022.openapi.oauth.service.OAuthAppService;
 import com.github.makewheels.video2022.system.response.Result;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("developer")
 @Slf4j
+@Tag(name = "Developer", description = "开发者账号管理")
 public class DeveloperController {
     @Resource
     private DeveloperService developerService;
@@ -28,6 +31,7 @@ public class DeveloperController {
     /**
      * 开发者注册，注册成功后自动登录返回JWT
      */
+    @Operation(summary = "开发者注册", description = "注册新的开发者账号，注册成功后自动登录并返回 JWT 令牌。")
     @PostMapping("register")
     public Result<DeveloperLoginResponse> register(@RequestBody DeveloperRegisterRequest request) {
         Developer developer = developerService.register(
@@ -47,6 +51,7 @@ public class DeveloperController {
     /**
      * 开发者登录，返回JWT
      */
+    @Operation(summary = "开发者登录", description = "使用邮箱和密码登录，返回 JWT 令牌。令牌有效期为24小时。")
     @PostMapping("login")
     public Result<DeveloperLoginResponse> login(@RequestBody DeveloperLoginRequest request) {
         String token = developerService.login(request.getEmail(), request.getPassword());
@@ -63,6 +68,7 @@ public class DeveloperController {
     /**
      * 获取当前开发者信息（需要JWT）
      */
+    @Operation(summary = "获取当前开发者信息", description = "通过 JWT 令牌获取当前登录的开发者信息。需要在 Authorization 头中携带 Bearer token。")
     @GetMapping("me")
     public Result<DeveloperVO> me(HttpServletRequest request) {
         String developerId = extractDeveloperId(request);
@@ -79,6 +85,7 @@ public class DeveloperController {
     /**
      * 创建OAuth应用（需要JWT）
      */
+    @Operation(summary = "创建 OAuth 应用", description = "为当前开发者创建一个新的 OAuth 应用，获取 client_id 和 client_secret 用于 API 调用。")
     @PostMapping("apps")
     public Result<CreateOAuthAppResponse> createApp(
             @RequestBody CreateOAuthAppRequest request,
@@ -107,6 +114,7 @@ public class DeveloperController {
     /**
      * 获取当前开发者的OAuth应用列表（需要JWT）
      */
+    @Operation(summary = "获取应用列表", description = "获取当前开发者创建的所有 OAuth 应用列表。")
     @GetMapping("apps")
     public Result<List<OAuthAppVO>> listApps(HttpServletRequest request) {
         String developerId = extractDeveloperId(request);
@@ -126,6 +134,7 @@ public class DeveloperController {
     /**
      * 删除OAuth应用（需要JWT）
      */
+    @Operation(summary = "删除 OAuth 应用", description = "删除指定的 OAuth 应用，删除后该应用的所有令牌将失效。")
     @DeleteMapping("apps/{appId}")
     public Result<Void> deleteApp(
             @PathVariable String appId,
