@@ -2,6 +2,7 @@ package com.github.makewheels.video2022.user;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.springboot.exception.VideoException;
 import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
@@ -12,6 +13,9 @@ import com.github.makewheels.video2022.user.bean.VerificationCode;
 import com.github.makewheels.video2022.user.bean.ChannelVO;
 import com.github.makewheels.video2022.user.bean.UpdateProfileRequest;
 import com.github.makewheels.video2022.utils.IdService;
+import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.file.constants.FileType;
+import com.github.makewheels.video2022.oss.service.OssVideoService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -21,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.Duration;
 import java.util.Date;
 
 @Service
@@ -36,6 +41,8 @@ public class UserService {
     private WalletService walletService;
     @Resource
     private EnvironmentService environmentService;
+    @Resource
+    private OssVideoService ossVideoService;
 
     public User getUserByToken(String token) {
         if (token == null) {
@@ -132,7 +139,7 @@ public class UserService {
         ChannelVO vo = new ChannelVO();
         vo.setUserId(user.getId());
         vo.setNickname(user.getNickname());
-        vo.setAvatarUrl(user.getAvatarUrl());
+        vo.setAvatarUrl(generateAvatarUrl(user));
         vo.setBannerUrl(user.getBannerUrl());
         vo.setBio(user.getBio());
         vo.setSubscriberCount(user.getSubscriberCount() != null ? user.getSubscriberCount() : 0L);
@@ -145,7 +152,83 @@ public class UserService {
         User user = userRepository.getById(UserHolder.getUserId());
         if (user != null) {
             user.setToken(null);
+            // 动态生成头像URL
+            user.setAvatarUrl(generateAvatarUrl(user));
         }
         return user;
+    }
+
+    /**
+     * 生成头像签名URL
+     */
+    private String generateAvatarUrl(User user) {
+        // 优先使用avatarFileId生成签名URL
+        if (StringUtils.isNotEmpty(user.getAvatarFileId())) {
+            File file = mongoTemplate.findById(user.getAvatarFileId(), File.class);
+            if (file != null && StringUtils.isNotEmpty(file.getKey())) {
+                return ossVideoService.generatePresignedUrl(file.getKey(), Duration.ofHours(24));
+            }
+        }
+        // 兼容旧数据
+        return user.getAvatarUrl();
+    }
+
+    /**
+     * 创建头像文件记录
+     */
+    public JSONObject createAvatarFile() {
+        String userId = UserHolder.getUserId();
+        File file = new File();
+        file.setId(idService.getFileId());
+        file.setFileType(FileType.AVATAR);
+        file.setUploaderId(userId);
+        file.setKey("avatar/" + userId + "/" + file.getId());
+        mongoTemplate.save(file);
+
+        JSONObject result = new JSONObject();
+        result.put("fileId", file.getId());
+        result.put("key", file.getKey());
+        return result;
+    }
+
+    /**
+     * 获取头像上传凭证
+     */
+    public JSONObject getAvatarUploadCredentials(String fileId) {
+        File file = mongoTemplate.findById(fileId, File.class);
+        if (file == null || !FileType.AVATAR.equals(file.getFileType())) {
+            throw new VideoException(ErrorCode.FILE_NOT_EXIST);
+        }
+        if (!UserHolder.getUserId().equals(file.getUploaderId())) {
+            throw new VideoException(ErrorCode.FILE_AND_USER_NOT_MATCH);
+        }
+        JSONObject credentials = ossVideoService.generateUploadCredentials(file.getKey());
+        if (credentials == null) {
+            throw new VideoException(ErrorCode.FILE_GENERATE_UPLOAD_CREDENTIALS_FAIL);
+        }
+        credentials.put("fileId", fileId);
+        return credentials;
+    }
+
+    /**
+     * 头像上传完成
+     */
+    public void avatarUploadFinish(String fileId) {
+        File file = mongoTemplate.findById(fileId, File.class);
+        if (file == null || !FileType.AVATAR.equals(file.getFileType())) {
+            throw new VideoException(ErrorCode.FILE_NOT_EXIST);
+        }
+        if (!UserHolder.getUserId().equals(file.getUploaderId())) {
+            throw new VideoException(ErrorCode.FILE_AND_USER_NOT_MATCH);
+        }
+
+        // 验证文件是否存在
+        if (!ossVideoService.doesObjectExist(file.getKey())) {
+            throw new VideoException(ErrorCode.FILE_NOT_EXIST);
+        }
+
+        // 更新用户的avatarFileId
+        userRepository.updateAvatarFileId(UserHolder.getUserId(), fileId);
+        log.info("头像上传完成, userId={}, fileId={}", UserHolder.getUserId(), fileId);
     }
 }

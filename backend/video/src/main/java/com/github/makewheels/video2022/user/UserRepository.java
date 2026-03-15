@@ -62,4 +62,12 @@ public class UserRepository {
                 .set("updateTime", new Date());
         mongoTemplate.updateFirst(query, update, User.class);
     }
+
+    public void updateAvatarFileId(String userId, String avatarFileId) {
+        Query query = Query.query(Criteria.where("_id").is(userId));
+        Update update = new Update()
+                .set("avatarFileId", avatarFileId)
+                .set("updateTime", new Date());
+        mongoTemplate.updateFirst(query, update, User.class);
+    }
 }

@@ -27,7 +27,8 @@ public class User {
     private String token;
 
     private String nickname;
-    private String avatarUrl;
+    private String avatarFileId;  // 头像文件ID，用于生成签名URL
+    private String avatarUrl;     // 兼容旧数据，后续可废弃
     private String bannerUrl;
     private String bio;
     private Long subscriberCount;
