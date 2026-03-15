@@ -302,6 +302,8 @@ docker run -d -p 5022:5022 --name video-2022 video-2022:latest
 
 ## 开发规范
 
+> **详细的开发流程规范请参阅 [CONTRIBUTING.md](CONTRIBUTING.md)**，包含：开发前准备、分支规范、多端同步修改、测试要求、文档更新、部署影响评估等。
+
 - **禁止直接 push master**，所有变更必须通过 PR 合并
 - 一个功能/修复对应一个 PR
 - 每个 PR 合并后，在 [CHANGELOG.md](docs/CHANGELOG.md) 记录关键变更
