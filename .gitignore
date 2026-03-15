@@ -40,8 +40,8 @@ node_modules/
 test/venv/
 
 ### Build artifacts ###
-backend/video/src/main/resources/static/
-developer-portal/dist/
+server/video/src/main/resources/static/
+console/dist/
 
 ### Python ###
 **/__pycache__/

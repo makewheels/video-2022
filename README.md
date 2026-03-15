@@ -39,17 +39,17 @@ brew services start mongodb-community
 brew services start redis
 
 # 2. 配置密钥
-cp backend/.env.example backend/.env
+cp server/.env.example server/.env
 # 编辑 .env 填入阿里云 AccessKey 等密钥
 
 # 3. 构建前端
-cd frontend && npm install && npm run build && cd ..
+cd web && npm install && npm run build && cd ..
 
-# 4. 构建后端（前端已打包到 backend/video/src/main/resources/static/）
-cd backend && mvn clean package -pl video -Pspringboot -Dmaven.test.skip=true && cd ..
+# 4. 构建后端（前端已打包到 server/video/src/main/resources/static/）
+cd server && mvn clean package -pl video -Pspringboot -Dmaven.test.skip=true && cd ..
 
 # 5. 启动
-cd backend && export $(grep -v '^#' .env | grep -v '^$' | xargs)
+cd server && export $(grep -v '^#' .env | grep -v '^$' | xargs)
 java -jar video/target/video-0.0.1-SNAPSHOT.jar
 
 # 6. 访问
@@ -61,7 +61,7 @@ java -jar video/target/video-0.0.1-SNAPSHOT.jar
 
 **前端开发模式：**
 ```bash
-cd frontend && npm run dev  # 端口 5173，自动代理 API 到 5022
+cd web && npm run dev  # 端口 5173，自动代理 API 到 5022
 ```
 
 ---
@@ -69,8 +69,8 @@ cd frontend && npm run dev  # 端口 5173，自动代理 API 到 5022
 ## 项目架构
 
 三子项目结构：
-- `frontend/` - React SPA 前端 (Vite + TypeScript)
-- `backend/` - Java Spring Boot 后端 (Maven 多模块)
+- `web/` - React SPA 前端 (Vite + TypeScript)
+- `server/` - Java Spring Boot 后端 (Maven 多模块)
   - `video/` - 核心视频服务模块
   - `youtube/` - YouTube 下载服务模块
 - `android/` - Android 原生客户端 (Kotlin + Jetpack Compose)
@@ -232,10 +232,10 @@ curl -H "token: {your_token}" "http://localhost:5022/video/getMyVideoList"
 
 ```bash
 # 后端单元/集成测试
-cd backend && mvn test -pl video -Pspringboot
+cd server && mvn test -pl video -Pspringboot
 
 # 前端单元测试 (24 tests)
-cd frontend && npx vitest run
+cd web && npx vitest run
 
 # API E2E 测试 (需要后端运行中)
 cd test && pip install -r requirements.txt && pytest api/ -v
@@ -281,10 +281,10 @@ GitHub Actions 自动运行 **7 个 Job**：
 
 ```bash
 # 构建前端
-cd frontend && npm ci && npm run build && cd ..
+cd web && npm ci && npm run build && cd ..
 
 # 构建镜像
-docker build -f backend/video/Dockerfile-video -t video-2022:latest backend/
+docker build -f server/video/Dockerfile-video -t video-2022:latest server/
 
 # 运行容器
 docker run -d -p 5022:5022 --name video-2022 video-2022:latest

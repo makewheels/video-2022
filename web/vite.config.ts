@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: '../backend/video/src/main/resources/static',
+    outDir: '../server/video/src/main/resources/static',
     emptyOutDir: true,
   },
   server: {

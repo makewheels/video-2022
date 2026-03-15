@@ -28,12 +28,12 @@
 
 ```
 video-2022/
-├── backend/video/       # Java Spring Boot 后端（核心服务）
-├── frontend/            # React + TypeScript 前端
+├── server/video/       # Java Spring Boot 后端（核心服务）
+├── web/            # React + TypeScript 前端
 ├── android/             # Kotlin + Jetpack Compose 安卓客户端
 ├── ios/                 # Swift + SwiftUI iOS 客户端
 ├── cli/                 # Python 命令行工具
-├── developer-portal/    # React 开发者门户
+├── console/    # React 开发者门户
 ├── test/                # Python E2E 测试（API + Browser）
 ├── docs/                # 项目文档
 ├── scripts/             # 部署和运维脚本
@@ -130,11 +130,11 @@ improve/xxx     # 优化改进
 
 | 组件 | 测试框架 | 测试位置 |
 |------|----------|----------|
-| 后端 Service | JUnit 5 + @SpringBootTest | `backend/video/src/test/java/` |
+| 后端 Service | JUnit 5 + @SpringBootTest | `server/video/src/test/java/` |
 | 后端 Controller | JUnit 5 + MockMvc/集成测试 | 同上 |
 | Android ViewModel | JUnit 4 + MockK + Turbine | `android/app/src/test/java/` |
 | iOS Service/Model | XCTest | `ios/VideoAppTests/` |
-| 前端组件/页面 | Vitest + Testing Library | `frontend/src/**/*.test.tsx` |
+| 前端组件/页面 | Vitest + Testing Library | `web/src/**/*.test.tsx` |
 | CLI 命令 | pytest | `cli/tests/` |
 | E2E | pytest + Playwright | `test/` |
 
@@ -275,15 +275,15 @@ git clone https://github.com/makewheels/video-2022.git
 cd video-2022
 
 # 2. 配置环境变量
-cp .env.example backend/video/.env
+cp .env.example server/video/.env
 # 编辑 .env 填入 MongoDB 连接信息等
 
 # 3. 后端
-cd backend/video && mvn test        # 运行测试
+cd server/video && mvn test        # 运行测试
 mvn spring-boot:run                 # 启动服务（端口 5022）
 
 # 4. 前端
-cd frontend && npm install && npm run dev   # 启动开发服务器
+cd web && npm install && npm run dev   # 启动开发服务器
 
 # 5. Android
 cd android && ./gradlew testDebugUnitTest   # 测试

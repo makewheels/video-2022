@@ -36,7 +36,7 @@ jobs:
           cache: maven
 
       - name: 后端测试
-        working-directory: backend
+        working-directory: server
         run: mvn test -pl video -Pspringboot --batch-mode --no-transfer-progress
 
   deploy:
