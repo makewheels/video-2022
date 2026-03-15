@@ -67,9 +67,17 @@ struct SettingsScreen: View {
             }
             
             Section {
+                Button {
+                    Task { await UpdateCheckManager.shared.checkForUpdate() }
+                } label: {
+                    Label("检查更新", systemImage: "arrow.clockwise")
+                }
+            }
+            
+            Section {
                 HStack {
                     Spacer()
-                    Text("版本 1.0.0")
+                    Text("版本 \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0")")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()

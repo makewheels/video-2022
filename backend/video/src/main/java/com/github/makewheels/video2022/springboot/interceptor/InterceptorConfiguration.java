@@ -1,5 +1,6 @@
 package com.github.makewheels.video2022.springboot.interceptor;
 
+import com.github.makewheels.video2022.springboot.interceptor.admin.AdminApiKeyInterceptor;
 import com.github.makewheels.video2022.springboot.interceptor.token.CheckTokenInterceptor;
 import com.github.makewheels.video2022.springboot.interceptor.token.PutTokenInterceptor;
 import com.github.makewheels.video2022.springboot.interceptor.requestlog.RequestLogInterceptor;
@@ -10,6 +11,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class InterceptorConfiguration implements WebMvcConfigurer {
+
+    @Bean
+    public AdminApiKeyInterceptor getAdminApiKeyInterceptor() {
+        return new AdminApiKeyInterceptor();
+    }
 
     @Bean
     public PutTokenInterceptor getPutTokenInterceptor() {
@@ -28,6 +34,10 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // 管理接口鉴权
+        registry.addInterceptor(getAdminApiKeyInterceptor())
+                .addPathPatterns("/app/publishVersion");
+
         // 放token
         registry.addInterceptor(getPutTokenInterceptor())
                 .addPathPatterns("/**");
