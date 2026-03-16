@@ -25,6 +25,7 @@ import com.github.makewheels.video2022.ui.settings.SettingsScreen
 import com.github.makewheels.video2022.ui.upload.UploadScreen
 import com.github.makewheels.video2022.ui.watch.WatchScreen
 import com.github.makewheels.video2022.ui.search.SearchScreen
+import com.github.makewheels.video2022.ui.watchhistory.WatchHistoryScreen
 import com.github.makewheels.video2022.ui.youtube.YouTubeScreen
 import com.github.makewheels.video2022.ui.notification.NotificationScreen
 
@@ -87,6 +88,14 @@ private fun NavGraphBuilder.homeRoutes(navController: NavHostController) {
     }
     composable(Screen.Notification.route) {
         NotificationScreen()
+    }
+    composable(Screen.WatchHistory.route) {
+        WatchHistoryScreen(
+            onVideoClick = { watchId ->
+                navController.navigate(Screen.Watch.createRoute(watchId))
+            },
+            onBack = { navController.popBackStack() }
+        )
     }
 }
 

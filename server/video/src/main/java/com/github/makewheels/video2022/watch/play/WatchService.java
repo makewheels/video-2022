@@ -78,6 +78,7 @@ public class WatchService {
         watchLog.setVideoId(video.getId());
         watchLog.setClientId(context.getClientId());
         watchLog.setSessionId(context.getSessionId());
+        watchLog.setViewerId(UserHolder.getUserId());
 
         mongoTemplate.save(watchLog);
     }

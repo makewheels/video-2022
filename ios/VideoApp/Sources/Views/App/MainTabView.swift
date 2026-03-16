@@ -46,6 +46,13 @@ struct MainTabView: View {
             }
             
             NavigationStack {
+                WatchHistoryView()
+            }
+            .tabItem {
+                Label("历史", systemImage: "clock.arrow.circlepath")
+            }
+            
+            NavigationStack {
                 SettingsScreen()
             }
             .tabItem {

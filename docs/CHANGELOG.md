@@ -6,6 +6,15 @@
 
 ---
 
+## feat: 观看历史页面
+- 观看历史分页查询 (按时间倒序)
+- 清除观看历史功能
+- 前端: WatchHistoryPage
+- 移动端: Android/iOS 观看历史页面
+- CLI: watch history/clear-history 命令
+
+---
+
 ## feat: 站内通知系统
 - 通知实体与 MongoDB 存储
 - 通知类型: 评论回复、新订阅、视频点赞、评论点赞
