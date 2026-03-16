@@ -9,10 +9,10 @@ import javax.inject.Singleton
 class CommentRepository @Inject constructor(
     private val commentApi: CommentApi
 ) {
-    suspend fun getComments(videoId: String, skip: Int = 0, limit: Int = 20): Result<List<Comment>> = runCatching {
-        val resp = commentApi.getByVideoId(videoId, skip, limit)
+    suspend fun getComments(videoId: String, page: Int = 0, pageSize: Int = 20): Result<CommentPageResponse> = runCatching {
+        val resp = commentApi.getByVideoId(videoId, page, pageSize)
         if (!resp.isSuccess) throw Exception(resp.message ?: "获取评论失败")
-        resp.data ?: emptyList()
+        resp.data ?: throw Exception("数据为空")
     }
 
     suspend fun getReplies(parentId: String, skip: Int = 0, limit: Int = 20): Result<List<Comment>> = runCatching {

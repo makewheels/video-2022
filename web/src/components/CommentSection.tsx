@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Comment } from '../types';
+import type { Comment, CommentPage } from '../types';
 import api from '../utils/api';
 import { useToast } from '../utils/toast';
 import CommentItem from './CommentItem';
@@ -8,47 +8,50 @@ interface CommentSectionProps {
   videoId: string;
 }
 
-const LIMIT = 20;
+const PAGE_SIZE = 20;
 
 export default function CommentSection({ videoId }: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [count, setCount] = useState(0);
-  const [sort, setSort] = useState<'time' | 'hot'>('time');
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [sort, setSort] = useState<'createTime' | 'likeCount'>('createTime');
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const { toast } = useToast();
 
-  const loadComments = useCallback(async (reset = true) => {
+  const loadComments = useCallback(async (page: number, reset: boolean) => {
     try {
-      const skip = reset ? 0 : comments.length;
+      if (!reset) setLoadingMore(true);
       const res = await api.get('/comment/getByVideoId', {
-        params: { videoId, skip, limit: LIMIT, sort },
+        params: { videoId, page, pageSize: PAGE_SIZE, sortBy: sort },
       });
-      const data: Comment[] = res.data.data;
-      setComments(reset ? data : [...comments, ...data]);
+      const data: CommentPage = res.data.data;
+      setComments(reset ? data.list : [...comments, ...data.list]);
+      setTotal(data.total);
+      setTotalPages(data.totalPages);
+      setCurrentPage(data.currentPage);
     } catch {
       toast('加载评论失败', 'error');
+    } finally {
+      setLoadingMore(false);
     }
   }, [videoId, sort, comments, toast]);
 
-  const loadCount = useCallback(async () => {
-    try {
-      const res = await api.get('/comment/getCount', { params: { videoId } });
-      setCount(res.data.data.count);
-    } catch {
-      /* ignore */
-    }
-  }, [videoId]);
-
   useEffect(() => {
-    loadComments(true);
-    loadCount();
+    loadComments(0, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoId, sort]);
 
   const handleRefresh = () => {
-    loadComments(true);
-    loadCount();
+    loadComments(0, true);
+  };
+
+  const handleLoadMore = () => {
+    if (currentPage + 1 < totalPages) {
+      loadComments(currentPage + 1, false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -68,7 +71,7 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
 
   return (
     <div className="comment-section">
-      <h3>评论 ({count})</h3>
+      <h3>评论 ({total})</h3>
 
       <div className="comment-input">
         <textarea
@@ -87,14 +90,14 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
 
       <div className="comment-sort">
         <button
-          className={`btn btn-sm${sort === 'time' ? ' active' : ''}`}
-          onClick={() => setSort('time')}
+          className={`btn btn-sm${sort === 'createTime' ? ' active' : ''}`}
+          onClick={() => setSort('createTime')}
         >
           最新
         </button>
         <button
-          className={`btn btn-sm${sort === 'hot' ? ' active' : ''}`}
-          onClick={() => setSort('hot')}
+          className={`btn btn-sm${sort === 'likeCount' ? ' active' : ''}`}
+          onClick={() => setSort('likeCount')}
         >
           最热
         </button>
@@ -111,9 +114,9 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
         ))}
       </div>
 
-      {comments.length >= LIMIT && (
-        <button className="btn btn-secondary" onClick={() => loadComments(false)}>
-          加载更多
+      {currentPage + 1 < totalPages && (
+        <button className="btn btn-secondary" onClick={handleLoadMore} disabled={loadingMore}>
+          {loadingMore ? '加载中...' : '加载更多'}
         </button>
       )}
     </div>

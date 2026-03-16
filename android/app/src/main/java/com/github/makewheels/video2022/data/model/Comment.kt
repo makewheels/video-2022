@@ -15,6 +15,14 @@ data class Comment(
     val updateTime: String?
 )
 
+data class CommentPageResponse(
+    val list: List<Comment>,
+    val total: Long,
+    val totalPages: Int,
+    val currentPage: Int,
+    val pageSize: Int
+)
+
 data class AddCommentRequest(
     val videoId: String,
     val content: String,

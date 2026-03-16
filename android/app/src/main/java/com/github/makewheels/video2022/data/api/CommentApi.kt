@@ -10,10 +10,10 @@ interface CommentApi {
     @GET("/comment/getByVideoId")
     suspend fun getByVideoId(
         @Query("videoId") videoId: String,
-        @Query("skip") skip: Int = 0,
-        @Query("limit") limit: Int = 20,
-        @Query("sort") sort: String = "time"
-    ): ApiResponse<List<Comment>>
+        @Query("page") page: Int = 0,
+        @Query("pageSize") pageSize: Int = 20,
+        @Query("sortBy") sortBy: String = "createTime"
+    ): ApiResponse<CommentPageResponse>
 
     @GET("/comment/getReplies")
     suspend fun getReplies(

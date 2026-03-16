@@ -52,7 +52,11 @@ fun CommentSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("评论", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    if (uiState.total > 0) "评论 (${uiState.total})"
+                    else "评论",
+                    style = MaterialTheme.typography.titleMedium
+                )
                 IconButton(onClick = onDismiss) {
                     Icon(Icons.Filled.Close, contentDescription = "关闭")
                 }

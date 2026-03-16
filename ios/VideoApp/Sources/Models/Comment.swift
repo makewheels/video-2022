@@ -15,6 +15,14 @@ struct Comment: Decodable, Identifiable {
     let updateTime: String?
 }
 
+struct CommentPage: Decodable {
+    let list: [Comment]
+    let total: Int
+    let totalPages: Int
+    let currentPage: Int
+    let pageSize: Int
+}
+
 struct AddCommentRequest: Encodable {
     let videoId: String
     let content: String

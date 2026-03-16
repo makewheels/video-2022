@@ -17,6 +17,15 @@
 - iOS：UploadScreen、EditScreen 新增分类 Picker 和标签输入
 - 新增 VideoCategoryTest（5 个测试）和 VideoServiceTest 标签/分类测试（8 个测试）
 
+### [PR #81](https://github.com/makewheels/video-2022/pull/81) — 评论列表分页
+- 后端 `GET /comment/getByVideoId` 改为分页接口，支持 `page`、`pageSize`、`sortBy` 参数
+- 新增 `CommentPageVO` 返回分页元数据（total、totalPages、currentPage、pageSize）
+- API v1 `GET /api/v1/videos/{videoId}/comments` 同步支持分页
+- Web: `CommentSection` 使用分页元数据，按钮式"加载更多"
+- Android: `CommentViewModel` / `CommentRepository` 基于分页元数据加载，底部自动加载更多
+- iOS: `CommentSheet` 支持分页加载，新增"加载更多"按钮
+- 新增 7 个分页相关测试（元数据校验、末页、空页、超页、排序）
+
 ### [PR #79](https://github.com/makewheels/video-2022/pull/79) — Docker 镜像标签格式优化
 - 镜像标签改为北京时间 + 流水线序号格式: `video-2022-20260315-175000-0042`
 - 替代之前的 git commit hash 格式，更直观易读

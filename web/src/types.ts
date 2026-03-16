@@ -35,6 +35,14 @@ export interface Comment {
   replyToUserNickname?: string;
 }
 
+export interface CommentPage {
+  list: Comment[];
+  total: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+}
+
 export interface PlaylistItem {
   videoId: string;
   watchId: string;

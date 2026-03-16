@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.ui.comment
 
 import com.github.makewheels.video2022.data.model.Comment
+import com.github.makewheels.video2022.data.model.CommentPageResponse
 import com.github.makewheels.video2022.data.repository.CommentRepository
 import com.github.makewheels.video2022.ui.watch.CommentViewModel
 import io.mockk.coEvery
@@ -27,6 +28,15 @@ class CommentViewModelTest {
         createTime = null, updateTime = null
     )
 
+    private fun pageResponse(comments: List<Comment>, page: Int = 0, pageSize: Int = 20) =
+        CommentPageResponse(
+            list = comments,
+            total = comments.size.toLong(),
+            totalPages = if (comments.isEmpty()) 0 else 1,
+            currentPage = page,
+            pageSize = pageSize
+        )
+
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
@@ -45,7 +55,8 @@ class CommentViewModelTest {
     @Test
     fun `loadComments — success — updates state with comment list`() = runTest {
         val comments = listOf(createComment("1"), createComment("2"))
-        coEvery { commentRepository.getComments("v1", 0, 20) } returns Result.success(comments)
+        coEvery { commentRepository.getComments("v1", 0, 20) } returns
+                Result.success(pageResponse(comments))
 
         val vm = createViewModel()
         vm.loadComments("v1")
@@ -74,8 +85,10 @@ class CommentViewModelTest {
     fun `loadMore — appends comments to existing list`() = runTest {
         val page1 = (1..20).map { createComment("$it") }
         val page2 = listOf(createComment("21"), createComment("22"))
-        coEvery { commentRepository.getComments("v1", 0, 20) } returns Result.success(page1)
-        coEvery { commentRepository.getComments("v1", 20, 20) } returns Result.success(page2)
+        coEvery { commentRepository.getComments("v1", 0, 20) } returns
+                Result.success(CommentPageResponse(list = page1, total = 22, totalPages = 2, currentPage = 0, pageSize = 20))
+        coEvery { commentRepository.getComments("v1", 1, 20) } returns
+                Result.success(CommentPageResponse(list = page2, total = 22, totalPages = 2, currentPage = 1, pageSize = 20))
 
         val vm = createViewModel()
         vm.loadComments("v1")
@@ -89,7 +102,8 @@ class CommentViewModelTest {
 
     @Test
     fun `sendComment — success — prepends new comment and clears input`() = runTest {
-        coEvery { commentRepository.getComments("v1", 0, 20) } returns Result.success(emptyList())
+        coEvery { commentRepository.getComments("v1", 0, 20) } returns
+                Result.success(pageResponse(emptyList()))
         val newComment = createComment("new", "Hello world")
         coEvery { commentRepository.addComment("v1", "Hello world", null) } returns
                 Result.success(newComment)
@@ -109,7 +123,8 @@ class CommentViewModelTest {
 
     @Test
     fun `sendComment — empty input — does nothing`() = runTest {
-        coEvery { commentRepository.getComments("v1", 0, 20) } returns Result.success(emptyList())
+        coEvery { commentRepository.getComments("v1", 0, 20) } returns
+                Result.success(pageResponse(emptyList()))
 
         val vm = createViewModel()
         vm.loadComments("v1")
