@@ -6,6 +6,12 @@
 
 ---
 
+## refactor: 迁移 Copilot 指令到 AGENT.md
+- 将 `.github/copilot-instructions.md` 迁移到项目根目录 `AGENT.md`
+- 统一 AI 助手配置文件位置
+
+---
+
 ### [PR #82](https://github.com/makewheels/video-2022/pull/82) — 视频搜索
 - 新增视频搜索功能，支持标题、描述、标签搜索
 - MongoDB 正则匹配搜索方案
