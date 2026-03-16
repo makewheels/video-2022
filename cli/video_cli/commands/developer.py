@@ -72,3 +72,27 @@ def create_token(ctx, app_id, app_secret):
         print_json(result)
     except APIError as e:
         print_error(e.message, e.code)
+
+
+@developer.command("rate-limit-status")
+@click.pass_context
+def rate_limit_status(ctx):
+    """Show current rate limit status for the authenticated app."""
+    base_url = ctx.obj.get("base_url")
+    token = ctx.obj.get("token")
+    try:
+        result = get("/api/v1/rateLimit/status", base_url=base_url, token=token)
+        if ctx.obj.get("output_format") == "table" and result:
+            rows = [[
+                result.get("minuteLimit", ""),
+                result.get("minuteRemaining", ""),
+                result.get("dayLimit", ""),
+                result.get("dayRemaining", ""),
+                result.get("resetTime", ""),
+            ]]
+            print_table(["Minute Limit", "Minute Remaining", "Day Limit",
+                          "Day Remaining", "Reset Time"], rows)
+        else:
+            print_json(result)
+    except APIError as e:
+        print_error(e.message, e.code)
