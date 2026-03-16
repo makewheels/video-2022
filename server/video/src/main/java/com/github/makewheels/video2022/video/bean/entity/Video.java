@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +28,10 @@ public class Video {
     // 基本信息
     private String title;
     private String description;
+
+    private List<String> tags;          // 用户自定义标签
+    @Indexed
+    private String category;            // 视频分类（预设列表）
 
     @Indexed
     private String visibility;      // 可见性：PUBLIC/UNLISTED/PRIVATE
@@ -74,6 +79,8 @@ public class Video {
         this.storageStatus = new StorageStatus();
         this.watch = new Watch();
         this.link = new Link();
+
+        this.tags = new ArrayList<>();
     }
 
 }

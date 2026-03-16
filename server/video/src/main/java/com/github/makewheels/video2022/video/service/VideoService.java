@@ -19,6 +19,7 @@ import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
 import com.github.makewheels.video2022.video.bean.vo.VideoListVO;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
+import com.github.makewheels.video2022.video.constants.VideoCategory;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -103,10 +104,20 @@ public class VideoService {
             checkService.checkVideoVisibility(updateVideoInfoDTO.getVisibility());
             video.setVisibility(updateVideoInfoDTO.getVisibility());
         }
+        if (updateVideoInfoDTO.getTags() != null) {
+            video.setTags(updateVideoInfoDTO.getTags());
+        }
+        if (updateVideoInfoDTO.getCategory() != null) {
+            if (!VideoCategory.isValid(updateVideoInfoDTO.getCategory())) {
+                throw new IllegalArgumentException("Invalid category: " + updateVideoInfoDTO.getCategory());
+            }
+            video.setCategory(updateVideoInfoDTO.getCategory());
+        }
         mongoTemplate.save(video);
 
-        log.info("更新视频信息：videoId = {}, title = {}, description = {}, visibility = {}",
-                videoId, video.getTitle(), video.getDescription(), video.getVisibility());
+        log.info("更新视频信息：videoId = {}, title = {}, description = {}, visibility = {}, category = {}, tags = {}",
+                videoId, video.getTitle(), video.getDescription(), video.getVisibility(),
+                video.getCategory(), video.getTags());
         return video;
     }
 
@@ -135,6 +146,8 @@ public class VideoService {
         videoVO.setVisibility(video.getVisibility());
         videoVO.setTitle(video.getTitle());
         videoVO.setDescription(video.getDescription());
+        videoVO.setTags(video.getTags());
+        videoVO.setCategory(video.getCategory());
         videoVO.setCoverUrl(coverService.getSignedCoverUrl(video.getCoverId()));
         videoVO.setDuration(video.getMediaInfo().getDuration());
         videoVO.setWatchCount(video.getWatch().getWatchCount());

@@ -16,6 +16,8 @@ data class UploadUiState(
     val fileSize: Long = 0,
     val title: String = "",
     val description: String = "",
+    val tags: List<String> = emptyList(),
+    val category: String = "",
     val isUploading: Boolean = false,
     val uploadProgress: Float = 0f,
     val isUploadComplete: Boolean = false,
@@ -44,6 +46,25 @@ class UploadViewModel @Inject constructor(
 
     fun updateDescription(desc: String) {
         _uiState.value = _uiState.value.copy(description = desc)
+    }
+
+    fun updateTags(tags: List<String>) {
+        _uiState.value = _uiState.value.copy(tags = tags)
+    }
+
+    fun addTag(tag: String) {
+        val current = _uiState.value.tags
+        if (tag.isNotBlank() && !current.contains(tag.trim())) {
+            _uiState.value = _uiState.value.copy(tags = current + tag.trim())
+        }
+    }
+
+    fun removeTag(tag: String) {
+        _uiState.value = _uiState.value.copy(tags = _uiState.value.tags - tag)
+    }
+
+    fun updateCategory(category: String) {
+        _uiState.value = _uiState.value.copy(category = category)
     }
 
     fun clearSelection() {

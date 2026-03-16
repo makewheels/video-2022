@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class VideoVO {
@@ -21,6 +22,9 @@ public class VideoVO {
     private String type;
     private String status;
     private String visibility;
+
+    private List<String> tags;
+    private String category;
 
     private String uploaderName;
     private String uploaderAvatarUrl;

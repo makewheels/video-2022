@@ -74,7 +74,8 @@ public class VideoRepository {
             String regex = Pattern.quote(keyword.trim());
             criteria.orOperator(
                     Criteria.where("title").regex(regex, "i"),
-                    Criteria.where("description").regex(regex, "i")
+                    Criteria.where("description").regex(regex, "i"),
+                    Criteria.where("tags").regex(regex, "i")
             );
         }
         Query query = Query.query(criteria)
@@ -93,7 +94,8 @@ public class VideoRepository {
             String regex = Pattern.quote(keyword.trim());
             criteria.orOperator(
                     Criteria.where("title").regex(regex, "i"),
-                    Criteria.where("description").regex(regex, "i")
+                    Criteria.where("description").regex(regex, "i"),
+                    Criteria.where("tags").regex(regex, "i")
             );
         }
         return mongoTemplate.count(Query.query(criteria), Video.class);
@@ -109,7 +111,8 @@ public class VideoRepository {
             criteria.andOperator(
                     new Criteria().orOperator(
                             Criteria.where("title").regex(regex, "i"),
-                            Criteria.where("description").regex(regex, "i")
+                            Criteria.where("description").regex(regex, "i"),
+                            Criteria.where("tags").regex(regex, "i")
                     )
             );
         }
@@ -130,7 +133,8 @@ public class VideoRepository {
             criteria.andOperator(
                     new Criteria().orOperator(
                             Criteria.where("title").regex(regex, "i"),
-                            Criteria.where("description").regex(regex, "i")
+                            Criteria.where("description").regex(regex, "i"),
+                            Criteria.where("tags").regex(regex, "i")
                     )
             );
         }

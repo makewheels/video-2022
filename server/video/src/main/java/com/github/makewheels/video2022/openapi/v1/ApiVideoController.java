@@ -102,6 +102,8 @@ public class ApiVideoController {
             dto.setTitle(request.getTitle());
             dto.setDescription(request.getDescription());
             dto.setVisibility(request.getVisibility());
+            dto.setTags(request.getTags());
+            dto.setCategory(request.getCategory());
             Video video = videoService.updateVideo(dto);
             return Result.ok(video);
         } finally {

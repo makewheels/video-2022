@@ -4,7 +4,10 @@ import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,6 +26,15 @@ fun UploadScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    var categoryExpanded by remember { mutableStateOf(false) }
+    var tagInput by remember { mutableStateOf("") }
+
+    val categoryOptions = listOf(
+        "音乐", "游戏", "教育", "科技", "生活",
+        "娱乐", "新闻", "体育", "动漫", "美食",
+        "旅行", "知识", "影视", "搞笑", "其他"
+    )
+    val categoryLabels = categoryOptions.associateWith { it }
 
     val videoPickerLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -86,6 +98,79 @@ fun UploadScreen(
                 label = { Text("描述") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3
+            )
+            Spacer(Modifier.height(8.dp))
+
+            // Category dropdown
+            ExposedDropdownMenuBox(
+                expanded = categoryExpanded,
+                onExpandedChange = { categoryExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = if (uiState.category.isEmpty()) "" else uiState.category,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("分类") },
+                    placeholder = { Text("选择分类") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = categoryExpanded,
+                    onDismissRequest = { categoryExpanded = false }
+                ) {
+                    categoryOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(categoryLabels[option] ?: option) },
+                            onClick = {
+                                viewModel.updateCategory(option)
+                                categoryExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            // Tags
+            if (uiState.tags.isNotEmpty()) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(uiState.tags) { tag ->
+                        InputChip(
+                            selected = false,
+                            onClick = { viewModel.removeTag(tag) },
+                            label = { Text(tag) },
+                            trailingIcon = {
+                                Icon(Icons.Filled.Close, contentDescription = "删除标签",
+                                    modifier = Modifier.size(16.dp))
+                            }
+                        )
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+            }
+            OutlinedTextField(
+                value = tagInput,
+                onValueChange = { tagInput = it },
+                label = { Text("标签") },
+                placeholder = { Text("输入后按回车添加") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                ),
+                keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                    onDone = {
+                        if (tagInput.isNotBlank()) {
+                            viewModel.addTag(tagInput)
+                            tagInput = ""
+                        }
+                    }
+                )
             )
             Spacer(Modifier.height(16.dp))
 

@@ -23,6 +23,12 @@ const STATUS_LABELS: Record<string, string> = {
   READY: '✅ 处理完成',
 };
 
+const CATEGORY_OPTIONS = [
+  '音乐', '游戏', '教育', '科技', '生活',
+  '娱乐', '新闻', '体育', '动漫', '美食',
+  '旅行', '知识', '影视', '搞笑', '其他',
+] as const;
+
 const MAX_FILE_SIZE = 5 * 1024 * 1024 * 1024;
 
 function formatFileSize(bytes: number): string {
@@ -120,10 +126,12 @@ async function updateVideoInfo(
   title: string,
   description: string,
   visibility: string,
+  tags: string[],
+  category: string,
   toast: (msg: string, type?: 'info' | 'success' | 'error') => void,
 ): Promise<void> {
   try {
-    await api.post('/video/updateInfo', { id: videoId, title, description, visibility });
+    await api.post('/video/updateInfo', { id: videoId, title, description, visibility, tags, category });
     toast('信息已更新', 'success');
   } catch (err) {
     toast(err instanceof Error ? err.message : '更新失败', 'error');
@@ -217,16 +225,21 @@ interface EditFormProps {
   title: string;
   description: string;
   visibility: string;
+  tags: string[];
+  category: string;
   onTitleChange: (v: string) => void;
   onDescriptionChange: (v: string) => void;
   onVisibilityChange: (v: string) => void;
+  onTagsChange: (v: string[]) => void;
+  onCategoryChange: (v: string) => void;
   onUpdateInfo: () => void;
   onCopy: () => void;
 }
 
 function EditForm(props: EditFormProps) {
-  const { title, description, visibility } = props;
-  const { onTitleChange, onDescriptionChange, onVisibilityChange, onUpdateInfo, onCopy } = props;
+  const { title, description, visibility, tags, category } = props;
+  const { onTitleChange, onDescriptionChange, onVisibilityChange, onTagsChange, onCategoryChange, onUpdateInfo, onCopy } = props;
+  const [tagInput, setTagInput] = useState('');
   return (
     <div className="upload-section">
       <div className="section-title">视频信息</div>
@@ -242,6 +255,41 @@ function EditForm(props: EditFormProps) {
           <option value="UNLISTED">不列出</option>
           <option value="PRIVATE">私密</option>
         </select>
+      </div>
+      <div className="form-group">
+        <select className="form-input" value={category} onChange={(e) => onCategoryChange(e.target.value)}>
+          <option value="">选择分类</option>
+          {CATEGORY_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+      <div className="form-group">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: tags.length > 0 ? 8 : 0 }}>
+          {tags.map((tag, i) => (
+            <span key={i} style={{
+              display: 'inline-flex', alignItems: 'center', background: 'var(--bg-secondary, #e8e8e8)',
+              borderRadius: 12, padding: '2px 10px', fontSize: 13,
+            }}>
+              {tag}
+              <span style={{ marginLeft: 6, cursor: 'pointer', fontWeight: 'bold' }}
+                onClick={() => onTagsChange(tags.filter((_, idx) => idx !== i))}>×</span>
+            </span>
+          ))}
+        </div>
+        <input
+          className="form-input"
+          value={tagInput}
+          onChange={(e) => setTagInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && tagInput.trim()) {
+              e.preventDefault();
+              if (!tags.includes(tagInput.trim())) {
+                onTagsChange([...tags, tagInput.trim()]);
+              }
+              setTagInput('');
+            }
+          }}
+          placeholder="输入标签后按 Enter 添加"
+        />
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <button className="btn btn-primary" onClick={onUpdateInfo}>修改信息</button>
@@ -287,6 +335,8 @@ function useUploadState() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [visibility, setVisibility] = useState('PUBLIC');
+  const [tags, setTags] = useState<string[]>([]);
+  const [category, setCategory] = useState('');
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState('');
 
@@ -315,6 +365,7 @@ function useUploadState() {
   return {
     file, uploading, progress, fileInputRef, videoData, videoStatus,
     title, setTitle, description, setDescription, visibility, setVisibility,
+    tags, setTags, category, setCategory,
     playlists, selectedPlaylistId, setSelectedPlaylistId,
     handleFileSelect, handleUpload, toast,
   };
@@ -335,9 +386,11 @@ function UploadPage() {
           <StatusDisplay videoStatus={state.videoStatus} />
           <EditForm
             title={state.title} description={state.description} visibility={state.visibility}
+            tags={state.tags} category={state.category}
             onTitleChange={state.setTitle} onDescriptionChange={state.setDescription}
             onVisibilityChange={state.setVisibility}
-            onUpdateInfo={() => updateVideoInfo(state.videoData!.videoId, state.title, state.description, state.visibility, state.toast)}
+            onTagsChange={state.setTags} onCategoryChange={state.setCategory}
+            onUpdateInfo={() => updateVideoInfo(state.videoData!.videoId, state.title, state.description, state.visibility, state.tags, state.category, state.toast)}
             onCopy={() => copyVideoInfo(state.title, state.videoData!.watchUrl, state.toast)}
           />
           <PlaylistManager
