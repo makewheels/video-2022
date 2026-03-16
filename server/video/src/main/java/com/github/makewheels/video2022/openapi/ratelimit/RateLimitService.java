@@ -1,14 +1,18 @@
 package com.github.makewheels.video2022.openapi.ratelimit;
 
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Service
 public class RateLimitService {
 
@@ -19,6 +23,9 @@ public class RateLimitService {
 
     @Resource
     private MongoTemplate mongoTemplate;
+
+    @Resource
+    private RateLimitRepository rateLimitRepository;
 
     private final ConcurrentHashMap<String, TokenBucket[]> buckets = new ConcurrentHashMap<>();
 
@@ -66,6 +73,11 @@ public class RateLimitService {
             }
             result.setRetryAfter(Math.max(1, retrySeconds));
         }
+
+        if (isAppAuth) {
+            updateRecord(key, minuteBucket, dayBucket);
+        }
+
         return result;
     }
 
@@ -100,6 +112,28 @@ public class RateLimitService {
     private RateLimitConfig loadConfig(String appId) {
         Query query = new Query(Criteria.where("appId").is(appId));
         return mongoTemplate.findOne(query, RateLimitConfig.class);
+    }
+
+    private void updateRecord(String appId, TokenBucket minuteBucket, TokenBucket dayBucket) {
+        try {
+            Query query = new Query(Criteria.where("appId").is(appId));
+            Update update = new Update()
+                    .set("minuteTokens", minuteBucket.getRemaining())
+                    .set("dayTokens", dayBucket.getRemaining())
+                    .set("lastMinuteRefill", new Date())
+                    .set("lastDayRefill", new Date())
+                    .inc("totalRequests", 1)
+                    .set("updateTime", new Date())
+                    .setOnInsert("appId", appId)
+                    .setOnInsert("createTime", new Date());
+            mongoTemplate.upsert(query, update, RateLimitRecord.class);
+        } catch (Exception e) {
+            log.warn("更新限流记录失败: appId={}", appId, e);
+        }
+    }
+
+    public RateLimitRecord getRecord(String appId) {
+        return rateLimitRepository.findByAppId(appId);
     }
 
     @Scheduled(fixedRate = 300_000)

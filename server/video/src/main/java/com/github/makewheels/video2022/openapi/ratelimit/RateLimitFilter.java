@@ -1,7 +1,7 @@
 package com.github.makewheels.video2022.openapi.ratelimit;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.openapi.oauth.OAuthContext;
+import com.google.gson.JsonObject;
 import jakarta.annotation.Resource;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -62,13 +62,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
 
-            JSONObject body = new JSONObject();
-            body.put("error", "rate_limit_exceeded");
-            body.put("message", "请求频率超限");
-            body.put("retryAfter", result.getRetryAfter());
+            JsonObject body = new JsonObject();
+            body.addProperty("error", "rate_limit_exceeded");
+            body.addProperty("message", "请求频率超限");
+            body.addProperty("retryAfter", result.getRetryAfter());
 
             response.setHeader("Retry-After", String.valueOf(result.getRetryAfter()));
-            response.getWriter().write(body.toJSONString());
+            response.getWriter().write(body.toString());
             return;
         }
 

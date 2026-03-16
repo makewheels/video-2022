@@ -20,8 +20,11 @@
 - 令牌桶限流算法（默认 60次/分钟，10000次/天）
 - 支持按应用自定义配额
 - IP 级别兜底限流（未认证请求）
-- 限流状态响应头
+- 限流状态响应头：X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
 - 超限返回 429 Too Many Requests
+- RateLimitRecord MongoDB 持久化限流状态
+- RateLimitFilter 拦截 /api/v1/** 请求
+- CLI: `developer rate-limit-status` 命令
 
 ---
 
