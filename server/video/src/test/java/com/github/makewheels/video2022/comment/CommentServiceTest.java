@@ -330,6 +330,84 @@ class CommentServiceTest extends BaseIntegrationTest {
     }
 
     @Test
+    void getByVideoIdPaginated_returnsMetadata() {
+        String videoId = createDefaultVideo();
+        for (int i = 0; i < 5; i++) {
+            commentService.addComment(videoId, "评论" + i, null);
+        }
+
+        CommentPageVO page = commentService.getByVideoIdPaginated(videoId, 0, 2, "createTime").getData();
+        assertEquals(2, page.getList().size());
+        assertEquals(5, page.getTotal());
+        assertEquals(3, page.getTotalPages());
+        assertEquals(0, page.getCurrentPage());
+        assertEquals(2, page.getPageSize());
+    }
+
+    @Test
+    void getByVideoIdPaginated_secondPage() {
+        String videoId = createDefaultVideo();
+        for (int i = 0; i < 5; i++) {
+            commentService.addComment(videoId, "评论" + i, null);
+        }
+
+        CommentPageVO page = commentService.getByVideoIdPaginated(videoId, 1, 2, "createTime").getData();
+        assertEquals(2, page.getList().size());
+        assertEquals(5, page.getTotal());
+        assertEquals(1, page.getCurrentPage());
+    }
+
+    @Test
+    void getByVideoIdPaginated_lastPage() {
+        String videoId = createDefaultVideo();
+        for (int i = 0; i < 5; i++) {
+            commentService.addComment(videoId, "评论" + i, null);
+        }
+
+        CommentPageVO page = commentService.getByVideoIdPaginated(videoId, 2, 2, "createTime").getData();
+        assertEquals(1, page.getList().size());
+        assertEquals(5, page.getTotal());
+        assertEquals(2, page.getCurrentPage());
+        assertEquals(3, page.getTotalPages());
+    }
+
+    @Test
+    void getByVideoIdPaginated_emptyPage() {
+        String videoId = createDefaultVideo();
+        // 没有评论
+        CommentPageVO page = commentService.getByVideoIdPaginated(videoId, 0, 20, "createTime").getData();
+        assertTrue(page.getList().isEmpty());
+        assertEquals(0, page.getTotal());
+        assertEquals(0, page.getTotalPages());
+        assertEquals(0, page.getCurrentPage());
+    }
+
+    @Test
+    void getByVideoIdPaginated_beyondLastPage() {
+        String videoId = createDefaultVideo();
+        for (int i = 0; i < 3; i++) {
+            commentService.addComment(videoId, "评论" + i, null);
+        }
+
+        // 请求超过最后一页
+        CommentPageVO page = commentService.getByVideoIdPaginated(videoId, 5, 2, "createTime").getData();
+        assertTrue(page.getList().isEmpty());
+        assertEquals(3, page.getTotal());
+    }
+
+    @Test
+    void getByVideoIdPaginated_sortByLikeCount() {
+        String videoId = createDefaultVideo();
+        Comment c1 = commentService.addComment(videoId, "普通评论", null).getData();
+        Comment c2 = commentService.addComment(videoId, "热门评论", null).getData();
+        commentService.likeComment(c2.getId());
+
+        CommentPageVO page = commentService.getByVideoIdPaginated(videoId, 0, 20, "likeCount").getData();
+        assertEquals(2, page.getList().size());
+        assertEquals("热门评论", page.getList().get(0).getContent());
+    }
+
+    @Test
     void getReplies_pagination_works() {
         String videoId = createDefaultVideo();
         Comment parent = commentService.addComment(videoId, "父评论", null).getData();

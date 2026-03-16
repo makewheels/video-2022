@@ -32,13 +32,13 @@ public class CommentController {
     }
 
     @GetMapping("getByVideoId")
-    public Result<List<Comment>> getByVideoId(
+    public Result<CommentPageVO> getByVideoId(
             @RequestParam String videoId,
-            @RequestParam(defaultValue = "0") int skip,
-            @RequestParam(defaultValue = "20") int limit,
-            @RequestParam(defaultValue = "time") String sort) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(defaultValue = "createTime") String sortBy) {
         checkService.checkVideoExist(videoId);
-        return commentService.getByVideoId(videoId, skip, Math.min(limit, 50), sort);
+        return commentService.getByVideoIdPaginated(videoId, page, Math.min(pageSize, 50), sortBy);
     }
 
     @GetMapping("getReplies")

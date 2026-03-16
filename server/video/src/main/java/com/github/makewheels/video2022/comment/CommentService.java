@@ -100,6 +100,34 @@ public class CommentService {
     }
 
     /**
+     * 获取视频的顶级评论（分页，返回分页元数据）
+     */
+    public Result<CommentPageVO> getByVideoIdPaginated(String videoId, int page, int pageSize, String sortBy) {
+        Criteria criteria = Criteria.where("videoId").is(videoId).and("parentId").is(null);
+
+        long total = mongoTemplate.count(Query.query(criteria), Comment.class);
+
+        Query query = Query.query(criteria);
+        if ("likeCount".equals(sortBy)) {
+            query.with(Sort.by(Sort.Direction.DESC, "likeCount", "createTime"));
+        } else {
+            query.with(Sort.by(Sort.Direction.DESC, "createTime"));
+        }
+
+        int skip = page * pageSize;
+        query.skip(skip).limit(pageSize);
+        List<Comment> comments = mongoTemplate.find(query, Comment.class);
+
+        CommentPageVO vo = new CommentPageVO();
+        vo.setList(comments);
+        vo.setTotal(total);
+        vo.setCurrentPage(page);
+        vo.setPageSize(pageSize);
+        vo.setTotalPages((int) Math.ceil((double) total / pageSize));
+        return Result.ok(vo);
+    }
+
+    /**
      * 获取某评论的回复（分页）
      */
     public Result<List<Comment>> getReplies(String parentId, int skip, int limit) {

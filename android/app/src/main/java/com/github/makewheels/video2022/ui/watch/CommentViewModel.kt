@@ -14,6 +14,9 @@ data class CommentUiState(
     val comments: List<Comment> = emptyList(),
     val isLoading: Boolean = false,
     val hasMore: Boolean = true,
+    val total: Long = 0,
+    val currentPage: Int = -1,
+    val totalPages: Int = 0,
     val inputText: String = "",
     val replyTarget: Comment? = null,
     val isSending: Boolean = false,
@@ -33,13 +36,16 @@ class CommentViewModel @Inject constructor(
     fun loadComments(videoId: String) {
         currentVideoId = videoId
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, comments = emptyList())
+            _uiState.value = _uiState.value.copy(isLoading = true, comments = emptyList(), currentPage = -1)
             commentRepository.getComments(videoId, 0, pageSize)
-                .onSuccess { comments ->
+                .onSuccess { pageData ->
                     _uiState.value = _uiState.value.copy(
-                        comments = comments,
+                        comments = pageData.list,
                         isLoading = false,
-                        hasMore = comments.size >= pageSize
+                        total = pageData.total,
+                        currentPage = pageData.currentPage,
+                        totalPages = pageData.totalPages,
+                        hasMore = pageData.currentPage + 1 < pageData.totalPages
                     )
                 }
                 .onFailure {
@@ -54,12 +60,16 @@ class CommentViewModel @Inject constructor(
         if (state.isLoading || !state.hasMore) return
         viewModelScope.launch {
             _uiState.value = state.copy(isLoading = true)
-            commentRepository.getComments(currentVideoId, state.comments.size, pageSize)
-                .onSuccess { comments ->
+            val nextPage = state.currentPage + 1
+            commentRepository.getComments(currentVideoId, nextPage, pageSize)
+                .onSuccess { pageData ->
                     _uiState.value = _uiState.value.copy(
-                        comments = _uiState.value.comments + comments,
+                        comments = _uiState.value.comments + pageData.list,
                         isLoading = false,
-                        hasMore = comments.size >= pageSize
+                        total = pageData.total,
+                        currentPage = pageData.currentPage,
+                        totalPages = pageData.totalPages,
+                        hasMore = pageData.currentPage + 1 < pageData.totalPages
                     )
                 }
                 .onFailure {

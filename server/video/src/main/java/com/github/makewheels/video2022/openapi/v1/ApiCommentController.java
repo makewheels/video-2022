@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.openapi.v1;
 
 import com.github.makewheels.video2022.comment.Comment;
+import com.github.makewheels.video2022.comment.CommentPageVO;
 import com.github.makewheels.video2022.comment.CommentService;
 import com.github.makewheels.video2022.etc.check.CheckService;
 import com.github.makewheels.video2022.openapi.v1.dto.AddCommentApiRequest;
@@ -11,7 +12,6 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @Tag(name = "Comments", description = "评论管理")
 @RestController
@@ -27,14 +27,13 @@ public class ApiCommentController {
 
     @Operation(summary = "获取视频评论列表")
     @GetMapping("/videos/{videoId}/comments")
-    public Result<List<Comment>> getComments(
+    public Result<CommentPageVO> getComments(
             @PathVariable String videoId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(defaultValue = "createTime") String sortBy) {
         checkService.checkVideoExist(videoId);
-        int skip = (page - 1) * size;
-        int limit = Math.min(size, 50);
-        return commentService.getByVideoId(videoId, skip, limit, "time");
+        return commentService.getByVideoIdPaginated(videoId, page, Math.min(pageSize, 50), sortBy);
     }
 
     @Operation(summary = "添加评论")
