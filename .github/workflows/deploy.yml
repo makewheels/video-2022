@@ -57,9 +57,10 @@ jobs:
       - name: 生成镜像标签
         id: meta
         run: |
-          SHA_SHORT=$(echo "${{ github.sha }}" | head -c 7)
-          echo "image_tag=video-2022-${SHA_SHORT}" >> "$GITHUB_OUTPUT"
-          echo "镜像标签: video-2022-${SHA_SHORT}"
+          BEIJING_TIME=$(TZ='Asia/Shanghai' date '+%Y%m%d-%H%M%S')
+          RUN_NUM=$(printf '%04d' ${{ github.run_number }})
+          echo "image_tag=video-2022-${BEIJING_TIME}-${RUN_NUM}" >> "$GITHUB_OUTPUT"
+          echo "镜像标签: video-2022-${BEIJING_TIME}-${RUN_NUM}"
 
       - name: 登录阿里云容器镜像服务
         run: |
