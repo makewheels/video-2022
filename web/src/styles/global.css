@@ -837,6 +837,112 @@ textarea.form-input {
     background-color: var(--bg-hover);
 }
 
+/* ===== Notification Bell ===== */
+.notification-bell-wrapper {
+    position: relative;
+}
+
+.notification-bell-btn {
+    position: relative;
+    font-size: 1.2rem;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: #e53e3e;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 8px;
+    padding: 0 4px;
+    pointer-events: none;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 360px;
+    max-height: 480px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 200;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.notification-dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.notification-dropdown-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.notification-mark-all {
+    font-size: 0.85rem;
+    color: var(--accent-color);
+}
+
+.notification-dropdown-list {
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.notification-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.notification-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: default;
+    transition: background-color 0.15s;
+}
+
+.notification-item.unread {
+    background-color: var(--bg-hover);
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    background-color: var(--bg-hover);
+}
+
+.notification-item-type {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+.notification-item-content {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+.notification-item-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
 /* ===== Progress Bar ===== */
 .progress-bar {
     width: 100%;

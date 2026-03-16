@@ -14,6 +14,7 @@ data class BottomNavItem(val screen: Screen, val label: String, val icon: ImageV
 
 val bottomNavItems = listOf(
     BottomNavItem(Screen.Home, "首页", Icons.Filled.Home),
+    BottomNavItem(Screen.Notification, "通知", Icons.Filled.Notifications),
     BottomNavItem(Screen.Playlist, "播放列表", Icons.Filled.PlaylistPlay),
     BottomNavItem(Screen.Upload, "上传", Icons.Filled.AddCircle),
     BottomNavItem(Screen.MyVideos, "我的", Icons.Filled.VideoLibrary),
