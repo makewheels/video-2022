@@ -1,4 +1,4 @@
-# Copilot Instructions — video-2022
+# AGENT.md — video-2022
 
 ## 项目概述
 这是一个全栈视频分享平台。开发任何功能前，请先阅读 `CONTRIBUTING.md` 了解完整开发流程。

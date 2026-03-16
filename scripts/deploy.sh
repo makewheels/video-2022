@@ -13,8 +13,8 @@ ENV_FILE="$APP_DIR/.env"
 
 # 从环境变量获取 Docker 配置 (由 CI 传入)
 DOCKER_REGISTRY="${DOCKER_REGISTRY:-registry.cn-beijing.aliyuncs.com}"
-DOCKER_IMAGE="${DOCKER_IMAGE:-registry.cn-beijing.aliyuncs.com/b4/docker-repo}"
-IMAGE_TAG="${IMAGE_TAG:-video-2022-latest}"
+DOCKER_IMAGE="${DOCKER_IMAGE:-registry.cn-beijing.aliyuncs.com/b4/video-2022}"
+IMAGE_TAG="${IMAGE_TAG:-latest}"
 DOCKER_USERNAME="${DOCKER_USERNAME:-}"
 DOCKER_PASSWORD="${DOCKER_PASSWORD:-}"
 
@@ -92,13 +92,15 @@ SERVER_PORT=5022
 # 禁用 SSL (由 Nginx 处理)
 SERVER_SSL_ENABLED=false
 
-# MongoDB
-SPRING_DATA_MONGODB_HOST=10.0.20.14
-SPRING_DATA_MONGODB_PORT=27017
-SPRING_DATA_MONGODB_DATABASE=video-2022
+# MongoDB (prod profile expects these)
+MONGODB_USERNAME=video-2022
+MONGODB_PASSWORD=CHANGE_ME
+# Spring Boot relaxed binding (fallback)
+SPRING_MONGODB_HOST=10.0.20.14
+SPRING_MONGODB_PORT=27017
+SPRING_MONGODB_DATABASE=video-2022
+SPRING_MONGODB_USERNAME=video-2022
 SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
-SPRING_DATA_MONGODB_USERNAME=video-2022
-SPRING_DATA_MONGODB_PASSWORD=CHANGE_ME
 
 # 管理接口
 ADMIN_API_KEY=CHANGE_ME
@@ -191,6 +193,63 @@ done
 echo ""
 echo "=== 清理旧镜像 ==="
 docker image prune -f --filter "until=168h" 2>/dev/null || true
+
+cleanup_registry() {
+    echo "🧹 清理远程镜像仓库旧标签 ..."
+    if [ -z "$DOCKER_USERNAME" ] || [ -z "$DOCKER_PASSWORD" ]; then
+        echo "ℹ️  未提供凭据，跳过远程清理"
+        return
+    fi
+
+    local REGISTRY="$DOCKER_REGISTRY"
+    local REPO="b4/video-2022"
+    local AUTH=$(echo -n "${DOCKER_USERNAME}:${DOCKER_PASSWORD}" | base64)
+
+    # List all video-2022 tags
+    local TAGS_JSON=$(curl -sf -H "Authorization: Basic ${AUTH}" \
+        "https://${REGISTRY}/v2/${REPO}/tags/list" 2>/dev/null)
+
+    if [ -z "$TAGS_JSON" ]; then
+        echo "⚠️  无法获取标签列表"
+        return
+    fi
+
+    # Filter video-2022 tags, sort by name (which includes timestamp), keep latest
+    local ALL_TAGS=$(echo "$TAGS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+tags = sorted([t for t in data.get('tags', []) if t != 'latest'], reverse=True)
+# Keep only latest 1, print rest for deletion
+for t in tags[1:]:
+    print(t)
+" 2>/dev/null)
+
+    if [ -z "$ALL_TAGS" ]; then
+        echo "✅ 无需清理远程标签"
+        return
+    fi
+
+    local count=0
+    for TAG in $ALL_TAGS; do
+        echo "  删除远程标签: $TAG"
+        # Get manifest digest
+        local DIGEST=$(curl -sf \
+            -H "Authorization: Basic ${AUTH}" \
+            -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+            "https://${REGISTRY}/v2/${REPO}/manifests/${TAG}" \
+            -D /dev/stderr 2>&1 1>/dev/null | grep -i "Docker-Content-Digest" | awk '{print $2}' | tr -d '\r\n')
+
+        if [ -n "$DIGEST" ]; then
+            curl -sf -X DELETE \
+                -H "Authorization: Basic ${AUTH}" \
+                "https://${REGISTRY}/v2/${REPO}/manifests/${DIGEST}" 2>/dev/null
+            count=$((count + 1))
+        fi
+    done
+    echo "✅ 清理了 ${count} 个远程旧标签"
+}
+
+cleanup_registry
 
 echo ""
 echo "=========================================="
