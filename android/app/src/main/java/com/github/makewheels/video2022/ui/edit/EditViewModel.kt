@@ -16,6 +16,8 @@ data class EditUiState(
     val title: String = "",
     val description: String = "",
     val visibility: String = "PUBLIC",
+    val tags: List<String> = emptyList(),
+    val category: String = "",
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
@@ -43,6 +45,8 @@ class EditViewModel @Inject constructor(
                         title = video.title ?: "",
                         description = video.description ?: "",
                         visibility = video.visibility ?: "PUBLIC",
+                        tags = video.tags ?: emptyList(),
+                        category = video.category ?: "",
                         isLoading = false
                     )
                 }
@@ -66,6 +70,25 @@ class EditViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(visibility = v, isSaved = false)
     }
 
+    fun updateTags(tags: List<String>) {
+        _uiState.value = _uiState.value.copy(tags = tags, isSaved = false)
+    }
+
+    fun addTag(tag: String) {
+        val current = _uiState.value.tags
+        if (tag.isNotBlank() && !current.contains(tag.trim())) {
+            _uiState.value = _uiState.value.copy(tags = current + tag.trim(), isSaved = false)
+        }
+    }
+
+    fun removeTag(tag: String) {
+        _uiState.value = _uiState.value.copy(tags = _uiState.value.tags - tag, isSaved = false)
+    }
+
+    fun updateCategory(category: String) {
+        _uiState.value = _uiState.value.copy(category = category, isSaved = false)
+    }
+
     fun save() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSaving = true, errorMessage = null)
@@ -74,7 +97,9 @@ class EditViewModel @Inject constructor(
                     id = videoId,
                     title = _uiState.value.title,
                     description = _uiState.value.description,
-                    visibility = _uiState.value.visibility
+                    visibility = _uiState.value.visibility,
+                    tags = _uiState.value.tags,
+                    category = _uiState.value.category
                 )
             ).onSuccess {
                 _uiState.value = _uiState.value.copy(isSaving = false, isSaved = true)

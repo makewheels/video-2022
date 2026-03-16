@@ -19,6 +19,8 @@ struct VideoItem: Decodable, Identifiable {
     let uploaderName: String?
     let uploaderAvatarUrl: String?
     let uploaderId: String?
+    let tags: [String]?
+    let category: String?
 }
 
 struct VideoListResponse: Decodable {
@@ -55,4 +57,6 @@ struct UpdateVideoInfoRequest: Encodable {
     let title: String?
     let description: String?
     let visibility: String?
+    var tags: [String]?
+    var category: String?
 }

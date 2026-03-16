@@ -6,6 +6,17 @@
 
 ---
 
+### [PR #80](https://github.com/makewheels/video-2022/pull/80) — 视频标签与分类系统
+- Video 实体新增 `tags`（用户自定义标签）和 `category`（预设分类）字段
+- 新增 `VideoCategory` 常量类：15 种预设分类（音乐、游戏、教育、科技等）
+- 后端：VideoService、VideoRepository 支持标签/分类的增删改查与搜索
+- 新增 `CategoryController` 提供分类列表接口
+- API v1：UpdateVideoApiRequest 支持 tags/category 字段
+- Web 前端：UploadPage、EditPage 新增分类下拉框和标签输入（chip 样式）
+- Android：UploadScreen、EditScreen 新增分类选择器和标签芯片输入
+- iOS：UploadScreen、EditScreen 新增分类 Picker 和标签输入
+- 新增 VideoCategoryTest（5 个测试）和 VideoServiceTest 标签/分类测试（8 个测试）
+
 ### [PR #79](https://github.com/makewheels/video-2022/pull/79) — Docker 镜像标签格式优化
 - 镜像标签改为北京时间 + 流水线序号格式: `video-2022-20260315-175000-0042`
 - 替代之前的 git commit hash 格式，更直观易读

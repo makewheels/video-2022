@@ -18,7 +18,9 @@ data class VideoItem(
     val youtubePublishTimeString: String?,
     val uploaderName: String? = null,
     val uploaderAvatarUrl: String? = null,
-    val uploaderId: String? = null
+    val uploaderId: String? = null,
+    val tags: List<String>? = null,
+    val category: String? = null
 )
 
 data class VideoListResponse(
@@ -46,7 +48,9 @@ data class UpdateVideoInfoRequest(
     val id: String,
     val title: String? = null,
     val description: String? = null,
-    val visibility: String? = null
+    val visibility: String? = null,
+    val tags: List<String>? = null,
+    val category: String? = null
 )
 
 data class VideoStatus(

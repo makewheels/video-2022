@@ -17,6 +17,8 @@ export interface Video {
   uploaderName?: string;
   uploaderAvatarUrl?: string;
   uploaderId?: string;
+  tags?: string[];
+  category?: string;
 }
 
 export interface Comment {

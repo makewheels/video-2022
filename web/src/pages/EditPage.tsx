@@ -12,6 +12,12 @@ const VISIBILITY_OPTIONS = [
   { value: 'PRIVATE', label: '私有' },
 ] as const;
 
+const CATEGORY_OPTIONS = [
+  '音乐', '游戏', '教育', '科技', '生活',
+  '娱乐', '新闻', '体育', '动漫', '美食',
+  '旅行', '知识', '影视', '搞笑', '其他',
+] as const;
+
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
@@ -40,6 +46,8 @@ function EditPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [visibility, setVisibility] = useState<'PUBLIC' | 'UNLISTED' | 'PRIVATE'>('PUBLIC');
+  const [tags, setTags] = useState<string[]>([]);
+  const [category, setCategory] = useState('');
   const [saving, setSaving] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -56,21 +64,24 @@ function EditPage() {
         setTitle(v.title);
         setDescription(v.description || '');
         setVisibility(v.visibility);
+        setTags(v.tags || []);
+        setCategory(v.category || '');
       })
       .catch(() => toast('加载视频信息失败', 'error'));
   }, [videoId, toast]);
 
   const handleSave = async () => {
     if (!video) return;
-    if (title === video.title && description === (video.description || '') && visibility === video.visibility) {
+    if (title === video.title && description === (video.description || '') && visibility === video.visibility
+        && JSON.stringify(tags) === JSON.stringify(video.tags || []) && category === (video.category || '')) {
       toast('没有修改', 'info');
       return;
     }
     setSaving(true);
     try {
-      await api.post('/video/updateInfo', { id: videoId, title, description, visibility });
+      await api.post('/video/updateInfo', { id: videoId, title, description, visibility, tags, category });
       toast('保存成功', 'success');
-      setVideo({ ...video, title, description, visibility });
+      setVideo({ ...video, title, description, visibility, tags, category });
     } catch {
       toast('保存失败', 'error');
     } finally {
@@ -105,10 +116,14 @@ function EditPage() {
         title={title}
         description={description}
         visibility={visibility}
+        tags={tags}
+        category={category}
         saving={saving}
         onTitleChange={setTitle}
         onDescriptionChange={setDescription}
         onVisibilityChange={setVisibility}
+        onTagsChange={setTags}
+        onCategoryChange={setCategory}
         onSave={handleSave}
       />
       <DeleteSection onDelete={() => setShowDeleteDialog(true)} />
@@ -172,13 +187,19 @@ function FormCard(props: {
   title: string;
   description: string;
   visibility: string;
+  tags: string[];
+  category: string;
   saving: boolean;
   onTitleChange: (v: string) => void;
   onDescriptionChange: (v: string) => void;
   onVisibilityChange: (v: 'PUBLIC' | 'UNLISTED' | 'PRIVATE') => void;
+  onTagsChange: (v: string[]) => void;
+  onCategoryChange: (v: string) => void;
   onSave: () => void;
 }) {
-  const { title, description, visibility, saving, onTitleChange, onDescriptionChange, onVisibilityChange, onSave } = props;
+  const { title, description, visibility, tags, category, saving,
+    onTitleChange, onDescriptionChange, onVisibilityChange, onTagsChange, onCategoryChange, onSave } = props;
+  const [tagInput, setTagInput] = useState('');
   return (
     <div className="edit-form-card card">
       <h3 className="card-header">编辑信息</h3>
@@ -211,6 +232,49 @@ function FormCard(props: {
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
+      </div>
+      <div className="form-group">
+        <label className="form-label">分类</label>
+        <select
+          className="form-input"
+          value={category}
+          onChange={(e) => onCategoryChange(e.target.value)}
+        >
+          <option value="">选择分类</option>
+          {CATEGORY_OPTIONS.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+      <div className="form-group">
+        <label className="form-label">标签</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: tags.length > 0 ? 8 : 0 }}>
+          {tags.map((tag, i) => (
+            <span key={i} style={{
+              display: 'inline-flex', alignItems: 'center', background: 'var(--bg-secondary, #e8e8e8)',
+              borderRadius: 12, padding: '2px 10px', fontSize: 13,
+            }}>
+              {tag}
+              <span style={{ marginLeft: 6, cursor: 'pointer', fontWeight: 'bold' }}
+                onClick={() => onTagsChange(tags.filter((_, idx) => idx !== i))}>×</span>
+            </span>
+          ))}
+        </div>
+        <input
+          className="form-input"
+          value={tagInput}
+          onChange={(e) => setTagInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && tagInput.trim()) {
+              e.preventDefault();
+              if (!tags.includes(tagInput.trim())) {
+                onTagsChange([...tags, tagInput.trim()]);
+              }
+              setTagInput('');
+            }
+          }}
+          placeholder="输入标签后按 Enter 添加"
+        />
       </div>
       <div className="edit-actions">
         <button onClick={onSave} disabled={saving}>

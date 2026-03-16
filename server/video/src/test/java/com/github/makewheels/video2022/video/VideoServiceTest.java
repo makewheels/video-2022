@@ -10,6 +10,7 @@ import com.github.makewheels.video2022.video.bean.dto.UpdateWatchSettingsDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.vo.VideoListVO;
 import com.github.makewheels.video2022.video.bean.vo.VideoVO;
+import com.github.makewheels.video2022.video.constants.VideoCategory;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import com.github.makewheels.video2022.video.service.VideoService;
@@ -437,5 +438,151 @@ class VideoServiceTest extends BaseIntegrationTest {
         assertTrue(fromDb.getWatch().getShowWatchCount());
         assertFalse(fromDb.getWatch().getShowUploadTime(),
                 "showUploadTime should remain false (not overwritten by null)");
+    }
+
+    // ──────────────────── tags and category tests ────────────────────
+
+    @Test
+    void updateVideo_setsTags() {
+        JSONObject resp = createDefaultVideo("tags.mp4");
+        String videoId = resp.getString("videoId");
+
+        UpdateVideoInfoDTO dto = new UpdateVideoInfoDTO();
+        dto.setId(videoId);
+        dto.setTitle("Tags Test");
+        dto.setTags(List.of("Java", "教程", "Spring"));
+
+        videoService.updateVideo(dto);
+
+        Video fromDb = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(fromDb);
+        assertEquals(List.of("Java", "教程", "Spring"), fromDb.getTags());
+    }
+
+    @Test
+    void updateVideo_setsCategory() {
+        JSONObject resp = createDefaultVideo("category.mp4");
+        String videoId = resp.getString("videoId");
+
+        UpdateVideoInfoDTO dto = new UpdateVideoInfoDTO();
+        dto.setId(videoId);
+        dto.setTitle("Category Test");
+        dto.setCategory(VideoCategory.EDUCATION);
+
+        videoService.updateVideo(dto);
+
+        Video fromDb = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(fromDb);
+        assertEquals(VideoCategory.EDUCATION, fromDb.getCategory());
+    }
+
+    @Test
+    void updateVideo_invalidCategoryThrowsException() {
+        JSONObject resp = createDefaultVideo("invalid-cat.mp4");
+        String videoId = resp.getString("videoId");
+
+        UpdateVideoInfoDTO dto = new UpdateVideoInfoDTO();
+        dto.setId(videoId);
+        dto.setTitle("Invalid Category");
+        dto.setCategory("不存在的分类");
+
+        assertThrows(IllegalArgumentException.class, () -> videoService.updateVideo(dto));
+    }
+
+    @Test
+    void updateVideo_nullTagsPreservesExisting() {
+        JSONObject resp = createDefaultVideo("preserve-tags.mp4");
+        String videoId = resp.getString("videoId");
+
+        // First set tags
+        UpdateVideoInfoDTO dto1 = new UpdateVideoInfoDTO();
+        dto1.setId(videoId);
+        dto1.setTitle("test");
+        dto1.setTags(List.of("tag1", "tag2"));
+        videoService.updateVideo(dto1);
+
+        // Then update without tags
+        UpdateVideoInfoDTO dto2 = new UpdateVideoInfoDTO();
+        dto2.setId(videoId);
+        dto2.setTitle("test2");
+        videoService.updateVideo(dto2);
+
+        Video fromDb = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(fromDb);
+        assertEquals(List.of("tag1", "tag2"), fromDb.getTags());
+    }
+
+    @Test
+    void updateVideo_nullCategoryPreservesExisting() {
+        JSONObject resp = createDefaultVideo("preserve-cat.mp4");
+        String videoId = resp.getString("videoId");
+
+        // First set category
+        UpdateVideoInfoDTO dto1 = new UpdateVideoInfoDTO();
+        dto1.setId(videoId);
+        dto1.setTitle("test");
+        dto1.setCategory(VideoCategory.GAMING);
+        videoService.updateVideo(dto1);
+
+        // Then update without category
+        UpdateVideoInfoDTO dto2 = new UpdateVideoInfoDTO();
+        dto2.setId(videoId);
+        dto2.setTitle("test2");
+        videoService.updateVideo(dto2);
+
+        Video fromDb = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(fromDb);
+        assertEquals(VideoCategory.GAMING, fromDb.getCategory());
+    }
+
+    @Test
+    void getVideoDetail_includesTagsAndCategory() {
+        JSONObject resp = createDefaultVideo("detail-tags.mp4");
+        String videoId = resp.getString("videoId");
+
+        UpdateVideoInfoDTO dto = new UpdateVideoInfoDTO();
+        dto.setId(videoId);
+        dto.setTitle("Detail Tags");
+        dto.setTags(List.of("tag1", "tag2"));
+        dto.setCategory(VideoCategory.TECH);
+        videoService.updateVideo(dto);
+
+        VideoVO vo = videoService.getVideoDetail(videoId);
+        assertEquals(List.of("tag1", "tag2"), vo.getTags());
+        assertEquals(VideoCategory.TECH, vo.getCategory());
+    }
+
+    @Test
+    void createVideo_hasEmptyTagsAndNullCategory() {
+        JSONObject resp = createDefaultVideo("default-tags.mp4");
+        String videoId = resp.getString("videoId");
+
+        Video fromDb = mongoTemplate.findById(videoId, Video.class);
+        assertNotNull(fromDb);
+        assertNotNull(fromDb.getTags());
+        assertTrue(fromDb.getTags().isEmpty());
+        assertNull(fromDb.getCategory());
+    }
+
+    @Test
+    void getMyVideoList_searchByTag() {
+        JSONObject resp1 = createDefaultVideo("tag-search1.mp4");
+        JSONObject resp2 = createDefaultVideo("tag-search2.mp4");
+        String videoId1 = resp1.getString("videoId");
+        String videoId2 = resp2.getString("videoId");
+
+        // Set tags directly in DB
+        mongoTemplate.updateFirst(
+                Query.query(Criteria.where("_id").is(videoId1)),
+                new Update().set("title", "视频一").set("tags", List.of("Java", "教程")),
+                Video.class);
+        mongoTemplate.updateFirst(
+                Query.query(Criteria.where("_id").is(videoId2)),
+                new Update().set("title", "视频二").set("tags", List.of("Python", "入门")),
+                Video.class);
+
+        Result<VideoListVO> result = videoService.getMyVideoList(0, 10, "Java");
+        assertEquals(1, result.getData().getList().size());
+        assertEquals("视频一", result.getData().getList().get(0).getTitle());
     }
 }
