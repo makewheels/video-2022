@@ -5,7 +5,13 @@ import lombok.Data;
 @Data
 public class RateLimitResult {
     private boolean allowed;
-    private int limit;
-    private int remaining;
-    private long resetTime; // epoch seconds
+
+    private int minuteLimit;
+    private long minuteRemaining;
+    private long resetTime;
+
+    private int dayLimit;
+    private long dayRemaining;
+
+    private long retryAfter;
 }

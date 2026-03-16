@@ -1,96 +1,117 @@
 package com.github.makewheels.video2022.openapi.ratelimit;
 
+import jakarta.annotation.Resource;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Service
 public class RateLimitService {
 
-    private static final int STANDARD_LIMIT = 100;
-    private static final int PREMIUM_LIMIT = 500;
-    private static final long WINDOW_MILLIS = 60_000L;
+    public static final int DEFAULT_MINUTE_LIMIT = 60;
+    public static final int DEFAULT_DAY_LIMIT = 10000;
+    public static final int IP_MINUTE_LIMIT = 30;
+    public static final int IP_DAY_LIMIT = 5000;
 
-    private final ConcurrentHashMap<String, ConcurrentLinkedQueue<Long>> requestWindows =
-            new ConcurrentHashMap<>();
+    @Resource
+    private MongoTemplate mongoTemplate;
 
-    /**
-     * Check whether the given client is within rate limits.
-     *
-     * @param clientId unique client identifier (from OAuthContext)
-     * @param tier     "standard", "premium", or "unlimited"
-     * @return result containing allowed flag, limit, remaining, and reset time
-     */
-    public RateLimitResult checkRateLimit(String clientId, String tier) {
-        int limit = resolveLimit(tier);
-        long now = System.currentTimeMillis();
-        long windowStart = now - WINDOW_MILLIS;
+    private final ConcurrentHashMap<String, TokenBucket[]> buckets = new ConcurrentHashMap<>();
 
-        ConcurrentLinkedQueue<Long> timestamps = requestWindows
-                .computeIfAbsent(clientId, k -> new ConcurrentLinkedQueue<>());
-
-        // Evict expired entries
-        while (!timestamps.isEmpty() && timestamps.peek() <= windowStart) {
-            timestamps.poll();
+    public RateLimitResult checkRateLimit(String key, boolean isAppAuth) {
+        int minuteLimit;
+        int dayLimit;
+        if (isAppAuth) {
+            RateLimitConfig config = loadConfig(key);
+            minuteLimit = config != null ? config.getMinuteLimit() : DEFAULT_MINUTE_LIMIT;
+            dayLimit = config != null ? config.getDayLimit() : DEFAULT_DAY_LIMIT;
+        } else {
+            minuteLimit = IP_MINUTE_LIMIT;
+            dayLimit = IP_DAY_LIMIT;
         }
+
+        TokenBucket[] pair = buckets.computeIfAbsent(key, k -> new TokenBucket[]{
+                new TokenBucket(minuteLimit, minuteLimit / 60.0),
+                new TokenBucket(dayLimit, dayLimit / 86400.0)
+        });
+        TokenBucket minuteBucket = pair[0];
+        TokenBucket dayBucket = pair[1];
 
         RateLimitResult result = new RateLimitResult();
-        result.setLimit(limit);
-        result.setResetTime((now / 1000) + 60);
+        result.setMinuteLimit(minuteLimit);
+        result.setDayLimit(dayLimit);
+        result.setResetTime((System.currentTimeMillis() / 1000) + 60);
 
-        if (limit < 0) {
-            // unlimited tier
-            timestamps.add(now);
-            result.setAllowed(true);
-            result.setRemaining(Integer.MAX_VALUE);
-            return result;
-        }
+        boolean minuteOk = minuteBucket.tryConsume();
+        boolean dayOk = dayBucket.tryConsume();
 
-        int currentCount = timestamps.size();
-        if (currentCount < limit) {
-            timestamps.add(now);
+        if (minuteOk && dayOk) {
             result.setAllowed(true);
-            result.setRemaining(limit - currentCount - 1);
+            result.setMinuteRemaining(minuteBucket.getRemaining());
+            result.setDayRemaining(dayBucket.getRemaining());
+            result.setRetryAfter(0);
         } else {
             result.setAllowed(false);
-            result.setRemaining(0);
+            result.setMinuteRemaining(minuteBucket.getRemaining());
+            result.setDayRemaining(dayBucket.getRemaining());
+            long retrySeconds;
+            if (!minuteOk) {
+                retrySeconds = (long) Math.ceil(minuteBucket.getSecondsUntilNextToken());
+            } else {
+                retrySeconds = (long) Math.ceil(dayBucket.getSecondsUntilNextToken());
+            }
+            result.setRetryAfter(Math.max(1, retrySeconds));
         }
-
         return result;
     }
 
-    private int resolveLimit(String tier) {
-        if (tier == null) {
-            return STANDARD_LIMIT;
+    public RateLimitResult getStatus(String key, boolean isAppAuth) {
+        int minuteLimit;
+        int dayLimit;
+        if (isAppAuth) {
+            RateLimitConfig config = loadConfig(key);
+            minuteLimit = config != null ? config.getMinuteLimit() : DEFAULT_MINUTE_LIMIT;
+            dayLimit = config != null ? config.getDayLimit() : DEFAULT_DAY_LIMIT;
+        } else {
+            minuteLimit = IP_MINUTE_LIMIT;
+            dayLimit = IP_DAY_LIMIT;
         }
-        return switch (tier.toLowerCase()) {
-            case "premium" -> PREMIUM_LIMIT;
-            case "unlimited" -> -1;
-            default -> STANDARD_LIMIT;
-        };
+        TokenBucket[] pair = buckets.get(key);
+        RateLimitResult result = new RateLimitResult();
+        result.setAllowed(true);
+        result.setMinuteLimit(minuteLimit);
+        result.setDayLimit(dayLimit);
+        result.setResetTime((System.currentTimeMillis() / 1000) + 60);
+        result.setRetryAfter(0);
+        if (pair != null) {
+            result.setMinuteRemaining(pair[0].getRemaining());
+            result.setDayRemaining(pair[1].getRemaining());
+        } else {
+            result.setMinuteRemaining(minuteLimit);
+            result.setDayRemaining(dayLimit);
+        }
+        return result;
     }
 
-    /**
-     * Periodically remove entries older than the sliding window.
-     */
-    @Scheduled(fixedRate = 60000)
-    public void cleanupExpiredWindows() {
-        long windowStart = System.currentTimeMillis() - WINDOW_MILLIS;
-        Iterator<Map.Entry<String, ConcurrentLinkedQueue<Long>>> it =
-                requestWindows.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, ConcurrentLinkedQueue<Long>> entry = it.next();
-            ConcurrentLinkedQueue<Long> timestamps = entry.getValue();
-            while (!timestamps.isEmpty() && timestamps.peek() <= windowStart) {
-                timestamps.poll();
-            }
-            if (timestamps.isEmpty()) {
-                it.remove();
-            }
-        }
+    private RateLimitConfig loadConfig(String appId) {
+        Query query = new Query(Criteria.where("appId").is(appId));
+        return mongoTemplate.findOne(query, RateLimitConfig.class);
+    }
+
+    @Scheduled(fixedRate = 300_000)
+    public void cleanupIdleBuckets() {
+        buckets.entrySet().removeIf(entry -> {
+            TokenBucket[] pair = entry.getValue();
+            return pair[0].getRemaining() == pair[0].getCapacity()
+                    && pair[1].getRemaining() == pair[1].getCapacity();
+        });
+    }
+
+    ConcurrentHashMap<String, TokenBucket[]> getBuckets() {
+        return buckets;
     }
 }

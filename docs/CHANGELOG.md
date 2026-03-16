@@ -16,6 +16,15 @@
 
 ---
 
+## feat: API 令牌桶限流
+- 令牌桶限流算法（默认 60次/分钟，10000次/天）
+- 支持按应用自定义配额
+- IP 级别兜底限流（未认证请求）
+- 限流状态响应头
+- 超限返回 429 Too Many Requests
+
+---
+
 ## refactor: 迁移 Copilot 指令到 AGENT.md
 - 将 `.github/copilot-instructions.md` 迁移到项目根目录 `AGENT.md`
 - 统一 AI 助手配置文件位置

@@ -1,7 +1,6 @@
 package com.github.makewheels.video2022.springboot.interceptor;
 
 import com.github.makewheels.video2022.openapi.oauth.OAuthInterceptor;
-import com.github.makewheels.video2022.openapi.ratelimit.RateLimitInterceptor;
 import com.github.makewheels.video2022.springboot.interceptor.admin.AdminApiKeyInterceptor;
 import com.github.makewheels.video2022.springboot.interceptor.token.CheckTokenInterceptor;
 import com.github.makewheels.video2022.springboot.interceptor.token.PutTokenInterceptor;
@@ -39,22 +38,14 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
         return new OAuthInterceptor();
     }
 
-    @Bean
-    public RateLimitInterceptor getRateLimitInterceptor() {
-        return new RateLimitInterceptor();
-    }
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 管理接口鉴权
         registry.addInterceptor(getAdminApiKeyInterceptor())
                 .addPathPatterns("/app/publishVersion");
 
-        // 放token
         registry.addInterceptor(getPutTokenInterceptor())
                 .addPathPatterns("/**");
 
-        // 校验登录状态
         registry.addInterceptor(getCheckTokenInterceptor())
                 .addPathPatterns("/save-token.html")
                 .addPathPatterns("/playlist/getMyPlaylistByPage")
@@ -80,19 +71,11 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/subscription/getMySubscriptions")
         ;
 
-        // 记录请求日志
         registry.addInterceptor(getRequestLogInterceptor())
                 .addPathPatterns("/**");
 
-        // OAuth鉴权
         registry.addInterceptor(getOAuthInterceptor())
                 .addPathPatterns("/api/v1/**")
                 .excludePathPatterns("/api/v1/openapi/**");
-
-        // API rate limiting
-        registry.addInterceptor(getRateLimitInterceptor())
-                .addPathPatterns("/api/v1/**")
-                .excludePathPatterns("/api/v1/openapi/**")
-                .order(InterceptorOrder.RATE_LIMIT);
     }
 }
