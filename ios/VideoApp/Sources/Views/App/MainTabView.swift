@@ -18,6 +18,13 @@ struct MainTabView: View {
             }
             
             NavigationStack {
+                NotificationView()
+            }
+            .tabItem {
+                Label("通知", systemImage: "bell.fill")
+            }
+            
+            NavigationStack {
                 PlaylistScreen()
             }
             .tabItem {

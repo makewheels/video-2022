@@ -18,6 +18,7 @@ sealed class Screen(val route: String) {
     }
     data object Search : Screen("search")
     data object YouTube : Screen("youtube")
+    data object Notification : Screen("notification")
     data object Channel : Screen("channel/{userId}") {
         fun createRoute(userId: String) = "channel/$userId"
     }

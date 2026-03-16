@@ -26,6 +26,7 @@ import com.github.makewheels.video2022.ui.upload.UploadScreen
 import com.github.makewheels.video2022.ui.watch.WatchScreen
 import com.github.makewheels.video2022.ui.search.SearchScreen
 import com.github.makewheels.video2022.ui.youtube.YouTubeScreen
+import com.github.makewheels.video2022.ui.notification.NotificationScreen
 
 private fun NavGraphBuilder.authRoutes(navController: NavHostController) {
     composable(Screen.Login.route) {
@@ -83,6 +84,9 @@ private fun NavGraphBuilder.homeRoutes(navController: NavHostController) {
                 }
             }
         )
+    }
+    composable(Screen.Notification.route) {
+        NotificationScreen()
     }
 }
 

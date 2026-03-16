@@ -1,7 +1,7 @@
 """video-cli: CLI tool for video-2022 platform."""
 import click
 from . import __version__
-from .commands import auth, video, comment, like, playlist, youtube, stats, watch, search, api, developer
+from .commands import auth, video, comment, like, playlist, youtube, stats, watch, search, api, developer, notification
 
 
 @click.group()
@@ -33,6 +33,7 @@ cli.add_command(watch.watch)
 cli.add_command(search.search)
 cli.add_command(api.api)
 cli.add_command(developer.developer)
+cli.add_command(notification.notification)
 
 
 if __name__ == "__main__":

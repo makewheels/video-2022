@@ -6,6 +6,19 @@
 
 ---
 
+## feat: 站内通知系统
+- 通知实体与 MongoDB 存储
+- 通知类型: 评论回复、新订阅、视频点赞、评论点赞
+- 通知列表分页查询
+- 标记已读/全部已读
+- 未读数量 API
+- 前端: 通知铃铛图标 + 未读数 badge + 通知列表
+- 移动端: 通知页面 (Android + iOS)
+- CLI: notification list/read/read-all 命令
+- Open API v1: GET /api/v1/notifications
+
+---
+
 ## feat: Webhook JWT 管理 API
 - 开发者应用注册与管理 (CRUD)
 - JWT 令牌签发与验证（24小时过期）

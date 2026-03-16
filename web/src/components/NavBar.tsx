@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { isLoggedIn, removeToken } from '../utils/auth';
 import { toggleTheme, getEffectiveTheme } from '../utils/theme';
 import api from '../utils/api';
+import NotificationBell from './NotificationBell';
 
 const navLinks = [
   { to: '/', label: '首页' },
@@ -107,6 +108,7 @@ export default function NavBar() {
         })}
       </nav>
       <div className="header-right">
+        <NotificationBell />
         <button className="btn-icon" type="button" title="切换主题" onClick={handleToggleTheme}>
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
