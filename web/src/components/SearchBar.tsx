@@ -10,7 +10,7 @@ interface SearchBarProps {
 export default function SearchBar({ initialQuery = '', onSearch, placeholder = '搜索视频...' }: SearchBarProps) {
   const [query, setQuery] = useState(initialQuery);
   const navigate = useNavigate();
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setQuery(initialQuery);
