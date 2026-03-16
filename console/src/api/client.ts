@@ -39,6 +39,20 @@ export interface WebhookConfig {
   createTime: string;
 }
 
+export interface DeveloperAppItem {
+  id: string;
+  appName: string;
+  appId: string;
+  appSecret?: string;
+  userId: string;
+  webhookUrl?: string;
+  webhookSecret?: string;
+  webhookEvents: string[];
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 class ApiClient {
   private token: string | null = localStorage.getItem('dev_token');
 
@@ -140,6 +154,58 @@ class ApiClient {
   async deleteWebhook(appId: string, webhookId: string) {
     return this.request<void>(`/developer/apps/${appId}/webhooks/${webhookId}`, {
       method: 'DELETE',
+    });
+  }
+
+  // Developer Apps (Webhook JWT system)
+  async listDeveloperApps() {
+    return this.request<DeveloperAppItem[]>('/developer/app/list');
+  }
+
+  async createDeveloperApp(data: { appName: string }) {
+    return this.request<DeveloperAppItem>('/developer/app/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateDeveloperApp(appId: string, data: { webhookUrl?: string; webhookEvents?: string[] }) {
+    return this.request<DeveloperAppItem>(`/developer/app/${appId}/update`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteDeveloperApp(appId: string) {
+    return this.request<void>(`/developer/app/${appId}/delete`, {
+      method: 'DELETE',
+    });
+  }
+
+  async regenerateDeveloperAppSecret(appId: string) {
+    return this.request<DeveloperAppItem>(`/developer/app/${appId}/regenerateSecret`, {
+      method: 'POST',
+    });
+  }
+
+  async testDeveloperWebhook(appId: string) {
+    return this.request<void>(`/developer/app/${appId}/testWebhook`, {
+      method: 'POST',
+    });
+  }
+
+  // Developer JWT Tokens
+  async createDeveloperToken(appId: string, appSecret: string) {
+    return this.request<{ token: string }>('/developer/token/create', {
+      method: 'POST',
+      body: JSON.stringify({ appId, appSecret }),
+    });
+  }
+
+  async verifyDeveloperToken(token: string) {
+    return this.request<Record<string, unknown>>('/developer/token/verify', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
     });
   }
 }
