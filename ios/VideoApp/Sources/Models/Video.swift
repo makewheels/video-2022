@@ -57,6 +57,6 @@ struct UpdateVideoInfoRequest: Encodable {
     let title: String?
     let description: String?
     let visibility: String?
-    let tags: [String]?
-    let category: String?
+    var tags: [String]?
+    var category: String?
 }

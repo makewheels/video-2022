@@ -145,7 +145,8 @@ class EditViewModelTest {
     fun `save sends correct request to repository`() = runTest {
         val video = createVideoItem()
         val expectedRequest = UpdateVideoInfoRequest(
-            id = "v1", title = "Test Video", description = "desc", visibility = "PUBLIC"
+            id = "v1", title = "Test Video", description = "desc", visibility = "PUBLIC",
+            tags = emptyList(), category = ""
         )
         coEvery { videoRepository.getVideoDetail("v1") } returns Result.success(video)
         coEvery { videoRepository.updateVideoInfo(expectedRequest) } returns
