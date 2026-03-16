@@ -8,4 +8,10 @@ enum AppConfig {
     #endif
     
     static let youtubeBaseURL = "https://youtube.videoplus.top:5030"
+
+    #if DEBUG
+    static let webBaseURL = "http://localhost:5173"
+    #else
+    static let webBaseURL = "https://oneclick.video"
+    #endif
 }

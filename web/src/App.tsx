@@ -13,6 +13,7 @@ import YouTubePage from './pages/YouTubePage';
 import SettingsPage from './pages/SettingsPage';
 import ChannelPage from './pages/ChannelPage';
 import SearchPage from './pages/SearchPage';
+import ShareRedirectPage from './pages/ShareRedirectPage';
 import { isLoggedIn } from './utils/auth';
 
 function PrivateRoute() {
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/watch/:videoId" element={<WatchPage />} />
         <Route path="/channel/:userId" element={<ChannelPage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/s/:shortCode" element={<ShareRedirectPage />} />
 
         <Route element={<PrivateRoute />}>
           <Route path="/my-videos" element={<MyVideosPage />} />

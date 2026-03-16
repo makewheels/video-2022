@@ -6,6 +6,7 @@ import { getToken } from '../utils/auth';
 import VideoPlayer from '../components/VideoPlayer';
 import CommentSection from '../components/CommentSection';
 import LikeButtons from '../components/LikeButtons';
+import ShareButton from '../components/ShareButton';
 import PlaylistSidebar from '../components/PlaylistSidebar';
 import RecommendedVideos from '../components/RecommendedVideos';
 
@@ -117,6 +118,7 @@ function WatchPage() {
             {videoDetail.watchCount} 次观看 · {videoDetail.createTimeString}
           </div>
           <LikeButtons videoId={watchInfo.videoId} />
+          <ShareButton videoId={watchInfo.videoId} />
           <p className="video-description">{videoDetail.description}</p>
         </div>
         <CommentSection videoId={watchInfo.videoId} />

@@ -6,10 +6,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Comment
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import android.content.Intent
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.exoplayer.ExoPlayer
@@ -26,6 +29,7 @@ fun WatchScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showComments by remember { mutableStateOf(false) }
     var playerRef by remember { mutableStateOf<ExoPlayer?>(null) }
+    val context = LocalContext.current
 
     DisposableEffect(Unit) {
         onDispose {
@@ -144,6 +148,27 @@ fun WatchScreen(
                             )
                             Spacer(Modifier.width(4.dp))
                             Text("评论 ${uiState.commentCount}")
+                        }
+
+                        // Share button
+                        TextButton(onClick = {
+                            val videoId = uiState.watchInfo?.videoId
+                            if (videoId != null) {
+                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, "https://video.example.com/watch/$videoId")
+                                    putExtra(Intent.EXTRA_SUBJECT, "分享视频")
+                                }
+                                context.startActivity(Intent.createChooser(shareIntent, "分享到"))
+                            }
+                        }) {
+                            Icon(
+                                Icons.Default.Share,
+                                contentDescription = "分享",
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text("分享")
                         }
                     }
                 }
