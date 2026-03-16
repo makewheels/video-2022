@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
@@ -17,6 +19,7 @@ import com.github.makewheels.video2022.ui.components.VideoCard
 @Composable
 fun HomeScreen(
     onVideoClick: (String) -> Unit,
+    onSearchClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -34,60 +37,70 @@ fun HomeScreen(
         if (shouldLoadMore) viewModel.loadMore()
     }
 
-    PullToRefreshBox(
-        isRefreshing = uiState.isRefreshing,
-        onRefresh = { viewModel.refresh() },
-        modifier = Modifier.fillMaxSize()
-    ) {
-        if (uiState.videos.isEmpty() && !uiState.isLoading && !uiState.isRefreshing) {
-            // Empty state
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("暂无视频", style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(8.dp))
-                    uiState.errorMessage?.let {
-                        Text(it, color = MaterialTheme.colorScheme.error)
+    Box(modifier = Modifier.fillMaxSize()) {
+        PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refresh() },
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (uiState.videos.isEmpty() && !uiState.isLoading && !uiState.isRefreshing) {
+                // Empty state
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("暂无视频", style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(8.dp))
-                    }
-                    OutlinedButton(onClick = { viewModel.loadVideos() }) {
-                        Text("重新加载")
+                        uiState.errorMessage?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error)
+                            Spacer(Modifier.height(8.dp))
+                        }
+                        OutlinedButton(onClick = { viewModel.loadVideos() }) {
+                            Text("重新加载")
+                        }
                     }
                 }
-            }
-        } else {
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(uiState.videos, key = { it.id }) { video ->
-                    VideoCard(
-                        video = video,
-                        onVideoClick = onVideoClick
-                    )
-                }
-                // Loading indicator at bottom
-                if (uiState.isLoading && uiState.videos.isNotEmpty()) {
-                    item {
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(Modifier.size(24.dp))
+            } else {
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(uiState.videos, key = { it.id }) { video ->
+                        VideoCard(
+                            video = video,
+                            onVideoClick = onVideoClick
+                        )
+                    }
+                    // Loading indicator at bottom
+                    if (uiState.isLoading && uiState.videos.isNotEmpty()) {
+                        item {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(Modifier.size(24.dp))
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // Initial loading indicator
-        if (uiState.isLoading && uiState.videos.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+            // Initial loading indicator
+            if (uiState.isLoading && uiState.videos.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
+        }
+        FloatingActionButton(
+            onClick = onSearchClick,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(Icons.Default.Search, contentDescription = "搜索")
         }
     }
 }

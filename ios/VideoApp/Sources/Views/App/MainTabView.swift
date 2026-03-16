@@ -11,6 +11,13 @@ struct MainTabView: View {
             }
             
             NavigationStack {
+                SearchView()
+            }
+            .tabItem {
+                Label("搜索", systemImage: "magnifyingglass")
+            }
+            
+            NavigationStack {
                 PlaylistScreen()
             }
             .tabItem {

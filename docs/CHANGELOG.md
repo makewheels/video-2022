@@ -6,6 +6,14 @@
 
 ---
 
+### [PR #82](https://github.com/makewheels/video-2022/pull/82) — 视频搜索
+- 新增视频搜索功能，支持标题、描述、标签搜索
+- MongoDB 正则匹配搜索方案
+- 支持按分类筛选
+- 前端搜索页面和搜索栏组件
+- Android/iOS 搜索页面
+- CLI search 命令
+
 ### [PR #80](https://github.com/makewheels/video-2022/pull/80) — 视频标签与分类系统
 - Video 实体新增 `tags`（用户自定义标签）和 `category`（预设分类）字段
 - 新增 `VideoCategory` 常量类：15 种预设分类（音乐、游戏、教育、科技等）

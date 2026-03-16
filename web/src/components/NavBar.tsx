@@ -25,7 +25,7 @@ export default function NavBar() {
   const [searchParams] = useSearchParams();
   const [theme, setThemeState] = useState(getEffectiveTheme);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('keyword') || '');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || searchParams.get('keyword') || '');
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -67,7 +67,7 @@ export default function NavBar() {
     e.preventDefault();
     const q = searchQuery.trim();
     if (q) {
-      navigate(`/?keyword=${encodeURIComponent(q)}`);
+      navigate(`/search?q=${encodeURIComponent(q)}`);
     } else {
       navigate('/');
     }
