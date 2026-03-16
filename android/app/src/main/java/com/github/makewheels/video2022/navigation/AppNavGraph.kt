@@ -24,6 +24,7 @@ import com.github.makewheels.video2022.ui.playlist.PlaylistScreen
 import com.github.makewheels.video2022.ui.settings.SettingsScreen
 import com.github.makewheels.video2022.ui.upload.UploadScreen
 import com.github.makewheels.video2022.ui.watch.WatchScreen
+import com.github.makewheels.video2022.ui.search.SearchScreen
 import com.github.makewheels.video2022.ui.youtube.YouTubeScreen
 
 private fun NavGraphBuilder.authRoutes(navController: NavHostController) {
@@ -38,9 +39,22 @@ private fun NavGraphBuilder.authRoutes(navController: NavHostController) {
 
 private fun NavGraphBuilder.homeRoutes(navController: NavHostController) {
     composable(Screen.Home.route) {
-        HomeScreen(onVideoClick = { watchId ->
-            navController.navigate(Screen.Watch.createRoute(watchId))
-        })
+        HomeScreen(
+            onVideoClick = { watchId ->
+                navController.navigate(Screen.Watch.createRoute(watchId))
+            },
+            onSearchClick = {
+                navController.navigate(Screen.Search.route)
+            }
+        )
+    }
+    composable(Screen.Search.route) {
+        SearchScreen(
+            onVideoClick = { watchId ->
+                navController.navigate(Screen.Watch.createRoute(watchId))
+            },
+            onBack = { navController.popBackStack() }
+        )
     }
     composable(Screen.Playlist.route) {
         PlaylistScreen(onPlaylistClick = { id ->

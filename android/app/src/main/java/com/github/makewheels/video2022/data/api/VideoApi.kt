@@ -47,4 +47,12 @@ interface VideoApi {
 
     @GET("/video/getVideoStatus")
     suspend fun getVideoStatus(@Query("videoId") videoId: String): ApiResponse<VideoStatus>
+
+    @GET("/search")
+    suspend fun searchVideos(
+        @Query("q") query: String,
+        @Query("category") category: String?,
+        @Query("page") page: Int,
+        @Query("pageSize") pageSize: Int
+    ): ApiResponse<SearchResultResponse>
 }

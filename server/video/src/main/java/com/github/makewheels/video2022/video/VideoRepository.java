@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import jakarta.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -149,6 +150,56 @@ public class VideoRepository {
         Update update = new Update();
         update.inc(Watch.FIELD_NAME + ".watchCount");
         mongoTemplate.updateFirst(query, update, Video.class);
+    }
+
+    /**
+     * 搜索公开视频，支持关键词和分类筛选
+     */
+    public List<Video> searchPublicVideos(String keyword, String category, int skip, int limit) {
+        Criteria criteria = Criteria.where("visibility").is("PUBLIC");
+        List<Criteria> andCriteria = new ArrayList<>();
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String regex = Pattern.quote(keyword.trim());
+            andCriteria.add(new Criteria().orOperator(
+                    Criteria.where("title").regex(regex, "i"),
+                    Criteria.where("description").regex(regex, "i"),
+                    Criteria.where("tags").regex(regex, "i")
+            ));
+        }
+        if (category != null && !category.trim().isEmpty()) {
+            andCriteria.add(Criteria.where("category").is(category));
+        }
+        if (!andCriteria.isEmpty()) {
+            criteria.andOperator(andCriteria.toArray(new Criteria[0]));
+        }
+        Query query = Query.query(criteria)
+                .with(Sort.by(Sort.Direction.DESC, "createTime"))
+                .skip(skip)
+                .limit(limit);
+        return mongoTemplate.find(query, Video.class);
+    }
+
+    /**
+     * 统计搜索匹配的公开视频总数
+     */
+    public long countSearchPublicVideos(String keyword, String category) {
+        Criteria criteria = Criteria.where("visibility").is("PUBLIC");
+        List<Criteria> andCriteria = new ArrayList<>();
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String regex = Pattern.quote(keyword.trim());
+            andCriteria.add(new Criteria().orOperator(
+                    Criteria.where("title").regex(regex, "i"),
+                    Criteria.where("description").regex(regex, "i"),
+                    Criteria.where("tags").regex(regex, "i")
+            ));
+        }
+        if (category != null && !category.trim().isEmpty()) {
+            andCriteria.add(Criteria.where("category").is(category));
+        }
+        if (!andCriteria.isEmpty()) {
+            criteria.andOperator(andCriteria.toArray(new Criteria[0]));
+        }
+        return mongoTemplate.count(Query.query(criteria), Video.class);
     }
 
     /**
