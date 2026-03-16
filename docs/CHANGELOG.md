@@ -6,6 +6,10 @@
 
 ---
 
+### [PR #79](https://github.com/makewheels/video-2022/pull/79) — Docker 镜像标签格式优化
+- 镜像标签改为北京时间 + 流水线序号格式: `video-2022-20260315-175000-0042`
+- 替代之前的 git commit hash 格式，更直观易读
+
 ### [PR #78](https://github.com/makewheels/video-2022/pull/78) — 功能分析与改进建议
 - 新增 `docs/功能分析报告.md`：功能完成度、代码质量发现、UX 测试结果、改进建议
 
