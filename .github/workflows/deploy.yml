@@ -11,7 +11,7 @@ concurrency:
 
 env:
   DOCKER_REGISTRY: registry.cn-beijing.aliyuncs.com
-  DOCKER_IMAGE: registry.cn-beijing.aliyuncs.com/b4/docker-repo
+  DOCKER_IMAGE: registry.cn-beijing.aliyuncs.com/b4/video-2022
 
 jobs:
   test:
@@ -59,8 +59,8 @@ jobs:
         run: |
           BEIJING_TIME=$(TZ='Asia/Shanghai' date '+%Y%m%d-%H%M%S')
           RUN_NUM=$(printf '%04d' ${{ github.run_number }})
-          echo "image_tag=video-2022-${BEIJING_TIME}-${RUN_NUM}" >> "$GITHUB_OUTPUT"
-          echo "镜像标签: video-2022-${BEIJING_TIME}-${RUN_NUM}"
+          echo "image_tag=${BEIJING_TIME}-${RUN_NUM}" >> "$GITHUB_OUTPUT"
+          echo "镜像标签: ${BEIJING_TIME}-${RUN_NUM}"
 
       - name: 登录阿里云容器镜像服务
         run: |
@@ -74,11 +74,11 @@ jobs:
 
           docker build \
             --tag "${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}" \
-            --tag "${{ env.DOCKER_IMAGE }}:video-2022-latest" \
+            --tag "${{ env.DOCKER_IMAGE }}:latest" \
             .
 
           docker push "${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}"
-          docker push "${{ env.DOCKER_IMAGE }}:video-2022-latest"
+          docker push "${{ env.DOCKER_IMAGE }}:latest"
 
           echo "✅ 镜像推送完成: ${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}"
 

@@ -12,6 +12,13 @@
 
 ---
 
+## fix: 镜像仓库清理与安全加固
+- 部署脚本新增远程镜像仓库旧标签自动清理（仅保留最新 1 个）
+- 修复文档中服务器 IP 硬编码暴露问题
+- 修正 deploy.sh 环境变量模板匹配 application-prod.properties 配置
+- 镜像仓库从 `b4/docker-repo` 迁移到 `b4/video-2022`
+- 镜像标签简化为时间戳格式（如 `20260316-120401-0022`）
+
 ### [PR #82](https://github.com/makewheels/video-2022/pull/82) — 视频搜索
 - 新增视频搜索功能，支持标题、描述、标签搜索
 - MongoDB 正则匹配搜索方案
