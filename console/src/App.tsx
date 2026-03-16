@@ -9,6 +9,8 @@ import AppsPage from './pages/AppsPage';
 import DocsPage from './pages/DocsPage';
 import StatsPage from './pages/StatsPage';
 import WebhooksPage from './pages/WebhooksPage';
+import DeveloperAppsPage from './pages/DeveloperAppsPage';
+import DeveloperWebhooksPage from './pages/DeveloperWebhooksPage';
 
 export default function App() {
   return (
@@ -24,6 +26,8 @@ export default function App() {
           <Route path="/apps" element={<AppsPage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/webhooks" element={<WebhooksPage />} />
+          <Route path="/developer-apps" element={<DeveloperAppsPage />} />
+          <Route path="/developer-apps/:appId/webhooks" element={<DeveloperWebhooksPage />} />
         </Route>
       </Route>
 

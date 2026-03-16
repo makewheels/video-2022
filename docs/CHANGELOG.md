@@ -6,6 +6,16 @@
 
 ---
 
+## feat: Webhook JWT 管理 API
+- 开发者应用注册与管理 (CRUD)
+- JWT 令牌签发与验证（24小时过期）
+- Webhook 配置与事件推送
+- HMAC-SHA256 签名验证
+- CLI 开发者工具命令
+- 控制台应用管理和 Webhook 配置页面
+
+---
+
 ## refactor: 迁移 Copilot 指令到 AGENT.md
 - 将 `.github/copilot-instructions.md` 迁移到项目根目录 `AGENT.md`
 - 统一 AI 助手配置文件位置
