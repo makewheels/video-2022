@@ -8,6 +8,7 @@ struct WatchScreen: View {
     @State private var commentCount = 0
     @State private var isLoading = true
     @State private var showComments = false
+    @State private var showShareSheet = false
     @State private var player: AVPlayer?
     
     private let api = APIClient.shared
@@ -49,6 +50,9 @@ struct WatchScreen: View {
                             Button(action: { showComments = true }) {
                                 Label("\(commentCount) 评论", systemImage: "bubble.right")
                             }
+                            Button(action: { showShareSheet = true }) {
+                                Label("分享", systemImage: "square.and.arrow.up")
+                            }
                         }
                         .font(.subheadline)
                     }
@@ -60,6 +64,12 @@ struct WatchScreen: View {
         .sheet(isPresented: $showComments) {
             if let info = watchInfo {
                 CommentSheet(videoId: info.videoId)
+            }
+        }
+        .sheet(isPresented: $showShareSheet) {
+            if let info = watchInfo,
+               let url = URL(string: "\(AppConfig.webBaseURL)/watch/\(info.videoId)") {
+                ShareSheet(activityItems: [url])
             }
         }
         .task { await loadWatchInfo() }
