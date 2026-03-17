@@ -15,4 +15,13 @@ interface WatchApi {
         @Query("videoId") videoId: String,
         @Query("clientId") clientId: String
     ): ApiResponse<ProgressResponse?>
+
+    @GET("/watchHistory/getMyHistory")
+    suspend fun getWatchHistory(
+        @Query("page") page: Int,
+        @Query("pageSize") pageSize: Int
+    ): ApiResponse<WatchHistoryResponse>
+
+    @DELETE("/watchHistory/clear")
+    suspend fun clearWatchHistory(): ApiResponse<Unit>
 }
