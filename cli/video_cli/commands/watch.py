@@ -73,3 +73,31 @@ def progress(ctx, watch_id):
         print_json(result)
     except APIError as e:
         print_error(e.message, e.code)
+
+
+@watch.command("history")
+@click.option("--page", default=0, type=int, help="Page number (0-based)")
+@click.option("--page-size", default=20, type=int, help="Items per page")
+@click.pass_context
+def history(ctx, page, page_size):
+    """List watch history."""
+    base_url = ctx.obj.get("base_url")
+    token = ctx.obj.get("token")
+    try:
+        result = get("/watchHistory/getMyHistory", {"page": page, "pageSize": page_size}, base_url=base_url, token=token)
+        print_json(result)
+    except APIError as e:
+        print_error(e.message, e.code)
+
+
+@watch.command("clear-history")
+@click.pass_context
+def clear_history(ctx):
+    """Clear all watch history."""
+    base_url = ctx.obj.get("base_url")
+    token = ctx.obj.get("token")
+    try:
+        result = get("/watchHistory/clear", base_url=base_url, token=token)
+        print_success("Watch history cleared", result)
+    except APIError as e:
+        print_error(e.message, e.code)

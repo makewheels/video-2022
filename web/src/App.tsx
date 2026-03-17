@@ -11,6 +11,7 @@ import WatchPage from './pages/WatchPage';
 import StatisticsPage from './pages/StatisticsPage';
 import YouTubePage from './pages/YouTubePage';
 import SettingsPage from './pages/SettingsPage';
+import WatchHistoryPage from './pages/WatchHistoryPage';
 import ChannelPage from './pages/ChannelPage';
 import SearchPage from './pages/SearchPage';
 import ShareRedirectPage from './pages/ShareRedirectPage';
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="/statistics" element={<StatisticsPage />} />
           <Route path="/youtube" element={<YouTubePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/watch-history" element={<WatchHistoryPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
