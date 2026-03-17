@@ -55,6 +55,26 @@ class WatchHistoryRepositoryTest {
     }
 
     @Test
+    fun `getWatchHistory handles exception from API`() = runTest {
+        coEvery { watchApi.getWatchHistory(0, 20) } throws RuntimeException("network error")
+
+        val result = repository.getWatchHistory(0, 20)
+
+        assertTrue(result.isFailure)
+        assertEquals("network error", result.exceptionOrNull()?.message)
+    }
+
+    @Test
+    fun `getWatchHistory returns failure when data is null`() = runTest {
+        coEvery { watchApi.getWatchHistory(0, 20) } returns
+                ApiResponse(code = 0, message = "ok", data = null)
+
+        val result = repository.getWatchHistory(0, 20)
+
+        assertTrue(result.isFailure)
+    }
+
+    @Test
     fun `clearWatchHistory returns success`() = runTest {
         coEvery { watchApi.clearWatchHistory() } returns
                 ApiResponse(code = 0, message = "ok", data = Unit)
@@ -73,5 +93,15 @@ class WatchHistoryRepositoryTest {
 
         assertTrue(result.isFailure)
         assertEquals("server error", result.exceptionOrNull()?.message)
+    }
+
+    @Test
+    fun `clearWatchHistory handles exception from API`() = runTest {
+        coEvery { watchApi.clearWatchHistory() } throws RuntimeException("network error")
+
+        val result = repository.clearWatchHistory()
+
+        assertTrue(result.isFailure)
+        assertEquals("network error", result.exceptionOrNull()?.message)
     }
 }
