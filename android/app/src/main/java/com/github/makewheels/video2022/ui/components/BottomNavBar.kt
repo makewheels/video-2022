@@ -18,6 +18,7 @@ val bottomNavItems = listOf(
     BottomNavItem(Screen.Playlist, "播放列表", Icons.Filled.PlaylistPlay),
     BottomNavItem(Screen.Upload, "上传", Icons.Filled.AddCircle),
     BottomNavItem(Screen.MyVideos, "我的", Icons.Filled.VideoLibrary),
+    BottomNavItem(Screen.WatchHistory, "历史", Icons.Filled.History),
     BottomNavItem(Screen.Settings, "设置", Icons.Filled.Settings),
 )
 
