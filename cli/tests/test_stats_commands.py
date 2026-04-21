@@ -50,12 +50,21 @@ class TestStatsCommands:
         responses.add(
             responses.GET,
             "http://localhost:5022/statistics/aggregateTrafficData",
-            json={"code": 0, "message": "ok", "data": [{"date": "2024-01-01", "traffic": 500}]},
+            json={
+                "code": 0,
+                "message": "ok",
+                "data": {
+                    "xAxis": {"data": ["2024-01-01"], "type": "category"},
+                    "yAxis": {"data": ["500 B"], "type": "value"},
+                    "series": {"data": [500], "type": "bar"},
+                },
+            },
             status=200,
         )
         result = self.runner.invoke(cli, ["--token", "t", "--output", "table", "stats", "aggregate", "--start", "1704067200000", "--end", "1704153600000"])
         assert result.exit_code == 0
         assert "2024-01-01" in result.output
+        assert "500 B" in result.output
 
     @responses.activate
     def test_stats_traffic_api_error(self):

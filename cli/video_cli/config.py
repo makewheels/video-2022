@@ -1,6 +1,5 @@
 """Configuration management for video-cli."""
 import json
-import os
 from pathlib import Path
 
 CONFIG_DIR = Path.home() / ".video-cli"
@@ -34,6 +33,16 @@ def set_token(token: str):
     config = load_config()
     config["token"] = token
     save_config(config)
+
+
+def clear_token():
+    config = load_config()
+    if "token" in config:
+        del config["token"]
+    if config:
+        save_config(config)
+    else:
+        clear_config()
 
 
 def get_base_url() -> str:
