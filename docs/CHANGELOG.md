@@ -14,6 +14,7 @@
 - `video update` 支持 `UNLISTED` 可见性
 - `watch` 命令对齐当前播放会话 API：`start` 支持 `video-id`，`heartbeat` 使用 `playbackSessionId/currentTimeMs`，新增 `watch exit`
 - `stats aggregate --output table` 现在支持后端真实的 ECharts 结构响应
+- 更新 `AGENT.md`：补充文档地图，移除旧目录名表述，统一到当前项目结构
 - CLI 单元测试更新为 118 个通过
 
 ---
