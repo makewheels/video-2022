@@ -6,6 +6,18 @@
 
 ---
 
+## improve: CLI 可靠性与配置体验
+- CLI 网络错误、HTTP 错误、无效 JSON 响应统一输出 JSON 错误，不再直接抛 Python traceback
+- 新增 `config` 命令组：`show`、`set-base-url`、`set-token`、`clear-token`、`clear`
+- `auth logout` 改为仅清除保存的 token，保留其他本地配置
+- `video create` 默认类型修正为 `USER_UPLOAD`，兼容旧别名 `UPLOAD`
+- `video update` 支持 `UNLISTED` 可见性
+- `watch` 命令对齐当前播放会话 API：`start` 支持 `video-id`，`heartbeat` 使用 `playbackSessionId/currentTimeMs`，新增 `watch exit`
+- `stats aggregate --output table` 现在支持后端真实的 ECharts 结构响应
+- CLI 单元测试更新为 118 个通过
+
+---
+
 ## feat: 视频分享链接
 - 短链接生成与重定向
 - 分享统计追踪 (点击量)

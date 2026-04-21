@@ -37,7 +37,7 @@ class TestWatchCommands:
         responses.add(
             responses.POST,
             "http://localhost:5022/playback/start",
-            json={"code": 0, "message": "ok", "data": {"playbackId": "pb1"}},
+            json={"code": 0, "message": "ok", "data": {"playbackSessionId": "pb1"}},
             status=200,
         )
         result = self.runner.invoke(cli, ["--token", "t", "watch", "start", "--watch-id", "w1"])
@@ -50,12 +50,13 @@ class TestWatchCommands:
         responses.add(
             responses.POST,
             "http://localhost:5022/playback/start",
-            json={"code": 0, "message": "ok", "data": {"playbackId": "pb1"}},
+            json={"code": 0, "message": "ok", "data": {"playbackSessionId": "pb1"}},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "watch", "start", "--watch-id", "w1", "--client-id", "c1", "--session-id", "s1"])
+        result = self.runner.invoke(cli, ["--token", "t", "watch", "start", "--watch-id", "w1", "--video-id", "v1", "--client-id", "c1", "--session-id", "s1"])
         assert result.exit_code == 0
         body = json.loads(responses.calls[0].request.body)
+        assert body["videoId"] == "v1"
         assert body["clientId"] == "c1"
         assert body["sessionId"] == "s1"
 
@@ -67,10 +68,63 @@ class TestWatchCommands:
             json={"code": 0, "message": "ok", "data": None},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "watch", "heartbeat", "--watch-id", "w1", "--position", "30000"])
+        result = self.runner.invoke(
+            cli,
+            [
+                "--token",
+                "t",
+                "watch",
+                "heartbeat",
+                "--playback-session-id",
+                "pb1",
+                "--position",
+                "30000",
+                "--paused",
+                "--resolution",
+                "720p",
+                "--total-play-duration-ms",
+                "28000",
+            ],
+        )
         assert result.exit_code == 0
         body = json.loads(responses.calls[0].request.body)
-        assert body["position"] == 30000
+        assert body["playbackSessionId"] == "pb1"
+        assert body["currentTimeMs"] == 30000
+        assert body["isPlaying"] is False
+        assert body["resolution"] == "720p"
+        assert body["totalPlayDurationMs"] == 28000
+
+    @responses.activate
+    def test_watch_exit(self):
+        responses.add(
+            responses.POST,
+            "http://localhost:5022/playback/exit",
+            json={"code": 0, "message": "ok", "data": None},
+            status=200,
+        )
+        result = self.runner.invoke(
+            cli,
+            [
+                "--token",
+                "t",
+                "watch",
+                "exit",
+                "--playback-session-id",
+                "pb1",
+                "--position",
+                "48000",
+                "--total-play-duration-ms",
+                "42000",
+                "--exit-type",
+                "NAVIGATE_AWAY",
+            ],
+        )
+        assert result.exit_code == 0
+        body = json.loads(responses.calls[0].request.body)
+        assert body["playbackSessionId"] == "pb1"
+        assert body["currentTimeMs"] == 48000
+        assert body["totalPlayDurationMs"] == 42000
+        assert body["exitType"] == "NAVIGATE_AWAY"
 
     @responses.activate
     def test_watch_progress(self):
@@ -80,10 +134,12 @@ class TestWatchCommands:
             json={"code": 0, "message": "ok", "data": {"position": 15000}},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "watch", "progress", "--watch-id", "w1"])
+        result = self.runner.invoke(cli, ["--token", "t", "watch", "progress", "--video-id", "v1", "--client-id", "c1"])
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert data["position"] == 15000
+        assert "videoId=v1" in responses.calls[0].request.url
+        assert "clientId=c1" in responses.calls[0].request.url
 
     @responses.activate
     def test_watch_info_api_error(self):

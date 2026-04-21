@@ -70,7 +70,7 @@ def status(ctx, video_id):
 @click.option("--id", "video_id", required=True, help="Video ID")
 @click.option("--title", default=None, help="New title")
 @click.option("--description", default=None, help="New description")
-@click.option("--visibility", default=None, type=click.Choice(["PUBLIC", "PRIVATE"]), help="Visibility")
+@click.option("--visibility", default=None, type=click.Choice(["PUBLIC", "UNLISTED", "PRIVATE"]), help="Visibility")
 @click.pass_context
 def update(ctx, video_id, title, description, visibility):
     """Update video metadata."""
@@ -106,7 +106,14 @@ def delete(ctx, video_id):
 
 @video.command()
 @click.option("--file", "filename", required=True, help="Video filename (e.g., test.mp4)")
-@click.option("--type", "video_type", default="UPLOAD", help="Video type (default: UPLOAD)")
+@click.option(
+    "--type",
+    "video_type",
+    default="USER_UPLOAD",
+    show_default=True,
+    type=click.Choice(["USER_UPLOAD", "UPLOAD", "YOUTUBE"], case_sensitive=False),
+    help="Video type",
+)
 @click.pass_context
 def create(ctx, filename, video_type):
     """Pre-create a video for upload."""
@@ -116,8 +123,11 @@ def create(ctx, filename, video_type):
         size = 0
         if os.path.exists(filename):
             size = os.path.getsize(filename)
+        normalized_video_type = video_type.upper()
+        if normalized_video_type == "UPLOAD":
+            normalized_video_type = "USER_UPLOAD"
         data = {
-            "videoType": video_type,
+            "videoType": normalized_video_type,
             "rawFilename": os.path.basename(filename),
             "size": size,
             "ttl": "PERMANENT",

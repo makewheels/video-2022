@@ -19,7 +19,8 @@ def print_table(headers: list[str], rows: list[list]):
 def print_error(message: str, code: int = 1):
     error_data = {"error": True, "message": message, "code": code}
     click.echo(json.dumps(error_data, ensure_ascii=False), err=True)
-    sys.exit(code)
+    exit_code = code if isinstance(code, int) and 0 < code < 256 else 1
+    sys.exit(exit_code)
 
 
 def print_success(message: str, data=None):

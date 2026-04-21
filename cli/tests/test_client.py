@@ -1,6 +1,7 @@
 import pytest
 import responses
 from unittest.mock import patch
+import requests
 from video_cli.client import get, post, APIError
 
 
@@ -60,8 +61,9 @@ class TestClient:
             "http://localhost:5022/test",
             status=500,
         )
-        with pytest.raises(Exception):
+        with pytest.raises(APIError) as exc:
             get("/test", base_url="http://localhost:5022", token="t")
+        assert exc.value.code == 500
 
     @responses.activate
     def test_headers_include_token(self):
@@ -122,3 +124,24 @@ class TestClient:
             result = get("/test")
         assert result == "ok"
         assert responses.calls[0].request.headers["token"] == "config-token"
+
+    @patch("video_cli.client.requests.request", side_effect=requests.ConnectionError("boom"))
+    def test_connection_error_is_wrapped(self, _mock_request):
+        with pytest.raises(APIError) as exc:
+            get("/test", base_url="http://localhost:5022", token="t")
+        assert exc.value.code == 2
+        assert "Could not connect" in exc.value.message
+
+    @responses.activate
+    def test_invalid_json_is_wrapped(self):
+        responses.add(
+            responses.GET,
+            "http://localhost:5022/test",
+            body="not json",
+            status=200,
+            content_type="text/plain",
+        )
+        with pytest.raises(APIError) as exc:
+            get("/test", base_url="http://localhost:5022", token="t")
+        assert exc.value.code == 3
+        assert "Invalid JSON response" in exc.value.message
