@@ -75,7 +75,7 @@ export default function AppsPage() {
       {newApp && (
         <div className="alert alert-success">
           <strong>应用创建成功！</strong> 请保存下方的 Client Secret，它只会显示一次。
-          <AppCard app={newApp} onDelete={handleDelete} />
+          <AppCard app={newApp} onDelete={handleDelete} webhookHref={`/webhooks?appId=${newApp.id}`} />
           <button className="btn btn-sm" onClick={() => setNewApp(null)}>关闭</button>
         </div>
       )}
@@ -146,7 +146,7 @@ export default function AppsPage() {
 
       <div className="app-list">
         {apps?.map((app) => (
-          <AppCard key={app.id} app={app} onDelete={handleDelete} />
+          <AppCard key={app.id} app={app} onDelete={handleDelete} webhookHref={`/webhooks?appId=${app.id}`} />
         ))}
         {apps && apps.length === 0 && !showForm && (
           <div className="empty-state">

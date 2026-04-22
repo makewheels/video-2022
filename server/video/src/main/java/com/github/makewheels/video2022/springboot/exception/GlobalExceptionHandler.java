@@ -25,8 +25,7 @@ public class GlobalExceptionHandler {
     public Result<Object> exceptionHandler(Exception exception) {
         log.error("未处理异常", exception);
         handleException(exception);
-        String stackTrace = ExceptionUtils.getStackTrace(exception);
-        return new Result<>(ErrorCode.FAIL.getCode(), exception.getMessage(), stackTrace);
+        return new Result<>(ErrorCode.FAIL.getCode(), ErrorCode.FAIL.getMessage(), null);
     }
 
     @ResponseBody
@@ -41,8 +40,7 @@ public class GlobalExceptionHandler {
 
         //把异常保存到数据库
         handleException(videoException);
-        String stackTrace = ExceptionUtils.getStackTrace(videoException);
-        return new Result<>(code, message, stackTrace);
+        return new Result<>(code, message, null);
     }
 
     /**

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, type WebhookConfig } from '../api/client';
+import { useSearchParams } from 'react-router-dom';
 
 const AVAILABLE_EVENTS = [
   'video.upload.completed',
@@ -11,7 +12,8 @@ const AVAILABLE_EVENTS = [
 
 export default function WebhooksPage() {
   const queryClient = useQueryClient();
-  const [selectedAppId, setSelectedAppId] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedAppId, setSelectedAppId] = useState(searchParams.get('appId') || '');
   const [showForm, setShowForm] = useState(false);
   const [url, setUrl] = useState('');
   const [events, setEvents] = useState<string[]>([]);
@@ -72,8 +74,6 @@ export default function WebhooksPage() {
     }
   };
 
-  const isApiUnavailable = webhooksError instanceof Error;
-
   return (
     <div className="page">
       <div className="page-header">
@@ -95,7 +95,13 @@ export default function WebhooksPage() {
           className="webhook-select"
           value={selectedAppId}
           onChange={(e) => {
-            setSelectedAppId(e.target.value);
+            const appId = e.target.value;
+            setSelectedAppId(appId);
+            if (appId) {
+              setSearchParams({ appId });
+            } else {
+              setSearchParams({});
+            }
             setShowForm(false);
           }}
           disabled={appsLoading}
@@ -114,12 +120,6 @@ export default function WebhooksPage() {
       {!selectedAppId && !appsLoading && apps && apps.length === 0 && (
         <div className="empty-state">
           <p>还没有创建应用，请先创建一个应用。</p>
-        </div>
-      )}
-
-      {selectedAppId && isApiUnavailable && (
-        <div className="alert alert-warning">
-          ⚠️ Webhook 管理后端 API 尚未上线，以下表单仅供预览。提交操作暂时不可用。
         </div>
       )}
 
@@ -172,8 +172,11 @@ export default function WebhooksPage() {
       )}
 
       {selectedAppId && webhooksLoading && <p>加载中...</p>}
+      {selectedAppId && webhooksError instanceof Error && (
+        <div className="alert alert-error">{webhooksError.message}</div>
+      )}
 
-      {selectedAppId && !isApiUnavailable && webhooks && (
+      {selectedAppId && !webhooksError && webhooks && (
         <div className="app-list">
           {webhooks.map((wh) => (
             <div key={wh.id} className="app-card">

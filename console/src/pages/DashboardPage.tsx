@@ -10,6 +10,10 @@ export default function DashboardPage() {
     queryKey: ['apps'],
     queryFn: () => apiClient.listApps(),
   });
+  const { data: stats } = useQuery({
+    queryKey: ['developer-stats'],
+    queryFn: () => apiClient.getStats(),
+  });
 
   return (
     <div className="page">
@@ -21,16 +25,16 @@ export default function DashboardPage() {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-number">{apps?.length ?? '—'}</div>
+          <div className="stat-number">{stats?.appCount ?? apps?.length ?? '—'}</div>
           <div className="stat-label">已创建应用</div>
         </div>
         <div className="stat-card">
-          <div className="stat-number">—</div>
-          <div className="stat-label">今日 API 调用</div>
+          <div className="stat-number">{stats?.totalApiRequests ?? '—'}</div>
+          <div className="stat-label">累计 API 调用</div>
         </div>
         <div className="stat-card">
-          <div className="stat-number">—</div>
-          <div className="stat-label">Webhook 事件</div>
+          <div className="stat-number">{stats?.webhookDeliveryCount ?? '—'}</div>
+          <div className="stat-label">累计 Webhook 投递</div>
         </div>
       </div>
 
