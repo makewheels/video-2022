@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ master ]
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   backend-tests:
     name: 后端测试
@@ -233,23 +237,39 @@ jobs:
         working-directory: test
         run: pip install -r requirements.txt
 
+      - name: Read Playwright version
+        id: playwright-version
+        working-directory: test
+        run: |
+          echo "version=$(python -c "import importlib.metadata; print(importlib.metadata.version('playwright'))")" >> "$GITHUB_OUTPUT"
+
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('test/requirements.txt') }}
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
           restore-keys: |
             playwright-${{ runner.os }}-
 
-      - name: Install Playwright browsers
+      - name: Install Playwright system deps
+        timeout-minutes: 5
         working-directory: test
         run: |
+          python -m playwright install-deps chromium
+
+      - name: Install Playwright browsers
+        timeout-minutes: 10
+        working-directory: test
+        env:
+          PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT: 120000
+        run: |
           if [ "${{ steps.playwright-cache.outputs.cache-hit }}" == "true" ]; then
-            python -m playwright install-deps chromium
+            echo "Playwright browser cache hit: ${{ steps.playwright-version.outputs.version }}"
           else
-            python -m playwright install chromium --with-deps
+            echo "Playwright browser cache miss: ${{ steps.playwright-version.outputs.version }}"
           fi
+          python -m playwright install chromium
 
       - name: Run browser E2E tests
         working-directory: test
