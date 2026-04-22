@@ -33,8 +33,27 @@ video-cli auth login --phone 13800138000 --code 111
 # 查看当前用户
 video-cli auth me
 
-# 登出
+# 登出（仅清除已保存 token）
 video-cli auth logout
+```
+
+### 本地配置
+
+```bash
+# 查看当前配置
+video-cli config show
+
+# 保存默认 API 地址
+video-cli config set-base-url http://localhost:5022
+
+# 手动保存 token
+video-cli config set-token <token>
+
+# 仅清除 token
+video-cli config clear-token
+
+# 清空整个本地配置文件
+video-cli config clear
 ```
 
 ### 视频管理
@@ -56,8 +75,9 @@ video-cli video update --id <videoId> --title "新标题" --visibility PUBLIC
 # 删除视频
 video-cli video delete --id <videoId>
 
-# 预创建视频（用于上传）
+# 预创建视频（用于上传，默认 USER_UPLOAD）
 video-cli video create --file test.mp4
+video-cli video create --file test.mp4 --type USER_UPLOAD
 
 # 获取下载链接
 video-cli video download-url --id <videoId>
@@ -141,10 +161,48 @@ video-cli stats aggregate --start 1704067200000 --end 1735689600000
 ### 观看
 
 ```bash
+# 获取播放页信息
 video-cli watch info --watch-id <id>
-video-cli watch start --watch-id <id>
-video-cli watch heartbeat --watch-id <id> --position 30000
-video-cli watch progress --watch-id <id>
+
+# 开始播放，会返回 playbackSessionId
+video-cli watch start --watch-id <id> --video-id <videoId> --client-id <clientId> --session-id <sessionId>
+
+# 上报播放心跳
+video-cli watch heartbeat --playback-session-id <sessionId> --current-time-ms 30000 --is-playing
+
+# 退出播放
+video-cli watch exit --playback-session-id <sessionId> --current-time-ms 30000 --exit-type CLOSE_TAB
+
+# 查询保存的播放进度
+video-cli watch progress --video-id <videoId> --client-id <clientId>
+
+# 历史记录
+video-cli watch history --page 0 --page-size 20
+video-cli watch clear-history
+```
+
+### 搜索
+
+```bash
+video-cli search 音乐
+video-cli search 教程 --category 教育
+video-cli search 游戏 --page 1 --page-size 10
+```
+
+### 通知
+
+```bash
+video-cli notification list --page 0 --page-size 20
+video-cli notification read <notificationId>
+video-cli notification read-all
+video-cli notification unread-count
+```
+
+### 分享
+
+```bash
+video-cli share create --video-id <videoId>
+video-cli share stats --short-code <shortCode>
 ```
 
 ## 环境变量

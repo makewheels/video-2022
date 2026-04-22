@@ -29,7 +29,7 @@ def test_create_app(mock_requests, runner):
     mock_resp.status_code = 200
     mock_resp.json.return_value = api_response(app_data)
     mock_resp.raise_for_status = MagicMock()
-    mock_requests.post.return_value = mock_resp
+    mock_requests.request.return_value = mock_resp
 
     result = runner.invoke(cli, ["developer", "create-app", "TestApp"])
     assert result.exit_code == 0
@@ -48,7 +48,7 @@ def test_list_apps(mock_requests, runner):
     mock_resp.status_code = 200
     mock_resp.json.return_value = api_response(apps)
     mock_resp.raise_for_status = MagicMock()
-    mock_requests.get.return_value = mock_resp
+    mock_requests.request.return_value = mock_resp
 
     result = runner.invoke(cli, ["developer", "list-apps"])
     assert result.exit_code == 0
@@ -64,7 +64,7 @@ def test_create_token(mock_requests, runner):
     mock_resp.status_code = 200
     mock_resp.json.return_value = api_response(token_data)
     mock_resp.raise_for_status = MagicMock()
-    mock_requests.post.return_value = mock_resp
+    mock_requests.request.return_value = mock_resp
 
     result = runner.invoke(cli, ["developer", "create-token", "abc123", "secret123"])
     assert result.exit_code == 0
@@ -78,7 +78,7 @@ def test_create_app_error(mock_requests, runner):
     mock_resp.status_code = 200
     mock_resp.json.return_value = api_response(code=1, message="Unauthorized")
     mock_resp.raise_for_status = MagicMock()
-    mock_requests.post.return_value = mock_resp
+    mock_requests.request.return_value = mock_resp
 
     result = runner.invoke(cli, ["developer", "create-app", "TestApp"])
     assert result.exit_code != 0
