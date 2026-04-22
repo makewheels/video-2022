@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.watch.play;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.cover.CoverService;
+import com.github.makewheels.video2022.file.FileAccessSignatureService;
 import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.context.RequestUtil;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
@@ -58,6 +59,8 @@ public class WatchService {
     private EnvironmentService environmentService;
     @Resource
     private ProgressService progressService;
+    @Resource
+    private FileAccessSignatureService fileAccessSignatureService;
 
     /**
      * 保存观看记录到数据库
@@ -190,6 +193,17 @@ public class WatchService {
             String filename = lines.get(i);
             if (StringUtils.startsWith(filename, "#")) continue;
             TsFile tsFile = fileMap.get(filename);
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            String nonce = IdUtil.nanoId();
+            String signature = fileAccessSignatureService.generateSignature(
+                    context.getVideoId(),
+                    context.getClientId(),
+                    context.getSessionId(),
+                    transcode.getResolution(),
+                    tsFile.getId(),
+                    timestamp,
+                    nonce
+            );
             String url = environmentService.getInternalBaseUrl() + "/file/access?"
                     + "resolution=" + transcode.getResolution()
                     + "&tsIndex=" + fileMap.get(filename).getTsIndex()
@@ -198,9 +212,9 @@ public class WatchService {
                     + "&clientId=" + context.getClientId()
                     + "&sessionId=" + context.getSessionId()
                     + "&fileId=" + tsFile.getId()
-                    + "&timestamp=" + System.currentTimeMillis()
-                    + "&nonce=" + IdUtil.nanoId()
-                    + "&sign=" + IdUtil.simpleUUID();
+                    + "&timestamp=" + timestamp
+                    + "&nonce=" + nonce
+                    + "&sign=" + signature;
             lines.set(i, url);
         }
         return StringUtils.join(lines, "\n");

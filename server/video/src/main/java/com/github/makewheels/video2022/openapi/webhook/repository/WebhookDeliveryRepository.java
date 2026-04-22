@@ -22,4 +22,10 @@ public class WebhookDeliveryRepository {
         Query query = Query.query(Criteria.where("webhookConfigId").is(webhookConfigId));
         return mongoTemplate.find(query, WebhookDelivery.class);
     }
+
+    public long countByWebhookConfigIds(List<String> webhookConfigIds) {
+        if (webhookConfigIds == null || webhookConfigIds.isEmpty()) return 0;
+        Query query = Query.query(Criteria.where("webhookConfigId").in(webhookConfigIds));
+        return mongoTemplate.count(query, WebhookDelivery.class);
+    }
 }

@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.watch;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.BaseIntegrationTest;
 import com.github.makewheels.video2022.cover.CoverService;
+import com.github.makewheels.video2022.file.FileAccessSignatureService;
 import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.system.context.Context;
 import com.github.makewheels.video2022.system.environment.EnvironmentService;
@@ -25,9 +26,11 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -43,6 +46,9 @@ class WatchServiceTest extends BaseIntegrationTest {
 
     @MockitoBean
     private EnvironmentService environmentService;
+
+    @Autowired
+    private FileAccessSignatureService fileAccessSignatureService;
 
     private User testUser;
 
@@ -262,6 +268,28 @@ class WatchServiceTest extends BaseIntegrationTest {
         assertTrue(content.contains("videoId=" + videoId));
         assertTrue(content.contains("fileId=" + ts0.getId()));
         assertTrue(content.contains("fileId=" + ts1.getId()));
+
+        String accessLine = content.lines()
+                .filter(line -> line.contains("/file/access?"))
+                .findFirst()
+                .orElseThrow();
+        Map<String, String> queryParams = UriComponentsBuilder.fromUriString(accessLine)
+                .build()
+                .getQueryParams()
+                .toSingleValueMap();
+        assertNotNull(queryParams.get("timestamp"));
+        assertNotNull(queryParams.get("nonce"));
+        assertNotNull(queryParams.get("sign"));
+        assertTrue(fileAccessSignatureService.isSignatureValid(
+                queryParams.get("videoId"),
+                queryParams.get("clientId"),
+                queryParams.get("sessionId"),
+                queryParams.get("resolution"),
+                queryParams.get("fileId"),
+                queryParams.get("timestamp"),
+                queryParams.get("nonce"),
+                queryParams.get("sign")
+        ));
     }
 
     // ---- getMultivariantPlaylist tests ----

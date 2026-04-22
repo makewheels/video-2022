@@ -3,20 +3,26 @@ import { apiClient } from '../api/client';
 import { Link } from 'react-router-dom';
 
 export default function StatsPage() {
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ['developer-stats'],
+    queryFn: () => apiClient.getStats(),
+  });
   const { data: apps, isLoading } = useQuery({
     queryKey: ['apps'],
     queryFn: () => apiClient.listApps(),
   });
 
-  const appCount = apps?.length ?? 0;
+  const appCount = stats?.appCount ?? apps?.length ?? 0;
+  const totalApiRequests = stats?.totalApiRequests ?? 0;
+  const webhookDeliveries = stats?.webhookDeliveryCount ?? 0;
 
   return (
     <div className="page">
       <h1>用量统计</h1>
 
-      {isLoading && <p>加载中...</p>}
+      {(isLoading || statsLoading) && <p>加载中...</p>}
 
-      {!isLoading && (
+      {!isLoading && !statsLoading && (
         <>
           <div className="stats-grid">
             <div className="stat-card">
@@ -24,17 +30,17 @@ export default function StatsPage() {
               <div className="stat-label">应用总数</div>
             </div>
             <div className="stat-card">
-              <div className="stat-number">—</div>
-              <div className="stat-label">今日 API 调用</div>
+              <div className="stat-number">{totalApiRequests}</div>
+              <div className="stat-label">累计 API 调用</div>
             </div>
             <div className="stat-card">
-              <div className="stat-number">—</div>
-              <div className="stat-label">Webhook 事件</div>
+              <div className="stat-number">{webhookDeliveries}</div>
+              <div className="stat-label">累计 Webhook 投递</div>
             </div>
           </div>
 
           <div className="alert alert-success" style={{ marginBottom: 20 }}>
-            💡 API 调用次数、带宽用量等详细统计数据即将上线。
+            当前统计基于开发者应用、限流记录和 Webhook 投递记录实时汇总。
           </div>
 
           <h2 style={{ fontSize: 18, marginBottom: 12 }}>应用列表</h2>
@@ -69,7 +75,7 @@ export default function StatsPage() {
                     </div>
                   </div>
                   <div className="app-meta">
-                    创建于 {new Date(app.createdAt).toLocaleDateString('zh-CN')}
+                    创建于 {app.createTime ? new Date(app.createTime).toLocaleDateString('zh-CN') : '—'}
                   </div>
                 </div>
               ))}

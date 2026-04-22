@@ -116,6 +116,14 @@ interface HeartbeatHandles {
   playbackInterval: ReturnType<typeof setInterval>;
   progressInterval: ReturnType<typeof setInterval>;
   handleVisibilityChange: () => void;
+  handlePlay: () => void;
+  handlePause: () => void;
+  sendPlaybackExit: (exitType: string, preferBeacon?: boolean) => void;
+}
+
+function resolveResolution(player: ReturnType<typeof videojs>): string {
+  const height = typeof player.videoHeight === 'function' ? player.videoHeight() : 0;
+  return height ? `${height}p` : 'auto';
 }
 
 function setupHeartbeat(
@@ -125,6 +133,28 @@ function setupHeartbeat(
   clientId: string,
   sessionId: string,
 ): HeartbeatHandles {
+  let playbackSessionId: string | null = null;
+  let totalPlayDurationMs = 0;
+  let playStartedAt: number | null = null;
+  let exitSent = false;
+
+  const getCurrentTimeMs = () => Math.round((player.currentTime() ?? 0) * 1000);
+  const getAccumulatedPlayDuration = () =>
+    totalPlayDurationMs + (playStartedAt === null ? 0 : Date.now() - playStartedAt);
+
+  const handlePlay = () => {
+    if (playStartedAt === null && !exitSent) {
+      playStartedAt = Date.now();
+    }
+  };
+
+  const handlePause = () => {
+    if (playStartedAt !== null) {
+      totalPlayDurationMs += Date.now() - playStartedAt;
+      playStartedAt = null;
+    }
+  };
+
   const heartbeatInterval = setInterval(() => {
     if (player.isDisposed()) return;
     api.post('/heartbeat/add', {
@@ -135,24 +165,57 @@ function setupHeartbeat(
     }).catch(() => {});
   }, 15000);
 
-  api.post('/playback/start', { watchId, videoId, clientId, sessionId }).catch(() => {});
+  api.post('/playback/start', { watchId, videoId, clientId, sessionId })
+    .then((res) => {
+      playbackSessionId = res.data?.data?.playbackSessionId ?? null;
+      if (!player.paused()) {
+        handlePlay();
+      }
+    })
+    .catch(() => {});
 
   const playbackInterval = setInterval(() => {
-    if (player.isDisposed()) return;
+    if (player.isDisposed() || !playbackSessionId) return;
     api.post('/playback/heartbeat', {
-      videoId,
-      playerTime: Math.floor(player.currentTime() ?? 0),
-      clientId, sessionId,
+      playbackSessionId,
+      currentTimeMs: getCurrentTimeMs(),
+      isPlaying: !player.paused(),
+      resolution: resolveResolution(player),
+      totalPlayDurationMs: getAccumulatedPlayDuration(),
     }).catch(() => {});
   }, 15000);
 
+  const sendPlaybackExit = (exitType: string, preferBeacon = false) => {
+    if (exitSent || !playbackSessionId) return;
+    handlePause();
+    exitSent = true;
+
+    const payload = {
+      playbackSessionId,
+      currentTimeMs: getCurrentTimeMs(),
+      totalPlayDurationMs: getAccumulatedPlayDuration(),
+      exitType,
+      resolution: resolveResolution(player),
+    };
+
+    if (preferBeacon && typeof navigator.sendBeacon === 'function') {
+      const data = JSON.stringify(payload);
+      navigator.sendBeacon('/playback/exit', new Blob([data], { type: 'application/json' }));
+      return;
+    }
+
+    api.post('/playback/exit', payload).catch(() => {});
+  };
+
   const handleVisibilityChange = () => {
     if (document.visibilityState === 'hidden') {
-      const data = JSON.stringify({ videoId, clientId, sessionId });
-      navigator.sendBeacon('/playback/exit', new Blob([data], { type: 'application/json' }));
+      sendPlaybackExit('CLOSE_TAB', true);
     }
   };
   document.addEventListener('visibilitychange', handleVisibilityChange);
+  player.on('play', handlePlay);
+  player.on('playing', handlePlay);
+  player.on('pause', handlePause);
 
   const progressInterval = setInterval(() => {
     if (player.isDisposed()) return;
@@ -162,7 +225,15 @@ function setupHeartbeat(
     }
   }, 5000);
 
-  return { heartbeatInterval, playbackInterval, progressInterval, handleVisibilityChange };
+  return {
+    heartbeatInterval,
+    playbackInterval,
+    progressInterval,
+    handleVisibilityChange,
+    handlePlay,
+    handlePause,
+    sendPlaybackExit,
+  };
 }
 
 export default function VideoPlayer({ src, seekTime, videoId, watchId }: VideoPlayerProps) {
@@ -187,6 +258,10 @@ export default function VideoPlayer({ src, seekTime, videoId, watchId }: VideoPl
       clearInterval(heartbeat.progressInterval);
       document.removeEventListener('keydown', handleKeydown);
       document.removeEventListener('visibilitychange', heartbeat.handleVisibilityChange);
+      player.off('play', heartbeat.handlePlay);
+      player.off('playing', heartbeat.handlePlay);
+      player.off('pause', heartbeat.handlePause);
+      heartbeat.sendPlaybackExit('NAVIGATE_AWAY');
       if (playerRef.current && !playerRef.current.isDisposed()) {
         playerRef.current.dispose();
         playerRef.current = null;

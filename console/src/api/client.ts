@@ -11,7 +11,8 @@ export interface Developer {
   email: string;
   name: string;
   company?: string;
-  createdAt: string;
+  status?: string;
+  createTime?: string;
 }
 
 export interface OAuthApp {
@@ -22,7 +23,9 @@ export interface OAuthApp {
   clientSecret?: string;
   redirectUris: string[];
   scopes: string[];
-  createdAt: string;
+  rateLimitTier?: string;
+  status?: string;
+  createTime?: string;
 }
 
 export interface LoginResponse {
@@ -37,20 +40,27 @@ export interface WebhookConfig {
   secret: string;
   status: string;
   createTime: string;
+  updateTime?: string;
 }
 
-export interface DeveloperAppItem {
-  id: string;
-  appName: string;
+export interface DeveloperStats {
+  appCount: number;
+  webhookCount: number;
+  totalApiRequests: number;
+  webhookDeliveryCount: number;
+}
+
+interface CreateOAuthAppResponse {
   appId: string;
-  appSecret?: string;
-  userId: string;
-  webhookUrl?: string;
-  webhookSecret?: string;
-  webhookEvents: string[];
-  status: string;
-  createdAt: string;
-  updatedAt: string;
+  clientId: string;
+  clientSecret: string;
+  name: string;
+  description: string;
+  redirectUris: string[];
+  scopes: string[];
+  rateLimitTier?: string;
+  status?: string;
+  createTime?: string;
 }
 
 class ApiClient {
@@ -127,10 +137,22 @@ class ApiClient {
   }
 
   async createApp(data: { name: string; description: string; redirectUris: string[]; scopes: string[] }) {
-    return this.request<OAuthApp>('/developer/apps', {
+    const created = await this.request<CreateOAuthAppResponse>('/developer/apps', {
       method: 'POST',
       body: JSON.stringify(data),
     });
+    return {
+      id: created.appId,
+      name: created.name,
+      description: created.description,
+      clientId: created.clientId,
+      clientSecret: created.clientSecret,
+      redirectUris: created.redirectUris,
+      scopes: created.scopes,
+      rateLimitTier: created.rateLimitTier,
+      status: created.status,
+      createTime: created.createTime,
+    } satisfies OAuthApp;
   }
 
   async deleteApp(id: string) {
@@ -157,41 +179,8 @@ class ApiClient {
     });
   }
 
-  // Developer Apps (Webhook JWT system)
-  async listDeveloperApps() {
-    return this.request<DeveloperAppItem[]>('/developer/app/list');
-  }
-
-  async createDeveloperApp(data: { appName: string }) {
-    return this.request<DeveloperAppItem>('/developer/app/create', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateDeveloperApp(appId: string, data: { webhookUrl?: string; webhookEvents?: string[] }) {
-    return this.request<DeveloperAppItem>(`/developer/app/${appId}/update`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async deleteDeveloperApp(appId: string) {
-    return this.request<void>(`/developer/app/${appId}/delete`, {
-      method: 'DELETE',
-    });
-  }
-
-  async regenerateDeveloperAppSecret(appId: string) {
-    return this.request<DeveloperAppItem>(`/developer/app/${appId}/regenerateSecret`, {
-      method: 'POST',
-    });
-  }
-
-  async testDeveloperWebhook(appId: string) {
-    return this.request<void>(`/developer/app/${appId}/testWebhook`, {
-      method: 'POST',
-    });
+  async getStats() {
+    return this.request<DeveloperStats>('/developer/stats');
   }
 
   // Developer JWT Tokens

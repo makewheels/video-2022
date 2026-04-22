@@ -6,6 +6,17 @@
 
 ---
 
+## fix: 播放链路与开发者控制台收口
+- Web 播放器对齐后端播放会话协议，补上 `playbackSessionId`、退出上报和 `sendBeacon` 退出
+- `/file/access` 改为校验 HMAC-SHA256 签名和时间窗口，不再只透传 sign 参数
+- 全局异常响应不再向客户端暴露 stack trace，详细堆栈仍保存在异常日志中
+- 开发者控制台统一到当前 OAuth 应用模型，补齐 `/developer/stats` 和基于开发者 JWT 的 Webhook 管理 API
+- Console 的 Stats / Webhooks / Apps 页面已接通真实后端统计与配置数据
+- 补充播放签名、文件访问、开发者统计相关回归测试
+- 更新播放、系统服务、测试总览和 AGENT 文档地图
+
+---
+
 ## feat: 视频分享链接
 - 短链接生成与重定向
 - 分享统计追踪 (点击量)

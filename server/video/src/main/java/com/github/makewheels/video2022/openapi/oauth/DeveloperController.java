@@ -108,6 +108,8 @@ public class DeveloperController {
         response.setRedirectUris(app.getRedirectUris());
         response.setScopes(app.getScopes());
         response.setRateLimitTier(app.getRateLimitTier());
+        response.setStatus(app.getStatus());
+        response.setCreateTime(app.getCreateTime());
         return Result.ok(response);
     }
 
