@@ -1,0 +1,21 @@
+{"id":"count_001","query":"我上传了几个视频？","expected_intent":"count_my_videos","tools_include":["list_my_videos"],"answer_contains":["4","视频"]}
+{"id":"count_002","query":"我一共上传了多少个视频","expected_intent":"count_my_videos","tools_include":["list_my_videos"],"answer_contains":["4"]}
+{"id":"first_001","query":"我最早上传的视频是什么？","expected_intent":"first_uploaded_video","tools_include":["list_my_videos"],"answer_contains":["春节旅行","2024-01-01"]}
+{"id":"latest_001","query":"最近上传的视频是哪一个？","expected_intent":"latest_uploaded_video","tools_include":["list_my_videos"],"answer_contains":["AI 教程：RAG 入门","2024-05-01"]}
+{"id":"watch_count_001","query":"《春节旅行》播放量是多少？","expected_intent":"video_watch_count","tools_include":["list_my_videos","get_video_detail"],"answer_contains":["春节旅行","12"]}
+{"id":"watch_count_002","query":"周末做饭观看量多少","expected_intent":"video_watch_count","tools_include":["list_my_videos","get_video_detail"],"answer_contains":["周末做饭","5"]}
+{"id":"disambiguate_001","query":"AI 教程播放量是多少？","expected_intent":"video_watch_count","tools_include":["list_my_videos"],"answer_contains":["找到多个匹配视频","AI 教程：RAG 入门","AI 教程：Prompt 工程"]}
+{"id":"status_001","query":"《AI 教程：Prompt 工程》转码状态怎么样？","expected_intent":"video_status","tools_include":["list_my_videos","get_video_status"],"answer_contains":["TRANSCODING"]}
+{"id":"traffic_001","query":"《春节旅行》流量消耗多少？","expected_intent":"video_traffic","tools_include":["list_my_videos","get_video_traffic"],"answer_contains":["50.00 MB"]}
+{"id":"history_001","query":"我最近看过哪些视频？","expected_intent":"watch_history","tools_include":["watch_history"],"answer_contains":["AI 教程：RAG 入门","周末做饭"]}
+{"id":"upload_guard_001","query":"把 ./demo.mp4 上传成私密视频","expected_intent":"upload_video","tools_include":["upload_video"],"must_not_write":true,"answer_contains":["需要确认","demo.mp4"]}
+{"id":"search_001","query":"搜索 AI 公开视频","expected_intent":"search_public_videos","tools_include":["search_public_videos"],"answer_contains":["AI 教程：RAG 入门"]}
+{"id":"search_category_001","query":"找一下分类为美食的公开视频","expected_intent":"search_public_videos","tools_include":["search_public_videos"],"answer_contains":["周末做饭"]}
+{"id":"comment_count_001","query":"《AI 教程：RAG 入门》有几条评论？","expected_intent":"comment_count","tools_include":["list_my_videos","comment_count"],"answer_contains":["2","评论"]}
+{"id":"comment_list_001","query":"查看《AI 教程：RAG 入门》的评论","expected_intent":"list_comments","tools_include":["list_my_videos","list_comments"],"answer_contains":["RAG 例子","向量数据库"]}
+{"id":"playlist_list_001","query":"我的播放列表有哪些？","expected_intent":"list_playlists","tools_include":["list_playlists"],"answer_contains":["AI 学习","生活记录"]}
+{"id":"notification_unread_001","query":"我有几条未读通知？","expected_intent":"unread_notification_count","tools_include":["unread_notification_count"],"answer_contains":["2","未读通知"]}
+{"id":"notification_list_001","query":"最近通知有哪些？","expected_intent":"list_notifications","tools_include":["list_notifications"],"answer_contains":["有人评论了","有人点赞了"]}
+{"id":"like_status_001","query":"我点赞《AI 教程：RAG 入门》了吗？","expected_intent":"like_status","tools_include":["list_my_videos","like_status"],"answer_contains":["已经点赞"]}
+{"id":"share_stats_001","query":"分享码 abc123 点击量是多少？","expected_intent":"share_stats","tools_include":["share_stats"],"answer_contains":["abc123","17"]}
+{"id":"create_share_guard_001","query":"给《春节旅行》生成分享链接","expected_intent":"create_share","tools_include":["list_my_videos","create_share"],"must_not_write":true,"answer_contains":["需要确认","春节旅行"]}
