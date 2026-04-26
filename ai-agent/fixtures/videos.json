@@ -3,8 +3,8 @@
     {
       "id": "v_new_ai",
       "title": "AI 教程：RAG 入门",
-      "description": "讲解 RAG 检索增强生成。",
-      "tags": ["AI", "教程", "RAG"],
+      "description": "讲解 RAG 检索增强生成，包含向量数据库集成和检索链优化。",
+      "tags": ["AI", "教程", "RAG", "向量数据库"],
       "category": "教育",
       "status": "READY",
       "visibility": "PUBLIC",
@@ -16,8 +16,8 @@
     {
       "id": "v_mid_ai",
       "title": "AI 教程：Prompt 工程",
-      "description": "讲解 prompt 调试。",
-      "tags": ["AI", "教程", "Prompt"],
+      "description": "讲解 prompt 调试和优化策略。",
+      "tags": ["AI", "教程", "Prompt", "工程"],
       "category": "教育",
       "status": "TRANSCODING",
       "visibility": "PRIVATE",
@@ -29,8 +29,8 @@
     {
       "id": "v_old_trip",
       "title": "春节旅行",
-      "description": "家庭旅行记录。",
-      "tags": ["旅行", "生活"],
+      "description": "家庭旅行记录，包含烟花和年夜饭。",
+      "tags": ["旅行", "生活", "春节"],
       "category": "旅行",
       "status": "READY",
       "visibility": "UNLISTED",
@@ -42,8 +42,8 @@
     {
       "id": "v_food",
       "title": "周末做饭",
-      "description": "家常菜过程。",
-      "tags": ["美食", "生活"],
+      "description": "家常菜制作过程，红烧肉和清蒸鱼。",
+      "tags": ["美食", "生活", "家常菜"],
       "category": "美食",
       "status": "READY",
       "visibility": "PUBLIC",
@@ -51,40 +51,111 @@
       "trafficBytes": 20971520,
       "createTime": "2024-02-10T18:00:00+08:00",
       "createTimeString": "2024-02-10 18:00:00"
+    },
+    {
+      "id": "v_music",
+      "title": "吉他弹唱：晴天",
+      "description": "翻唱周杰伦《晴天》，木吉他伴奏。",
+      "tags": ["音乐", "吉他", "翻唱", "周杰伦"],
+      "category": "音乐",
+      "status": "READY",
+      "visibility": "PUBLIC",
+      "watchCount": 156,
+      "trafficBytes": 157286400,
+      "createTime": "2024-06-15T20:00:00+08:00",
+      "createTimeString": "2024-06-15 20:00:00"
+    },
+    {
+      "id": "v_game",
+      "title": "黑神话：悟空 实况 #1",
+      "description": "国产 3A 大作初见实况，画质拉满。",
+      "tags": ["游戏", "黑神话", "实况", "3A"],
+      "category": "游戏",
+      "status": "READY",
+      "visibility": "PUBLIC",
+      "watchCount": 342,
+      "trafficBytes": 524288000,
+      "createTime": "2024-07-01T14:00:00+08:00",
+      "createTimeString": "2024-07-01 14:00:00"
+    },
+    {
+      "id": "v_tech",
+      "title": "M4 MacBook Pro 评测",
+      "description": "最新 M4 Pro 芯片 MacBook Pro 的深度评测与性能对比。",
+      "tags": ["科技", "MacBook", "M4", "评测", "Apple"],
+      "category": "科技",
+      "status": "TRANSCODING",
+      "visibility": "PUBLIC",
+      "watchCount": 89,
+      "trafficBytes": 419430400,
+      "createTime": "2024-07-20T10:00:00+08:00",
+      "createTimeString": "2024-07-20 10:00:00"
+    },
+    {
+      "id": "v_sport",
+      "title": "篮球技巧：三步上篮教学",
+      "description": "从零学三步上篮，慢动作分解，适合篮球新手。",
+      "tags": ["体育", "篮球", "教学", "技巧"],
+      "category": "体育",
+      "status": "READY",
+      "visibility": "PUBLIC",
+      "watchCount": 203,
+      "trafficBytes": 356515840,
+      "createTime": "2024-08-05T16:30:00+08:00",
+      "createTimeString": "2024-08-05 16:30:00"
     }
   ],
   "watchHistory": {
     "list": [
-      {"videoId": "v_new_ai", "title": "AI 教程：RAG 入门", "watchTime": "2024-05-02 12:00:00"},
-      {"videoId": "v_food", "title": "周末做饭", "watchTime": "2024-04-10 20:00:00"}
+      {"videoId": "v_sport", "title": "篮球技巧：三步上篮教学", "watchTime": "2024-08-10 18:00:00", "progressSeconds": 180},
+      {"videoId": "v_game", "title": "黑神话：悟空 实况 #1", "watchTime": "2024-08-09 22:00:00", "progressSeconds": 1200},
+      {"videoId": "v_new_ai", "title": "AI 教程：RAG 入门", "watchTime": "2024-08-08 15:00:00", "progressSeconds": 900},
+      {"videoId": "v_music", "title": "吉他弹唱：晴天", "watchTime": "2024-08-07 20:30:00", "progressSeconds": 240},
+      {"videoId": "v_food", "title": "周末做饭", "watchTime": "2024-08-06 12:00:00", "progressSeconds": 600}
     ],
-    "total": 2,
+    "total": 5,
     "page": 0,
     "pageSize": 20
   },
   "comments": {
     "v_new_ai": [
-      {"id": "c1", "content": "这个 RAG 例子很清楚", "likeCount": 3},
-      {"id": "c2", "content": "后面可以讲一下向量数据库吗", "likeCount": 1}
+      {"id": "c1", "content": "这个 RAG 例子很清楚，向量数据库那部分讲得很好", "likeCount": 3, "user": {"nickname": "AI学习者"}, "createTime": "2024-05-02 12:30:00"},
+      {"id": "c2", "content": "后面可以讲一下向量数据库选型吗", "likeCount": 1, "user": {"nickname": "数据库小白"}, "createTime": "2024-05-03 10:00:00"},
+      {"id": "c8", "content": "好棒的教程！已三连", "likeCount": 5, "user": {"nickname": "终身学习者"}, "createTime": "2024-05-04 20:00:00"}
     ],
     "v_old_trip": [
-      {"id": "c3", "content": "春节气氛很好", "likeCount": 2}
+      {"id": "c3", "content": "春节气氛很好，想家了", "likeCount": 2, "user": {"nickname": "游子"}, "createTime": "2024-01-02 08:00:00"}
+    ],
+    "v_game": [
+      {"id": "c4", "content": "画质确实牛，up 主什么配置？", "likeCount": 8, "user": {"nickname": "游戏玩家"}, "createTime": "2024-07-02 11:00:00"},
+      {"id": "c5", "content": "期待第二期！", "likeCount": 4, "user": {"nickname": "催更狂魔"}, "createTime": "2024-07-03 09:00:00"},
+      {"id": "c6", "content": "战斗系统真的太爽了", "likeCount": 6, "user": {"nickname": "动作游戏粉"}, "createTime": "2024-07-03 14:00:00"}
+    ],
+    "v_music": [
+      {"id": "c7", "content": "弹得太好了，谱子能分享一下吗", "likeCount": 2, "user": {"nickname": "吉他新手"}, "createTime": "2024-06-16 19:00:00"}
     ]
   },
   "playlists": [
-    {"id": "pl_ai", "title": "AI 学习", "description": "AI 课程集合", "videoCount": 2, "videoIds": ["v_new_ai", "v_mid_ai"]},
-    {"id": "pl_life", "title": "生活记录", "description": "日常视频", "videoCount": 2, "videoIds": ["v_old_trip", "v_food"]}
+    {"id": "pl_ai", "title": "AI 学习", "description": "AI 课程集合，包含 RAG 和 Prompt 工程", "videoCount": 2, "videoIds": ["v_new_ai", "v_mid_ai"]},
+    {"id": "pl_life", "title": "生活记录", "description": "日常视频合集", "videoCount": 2, "videoIds": ["v_old_trip", "v_food"]},
+    {"id": "pl_hot", "title": "热门收藏", "description": "高播放量视频合集", "videoCount": 3, "videoIds": ["v_game", "v_music", "v_sport"]}
   ],
   "notifications": [
-    {"id": "n1", "type": "COMMENT", "content": "有人评论了 AI 教程：RAG 入门", "read": false, "createTime": "2024-05-02 12:30:00"},
-    {"id": "n2", "type": "TRANSCODE", "content": "春节旅行转码完成", "read": true, "createTime": "2024-01-01 09:00:00"},
-    {"id": "n3", "type": "LIKE", "content": "有人点赞了周末做饭", "read": false, "createTime": "2024-02-11 20:00:00"}
+    {"id": "n1", "type": "COMMENT", "content": "有人评论了《AI 教程：RAG 入门》", "read": false, "createTime": "2024-05-02 12:30:00"},
+    {"id": "n2", "type": "TRANSCODE", "content": "《春节旅行》转码完成", "read": true, "createTime": "2024-01-01 09:00:00"},
+    {"id": "n3", "type": "LIKE", "content": "有人点赞了《周末做饭》", "read": false, "createTime": "2024-02-11 20:00:00"},
+    {"id": "n4", "type": "COMMENT", "content": "有人评论了《黑神话：悟空 实况 #1》", "read": false, "createTime": "2024-07-02 11:00:00"},
+    {"id": "n5", "type": "SUBSCRIPTION", "content": "有 3 个用户关注了你的频道", "read": false, "createTime": "2024-08-01 10:00:00"}
   ],
   "likeStatus": {
     "v_new_ai": {"liked": true, "disliked": false},
-    "v_food": {"liked": false, "disliked": false}
+    "v_game": {"liked": true, "disliked": false},
+    "v_food": {"liked": false, "disliked": false},
+    "v_music": {"liked": false, "disliked": true},
+    "v_sport": {"liked": true, "disliked": false}
   },
   "shareLinks": {
-    "abc123": {"shortCode": "abc123", "videoId": "v_new_ai", "clickCount": 17, "createTime": "2024-05-03 10:00:00"}
+    "abc123": {"shortCode": "abc123", "videoId": "v_new_ai", "clickCount": 17, "createTime": "2024-05-03 10:00:00"},
+    "xyz789": {"shortCode": "xyz789", "videoId": "v_game", "clickCount": 45, "createTime": "2024-07-02 15:00:00"}
   }
 }

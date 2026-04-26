@@ -25,6 +25,10 @@ export default defineConfig({
       '/cover': 'http://localhost:5022',
       '/oss-log': 'http://localhost:5022',
       '/playback': 'http://localhost:5022',
+      '/agent-api': {
+        target: 'http://localhost:8765',
+        rewrite: (path: string) => path.replace(/^\/agent-api/, ''),
+      },
     },
   },
   test: {
