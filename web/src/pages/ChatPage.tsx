@@ -1,9 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { useToast } from '../utils/toast';
-import { isLoggedIn } from '../utils/auth';
 import './ChatPage.css';
-
 interface ToolCall {
   name: string;
   args: Record<string, unknown>;
@@ -56,11 +53,6 @@ export default function ChatPage() {
   const send = useCallback(async () => {
     const text = input.trim();
     if (!text || loading) return;
-    if (!isLoggedIn()) {
-      toast('请先登录', 'error');
-      return;
-    }
-
     setInput('');
     setLoading(true);
 
@@ -256,11 +248,6 @@ export default function ChatPage() {
             </button>
           )}
         </div>
-        {!isLoggedIn() && (
-          <p className="chat-login-hint">
-            请先 <Link to="/login">登录</Link> 后使用 AI 助手
-          </p>
-        )}
       </div>
     </div>
   );
