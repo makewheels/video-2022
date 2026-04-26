@@ -82,7 +82,7 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--api-key", default=None)
     serve.add_argument("--fixture", default=None)
     serve.add_argument("--token", default=None)
-    serve.add_argument("--use-anthropic", action="store_true", help="使用 Anthropic SDK（支持多轮对话）")
+    serve.add_argument("--optimized", action="store_true", help="使用优化版本（MongoDB + 错误处理）")
 
     return parser
 
@@ -193,22 +193,18 @@ def main() -> None:
         return
 
     if args.command == "serve":
-        _, tools = _make_assistant(args)
+        assistant, tools = _make_assistant(args)
 
-        # Check if using Anthropic SDK
-        use_anthropic = getattr(args, "use_anthropic", False) or os.getenv("USE_ANTHROPIC_SDK") == "true"
+        # Check if using optimized version
+        use_optimized = getattr(args, "optimized", False) or os.getenv("USE_OPTIMIZED") == "true"
 
-        if use_anthropic:
-            from .server_anthropic import serve
-            print("🚀 使用 Anthropic Agent SDK（支持多轮对话）")
+        if use_optimized:
+            from .server_optimized import serve_optimized
+            print("🚀 使用优化版本（MongoDB + 错误处理 + 上下文管理）")
+            serve_optimized(assistant.client, tools, host=args.host, port=args.port)
         else:
-            from .server import serve, create_app
-            assistant, _ = _make_assistant(args)
-            # Old server needs assistant object
+            from .server import serve
             serve(assistant, tools, host=args.host, port=args.port)
-            return
-
-        serve(tools, host=args.host, port=args.port)
         return
 
 
