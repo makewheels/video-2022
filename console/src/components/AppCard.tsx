@@ -1,11 +1,13 @@
+import { Link } from 'react-router-dom';
 import type { OAuthApp } from '../api/client';
 
 interface AppCardProps {
   app: OAuthApp;
   onDelete: (id: string) => void;
+  webhookHref?: string;
 }
 
-export default function AppCard({ app, onDelete }: AppCardProps) {
+export default function AppCard({ app, onDelete, webhookHref }: AppCardProps) {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).catch(() => {
       // Fallback: select text for manual copy
@@ -22,7 +24,14 @@ export default function AppCard({ app, onDelete }: AppCardProps) {
     <div className="app-card">
       <div className="app-card-header">
         <h3>{app.name}</h3>
-        <button className="btn-danger btn-sm" onClick={() => onDelete(app.id)}>删除</button>
+        <div>
+          {webhookHref && (
+            <Link className="btn btn-sm" to={webhookHref} style={{ marginRight: 8 }}>
+              Webhook
+            </Link>
+          )}
+          <button className="btn-danger btn-sm" onClick={() => onDelete(app.id)}>删除</button>
+        </div>
       </div>
       {app.description && <p className="app-desc">{app.description}</p>}
       <div className="app-field">
@@ -53,7 +62,7 @@ export default function AppCard({ app, onDelete }: AppCardProps) {
         </div>
       )}
       <div className="app-meta">
-        创建时间: {new Date(app.createdAt).toLocaleDateString('zh-CN')}
+        创建时间: {app.createTime ? new Date(app.createTime).toLocaleDateString('zh-CN') : '—'}
       </div>
     </div>
   );

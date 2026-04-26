@@ -12,6 +12,7 @@ class TestCLIHelp:
         assert "video-cli" in result.output
         assert "auth" in result.output
         assert "video" in result.output
+        assert "config" in result.output
 
     def test_version(self):
         result = self.runner.invoke(cli, ["--version"])
@@ -77,3 +78,11 @@ class TestCLIHelp:
         assert "start" in result.output
         assert "heartbeat" in result.output
         assert "progress" in result.output
+        assert "exit" in result.output
+
+    def test_config_help(self):
+        result = self.runner.invoke(cli, ["config", "--help"])
+        assert result.exit_code == 0
+        assert "show" in result.output
+        assert "set-base-url" in result.output
+        assert "set-token" in result.output

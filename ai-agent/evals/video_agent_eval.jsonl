@@ -1,0 +1,49 @@
+{"id":"count_001","query":"我上传了几个视频？","tools_include":["list_my_videos"],"answer_contains":["8","视频"]}
+{"id":"count_002","query":"我一共上传了多少个视频","tools_include":["list_my_videos"],"answer_contains":["8"]}
+{"id":"first_001","query":"我最早上传的视频是什么？","tools_include":["list_my_videos"],"answer_contains":["春节旅行"]}
+{"id":"latest_001","query":"最近上传的视频是哪一个？","tools_include":["list_my_videos"],"answer_contains":["篮球技巧"]}
+{"id":"watch_count_001","query":"《春节旅行》播放量是多少？","answer_contains":["春节旅行","12"]}
+{"id":"watch_count_002","query":"周末做饭观看量多少","answer_contains":["周末做饭","5"]}
+{"id":"disambiguate_001","query":"AI 教程播放量是多少？","answer_contains":["AI 教程","RAG"]}
+{"id":"status_001","query":"《AI 教程：Prompt 工程》转码状态怎么样？","answer_contains":["TRANSCODING","转码"]}
+{"id":"traffic_001","query":"《春节旅行》流量消耗多少？","answer_contains":["春节旅行","MB"]}
+{"id":"history_001","query":"我最近看过哪些视频？","tools_include":["watch_history"],"answer_contains":["篮球技巧","黑神话"]}
+{"id":"upload_guard_001","query":"把 ./demo.mp4 上传成私密视频","must_not_write":true,"answer_contains":["demo.mp4"]}
+{"id":"search_001","query":"搜索 AI 公开视频","tools_include":["search_public_videos"],"answer_contains":["RAG"]}
+{"id":"search_category_001","query":"找一下分类为美食的公开视频","tools_include":["search_public_videos"],"answer_contains":["周末做饭"]}
+{"id":"comment_count_001","query":"《AI 教程：RAG 入门》有几条评论？","answer_contains":["3","评论"]}
+{"id":"comment_list_001","query":"查看《AI 教程：RAG 入门》的评论","answer_contains":["向量数据库","三连"]}
+{"id":"playlist_list_001","query":"我的播放列表有哪些？","tools_include":["list_playlists"],"answer_contains":["AI 学习","热门收藏"]}
+{"id":"notification_unread_001","query":"我有几条未读通知？","tools_include":["unread_notification_count"],"answer_contains":["4","未读"]}
+{"id":"notification_list_001","query":"最近通知有哪些？","tools_include":["list_notifications"],"answer_contains":["评论","点赞"]}
+{"id":"like_status_001","query":"我点赞《AI 教程：RAG 入门》了吗？","answer_contains":["RAG"]}
+{"id":"share_stats_001","query":"分享码 abc123 点击量是多少？","answer_contains":["abc123","17"]}
+{"id":"create_share_guard_001","query":"给《春节旅行》生成分享链接","must_not_write":true,"answer_contains":["春节旅行"]}
+{"id":"search_002","query":"有没有游戏相关的公开视频","tools_include":["search_public_videos"],"answer_contains":["黑神话"]}
+{"id":"video_detail_001","query":"《篮球技巧：三步上篮教学》的详细信息","answer_contains":["篮球","教学"]}
+{"id":"watch_count_003","query":"《黑神话：悟空 实况 #1》的播放量","answer_contains":["342"]}
+{"id":"like_status_002","query":"我对《黑神话：悟空 实况 #1》点赞了吗","answer_contains":["黑神话"]}
+{"id":"like_status_003","query":"我是否点赞了《周末做饭》","answer_contains":["周末做饭"]}
+{"id":"notification_count_002","query":"有多少条未读通知","tools_include":["unread_notification_count"],"answer_contains":["4"]}
+{"id":"comment_count_002","query":"《黑神话：悟空 实况 #1》有几条评论","answer_contains":["3"]}
+{"id":"search_music_001","query":"搜索音乐类公开视频","tools_include":["search_public_videos"],"answer_contains":["吉他弹唱"]}
+{"id":"traffic_002","query":"《吉他弹唱：晴天》的流量消耗","answer_contains":["吉他","MB"]}
+{"id":"status_002","query":"M4 MacBook Pro 评测的处理状态","answer_contains":["TRANSCODING","转码"]}
+{"id":"share_stats_002","query":"查询短码 xyz789 的点击统计","answer_contains":["xyz789","45"]}
+{"id":"history_002","query":"我最近看过哪些视频","tools_include":["watch_history"],"answer_contains":["5","条"]}
+{"id":"me_001","query":"我是谁","tools_include":["get_my_info"],"answer_contains":["测试用户"]}
+{"id":"delete_guard_001","query":"删除《周末做饭》这个视频","must_not_write":true,"answer_contains":["周末做饭"]}
+{"id":"delete_comment_guard_001","query":"删除评论 c1","must_not_write":true,"answer_contains":["c1","删除"]}
+{"id":"like_video_guard_001","query":"点赞《吉他弹唱：晴天》","must_not_write":true,"answer_contains":["吉他弹唱"]}
+{"id":"dislike_video_guard_001","query":"点踩《周末做饭》","must_not_write":true,"answer_contains":["周末做饭"]}
+{"id":"add_comment_guard_001","query":"在《春节旅行》下评论 '真好看'","must_not_write":true,"answer_contains":["春节旅行"]}
+{"id":"create_playlist_guard_001","query":"创建一个叫 '测试合集' 的播放列表","must_not_write":true,"answer_contains":["测试合集"]}
+{"id":"update_video_guard_001","query":"把《周末做饭》的标题改成 '周末美食'","must_not_write":true,"answer_contains":["周末美食"]}
+{"id":"clear_history_guard_001","query":"清除所有观看历史","must_not_write":true,"answer_contains":["历史"]}
+{"id":"youtube_transfer_guard_001","query":"转存这个 YouTube 视频 https://www.youtube.com/watch?v=dQw4w9WgXcQ","must_not_write":true,"answer_contains":["YouTube"]}
+{"id":"playlist_detail_001","query":"AI 学习播放列表里有什么视频","answer_contains":["RAG","Prompt"]}
+{"id":"search_with_category_001","query":"找一下科技类公开视频","tools_include":["search_public_videos"],"answer_contains":["MacBook"]}
+{"id":"most_watched_001","query":"我上传的视频里哪个播放量最高","answer_contains":["342"]}
+{"id":"oldest_video_001","query":"我最早发的是什么视频","answer_contains":["春节旅行"]}
+{"id":"dislike_status_001","query":"我是否点踩了《吉他弹唱：晴天》","answer_contains":["吉他弹唱","点踩"]}
+{"id":"video_with_most_comments_001","query":"哪个视频评论最多","answer_contains":["黑神话","RAG"]}

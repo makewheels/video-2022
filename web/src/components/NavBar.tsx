@@ -10,6 +10,7 @@ const navLinks = [
   { to: '/', label: '首页' },
   { to: '/my-videos', label: '我的视频' },
   { to: '/upload', label: '上传' },
+  { to: '/chat', label: 'AI 助手' },
   { to: '/statistics', label: '统计' },
   { to: '/youtube', label: 'YouTube' },
 ];

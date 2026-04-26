@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.openapi.oauth.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -23,4 +24,8 @@ public class CreateOAuthAppResponse {
     private List<String> scopes;
     @Schema(description = "速率限制等级", example = "standard")
     private String rateLimitTier;
+    @Schema(description = "状态", example = "active")
+    private String status;
+    @Schema(description = "创建时间")
+    private Date createTime;
 }

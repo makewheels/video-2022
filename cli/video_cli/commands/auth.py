@@ -1,7 +1,7 @@
 """Authentication commands."""
 import click
 from ..client import get, APIError
-from ..config import set_token, get_token, clear_config
+from ..config import set_token, get_token, clear_token
 from ..output import print_json, print_error, print_success
 
 
@@ -55,5 +55,5 @@ def me(ctx):
 @auth.command()
 def logout():
     """Clear saved authentication token."""
-    clear_config()
+    clear_token()
     print_success("Logged out successfully")

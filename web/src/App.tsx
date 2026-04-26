@@ -15,6 +15,7 @@ import WatchHistoryPage from './pages/WatchHistoryPage';
 import ChannelPage from './pages/ChannelPage';
 import SearchPage from './pages/SearchPage';
 import ShareRedirectPage from './pages/ShareRedirectPage';
+import ChatPage from './pages/ChatPage';
 import { isLoggedIn } from './utils/auth';
 
 function PrivateRoute() {
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/channel/:userId" element={<ChannelPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/s/:shortCode" element={<ShareRedirectPage />} />
+        <Route path="/chat" element={<ChatPage />} />
 
         <Route element={<PrivateRoute />}>
           <Route path="/my-videos" element={<MyVideosPage />} />

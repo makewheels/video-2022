@@ -52,6 +52,8 @@ public class FileService {
     @Resource
     private FileAccessLogService fileAccessLogService;
     @Resource
+    private FileAccessSignatureService fileAccessSignatureService;
+    @Resource
     private Md5CfService md5CfService;
     @Resource
     private IdService idService;
@@ -118,6 +120,22 @@ public class FileService {
      */
     public void access(Context context, String resolution, String fileId, String timestamp,
                        String nonce, String sign) {
+        if (!fileAccessSignatureService.isTimestampValid(timestamp)) {
+            throw new VideoException(ErrorCode.FILE_ACCESS_SIGNATURE_INVALID, "文件访问签名已过期");
+        }
+        if (!fileAccessSignatureService.isSignatureValid(
+                context.getVideoId(),
+                context.getClientId(),
+                context.getSessionId(),
+                resolution,
+                fileId,
+                timestamp,
+                nonce,
+                sign
+        )) {
+            throw new VideoException(ErrorCode.FILE_ACCESS_SIGNATURE_INVALID);
+        }
+
         String videoId = context.getVideoId();
         String clientId = context.getClientId();
         String sessionId = context.getSessionId();
@@ -129,6 +147,9 @@ public class FileService {
 
         // 设置返回结果
         String key = tsFileRepository.getKeyById(fileId);
+        if (key == null) {
+            throw new VideoException(ErrorCode.FILE_NOT_EXIST);
+        }
         String url = generatePresignedUrl(key, Duration.ofHours(3));
         HttpServletResponse response = RequestUtil.getResponse();
         response.setStatus(302);

@@ -23,8 +23,18 @@ public class WebhookConfigRepository {
         mongoTemplate.remove(query, WebhookConfig.class);
     }
 
+    public WebhookConfig getById(String id) {
+        return mongoTemplate.findById(id, WebhookConfig.class);
+    }
+
     public List<WebhookConfig> findByAppId(String appId) {
         Query query = Query.query(Criteria.where("appId").is(appId));
+        return mongoTemplate.find(query, WebhookConfig.class);
+    }
+
+    public List<WebhookConfig> findByAppIds(List<String> appIds) {
+        if (appIds == null || appIds.isEmpty()) return List.of();
+        Query query = Query.query(Criteria.where("appId").in(appIds));
         return mongoTemplate.find(query, WebhookConfig.class);
     }
 

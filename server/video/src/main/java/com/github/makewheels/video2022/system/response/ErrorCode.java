@@ -20,6 +20,7 @@ public enum ErrorCode {
     FILE_NOT_READY(32, "文件未就绪"),
     FILE_AND_USER_NOT_MATCH(33, "文件和用户不匹配"),
     FILE_GENERATE_UPLOAD_CREDENTIALS_FAIL(34, "生成对象存储上传凭证失败"),
+    FILE_ACCESS_SIGNATURE_INVALID(35, "文件访问签名无效"),
 
     COVER_NOT_EXIST(41, "封面不存在"),
 

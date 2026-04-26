@@ -72,7 +72,7 @@ class TestAuthCommands:
         assert data["id"] == "u1"
 
     def test_logout(self):
-        with patch("video_cli.commands.auth.clear_config") as mock_clear:
+        with patch("video_cli.commands.auth.clear_token") as mock_clear:
             result = self.runner.invoke(cli, ["auth", "logout"])
         assert result.exit_code == 0
         data = json.loads(result.output)

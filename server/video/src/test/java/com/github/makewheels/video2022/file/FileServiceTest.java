@@ -5,9 +5,13 @@ import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.github.makewheels.video2022.BaseIntegrationTest;
 import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.file.constants.FileStatus;
 import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.file.constants.ObjectStorageProvider;
+import com.github.makewheels.video2022.springboot.exception.VideoException;
+import com.github.makewheels.video2022.system.context.Context;
+import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
@@ -17,6 +21,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.Duration;
 import java.util.Date;
@@ -34,6 +42,9 @@ class FileServiceTest extends BaseIntegrationTest {
     @Autowired
     private FileRepository fileRepository;
 
+    @Autowired
+    private FileAccessSignatureService fileAccessSignatureService;
+
     private User testUser;
 
     @BeforeEach
@@ -50,7 +61,25 @@ class FileServiceTest extends BaseIntegrationTest {
     @AfterEach
     void tearDown() {
         UserHolder.remove();
+        RequestContextHolder.resetRequestAttributes();
         cleanDatabase();
+    }
+
+    private Context buildContext(String videoId, String clientId, String sessionId) {
+        Context context = new Context();
+        context.setVideoId(videoId);
+        context.setClientId(clientId);
+        context.setSessionId(sessionId);
+        return context;
+    }
+
+    private MockHttpServletResponse bindServletRequestContext() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("192.168.1.101");
+        request.addHeader("User-Agent", "FileServiceTest/1.0");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request, response));
+        return response;
     }
 
     // ──────────────────── createVideoFile ────────────────────
@@ -234,6 +263,48 @@ class FileServiceTest extends BaseIntegrationTest {
                 Duration.ofHours(1));
 
         assertEquals("https://oss.example.com/signed-url", url);
+    }
+
+    @Test
+    void access_validSignature_redirectsToSignedUrl() {
+        TsFile tsFile = new TsFile();
+        tsFile.setId("f_ts_access_001");
+        tsFile.setKey("videos/access/segment0.ts");
+        mongoTemplate.save(tsFile);
+
+        MockHttpServletResponse response = bindServletRequestContext();
+        when(ossVideoService.generatePresignedUrl("videos/access/segment0.ts", Duration.ofHours(3)))
+                .thenReturn("https://oss.example.com/access/segment0.ts?sig=ok");
+
+        Context context = buildContext("v_access_001", "client_access_001", "session_access_001");
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String nonce = "nonce-001";
+        String sign = fileAccessSignatureService.generateSignature(
+                context.getVideoId(),
+                context.getClientId(),
+                context.getSessionId(),
+                "720p",
+                tsFile.getId(),
+                timestamp,
+                nonce
+        );
+
+        fileService.access(context, "720p", tsFile.getId(), timestamp, nonce, sign);
+
+        assertEquals(302, response.getStatus());
+        assertEquals("https://oss.example.com/access/segment0.ts?sig=ok", response.getRedirectedUrl());
+    }
+
+    @Test
+    void access_invalidSignature_throwsVideoException() {
+        Context context = buildContext("v_access_002", "client_access_002", "session_access_002");
+        String timestamp = String.valueOf(System.currentTimeMillis());
+
+        VideoException exception = assertThrows(VideoException.class, () ->
+                fileService.access(context, "720p", "f_ts_access_invalid", timestamp, "nonce-002", "bad-sign")
+        );
+
+        assertEquals(ErrorCode.FILE_ACCESS_SIGNATURE_INVALID, exception.getErrorCode());
     }
 
     // ──────────────────── changeObjectAcl ────────────────────

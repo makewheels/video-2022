@@ -32,9 +32,6 @@ export default function Layout() {
           <NavLink to="/webhooks" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
             🔔 Webhook
           </NavLink>
-          <NavLink to="/developer-apps" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-            🔑 开发者应用
-          </NavLink>
         </nav>
         <div className="sidebar-footer">
           <div className="dev-info">

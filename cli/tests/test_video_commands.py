@@ -101,6 +101,19 @@ class TestVideoCommands:
         assert body["id"] == "v1"
 
     @responses.activate
+    def test_video_update_allows_unlisted_visibility(self):
+        responses.add(
+            responses.POST,
+            "http://localhost:5022/video/updateInfo",
+            json={"code": 0, "message": "ok", "data": None},
+            status=200,
+        )
+        result = self.runner.invoke(cli, ["--token", "t", "video", "update", "--id", "v1", "--visibility", "UNLISTED"])
+        assert result.exit_code == 0
+        body = json.loads(responses.calls[0].request.body)
+        assert body["visibility"] == "UNLISTED"
+
+    @responses.activate
     def test_video_delete(self):
         responses.add(
             responses.GET,
@@ -125,6 +138,21 @@ class TestVideoCommands:
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert data["data"]["videoId"] == "new-v1"
+        body = json.loads(responses.calls[0].request.body)
+        assert body["videoType"] == "USER_UPLOAD"
+
+    @responses.activate
+    def test_video_create_upload_alias_maps_to_user_upload(self):
+        responses.add(
+            responses.POST,
+            "http://localhost:5022/video/create",
+            json={"code": 0, "message": "ok", "data": {"videoId": "new-v1"}},
+            status=200,
+        )
+        result = self.runner.invoke(cli, ["--token", "t", "video", "create", "--file", "nonexistent.mp4", "--type", "UPLOAD"])
+        assert result.exit_code == 0
+        body = json.loads(responses.calls[0].request.body)
+        assert body["videoType"] == "USER_UPLOAD"
 
     @responses.activate
     def test_video_download_url(self):

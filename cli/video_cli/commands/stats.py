@@ -4,6 +4,31 @@ from ..client import get, APIError
 from ..output import print_json, print_table, print_error
 
 
+def _print_aggregate_table(result):
+    if isinstance(result, list):
+        rows = [[item.get("date", ""), item.get("traffic", 0)] for item in result]
+        print_table(["Date", "Traffic"], rows)
+        return
+
+    if not isinstance(result, dict):
+        print_json(result)
+        return
+
+    x_axis = result.get("xAxis", {}).get("data", [])
+    y_axis = result.get("yAxis", {}).get("data", [])
+    series = result.get("series", {}).get("data", [])
+    rows = []
+    for index, date in enumerate(x_axis):
+        human_traffic = y_axis[index] if index < len(y_axis) else ""
+        bytes_traffic = series[index] if index < len(series) else ""
+        rows.append([date, human_traffic, bytes_traffic])
+
+    if rows:
+        print_table(["Date", "Traffic", "Bytes"], rows)
+    else:
+        print_json(result)
+
+
 @click.group()
 def stats():
     """Traffic and usage statistics."""
@@ -34,9 +59,8 @@ def aggregate(ctx, start_time, end_time):
     token = ctx.obj.get("token")
     try:
         result = get("/statistics/aggregateTrafficData", {"startTime": start_time, "endTime": end_time}, base_url=base_url, token=token)
-        if ctx.obj.get("output_format") == "table" and isinstance(result, list):
-            rows = [[item.get("date", ""), item.get("traffic", 0)] for item in result]
-            print_table(["Date", "Traffic"], rows)
+        if ctx.obj.get("output_format") == "table":
+            _print_aggregate_table(result)
         else:
             print_json(result)
     except APIError as e:

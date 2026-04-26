@@ -45,6 +45,10 @@ public class OAuthAppService {
         return oAuthAppRepository.findByDeveloperId(developerId);
     }
 
+    public OAuthApp getById(String appId) {
+        return oAuthAppRepository.getById(appId);
+    }
+
     public OAuthApp getByClientId(String clientId) {
         return oAuthAppRepository.findByClientId(clientId);
     }
