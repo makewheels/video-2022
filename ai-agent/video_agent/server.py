@@ -96,7 +96,8 @@ def create_app(assistant, tools) -> FastAPI:
                     yield f"data: {json.dumps({'type': 'tool_start', 'tool': {'name': tc.name, 'args': tc.arguments}}, ensure_ascii=False)}\n\n"
                     result = tools.execute(tc.name, tc.arguments)
                     tool_results.append({"name": tc.name, "args": tc.arguments, "result": result})
-                    yield f"data: {json.dumps({'type': 'tool_call', 'tool': {'name': tc.name, 'args': tc.arguments, 'result': _summarize(result)}}, ensure_ascii=False)}\n\n"
+                    # Send full result to frontend, not summarized
+                    yield f"data: {json.dumps({'type': 'tool_call', 'tool': {'name': tc.name, 'args': tc.arguments, 'result': result}}, ensure_ascii=False, default=str)}\n\n"
 
                 # Append assistant + tool messages
                 assistant_msg: dict[str, Any] = {"role": "assistant", "content": text or None}

@@ -9,7 +9,7 @@ import './ChatPage.css';
 interface ToolCall {
   name: string;
   args: Record<string, unknown>;
-  result?: string;
+  result?: unknown;
   pending: boolean;
 }
 
@@ -39,6 +39,7 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [serverInfo, setServerInfo] = useState<Record<string, unknown> | null>(null);
+  const [sessionId] = useState(() => crypto.randomUUID());
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -79,7 +80,7 @@ export default function ChatPage() {
       const resp = await fetch('/agent-api/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', token },
-        body: JSON.stringify({ query: text }),
+        body: JSON.stringify({ query: text, session_id: sessionId }),
         signal: controller.signal,
       });
 
@@ -245,7 +246,7 @@ export default function ChatPage() {
 
               {/* Tool calls */}
               {msg.tools && msg.tools.map((tc, i) => (
-                <details key={i} className={`chat-tool-card${tc.pending ? ' chat-tool-pending' : ''}`} open={tc.pending || undefined}>
+                <details key={i} className={`chat-tool-card${tc.pending ? ' chat-tool-pending' : ''}`} open>
                   <summary>
                     {tc.pending ? (
                       <span className="chat-tool-spinner" />
@@ -255,7 +256,29 @@ export default function ChatPage() {
                     <code>{tc.name}</code>
                     {tc.pending ? ' 执行中…' : ''}
                   </summary>
-                  {!tc.pending && <pre>{tc.result}</pre>}
+                  {!tc.pending && (
+                    <div className="chat-tool-details">
+                      <div className="chat-tool-section">
+                        <div className="chat-tool-label">参数</div>
+                        <pre className="chat-tool-json">{JSON.stringify(tc.args, null, 2)}</pre>
+                      </div>
+                      <div className="chat-tool-section">
+                        <div className="chat-tool-label">结果</div>
+                        <pre className="chat-tool-json">{(() => {
+                          if (!tc.result) return '{}';
+                          if (typeof tc.result === 'string') {
+                            try {
+                              const parsed = JSON.parse(tc.result);
+                              return JSON.stringify(parsed, null, 2);
+                            } catch {
+                              return tc.result;
+                            }
+                          }
+                          return JSON.stringify(tc.result, null, 2);
+                        })()}</pre>
+                      </div>
+                    </div>
+                  )}
                 </details>
               ))}
 

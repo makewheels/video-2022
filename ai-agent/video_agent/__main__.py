@@ -82,6 +82,7 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--api-key", default=None)
     serve.add_argument("--fixture", default=None)
     serve.add_argument("--token", default=None)
+    serve.add_argument("--use-anthropic", action="store_true", help="使用 Anthropic SDK（支持多轮对话）")
 
     return parser
 
@@ -192,10 +193,22 @@ def main() -> None:
         return
 
     if args.command == "serve":
-        from .server import serve
+        _, tools = _make_assistant(args)
 
-        assistant, tools = _make_assistant(args)
-        serve(assistant, tools, host=args.host, port=args.port)
+        # Check if using Anthropic SDK
+        use_anthropic = getattr(args, "use_anthropic", False) or os.getenv("USE_ANTHROPIC_SDK") == "true"
+
+        if use_anthropic:
+            from .server_anthropic import serve
+            print("🚀 使用 Anthropic Agent SDK（支持多轮对话）")
+        else:
+            from .server import serve, create_app
+            assistant, _ = _make_assistant(args)
+            # Old server needs assistant object
+            serve(assistant, tools, host=args.host, port=args.port)
+            return
+
+        serve(tools, host=args.host, port=args.port)
         return
 
 
