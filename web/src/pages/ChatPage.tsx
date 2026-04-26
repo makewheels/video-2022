@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useToast } from '../utils/toast';
 import './ChatPage.css';
 interface ToolCall {
@@ -203,8 +204,16 @@ export default function ChatPage() {
           <div key={msg.id} className={`chat-msg ${msg.role}`}>
             <div className="chat-msg-avatar">{msg.role === 'user' ? '👤' : '🤖'}</div>
             <div className="chat-msg-body">
-              <div className="chat-msg-content">
-                {msg.content || (msg.done ? '...' : '')}
+              <div className={`chat-msg-content${msg.role === 'assistant' ? ' chat-msg-md' : ''}`}>
+                {msg.role === 'assistant' ? (
+                  msg.content ? (
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  ) : msg.done ? (
+                    '...'
+                  ) : null
+                ) : (
+                  msg.content || (msg.done ? '...' : '')
+                )}
                 {!msg.done && !msg.content && <span className="chat-loading"><span/><span/><span/></span>}
               </div>
 
