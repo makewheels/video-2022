@@ -1,11 +1,16 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useToast } from '../utils/toast';
+import { isLoggedIn } from '../utils/auth';
 import './ChatPage.css';
+
 interface ToolCall {
   name: string;
   args: Record<string, unknown>;
-  result: string;
+  result?: string;
+  pending: boolean;
 }
 
 interface Message {
@@ -54,6 +59,11 @@ export default function ChatPage() {
   const send = useCallback(async () => {
     const text = input.trim();
     if (!text || loading) return;
+    if (!isLoggedIn()) {
+      toast('请先登录', 'error');
+      return;
+    }
+
     setInput('');
     setLoading(true);
 
@@ -108,12 +118,28 @@ export default function ChatPage() {
                 return updated;
               }
 
-              if (event.type === 'tool_call') {
+              if (event.type === 'tool_start') {
                 const updated = [...prev];
                 updated[updated.length - 1] = {
                   ...last,
-                  tools: [...(last.tools || []), event.tool],
+                  tools: [...(last.tools || []), { ...event.tool, pending: true }],
                 };
+                return updated;
+              }
+
+              if (event.type === 'tool_call') {
+                const updated = [...prev];
+                const tools = [...(last.tools || [])];
+                // Replace pending tool with result
+                const idx = tools.findIndex(
+                  t => t.name === event.tool.name && t.pending
+                );
+                if (idx >= 0) {
+                  tools[idx] = { ...event.tool, pending: false };
+                } else {
+                  tools.push({ ...event.tool, pending: false });
+                }
+                updated[updated.length - 1] = { ...last, tools };
                 return updated;
               }
 
@@ -130,7 +156,6 @@ export default function ChatPage() {
       }
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
-      const errMsg = err instanceof Error ? err.message : 'Unknown error';
 
       setMessages(prev => {
         const updated = [...prev];
@@ -138,12 +163,13 @@ export default function ChatPage() {
         if (last && last.role === 'assistant') {
           updated[updated.length - 1] = {
             ...last,
-            content: last.content + `\n\n❌ 连接出错：${errMsg}`,
+            content: last.content + '\n\n❌ 连接出错',
             done: true,
           };
         }
         return updated;
       });
+      const errMsg = err instanceof Error ? err.message : 'Unknown error';
       toast(`请求失败: ${errMsg}`, 'error');
     } finally {
       setLoading(false);
@@ -207,7 +233,7 @@ export default function ChatPage() {
               <div className={`chat-msg-content${msg.role === 'assistant' ? ' chat-msg-md' : ''}`}>
                 {msg.role === 'assistant' ? (
                   msg.content ? (
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                   ) : msg.done ? (
                     '...'
                   ) : null
@@ -219,9 +245,17 @@ export default function ChatPage() {
 
               {/* Tool calls */}
               {msg.tools && msg.tools.map((tc, i) => (
-                <details key={i} className="chat-tool-card">
-                  <summary>🔧 <code>{tc.name}</code></summary>
-                  <pre>{tc.result}</pre>
+                <details key={i} className={`chat-tool-card${tc.pending ? ' chat-tool-pending' : ''}`} open={tc.pending || undefined}>
+                  <summary>
+                    {tc.pending ? (
+                      <span className="chat-tool-spinner" />
+                    ) : (
+                      '🔧'
+                    )}{' '}
+                    <code>{tc.name}</code>
+                    {tc.pending ? ' 执行中…' : ''}
+                  </summary>
+                  {!tc.pending && <pre>{tc.result}</pre>}
                 </details>
               ))}
 
@@ -245,18 +279,23 @@ export default function ChatPage() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="问任何关于你视频的问题… (Enter 发送)"
+            placeholder={isLoggedIn() ? '问任何关于你视频的问题… (Enter 发送)' : '请先登录后使用 AI 助手'}
             rows={1}
-            disabled={loading}
+            disabled={loading || !isLoggedIn()}
           />
           {loading ? (
             <button className="chat-send-btn stop" onClick={stop} title="停止">■</button>
           ) : (
-            <button className="chat-send-btn" onClick={send} disabled={!input.trim()} title="发送">
+            <button className="chat-send-btn" onClick={send} disabled={!input.trim() || !isLoggedIn()} title="发送">
               ▶
             </button>
           )}
         </div>
+        {!isLoggedIn() && (
+          <p className="chat-login-hint">
+            请先 <Link to="/login">登录</Link> 后使用 AI 助手
+          </p>
+        )}
       </div>
     </div>
   );

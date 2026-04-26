@@ -93,6 +93,7 @@ def create_app(assistant, tools) -> FastAPI:
                 # Execute tools
                 tool_results = []
                 for tc in event.tool_calls:
+                    yield f"data: {json.dumps({'type': 'tool_start', 'tool': {'name': tc.name, 'args': tc.arguments}}, ensure_ascii=False)}\n\n"
                     result = tools.execute(tc.name, tc.arguments)
                     tool_results.append({"name": tc.name, "args": tc.arguments, "result": result})
                     yield f"data: {json.dumps({'type': 'tool_call', 'tool': {'name': tc.name, 'args': tc.arguments, 'result': _summarize(result)}}, ensure_ascii=False)}\n\n"

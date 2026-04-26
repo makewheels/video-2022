@@ -14,6 +14,12 @@ const BASE = 'http://localhost:5173';
 
 test.describe('ChatPage', () => {
 
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('token', 'e2e-test-token');
+    });
+  });
+
   test('loads and shows welcome screen with quick actions', async ({ page }) => {
     await page.goto(`${BASE}/chat`);
 

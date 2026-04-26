@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
+vi.mock('../../src/utils/auth', () => ({ isLoggedIn: () => true }));
+
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 Element.prototype.scrollIntoView = vi.fn();

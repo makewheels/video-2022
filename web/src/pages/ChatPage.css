@@ -197,6 +197,10 @@
   max-width: 600px;
   animation: chatFadeIn 0.15s ease;
 }
+.chat-tool-card.chat-tool-pending {
+  border-color: var(--accent, #3b82f6);
+  background: rgba(59,130,246,0.04);
+}
 .chat-tool-card summary {
   cursor: pointer;
   color: #d97706;
@@ -204,6 +208,21 @@
   font-size: 0.78rem;
   user-select: none;
 }
+.chat-tool-card.chat-tool-pending summary {
+  color: var(--accent, #3b82f6);
+}
+.chat-tool-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--border-color, #e5e7eb);
+  border-top-color: var(--accent, #3b82f6);
+  border-radius: 50%;
+  animation: chatSpin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+@keyframes chatSpin { to { transform: rotate(360deg); } }
 .chat-tool-card summary::-webkit-details-marker { display: none; }
 .chat-tool-card summary::before { content: '▶ '; font-size: 0.6rem; }
 .chat-tool-card[open] summary::before { content: '▼ '; }
