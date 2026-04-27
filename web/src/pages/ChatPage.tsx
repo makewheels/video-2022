@@ -43,7 +43,7 @@ export default function ChatPage() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const toast = useToast();
+  const { toast } = useToast();
 
   // ── Health check ──
   useEffect(() => {
