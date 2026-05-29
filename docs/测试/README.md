@@ -14,12 +14,12 @@
 | 类型 | 目录 | 文件数 | 用例数 |
 |------|------|--------|--------|
 | Java 单元 / 集成测试 | `server/video/src/test/java` | 49 | 558 |
-| Python API E2E | `test/api` | 12 | 75 |
+| Python API E2E | `test/api` | 11 | 75 |
 | Python 浏览器 E2E | `test/browser` | 12 | 80 |
 | Web 单元测试 | `web/tests` | 12 | 38 |
 | CLI 单元测试 | `cli/tests` | 15 | 105 |
 | CLI 冒烟测试 | `test/cli` | 2 | 7 |
-| **合计** |  | **102** | **863** |
+| **合计** |  | **101** | **863** |
 
 ## 文档索引
 
