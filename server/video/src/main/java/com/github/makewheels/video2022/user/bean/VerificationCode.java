@@ -14,6 +14,6 @@ public class VerificationCode {
     @Indexed(unique = true)
     private String phone;
     private String code;
-    @Indexed(expireAfterSeconds = 600)
+    @Indexed(expireAfter = "600s")
     private Date createdAt;
 }
