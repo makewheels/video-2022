@@ -14,6 +14,6 @@ public class IpCache {
     @Indexed(unique = true)
     private String ip;
     private String locationJson;
-    @Indexed(expireAfterSeconds = 21600)
+    @Indexed(expireAfter = "21600s")
     private Date createdAt;
 }
