@@ -1,24 +1,34 @@
 """video-cli: CLI tool for video-2022 platform."""
 import click
 from . import __version__
+from .config import get_base_url, get_token
 from .commands import auth, video, comment, like, playlist, youtube, stats, watch, search, api, developer, notification, share, config as config_commands
 
 
 @click.group()
 @click.option("--base-url", envvar="VIDEO_CLI_BASE_URL", help="API base URL (default: http://localhost:5022)")
 @click.option("--token", envvar="VIDEO_CLI_TOKEN", help="Auth token (overrides saved token)")
+@click.option("--profile", "-p", envvar="VIDEO_CLI_PROFILE", help="Config profile to use (e.g. local, prod)")
 @click.option("--output", "output_format", type=click.Choice(["json", "table"]), default="json", help="Output format")
 @click.version_option(__version__, prog_name="video-cli")
 @click.pass_context
-def cli(ctx, base_url, token, output_format):
+def cli(ctx, base_url, token, profile, output_format):
     """video-cli — Agent-friendly CLI for video-2022 platform.
 
     Manage videos, users, comments, playlists, and more from the command line.
     All commands output JSON by default for easy integration with AI agents and scripts.
     """
     ctx.ensure_object(dict)
-    ctx.obj["base_url"] = base_url
-    ctx.obj["token"] = token
+    ctx.obj["profile"] = profile
+    # When a profile is explicitly selected, resolve its base_url/token now so
+    # this invocation targets that environment. Without --profile we leave them
+    # unset and let the client lazily fall back to the saved current profile.
+    if profile:
+        ctx.obj["base_url"] = base_url or get_base_url(profile)
+        ctx.obj["token"] = token or get_token(profile)
+    else:
+        ctx.obj["base_url"] = base_url
+        ctx.obj["token"] = token
     ctx.obj["output_format"] = output_format
 
 

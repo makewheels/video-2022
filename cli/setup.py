@@ -10,6 +10,7 @@ setup(
         "click>=8.0",
         "requests>=2.28",
         "tabulate>=0.9",
+        "oss2>=2.18",
     ],
     extras_require={
         "test": ["pytest>=7.0", "pytest-xdist>=3.0", "responses>=0.23"],
