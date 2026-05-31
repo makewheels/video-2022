@@ -88,7 +88,13 @@ public class VideoService {
         checkService.checkFileIsReady(file);
 
         //创建子线程发起转码，先给前端返回结果
-        new Thread(() -> rawFileService.onRawFileUploadFinish(videoId)).start();
+        new Thread(() -> {
+            try {
+                rawFileService.onRawFileUploadFinish(videoId);
+            } catch (Exception e) {
+                log.error("转码处理线程异常，videoId = {}", videoId, e);
+            }
+        }).start();
     }
 
     /**

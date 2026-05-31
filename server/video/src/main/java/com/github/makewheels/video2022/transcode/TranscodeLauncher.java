@@ -158,7 +158,12 @@ public class TranscodeLauncher {
 
         log.info("通过阿里云MPS获取视频信息，videoId = {}, title = {}", videoId, video.getTitle());
         //获取视频媒体信息，确定只用阿里云mps，不用其它供应商
-        SubmitMediaInfoJobResponseBody body = aliyunMpsService.getMediaInfo(sourceKey).getBody();
+        var mediaInfoResponse = aliyunMpsService.getMediaInfo(sourceKey);
+        if (mediaInfoResponse == null || mediaInfoResponse.getBody() == null) {
+            throw new IllegalStateException(
+                    "阿里云MPS获取媒体信息失败（返回为空），videoId = " + videoId + ", sourceKey = " + sourceKey);
+        }
+        SubmitMediaInfoJobResponseBody body = mediaInfoResponse.getBody();
         SubmitMediaInfoJobResponseBody.SubmitMediaInfoJobResponseBodyMediaInfoJob job
                 = body.getMediaInfoJob();
         log.info("阿里云MPS获取视频媒体信息，jobId ={}，接口返回：{}", job.getJobId(), JSON.toJSONString(job));
