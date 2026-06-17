@@ -1,5 +1,6 @@
 """Video management commands."""
 import os
+import subprocess
 import click
 from ..client import get, post, APIError
 from ..output import print_json, print_table, print_error, print_success
@@ -250,6 +251,167 @@ def upload(ctx, filepath, title, description, visibility, video_type):
     except APIError as e:
         print_error(e.message, e.code)
     except Exception as e:  # noqa: BLE001 - surface OSS/network errors to the user
+        print_error(str(e))
+
+
+@video.command("upload-local")
+@click.option("--file", "filepath", required=True, help="Path to the local video file to upload")
+@click.option("--title", default=None, help="Title (defaults to filename)")
+@click.option("--description", default=None, help="Description")
+@click.option(
+    "--visibility",
+    default=None,
+    type=click.Choice(["PUBLIC", "UNLISTED", "PRIVATE"]),
+    help="Visibility (defaults to server default)",
+)
+@click.option("--no-cover", is_flag=True, help="Skip local cover extraction")
+@click.pass_context
+def upload_local(ctx, filepath, title, description, visibility, no_cover):
+    """Upload a video transcoded LOCALLY with FFmpeg — zero cloud transcoding cost.
+
+    Flow: ffprobe -> create(transcodeMode=LOCAL) -> upload raw to OSS ->
+    rawFileUploadFinish (server skips cloud transcode) -> for each rendition:
+    local ffmpeg HLS -> upload m3u8+ts to OSS -> finishTranscode; then a local
+    cover frame. The server never calls Aliyun MPS or the cloud function.
+    """
+    import tempfile
+    from .. import local_transcode as lt
+
+    base_url = ctx.obj.get("base_url")
+    token = ctx.obj.get("token")
+
+    if not os.path.isfile(filepath):
+        print_error(f"File not found: {filepath}")
+        return
+    try:
+        lt.ensure_tools()
+        import oss2  # noqa: F401 - required for OSS upload
+    except ImportError:
+        print_error("oss2 is required for upload. Install with: pip install oss2")
+        return
+    except RuntimeError as e:
+        print_error(str(e))
+        return
+
+    filename = os.path.basename(filepath)
+    size = os.path.getsize(filepath)
+
+    try:
+        info = lt.probe(filepath)
+        resolutions = lt.target_resolutions(info["width"], info["height"])
+        click.echo(
+            f"Probed: {info['width']}x{info['height']}, {info['duration_ms']/1000:.0f}s, "
+            f"{info['video_codec']}/{info['audio_codec']}, ~{info['bitrate_kbps']}kbps; "
+            f"renditions: {', '.join(resolutions)}",
+            err=True,
+        )
+
+        # 1. Pre-create video in LOCAL transcode mode
+        created = post(
+            "/video/create",
+            {
+                "videoType": "USER_UPLOAD",
+                "rawFilename": filename,
+                "size": size,
+                "ttl": "PERMANENT",
+                "transcodeMode": "LOCAL",
+            },
+            base_url=base_url,
+            token=token,
+        )
+        file_id = created.get("fileId")
+        video_id = created.get("videoId")
+
+        # 2. Upload the raw file to OSS (so "download original" keeps working)
+        creds = get("/file/getUploadCredentials", {"fileId": file_id}, base_url=base_url, token=token)
+        endpoint = creds["endpoint"]
+        if not endpoint.startswith("http"):
+            endpoint = "https://" + endpoint
+        auth = oss2.StsAuth(creds["accessKeyId"], creds["secretKey"], creds["sessionToken"])
+        raw_bucket = oss2.Bucket(auth, endpoint, creds["bucket"])
+        last = {"pct": -1}
+
+        def _progress(consumed, total):
+            if total:
+                pct = int(consumed * 100 / total)
+                if pct != last["pct"]:
+                    last["pct"] = pct
+                    click.echo(f"\rUploading raw... {pct}%", nl=False, err=True)
+
+        oss2.resumable_upload(
+            raw_bucket, creds["key"], filepath,
+            multipart_threshold=5 * 1024 * 1024, part_size=1024 * 1024,
+            num_threads=3, progress_callback=_progress,
+        )
+        click.echo("", err=True)
+        get("/file/uploadFinish", {"fileId": file_id}, base_url=base_url, token=token)
+
+        # 3. Metadata before processing (avoids racing the server-side save)
+        if title or description or visibility:
+            data = {"id": video_id, "title": title if title else os.path.splitext(filename)[0]}
+            if description:
+                data["description"] = description
+            if visibility:
+                data["visibility"] = visibility
+            post("/video/updateInfo", data, base_url=base_url, token=token)
+
+        # 4. Notify upload finished — in LOCAL mode the server does NOT transcode
+        get("/video/rawFileUploadFinish", {"videoId": video_id}, base_url=base_url, token=token)
+
+        # 5. Per-rendition: register -> local ffmpeg HLS -> upload -> finish
+        with tempfile.TemporaryDirectory(prefix="video2022-local-") as workdir:
+            for resolution in resolutions:
+                reg = post(
+                    "/transcode/local/createTranscode",
+                    {
+                        "videoId": video_id,
+                        "resolution": resolution,
+                        "width": info["width"],
+                        "height": info["height"],
+                        "durationMs": info["duration_ms"],
+                        "videoCodec": info["video_codec"],
+                        "audioCodec": info["audio_codec"],
+                        "bitrate": info["bitrate_kbps"],
+                    },
+                    base_url=base_url,
+                    token=token,
+                )
+                transcode_id = reg["transcodeId"]
+                out_dir = os.path.join(workdir, transcode_id)
+                os.makedirs(out_dir, exist_ok=True)
+                height = lt.output_height(resolution, info["height"])
+                click.echo(f"Transcoding {resolution} ({height}p) locally...", err=True)
+                lt.transcode_hls(filepath, out_dir, transcode_id, height, info["has_audio"])
+                lt.upload_dir(reg["uploadCredentials"], out_dir, reg["outputDir"])
+                post(
+                    f"/transcode/local/finishTranscode?transcodeId={transcode_id}",
+                    base_url=base_url, token=token,
+                )
+                click.echo(f"  {resolution} done.", err=True)
+
+            # 6. Local cover frame
+            if not no_cover:
+                cover_reg = post(
+                    "/cover/local/createCover",
+                    {"videoId": video_id, "extension": "jpg"},
+                    base_url=base_url, token=token,
+                )
+                cover_path = os.path.join(workdir, "cover.jpg")
+                at = min(3.0, info["duration_ms"] / 2000)
+                lt.extract_cover(filepath, cover_path, at)
+                lt.upload_file(cover_reg["uploadCredentials"], cover_path, cover_reg["coverKey"])
+                post(
+                    f"/cover/local/finishCover?coverId={cover_reg['coverId']}",
+                    base_url=base_url, token=token,
+                )
+                click.echo("Cover done.", err=True)
+
+        print_success("Video uploaded and transcoded locally", created)
+    except APIError as e:
+        print_error(e.message, e.code)
+    except subprocess.CalledProcessError as e:
+        print_error(f"FFmpeg failed: {e}")
+    except Exception as e:  # noqa: BLE001 - surface OSS/ffprobe/network errors to the user
         print_error(str(e))
 
 

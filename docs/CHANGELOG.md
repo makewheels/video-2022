@@ -6,6 +6,15 @@
 
 ---
 
+## feat: 本地转码通道（客户端 FFmpeg 转码后回传，零云转码成本）
+- 新增转码方式 `transcodeMode`：`AUTO`（默认，云端 MPS/云函数）/ `LOCAL`（客户端本机 FFmpeg 转码后回传）
+- `LOCAL` 模式下 `onRawFileUploadFinish` 跳过服务端云转码与 MPS 截帧，等待客户端回传
+- 新增转码 provider `LOCAL_TRANSCODE`、封面 provider `LOCAL_COVER`；登记复用现有 `TranscodeCallbackService.onTranscodeFinish`
+- 新增接口：`POST /transcode/local/createTranscode`、`/transcode/local/finishTranscode`、`/cover/local/createCover`、`/cover/local/finishCover`（均需登录态）
+- CLI 新增 `video upload-local`：ffprobe → 创建(LOCAL) → 上传原片 → 逐档本地 ffmpeg 切 HLS 上传 → 登记 → 本地截帧封面
+- 单测覆盖本地转码两档就绪流程与零 MPS 断言、本地封面登记
+- 更新转码业务/接口文档与 CLI README
+
 ## fix: 播放链路与开发者控制台收口
 - Web 播放器对齐后端播放会话协议，补上 `playbackSessionId`、退出上报和 `sendBeacon` 退出
 - `/file/access` 改为校验 HMAC-SHA256 签名和时间窗口，不再只透传 sign 参数

@@ -14,6 +14,7 @@ public class CreateVideoDTO {
     private String youtubeUrl;
     private Long size;
     private String ttl; // Time To Live 有效期
+    private String transcodeMode; // 转码方式：AUTO（默认，云端 MPS/云函数）/ LOCAL（客户端本地 FFmpeg 转码后回传）
 
     // 后端service传递的参数
     private User user;

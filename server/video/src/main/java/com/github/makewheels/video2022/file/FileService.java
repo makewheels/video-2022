@@ -100,6 +100,17 @@ public class FileService {
     }
 
     /**
+     * 按 OSS key 生成上传凭证（本地转码回传用：客户端凭此把 m3u8/ts/封面直传到指定 key）
+     */
+    public JSONObject getUploadCredentialsByKey(String key) {
+        JSONObject credentials = ossVideoService.generateUploadCredentials(key);
+        if (credentials == null) {
+            throw new VideoException(ErrorCode.FILE_GENERATE_UPLOAD_CREDENTIALS_FAIL);
+        }
+        return credentials;
+    }
+
+    /**
      * 通知文件上传完成，和对象存储服务器确认，改变数据库File状态
      */
     public void uploadFinish(String fileId) {
