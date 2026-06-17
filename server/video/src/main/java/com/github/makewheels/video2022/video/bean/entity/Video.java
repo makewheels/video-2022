@@ -42,6 +42,7 @@ public class Video {
     private String provider;        // 它就是对象存储提供商，和file是一对一关系
     @Indexed
     private String status;          // 转码状态
+    private String transcodeMode;   // 转码方式：AUTO（云端）/ LOCAL（本地 FFmpeg 回传），见 TranscodeMode
 
     @Indexed
     private String rawFileId;       // 用户上传原始视频文件id

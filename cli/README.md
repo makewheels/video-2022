@@ -121,6 +121,12 @@ video-cli video delete --id <videoId>
 video-cli video upload --file ~/Downloads/xxx.mp4
 video-cli video upload --file ~/Downloads/xxx.mp4 --title "标题" --visibility PUBLIC
 
+# 本地转码上传（零云转码成本：本机 FFmpeg 切 HLS 后回传，不调用阿里云 MPS/云函数）
+# 需本机装有 ffmpeg/ffprobe（brew install ffmpeg）
+# 内部流程：ffprobe → create(transcodeMode=LOCAL) → 传原片 → 逐档本机 ffmpeg 切 HLS 直传 OSS → 登记 → 本地截帧封面
+video-cli video upload-local --file ~/Downloads/xxx.mp4 --title "标题" --visibility PUBLIC
+video-cli video upload-local --file ~/Downloads/xxx.mp4 --no-cover   # 跳过本地封面截帧
+
 # 仅预创建视频元数据（拿 videoId/fileId，不上传字节；一般用 upload 即可）
 video-cli video create --file test.mp4
 video-cli video create --file test.mp4 --type USER_UPLOAD

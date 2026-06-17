@@ -9,6 +9,7 @@ import com.github.makewheels.video2022.user.UserRepository;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.VideoRepository;
 import com.github.makewheels.video2022.video.bean.entity.Video;
+import com.github.makewheels.video2022.video.constants.TranscodeMode;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import lombok.extern.slf4j.Slf4j;
@@ -79,6 +80,10 @@ public class RawFileService {
             updateVideoStatus(newVideo, VideoStatus.READY);
             // 视频就绪回调
             videoReadyService.onVideoReady(newVideo.getId());
+        } else if (TranscodeMode.isLocal(newVideo.getTranscodeMode())) {
+            // 本地转码模式：服务端不发起任何云转码/截帧（零 MPS），
+            // 由客户端用本机 FFmpeg 转好后，通过 /transcode/local/* 与 /cover/local/* 回传登记
+            log.info("本地转码模式，跳过服务端云转码与截帧，等待客户端回传，videoId = {}", videoId);
         } else {
             // 如果是新文件，发起转码
             launchTranscode(newVideo);

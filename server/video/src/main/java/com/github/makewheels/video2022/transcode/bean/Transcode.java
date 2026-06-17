@@ -3,6 +3,7 @@ package com.github.makewheels.video2022.transcode.bean;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
+import com.github.makewheels.video2022.transcode.contants.TranscodeStatus;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionTranscodeStatus;
 import com.github.makewheels.video2022.video.constants.VideoStatus;
@@ -71,6 +72,9 @@ public class Transcode {
                 return AliyunTranscodeStatus.isFinishStatus(status);
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 return CloudFunctionTranscodeStatus.isFinishedStatus(status);
+            case TranscodeProvider.LOCAL:
+                // 本地转码回传完成才置 FINISHED，未完成的分辨率不能被算作已结束
+                return TranscodeStatus.FINISHED.equals(status);
         }
         return true;
     }
@@ -84,6 +88,8 @@ public class Transcode {
                 return StringUtils.equals(status, AliyunTranscodeStatus.TranscodeSuccess);
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
                 return true;
+            case TranscodeProvider.LOCAL:
+                return TranscodeStatus.FINISHED.equals(status);
         }
         return true;
     }

@@ -16,6 +16,7 @@ import com.github.makewheels.video2022.video.bean.dto.CreateVideoDTO;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.Watch;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
+import com.github.makewheels.video2022.video.constants.TranscodeMode;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import com.github.makewheels.video2022.video.constants.Visibility;
 import lombok.extern.slf4j.Slf4j;
@@ -86,6 +87,10 @@ public class VideoCreateService {
         String videoType = createVideoDTO.getVideoType();
         video.setVideoType(videoType);
         video.setVisibility(Visibility.PUBLIC);
+
+        //转码方式：默认 AUTO（云端），LOCAL 表示客户端本地 FFmpeg 转码后回传
+        String transcodeMode = createVideoDTO.getTranscodeMode();
+        video.setTranscodeMode(TranscodeMode.isLocal(transcodeMode) ? TranscodeMode.LOCAL : TranscodeMode.AUTO);
 
         //YouTube
         if (videoType.equals(VideoType.YOUTUBE)) {
