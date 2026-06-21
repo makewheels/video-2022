@@ -8,11 +8,12 @@
 # --- Stage 1: 构建前端 ---
 FROM node:20-alpine AS frontend-builder
 WORKDIR /build/web
-COPY web/package.json web/package-lock.json ./
-RUN npm ci --prefer-offline
+RUN corepack enable
+COPY web/package.json web/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY web/ ./
-# 输出到 server 的 static 目录 (与 vite.config.ts outDir 一致)
-RUN npm run build -- --outDir /build/static --emptyOutDir
+# 输出到 /build/static 供后端阶段复制 (覆盖 vite.config.ts 的 outDir)
+RUN pnpm exec tsc -b && pnpm exec vite build --outDir /build/static --emptyOutDir
 
 # --- Stage 2: 构建后端 ---
 FROM maven:3.9-eclipse-temurin-21 AS backend-builder
