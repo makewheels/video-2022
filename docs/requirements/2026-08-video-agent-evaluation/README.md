@@ -12,7 +12,11 @@
 
 - [设计与实施计划](design-and-plan.md)
 - [验证与交付记录](verification.md)
-- [Baseline 结果](results.md)
+- [Baseline 结果](results.md)（⚠️ 链接指向 `speakup` project，已标记为错误 project 下的废弃基线）
+
+## 后续需求
+
+- [2026-08-video-langfuse-project-isolation](../2026-08-video-langfuse-project-isolation/)：Langfuse 项目隔离修复，评测数据迁入独立 `video-2022` project（2026-08-12 完成）。
 
 ## 当前阶段
 
