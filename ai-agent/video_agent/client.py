@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass, field
 from typing import Any, Iterator
 
@@ -69,7 +70,14 @@ class ModelClient:
 
         handle = lf_trace.start_generation(name="model.chat", model=self.model, messages=messages)
         try:
-            result = self._handle_stream(body) if stream else self._handle_nonstream(body)
+            for attempt in range(3):
+                try:
+                    result = self._handle_stream(body) if stream else self._handle_nonstream(body)
+                    break
+                except Exception as exc:
+                    if attempt == 2 or not _is_retryable_transport_error(exc):
+                        raise
+                    time.sleep(_retry_delay(exc, attempt))
         except Exception as e:
             lf_trace.finish_generation(handle, error=e)
             raise
@@ -81,7 +89,6 @@ class ModelClient:
             }
         lf_trace.finish_generation(handle, output=output, usage=result.usage)
         return result
-
     def _handle_nonstream(self, body: dict[str, Any]) -> AgentResponse:
         import urllib.request as req
 
@@ -242,6 +249,20 @@ class ModelClient:
             # 消费方提前放弃生成器（GeneratorExit）或异常路径：把手上的部分结果登记掉
             if handle is not None:
                 lf_trace.finish_generation(handle, error="stream closed before done")
+
+
+def _is_retryable_transport_error(exc: BaseException) -> bool:
+    code = getattr(exc, "code", None) or getattr(exc, "status_code", None)
+    return code == 429 or (isinstance(code, int) and 500 <= code < 600)
+
+
+def _retry_delay(exc: BaseException, attempt: int) -> float:
+    headers = getattr(exc, "headers", None)
+    retry_after = headers.get("Retry-After") if headers is not None else None
+    try:
+        return min(max(float(retry_after), 0.0), 10.0)
+    except (TypeError, ValueError):
+        return 1.0 * (2**attempt)
 
 
 # ── Tool definitions (OpenAI function-calling format) ────────────

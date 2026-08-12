@@ -8,91 +8,135 @@ from pathlib import Path
 from typing import Any
 
 from . import trace as lf_trace
+from .eval_graders import grade_case
+from .eval_user_simulator import run_scripted_scenario
 
 
-def run_eval_suite(assistant, cases_path: str) -> dict[str, Any]:
+def run_eval_suite(assistant, cases_path: str, *, trials: int = 1) -> dict[str, Any]:
+    if trials < 1:
+        raise ValueError("trials 必须 >= 1")
     cases = _load_jsonl(cases_path)
     results = []
-    passed = 0
+    case_passes: dict[str, list[bool]] = {str(case["id"]): [] for case in cases}
     total_time = 0.0
 
-    for idx, case in enumerate(cases):
-        print(f"  [{idx + 1}/{len(cases)}] {case['id']}: {case['query'][:60]}", end=" ", flush=True)
-        # 每个 case 一个 trace，environment=eval 和线上流量隔开；未配 LANGFUSE_* 时整体 no-op
-        trace_handle = lf_trace.start_trace(
-            name=f"eval:{case['id']}",
-            input={"query": case["query"]},
-            environment="eval",
-            tags=["eval", f"case:{case['id']}"],
-        )
-        start = time.time()
-        try:
-            result = assistant.answer(case["query"])
-        except Exception as e:
+    run_number = 0
+    total_runs = len(cases) * trials
+    for case in cases:
+        query, history = _case_input(case)
+        for trial in range(1, trials + 1):
+            run_number += 1
+            print(f"  [{run_number}/{total_runs}] {case['id']}#{trial}: {query[:60]}", end=" ", flush=True)
+            trace_handle = lf_trace.start_trace(
+                name=f"eval:{case['id']}",
+                input=case.get("input", {"query": query}),
+                environment="eval",
+                tags=["eval", f"case:{case['id']}", f"trial:{trial}"],
+                metadata={"trial": trial, "category": case.get("category"), "risk": case.get("risk")},
+            )
+            _reset(assistant)
+            before = _snapshot(assistant)
+            start = time.time()
+            error: Exception | None = None
+            try:
+                if case.get("input", {}).get("turns"):
+                    result = run_scripted_scenario(assistant, case["input"]["turns"])
+                else:
+                    result = assistant.chat(query, history=history) if history else assistant.answer(query)
+            except Exception as exc:
+                error = exc
+                result = {"answer": str(exc), "trace": []}
             elapsed = time.time() - start
             total_time += elapsed
-            print(f"❌ ({elapsed:.1f}s) — API error: {e}")
-            lf_trace.score(trace=trace_handle, name="eval_pass", value=0.0, comment=f"API error: {e}", environment="eval")
-            lf_trace.end_trace(trace_handle, error=e)
-            results.append({
-                "id": case["id"],
-                "query": case["query"],
-                "passed": False,
-                "reasons": [f"API error: {e}"],
-                "result": {"answer": str(e), "trace": []},
-                "elapsed": elapsed,
-            })
-            if idx < len(cases) - 1:
-                time.sleep(0.5)
-            continue
+            after = _snapshot(assistant)
 
-        elapsed = time.time() - start
-        total_time += elapsed
+            if "expectations" in case:
+                graded = grade_case(case, result, state_before=before, state_after=after)
+                ok = graded.passed and error is None
+                reasons = ([f"API error: {error}"] if error else []) + graded.reasons
+                scores = graded.scores.copy()
+                if error is not None:
+                    scores["task_success"] = 0.0
+                    scores["eval_pass"] = 0.0
+                grade_payload = graded.as_dict()
+            else:
+                reasons = ([f"API error: {error}"] if error else []) + _grade(case, result)
+                ok = not reasons
+                scores = {"eval_pass": 1.0 if ok else 0.0}
+                grade_payload = {"passed": ok, "scores": scores, "reasons": reasons}
 
-        # Rate-limit between cases (MiniMax needs ~2s spacing)
-        if idx < len(cases) - 1:
-            time.sleep(2.0)
+            case_passes[str(case["id"])].append(ok)
+            print(f"{'✅' if ok else '❌'} ({elapsed:.1f}s)" + (f" — {', '.join(reasons)}" if reasons else ""))
+            for score_name, value in scores.items():
+                lf_trace.score(
+                    trace=trace_handle,
+                    name=score_name,
+                    value=value,
+                    comment=None if value == 1.0 else "; ".join(reasons)[:1000],
+                    environment="eval",
+                    metadata={"elapsed": elapsed, "trial": trial},
+                )
+            lf_trace.end_trace(
+                trace_handle,
+                output={"answer": result.get("answer"), "passed": ok, "scores": scores},
+                error=error,
+            )
+            results.append(
+                {
+                    "id": case["id"],
+                    "trial": trial,
+                    "query": query,
+                    "passed": ok,
+                    "reasons": reasons,
+                    "grade": grade_payload,
+                    "result": result,
+                    "elapsed": elapsed,
+                }
+            )
 
-        reasons = _grade(case, result)
-        ok = not reasons
-        if ok:
-            passed += 1
-            print(f"✅ ({elapsed:.1f}s)")
-        else:
-            print(f"❌ ({elapsed:.1f}s) — {', '.join(reasons)}")
-
-        lf_trace.score(
-            trace=trace_handle,
-            name="eval_pass",
-            value=1.0 if ok else 0.0,
-            comment=None if ok else "; ".join(reasons),
-            environment="eval",
-            metadata={
-                "elapsed": elapsed,
-                "tools": [call.get("name") for call in result.get("trace", [])],
-            },
-        )
-        lf_trace.end_trace(trace_handle, output={"answer": result.get("answer"), "passed": ok})
-
-        results.append({
-            "id": case["id"],
-            "query": case["query"],
-            "passed": ok,
-            "reasons": reasons,
-            "result": result,
-            "elapsed": elapsed,
-        })
+            if run_number < total_runs:
+                time.sleep(2.0)
 
     # eval CLI 是短生命周期进程，退出前冲一次队列
     lf_trace.flush()
 
+    passed_cases = sum(all(outcomes) for outcomes in case_passes.values())
     return {
         "total": len(cases),
-        "passed": passed,
-        "failed": len(cases) - passed,
+        "passed": passed_cases,
+        "failed": len(cases) - passed_cases,
+        "trials": trials,
+        "total_runs": total_runs,
+        "passed_runs": sum(item["passed"] for item in results),
+        "pass_at_k": {case_id: all(outcomes) for case_id, outcomes in case_passes.items()},
         "total_time": total_time,
         "results": results,
     }
+
+
+def _snapshot(assistant: Any) -> Any:
+    snapshot = getattr(getattr(assistant, "tools", None), "snapshot_state", None)
+    return snapshot() if callable(snapshot) else None
+
+
+def _reset(assistant: Any) -> None:
+    reset = getattr(getattr(assistant, "tools", None), "reset_fixture_state", None)
+    if callable(reset):
+        reset()
+
+
+def _case_input(case: dict[str, Any]) -> tuple[str, list[dict[str, Any]] | None]:
+    if "input" not in case:
+        return str(case["query"]), None
+    item_input = case["input"]
+    if item_input.get("messages"):
+        messages = list(item_input["messages"])
+        user_indexes = [index for index, message in enumerate(messages) if message.get("role") == "user"]
+        if not user_indexes:
+            raise ValueError(f"case {case['id']} 的 messages 缺少 user 消息")
+        last = user_indexes[-1]
+        return str(messages[last]["content"]), messages[:last]
+    return str(item_input["query"]), None
 
 
 def _grade(case: dict[str, Any], result: dict[str, Any]) -> list[str]:

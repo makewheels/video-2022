@@ -6,6 +6,31 @@
 
 ## 一、开发前准备
 
+### 1.0 新功能先写文档（必须）
+
+所有新功能在修改代码之前，必须先在 `docs/requirements/` 创建独立需求目录和设计/实施文档。没有文档，不开始实现。
+
+文件命名：
+
+```text
+docs/requirements/YYYY-MM-<feature>/README.md
+docs/requirements/YYYY-MM-<feature>/design.md
+docs/requirements/YYYY-MM-<feature>/plan.md
+docs/requirements/YYYY-MM-<feature>/verification.md
+```
+
+一个需求可以跨多个 PR，但必须对应一个独立用户目标和一套验收标准。可以根据复杂度选择“设计 + 实施计划”两份文档，或合并为 `design-and-plan.md`。文档至少包含：
+
+- 背景、目标和非目标；
+- 当前状态和证据来源；
+- 关键设计决策及其理由；
+- 数据、接口、权限、安全和部署影响；
+- 文件变更范围和分阶段实施任务；
+- 测试策略、验收标准和回滚/风险说明；
+- 状态标记：草案、准备执行、执行中或已完成。
+
+实施 PR 必须链接对应需求目录。实现过程中设计发生变化时，先更新文档，再继续修改代码。完成后把真实验证结果写入 `verification.md`，并在 `docs/CHANGELOG.md` 只记录交付时间线。Bug 修复可以不单独创建设计文档，但仍需更新相关业务、API、测试文档和 CHANGELOG。
+
 ### 1.1 阅读相关文档（必须）
 
 **在写任何代码之前**，先阅读以下文档：
@@ -243,6 +268,7 @@ push to master → CI 测试 → 构建 Docker 镜像 → 推送阿里云镜像�
 
 | 文档 | 什么时候更新 |
 |------|------------|
+| `docs/requirements/*/` | 新功能开始前创建；设计、实施和验证状态变化时同步更新 |
 | `docs/CHANGELOG.md` | 每个 PR 合并前 |
 | `docs/业务/*.md` | 业务逻辑变更时 |
 | `docs/api/*.md` | 接口变更时 |
@@ -320,6 +346,7 @@ A: 更新 `.env.example`，在 PR 描述中注明，CHANGELOG 中记录。
 提交 PR 前自查：
 
 - [ ] 分支是基于最新 master 创建的
+- [ ] 新功能已有 `docs/requirements/` 需求目录和设计/实施文档，并在 PR 中链接
 - [ ] 所有新代码有单元测试
 - [ ] 本地 `mvn test` 通过
 - [ ] 本地 Android/iOS 测试通过（如果改了移动端）

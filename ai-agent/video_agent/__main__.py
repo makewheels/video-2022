@@ -70,6 +70,12 @@ def build_parser() -> argparse.ArgumentParser:
     ev.add_argument("--fixture", default=None)
     ev.add_argument("--token", default=None)
     ev.add_argument("--cases", default=None)
+    ev.add_argument("--suite", choices=["smoke", "regression", "multi_turn"], default="smoke")
+    ev.add_argument("--trials", type=int, default=1)
+    ev.add_argument("--run-name", default=None)
+    ev.add_argument("--langfuse", action="store_true", help="同步 Dataset 并创建 Langfuse Experiment")
+    ev.add_argument("--sync-only", action="store_true", help="只同步 Langfuse Dataset，不调用模型")
+    ev.add_argument("--judge", action="store_true", help="附加主观质量 LLM Judge（不覆盖安全 veto）")
     ev.add_argument("--json", action="store_true")
 
     # serve
@@ -171,13 +177,60 @@ def main() -> None:
     if args.command == "eval":
         assistant, tools = _make_assistant(args)
         config = get_config()
-        cases_path = args.cases or os.path.join(config.project_root, "evals", "video_agent_eval.jsonl")
-        report = run_eval_suite(assistant, cases_path)
+        cases_path = args.cases or os.path.join(
+            config.project_root,
+            "evals",
+            "datasets",
+            f"video_agent_{args.suite}_v1.jsonl",
+        )
+
+        if args.langfuse or args.sync_only:
+            from .eval_dataset import load_eval_cases, validate_eval_file
+            from .eval_langfuse import run_dataset_experiments, sync_dataset
+
+            errors = validate_eval_file(cases_path)
+            if errors:
+                for error in errors:
+                    print(error, file=sys.stderr)
+                raise SystemExit(1)
+            cases = load_eval_cases(cases_path)
+            synced = sync_dataset(cases, suite=args.suite)
+            schema_note = "服务端 schema 已启用" if synced.schema_enforced else "服务端 schema 未启用，使用 Git + 本地校验器"
+            print(f"✅ Langfuse Dataset: {synced.dataset_name}，upsert {synced.items_upserted} 条；{schema_note}")
+            if args.sync_only:
+                return
+            experiment_results = run_dataset_experiments(
+                assistant,
+                suite=args.suite,
+                trials=args.trials,
+                run_name=args.run_name,
+                include_judge=args.judge,
+            )
+            summary = [
+                {
+                    "run_name": result.run_name,
+                    "dataset_run_id": result.dataset_run_id,
+                    "dataset_run_url": result.dataset_run_url,
+                    "items": len(result.item_results),
+                }
+                for result in experiment_results
+            ]
+            if args.json:
+                print(json.dumps(summary, ensure_ascii=False, indent=2, default=str))
+            else:
+                for result in experiment_results:
+                    print(result.format())
+            return
+
+        report = run_eval_suite(assistant, cases_path, trials=args.trials)
 
         if args.json:
             print(json.dumps(report, ensure_ascii=False, indent=2, default=str))
         else:
-            print(f"\n📊 评估结果: {report['passed']}/{report['total']} 通过")
+            print(
+                f"\n📊 评估结果: {report['passed']}/{report['total']} case 通过 "
+                f"({report['passed_runs']}/{report['total_runs']} trials)"
+            )
             if report["failed"] > 0:
                 print(f"❌ {report['failed']} 条失败:\n")
             else:
