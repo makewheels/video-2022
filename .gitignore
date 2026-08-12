@@ -41,6 +41,8 @@ build/
 ### Node ###
 node_modules/
 test/venv/
+test-results/
+playwright-report/
 
 ### Build artifacts ###
 server/video/src/main/resources/static/
@@ -48,6 +50,7 @@ console/dist/
 
 ### Python ###
 **/__pycache__/
+.venv/
 
 ### iOS ###
 ios/VideoApp.xcodeproj/
