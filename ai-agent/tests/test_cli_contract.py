@@ -69,6 +69,8 @@ CALLS: list[tuple[str, dict]] = [
     ("get_my_info", {}),
     ("get_youtube_info", {"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}),
     ("transfer_youtube", {"url": "https://youtu.be/dQw4w9WgXcQ"}),
+    # resolve（经 list_my_videos 走 CLI）
+    ("resolve_videos", {"keyword": "教程"}),
 ]
 
 
@@ -105,6 +107,12 @@ def test_watch_progress_requires_client_id():
     tools = VideoTools(backend="cli")
     result = tools.get_watch_progress("v1")
     assert "error" in result
+
+
+def test_resolve_videos_fixture_shape():
+    result = VideoTools(backend="fixture").resolve_videos("AI")
+    assert result["total"] >= 1
+    assert {"videoId", "title", "status", "watchCount", "createTime"} <= set(result["candidates"][0])
 
 
 @pytest.mark.parametrize(

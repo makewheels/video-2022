@@ -29,10 +29,21 @@ class _FakeModelClient:
     base_url = "http://fake"
 
     def chat(self, messages, tools=None, *, stream=False):
-        if any(m.get("role") == "tool" for m in messages):
+        if messages and messages[-1].get("role") == "tool":
             return AgentResponse(text="这是基于工具结果的回答")
         return AgentResponse(
             tool_calls=[ToolCall(id="call-1", name="search_public_videos", arguments={"keyword": "测试"})]
+        )
+
+
+class _WriteAttemptModelClient(_FakeModelClient):
+    """第一轮固定尝试 delete_video（未确认会被拒），用于验证确认反馈闭环。"""
+
+    def chat(self, messages, tools=None, *, stream=False):
+        if messages and messages[-1].get("role") == "tool":
+            return AgentResponse(text="删除《测试》需要先确认，确认后我再执行")
+        return AgentResponse(
+            tool_calls=[ToolCall(id="call-1", name="delete_video", arguments={"video_id": "v1"})]
         )
 
 
@@ -72,7 +83,7 @@ def test_chat_stream_basic(test_client):
     """Test basic chat streaming."""
     response = test_client.post(
         "/chat/stream",
-        json={"query": "搜索关键词'测试'的视频", "session_id": "test-session-1"}
+        json={"query": "搜索关键词'测试'的视频", "session_id": f"basic-{int(time.time() * 1000)}"}
     )
     assert response.status_code == 200
     assert response.headers["content-type"] == "text/event-stream; charset=utf-8"
@@ -133,6 +144,31 @@ def test_cleanup_sessions(test_client):
     assert response.status_code == 200
     data = response.json()
     assert "deleted" in data
+
+
+def test_chat_stream_confirmation_gets_explained():
+    """写操作被拒（未确认）后，模型应多走一轮生成解释，confirmation_needed 之后还有 text 事件。"""
+    if not _mongo_available():
+        pytest.skip("本机没有运行 MongoDB")
+    app = create_optimized_app(_WriteAttemptModelClient(), VideoTools(backend="fixture"))
+    with TestClient(app) as client:
+        response = client.post(
+            "/chat/stream",
+            json={"query": "删除《测试》", "session_id": f"confirm-{int(time.time())}"},
+        )
+    assert response.status_code == 200
+
+    events = []
+    for line in response.iter_lines():
+        if line.startswith("data: "):
+            data = line[6:]
+            if data != "[DONE]":
+                events.append(json.loads(data))
+
+    types = [e["type"] for e in events]
+    assert "confirmation_needed" in types
+    confirm_idx = types.index("confirmation_needed")
+    assert "text" in types[confirm_idx + 1:], "confirmation_needed 之后应有模型生成的解释文本"
 
 
 def test_error_handling_invalid_request(test_client):

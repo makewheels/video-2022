@@ -77,6 +77,7 @@ def create_app(assistant, tools) -> FastAPI:
 
         async def generate():
             max_turns = 8
+            confirmation_announced = False
             for _ in range(max_turns):
                 # Build SSE event
                 event = client.chat(messages, stream=False)
@@ -114,10 +115,13 @@ def create_app(assistant, tools) -> FastAPI:
                         "content": json.dumps(tr["result"], ensure_ascii=False, default=str),
                     })
 
-                # Stop if any tool requires confirmation
+                # 写操作被拒绝执行（需确认）：结果已在轨迹里，让模型多走一轮向用户解释计划，而非直接断流；
+                # 若模型下一轮仍重复调用写工具，则不再给机会，直接结束
                 if any(isinstance(tr["result"], dict) and tr["result"].get("requiresConfirmation") for tr in tool_results):
                     yield f"data: {json.dumps({'type': 'confirmation_needed', 'message': '以上写操作需要确认'}, ensure_ascii=False)}\n\n"
-                    break
+                    if confirmation_announced:
+                        break
+                    confirmation_announced = True
 
             yield "data: [DONE]\n\n"
 
