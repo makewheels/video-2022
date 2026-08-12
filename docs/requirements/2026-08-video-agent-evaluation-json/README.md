@@ -1,7 +1,8 @@
 # 评测数据改为可读 JSON
 
-> 状态：本地验收完成，待 PR
+> 状态：PR #108 待合并
 > 日期：2026-08-12
+> PR：<https://github.com/makewheels/video-2022/pull/108>
 
 ## 文档
 

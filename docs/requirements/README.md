@@ -4,7 +4,7 @@
 
 | 需求 | 状态 | 入口 |
 |---|---|---|
-| 评测数据改为可读 JSON | 本地验收完成，待 PR | [2026-08-video-agent-evaluation-json](2026-08-video-agent-evaluation-json/) |
+| 评测数据改为可读 JSON | PR #108 待合并 | [2026-08-video-agent-evaluation-json](2026-08-video-agent-evaluation-json/) |
 | Video Agent 评测与 Langfuse | v1 已完成，生产闭环待接入 | [2026-08-video-agent-evaluation](2026-08-video-agent-evaluation/) |
 
 ## 目录约定
