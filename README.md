@@ -68,14 +68,16 @@ cd web && npm run dev  # 端口 5173，自动代理 API 到 5022
 
 ## 项目架构
 
-三子项目结构：
+多端 monorepo 结构：
 - `web/` - React SPA 前端 (Vite + TypeScript)
 - `server/` - Java Spring Boot 后端 (Maven 多模块)
   - `video/` - 核心视频服务模块
   - `youtube/` - YouTube 下载服务模块
+- `console/` - 开发者控制台 (React + TanStack Query)
 - `android/` - Android 原生客户端 (Kotlin + Jetpack Compose)
 - `ios/` - iOS 原生客户端 (Swift + SwiftUI)
 - `cli/` - 命令行工具 (Python)
+- `ai-agent/` - 自然语言视频助手与评测体系 (Python，封装 video-cli)
 - `test/` - Python E2E 测试 (pytest + Playwright)
 
 ### 核心模块分包结构 (video 模块)
@@ -179,6 +181,8 @@ cd web && npm run dev  # 端口 5173，自动代理 API 到 5022
 | 播放列表 | [播放列表接口](docs/api/6-播放列表接口.md) | 播放列表 CRUD |
 | App | [App 接口](docs/api/7-App接口.md) | 客户端更新检查 |
 | 统计 | [统计接口](docs/api/8-统计接口.md) | 流量消耗统计 |
+| 评论 | [评论接口](docs/api/9-评论接口.md) | 评论、回复、计数 |
+| 点赞 | [点赞接口](docs/api/10-点赞接口.md) | 点赞、点踩、状态查询 |
 
 ### 认证方式
 
@@ -212,6 +216,9 @@ curl -H "token: {your_token}" "http://localhost:5022/video/getMyVideoList"
 | [计费系统](docs/业务/8-计费系统.md) | 流量费用、钱包、账单、自动计费任务 |
 | [播放列表](docs/业务/9-播放列表.md) | CRUD、排序、分享 |
 | [系统服务](docs/业务/10-系统服务.md) | ID 生成、异常处理、IP 定位、定时任务 |
+| [视频删除与级联](docs/业务/11-视频删除与级联.md) | 删除流程与关联数据级联处理 |
+| [评论与回复系统](docs/业务/12-评论与回复系统.md) | 评论、回复、点赞与计数 |
+| [视频互动](docs/业务/13-视频互动.md) | 点赞、点踩等互动能力 |
 
 ---
 
@@ -259,7 +266,7 @@ cd cli && pip install -e ".[test]" && pytest tests/ -v
 
 ### CI 流水线
 
-GitHub Actions 自动运行 **7 个 Job**：
+GitHub Actions 自动运行 **10 个 Job**：
 
 | Job | 平台 | 说明 |
 |-----|------|------|
@@ -268,8 +275,11 @@ GitHub Actions 自动运行 **7 个 Job**：
 | API E2E | ubuntu | Python pytest API 测试 |
 | 浏览器 E2E | ubuntu | Playwright 浏览器测试 |
 | CLI 测试 | ubuntu | CLI 工具测试 |
+| AI Agent 测试 | ubuntu | ai-agent pytest（离线 fixture） |
 | Android 测试 | ubuntu | Gradle 单元测试 |
 | iOS 测试 | macOS | XCTest 单元测试 |
+| 构建 E2E 产物 | ubuntu | 前端构建 + 后端 JAR，供 E2E 共享 |
+| build-and-test | ubuntu | 汇总门禁，检查以上 Job 全部通过 |
 
 ---
 

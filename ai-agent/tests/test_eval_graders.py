@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from video_agent.eval_graders import grade_case
+from video_agent.evaluation.eval_graders import grade_case
 
 
 def _case(expectations):

@@ -1,6 +1,6 @@
 # video-2022 AI Agent
 
-这个目录是一版独立的自然语言视频助手原型。它把现有 `video-cli` 包成稳定工具，再在上面提供 planner、执行器和 eval harness。
+自然语言视频助手：把 `video-cli` 包装成稳定工具面，用模型驱动的 tool-use 循环（`assistant.py`）回答和执行操作，并附带版本化评测体系。
 
 目标不是替代现有 CLI，而是让用户可以问：
 
@@ -14,148 +14,84 @@
 ```text
 ai-agent/
 ├── README.md
-├── requirements.txt
+├── pyproject.toml / uv.lock   # uv 管理的依赖
 ├── docs/
-│   ├── eval-plan.md
-│   └── implementation.md
+│   └── archive/               # 历史计划与实施快照（仅背景参考）
 ├── evals/
-│   └── video_agent_eval.json
+│   ├── README.md              # 评测数据说明与命令入口
+│   ├── datasets/              # 版本化 Dataset（smoke / regression / multi-turn）
+│   ├── judges/                # LLM Judge rubric
+│   ├── schema/                # 用例 JSON Schema
+│   ├── sources/               # 场景来源登记
+│   └── legacy/                # 旧 seed（仅追溯，代码不加载）
 ├── fixtures/
-│   └── videos.json
+│   └── videos.json            # 离线 fixture 数据
+├── tests/                     # pytest（离线，CI 运行）
 └── video_agent/
-    ├── __main__.py
-    ├── assistant.py
-    ├── eval_runner.py
-    ├── llm.py
-    ├── planner.py
-    └── tools.py
+    ├── __main__.py            # CLI 入口：ask / chat / eval / serve
+    ├── assistant.py           # agent 循环
+    ├── client.py              # 模型客户端（OpenAI-compatible）与工具 schema
+    ├── tools.py               # 工具执行层（fixture / cli 两种后端）
+    ├── config.py              # 环境变量驱动的统一配置
+    ├── server.py              # FastAPI 服务（serve 默认）
+    ├── server_optimized.py    # serve --optimized（MongoDB 会话持久化、错误处理）
+    ├── session_manager.py / context_manager.py / error_handler.py / trace.py
+    └── evaluation/            # 评测子包：dataset / graders / judge / langfuse / runner / user_simulator
 ```
 
 ## 安装
 
 ```bash
 cd ai-agent
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+uv sync
 ```
 
-如果只跑离线 eval，不需要真实视频服务、不需要模型 API、不需要 OSS。
+离线 fixture 后端不需要真实视频服务和 OSS；调用真实模型需要 `VIDEO_AGENT_LLM_*` 凭证（见下）。
 
-## 离线试用
+## 使用
 
 ```bash
-python -m video_agent ask "我上传了几个视频？" --backend fixture
-python -m video_agent ask "我最早上传的视频是什么？" --backend fixture
-python -m video_agent ask "AI 教程播放量是多少？" --backend fixture
-python -m video_agent eval --backend fixture
+# 单次提问（fixture 离线后端）
+uv run python -m video_agent ask "我上传了几个视频？" --backend fixture
+
+# 交互式对话
+uv run python -m video_agent chat --backend fixture
+
+# HTTP 服务（默认 8765 端口；--optimized 启用 MongoDB 会话持久化版本）
+uv run python -m video_agent serve --backend fixture --port 8765
+
+# 评测（需要 LLM 凭证；评测数据说明见 evals/README.md）
+uv run python -m video_agent eval --suite smoke --trials 1
 ```
 
-## 真实 CLI 后端
+真实后端（`--backend cli`）需要可用的 `video-cli` 登录态，可用 `VIDEO_CLI_BASE_URL` / `VIDEO_CLI_TOKEN` 覆盖。
 
-先保证原有 CLI 可用：
+写操作（上传、删除等）默认要求确认；显式放行用 `--confirm-write` 或 `VIDEO_AGENT_CONFIRM_WRITE=true`。
+
+## 模型配置
+
+不绑定供应商，任何 OpenAI-compatible `/chat/completions` 服务均可：
 
 ```bash
-cd ../cli
-pip install -e .
-video-cli auth login --phone 13800138000 --code 111
+export VIDEO_AGENT_LLM_PROVIDER=<provider>
+export VIDEO_AGENT_LLM_API_KEY=<key>
+export VIDEO_AGENT_LLM_BASE_URL=<base-url>
+export VIDEO_AGENT_LLM_MODEL=<model>
 ```
 
-然后回到 `ai-agent`：
+兼容别名：`OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` 等，`VIDEO_AGENT_LLM_*` 优先级最高。
+
+## 测试
 
 ```bash
-python -m video_agent ask "我上传了几个视频？" --backend cli
-python -m video_agent ask "最近上传的视频状态怎么样？" --backend cli
+uv run pytest tests/ -v
 ```
 
-可以用环境变量覆盖服务地址和 token：
+除 session manager 测试需要本地 MongoDB（`mongodb://localhost:27017`）外，其余测试全部离线运行（fixture + mock）。CI 的 `AI Agent 测试` Job 自带 MongoDB service。
 
-```bash
-VIDEO_CLI_BASE_URL=http://localhost:5022 \
-VIDEO_CLI_TOKEN=your-token \
-python -m video_agent ask "我上传了几个视频？" --backend cli
-```
+## 文档导航
 
-## LLM Planner
-
-默认 planner 是确定性规则，方便 eval 稳定复现。要接真实模型，用通用 `llm` planner：
-
-```bash
-export VIDEO_AGENT_LLM_PROVIDER=minimax
-export VIDEO_AGENT_LLM_API_KEY=...
-export VIDEO_AGENT_LLM_BASE_URL=https://api.minimaxi.com/v1
-export VIDEO_AGENT_LLM_MODEL=MiniMax-M2.7
-python -m video_agent ask "AI 教程播放量是多少？" --backend fixture --planner llm
-```
-
-不绑定 MiniMax。换成任何 OpenAI-compatible `/chat/completions` 供应商时，只替换这组变量：
-
-```bash
-export VIDEO_AGENT_LLM_PROVIDER=openrouter
-export VIDEO_AGENT_LLM_API_KEY=...
-export VIDEO_AGENT_LLM_BASE_URL=https://openrouter.ai/api/v1
-export VIDEO_AGENT_LLM_MODEL=...
-```
-
-兼容别名：
-
-```bash
-OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL
-MINIMAX_API_KEY / MINIMAX_BASE_URL / MINIMAX_MODEL
-```
-
-优先级是 `VIDEO_AGENT_LLM_*` 最高。`--planner minimax` 仍可用，但只是兼容旧命令，推荐统一使用 `--planner llm`。
-
-## 当前覆盖的自然语言能力
-
-基于现有 `video-cli`，第一版已覆盖：
-
-- 我的视频：数量、最早上传、最近上传、列表查询。
-- 视频详情：播放量、处理状态、流量消耗。
-- 上传：真实上传实现已接入，但默认确认保护。
-- 搜索：公开视频关键词/分类搜索。
-- 评论：评论数、评论列表。
-- 播放列表：播放列表列表。
-- 通知：未读数量、通知列表。
-- 点赞：当前用户点赞/点踩状态。
-- 分享：分享短码统计、创建分享链接确认保护。
-- 观看：观看历史。
-
-现有 CLI 还有 YouTube 转存、评论新增/删除/点赞、播放列表增删改、通知已读、视频更新/删除、点赞/点踩等写操作。建议后续统一纳入确认机制和更细 eval。
-
-## 上传
-
-上传是写操作，默认不会真实执行。真实上传需要：
-
-```bash
-python -m video_agent ask "把 ./demo.mp4 上传成私密视频" \
-  --backend cli \
-  --confirm-write
-```
-
-真实上传流程：
-
-1. `/video/create`
-2. `/file/getUploadCredentials`
-3. OSS 上传
-4. `/file/uploadFinish`
-5. `/video/rawFileUploadFinish`
-
-## Eval 思路
-
-这版参考 Anthropic 的 agent eval 建议：
-
-- task：一个用户问题和成功标准
-- trial：一次运行
-- grader：代码规则检查 intent、答案片段、工具轨迹
-- transcript/trace：记录 planner 和工具调用
-- outcome：最终答案和工具返回的数据
-- harness：`video_agent eval`
-
-当前内置 eval 覆盖 21 条任务，包括用户举例和补充功能：视频数量、最早/最近上传、播放量、状态、流量、观看历史、上传保护、公开视频搜索、评论、播放列表、通知、点赞状态、分享统计、分享创建保护。
-
-参考资料：
-
-- Anthropic, "Demystifying evals for AI agents": https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents
-- Anthropic, "Writing effective tools for AI agents": https://www.anthropic.com/engineering/writing-tools-for-agents
-- Anthropic, "Building effective agents": https://www.anthropic.com/engineering/building-effective-agents
+- 评测体系当前设计：`../docs/design/video-agent-evaluation.md`
+- 评测数据与命令：`evals/README.md`
+- 需求与验收记录：`../docs/requirements/2026-08-video-agent-evaluation*`
+- 历史计划与实施快照：`docs/archive/`（仅背景参考）

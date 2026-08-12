@@ -4,8 +4,9 @@
 
 | 需求 | 状态 | 入口 |
 |---|---|---|
-| 评测数据改为可读 JSON | PR #108 待合并 | [2026-08-video-agent-evaluation-json](2026-08-video-agent-evaluation-json/) |
+| 评测数据改为可读 JSON | 已合并（PR #108） | [2026-08-video-agent-evaluation-json](2026-08-video-agent-evaluation-json/) |
 | Video Agent 评测与 Langfuse | v1 已完成，生产闭环待接入 | [2026-08-video-agent-evaluation](2026-08-video-agent-evaluation/) |
+| 项目文件结构审计与重组 | 待人工复核（PR #109） | [2026-08-project-structure-review](2026-08-project-structure-review/) |
 
 ## 目录约定
 
@@ -21,4 +22,4 @@ docs/requirements/YYYY-MM-<feature>/
 
 `docs/CHANGELOG.md` 只记录已经交付的时间线，并链接需求目录和 PR，不复制设计或执行过程。
 
-现有 `docs/plans/` 是历史平铺文档。新需求不再往其中新增文件；旧文档按需求分组、链接检查和人工复核后渐进迁移，不做一次性无审阅搬迁。
+历史平铺计划文档已整体迁入 `docs/归档/plans/`，仅作背景参考，不再新增。

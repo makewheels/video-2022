@@ -13,6 +13,7 @@
 - **Android**: Kotlin + Jetpack Compose + Hilt + Retrofit
 - **iOS**: Swift 6 + SwiftUI + URLSession
 - **CLI**: Python 3.12 + Click
+- **AI Agent**: Python + FastAPI，自然语言视频助手与版本化评测体系
 - **开发者控制台**: React + TypeScript（OAuth 应用管理、API 文档、统计）
 - **部署**: GitHub Actions CI/CD → 腾讯云服务器
 
@@ -23,6 +24,7 @@
 - `android/` — Android 客户端
 - `ios/` — iOS 客户端
 - `cli/` — Python 命令行工具
+- `ai-agent/` — 自然语言视频助手与离线评测体系（封装 video-cli）
 - `console/` — 开发者控制台（OAuth、API 文档、Webhook）
 - `test/` — E2E 测试（pytest + Playwright）
 - `docs/` — 项目文档（业务设计、API 规范、测试文档）
@@ -35,7 +37,7 @@
 - `server/video/pom.xml` — Maven 配置
 - `web/src/` — 前端 React 组件和页面
 - `console/src/` — 开发者控制台 React 代码
-- `.github/workflows/ci.yml` — CI 流水线（9 个 Job）
+- `.github/workflows/ci.yml` — CI 流水线（10 个 Job）
 - `.github/workflows/deploy.yml` — 自动部署流水线
 - `scripts/deploy.sh` — 服务器端部署脚本
 - `CONTRIBUTING.md` — 开发流程规范
@@ -84,6 +86,12 @@ cd android && ./gradlew testDebugUnitTest
 
 # iOS 测试
 cd ios && xcodegen generate && xcodebuild test ...
+
+# CLI 测试
+cd cli && uv run pytest tests/
+
+# AI Agent 测试（离线 fixture）
+cd ai-agent && uv run pytest tests/
 
 # E2E 测试
 cd test && pytest

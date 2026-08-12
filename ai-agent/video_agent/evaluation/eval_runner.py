@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
-from . import trace as lf_trace
+from .. import trace as lf_trace
 from .eval_dataset import load_eval_cases
 from .eval_graders import grade_case
 from .eval_user_simulator import run_scripted_scenario

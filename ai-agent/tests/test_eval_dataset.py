@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from video_agent.eval_dataset import (
+from video_agent.evaluation.eval_dataset import (
     EvalDatasetError,
     _cli,
     load_eval_cases,

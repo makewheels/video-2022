@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from video_agent.eval_user_simulator import run_scripted_scenario
+from video_agent.evaluation.eval_user_simulator import run_scripted_scenario
 
 
 class _Assistant:

@@ -36,7 +36,7 @@
 | trial 状态隔离和最终状态 | partial | `ic-fixture-backend`、`eh-state-isolation` | 待可变 fixture |
 | 投稿合规与版权检查 | unsupported / roadmap | `eh-compliance-copyright`、`ext-bilibili-convention` | 否 |
 
-`evals/video_agent_eval.json` 的 49 条旧用例只是 seed，不等于完整产品评测。迁移后的 `video_agent_regression_v1.json` 保留 `legacy` 字段用于逐条追溯；Smoke 是其中覆盖基础读取和 P0 写保护的子集。
+`evals/legacy/video_agent_eval.json` 的 49 条旧用例只是 seed，不等于完整产品评测。迁移后的 `video_agent_regression_v1.json` 保留 `legacy` 字段用于逐条追溯；Smoke 是其中覆盖基础读取和 P0 写保护的子集。
 
 ## 文件
 
@@ -44,14 +44,15 @@
 - `sources/scenario_sources.json`：来源、假设和准入状态；
 - `datasets/video_agent_smoke_v1.json`：快速阻断集；
 - `datasets/video_agent_regression_v1.json`：完整 seed 回归集；
-- `datasets/video_agent_multi_turn_v1.json`：高风险确认、取消和消歧 Pilot。
+- `datasets/video_agent_multi_turn_v1.json`：高风险确认、取消和消歧 Pilot；
+- `legacy/video_agent_eval.json`：49 条旧 seed，仅用于追溯，不再被代码加载。
 
 ## 命令
 
 ```bash
-uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_smoke_v1.json
-uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_regression_v1.json
-uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_multi_turn_v1.json
+uv run python -m video_agent.evaluation.eval_dataset validate evals/datasets/video_agent_smoke_v1.json
+uv run python -m video_agent.evaluation.eval_dataset validate evals/datasets/video_agent_regression_v1.json
+uv run python -m video_agent.evaluation.eval_dataset validate evals/datasets/video_agent_multi_turn_v1.json
 
 # Langfuse 同步和实验命令由 eval CLI 提供；执行前通过环境变量注入凭证。
 uv run python -m video_agent eval --suite smoke --trials 1
