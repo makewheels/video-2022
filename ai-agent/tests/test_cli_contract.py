@@ -47,6 +47,8 @@ CALLS: list[tuple[str, dict]] = [
     ("remove_video_from_playlist", {"playlist_id": "p1", "video_id": "v1"}),
     ("delete_playlist", {"playlist_id": "p1"}),
     ("update_playlist", {"playlist_id": "p1", "title": "新名字"}),
+    ("move_playlist_item", {"playlist_id": "p1", "video_id": "v1", "to_index": 0}),
+    ("recover_playlist", {"playlist_id": "p1"}),
     # notification
     ("unread_notification_count", {}),
     ("list_notifications", {"page": 0, "page_size": 5}),
@@ -65,8 +67,16 @@ CALLS: list[tuple[str, dict]] = [
     ("clear_watch_history", {}),
     # search / stats / auth / youtube
     ("search_public_videos", {"keyword": "美食", "category": "生活", "page": 0, "page_size": 5}),
+    ("get_public_video_list", {"skip": 0, "limit": 5, "keyword": "美食"}),
     ("get_traffic_stats", {"days": 7}),
     ("get_my_info", {}),
+    ("get_my_profile", {}),
+    ("update_profile", {"nickname": "新昵称", "bio": "新简介"}),
+    # channel / subscription
+    ("subscribe_channel", {"channel_user_id": "u1"}),
+    ("unsubscribe_channel", {"channel_user_id": "u1"}),
+    ("get_my_subscriptions", {"skip": 0, "limit": 5}),
+    ("get_channel", {"user_id": "u1"}),
     ("get_youtube_info", {"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}),
     ("transfer_youtube", {"url": "https://youtu.be/dQw4w9WgXcQ"}),
     # resolve（经 list_my_videos 走 CLI）
