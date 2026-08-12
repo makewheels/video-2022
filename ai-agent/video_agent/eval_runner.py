@@ -7,6 +7,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+from . import trace as lf_trace
+
 
 def run_eval_suite(assistant, cases_path: str) -> dict[str, Any]:
     cases = _load_jsonl(cases_path)
@@ -16,6 +18,13 @@ def run_eval_suite(assistant, cases_path: str) -> dict[str, Any]:
 
     for idx, case in enumerate(cases):
         print(f"  [{idx + 1}/{len(cases)}] {case['id']}: {case['query'][:60]}", end=" ", flush=True)
+        # 每个 case 一个 trace，environment=eval 和线上流量隔开；未配 LANGFUSE_* 时整体 no-op
+        trace_handle = lf_trace.start_trace(
+            name=f"eval:{case['id']}",
+            input={"query": case["query"]},
+            environment="eval",
+            tags=["eval", f"case:{case['id']}"],
+        )
         start = time.time()
         try:
             result = assistant.answer(case["query"])
@@ -23,6 +32,8 @@ def run_eval_suite(assistant, cases_path: str) -> dict[str, Any]:
             elapsed = time.time() - start
             total_time += elapsed
             print(f"❌ ({elapsed:.1f}s) — API error: {e}")
+            lf_trace.score(trace=trace_handle, name="eval_pass", value=0.0, comment=f"API error: {e}", environment="eval")
+            lf_trace.end_trace(trace_handle, error=e)
             results.append({
                 "id": case["id"],
                 "query": case["query"],
@@ -50,6 +61,19 @@ def run_eval_suite(assistant, cases_path: str) -> dict[str, Any]:
         else:
             print(f"❌ ({elapsed:.1f}s) — {', '.join(reasons)}")
 
+        lf_trace.score(
+            trace=trace_handle,
+            name="eval_pass",
+            value=1.0 if ok else 0.0,
+            comment=None if ok else "; ".join(reasons),
+            environment="eval",
+            metadata={
+                "elapsed": elapsed,
+                "tools": [call.get("name") for call in result.get("trace", [])],
+            },
+        )
+        lf_trace.end_trace(trace_handle, output={"answer": result.get("answer"), "passed": ok})
+
         results.append({
             "id": case["id"],
             "query": case["query"],
@@ -58,6 +82,9 @@ def run_eval_suite(assistant, cases_path: str) -> dict[str, Any]:
             "result": result,
             "elapsed": elapsed,
         })
+
+    # eval CLI 是短生命周期进程，退出前冲一次队列
+    lf_trace.flush()
 
     return {
         "total": len(cases),
