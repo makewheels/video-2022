@@ -1,10 +1,12 @@
 # Video Agent v1 评测结果
 
+> ⚠️ 废弃基线（2026-08-12 标记）：本页所有 Langfuse 链接指向 `speakup` project，属于**错误 project 下的历史数据**，仅保留作追溯，不代表有效基线，不得在其上继续写入。项目隔离修复后的新基线见 [2026-08-video-langfuse-project-isolation](../2026-08-video-langfuse-project-isolation/)。
+>
 > 日期：2026-08-12
 > 代码基线：`9d37c1e29f9c`，运行时工作树含本需求未提交改动
 > Agent 模型：`kimi/kimi-k3`（DashScope OpenAI-compatible）
 > 工具后端：fixture，每个 item 前重置
-> Langfuse：腾讯云自托管 `3.224.1` / Python SDK `4.14.4` / project `speakup`
+> Langfuse：腾讯云自托管 `3.224.1` / Python SDK `4.14.4` / project `speakup`（错误归属，见上方废弃标记）
 
 ## 结果摘要
 

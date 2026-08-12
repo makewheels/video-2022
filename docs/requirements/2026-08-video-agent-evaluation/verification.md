@@ -8,7 +8,7 @@
 
 - 2026-08-12：仓库更新到 `master` / `9d37c1e2` 后，`ai-agent` 测试为 `109 passed`。这是代码测试，不是 Agent Dataset baseline。
 - 2026-08-12：腾讯云 Langfuse 实例 7 个组件均为 Running；健康接口返回服务端 `3.224.1`；Python SDK 为 `4.14.4`；`auth_check=True`，脱敏 connectivity trace 写入成功。
-- 2026-08-12：现有项目名为 `speakup`，video-2022 Dataset 暂存于该项目；密钥只从服务器受限配置注入进程，未写入仓库。
+- 2026-08-12：现有项目名为 `speakup`，video-2022 Dataset 暂存于该项目；密钥只从服务器受限配置注入进程，未写入仓库。（2026-08-12 更新：该归属被确认为错误，已在独立 `video-2022` project 重建，speakup 中数据保留为废弃基线，见 [2026-08-video-langfuse-project-isolation](../2026-08-video-langfuse-project-isolation/)）
 - 2026-08-12：旧 49 条单轮 seed 已无损迁移为 Regression，并保留 `legacy` 原记录；Smoke 为其中 15 条，另建 5 条多轮高风险用例。
 - 2026-08-12：Langfuse Dataset 实际 item 数：Smoke 15、Regression 49、Multi-turn 5；稳定 UUID 幂等复跑后无重复。
 - 2026-08-12：自托管服务拒绝 SDK 提交的 Dataset Schema，返回 `inputSchema/expectedOutputSchema must be valid JSON Schema`。同步器只对该已知 400 显式降级，Dataset metadata 标记 `schema_enforced=false`；Git schema 和本地 validator 仍是执行硬门槛。
@@ -34,7 +34,7 @@
 
 ## 尚未完成
 
-- 独立 video-2022 Langfuse project（当前复用 `speakup` project）；
+- ~~独立 video-2022 Langfuse project（当前复用 `speakup` project）~~（2026-08-12 已完成，见 [2026-08-video-langfuse-project-isolation](../2026-08-video-langfuse-project-isolation/)）；
 - 测试后端的 401/403/404/429、超时和权限错误注入实验；
 - 脱敏生产 bad case 的持续回流；
 - Judge 人工金标、一致性和偏差校准；
