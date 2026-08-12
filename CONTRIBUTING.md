@@ -14,12 +14,13 @@
 
 ```text
 docs/requirements/YYYY-MM-<feature>/README.md
-docs/requirements/YYYY-MM-<feature>/design.md
+docs/requirements/YYYY-MM-<feature>/requirements.md
 docs/requirements/YYYY-MM-<feature>/plan.md
 docs/requirements/YYYY-MM-<feature>/verification.md
+docs/design/<subsystem-or-capability>.md
 ```
 
-一个需求可以跨多个 PR，但必须对应一个独立用户目标和一套验收标准。可以根据复杂度选择“设计 + 实施计划”两份文档，或合并为 `design-and-plan.md`。文档至少包含：
+一个需求可以跨多个 PR，但必须对应一个独立用户目标和一套验收标准。需求目录保存目标、实施和验收；`docs/design/` 保存跨需求、随代码持续演进的当前设计。历史需求中已经合并的 `design-and-plan.md` 不强制搬迁，新功能不再把 living design 和一次性计划合并。文档至少包含：
 
 - 背景、目标和非目标；
 - 当前状态和证据来源；
@@ -29,7 +30,7 @@ docs/requirements/YYYY-MM-<feature>/verification.md
 - 测试策略、验收标准和回滚/风险说明；
 - 状态标记：草案、准备执行、执行中或已完成。
 
-实施 PR 必须链接对应需求目录。实现过程中设计发生变化时，先更新文档，再继续修改代码。完成后把真实验证结果写入 `verification.md`，并在 `docs/CHANGELOG.md` 只记录交付时间线。Bug 修复可以不单独创建设计文档，但仍需更新相关业务、API、测试文档和 CHANGELOG。
+实施 PR 必须链接对应需求目录和受影响的当前设计。实现过程中设计发生变化时，先更新 `docs/design/`，再继续修改代码。完成后把真实验证结果写入 `verification.md`，并在 `docs/CHANGELOG.md` 只记录交付时间线。Bug 修复可以不单独创建设计文档，但仍需更新相关业务、API、测试文档和 CHANGELOG。
 
 ### 1.1 阅读相关文档（必须）
 

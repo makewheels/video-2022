@@ -1,6 +1,6 @@
 # Video Agent 评测数据
 
-本目录中的 Git JSONL 是评测用例的版本化事实源；Langfuse Dataset 是执行、展示和跨版本比较的镜像，不反向覆盖 Git。
+本目录中的格式化 Git JSON 数组是评测用例的版本化事实源；Langfuse Dataset 是执行、展示和跨版本比较的镜像，不反向覆盖 Git。加载器仍兼容历史 JSONL，但新资产统一使用便于人工审阅的 `.json`。
 
 ## 用例如何进入正式数据集
 
@@ -36,20 +36,22 @@
 | trial 状态隔离和最终状态 | partial | `ic-fixture-backend`、`eh-state-isolation` | 待可变 fixture |
 | 投稿合规与版权检查 | unsupported / roadmap | `eh-compliance-copyright`、`ext-bilibili-convention` | 否 |
 
-`evals/video_agent_eval.jsonl` 的 49 条旧用例只是 seed，不等于完整产品评测。迁移后的 `video_agent_regression_v1.jsonl` 保留 `legacy` 字段用于逐条追溯；Smoke 是其中覆盖基础读取和 P0 写保护的子集。
+`evals/video_agent_eval.json` 的 49 条旧用例只是 seed，不等于完整产品评测。迁移后的 `video_agent_regression_v1.json` 保留 `legacy` 字段用于逐条追溯；Smoke 是其中覆盖基础读取和 P0 写保护的子集。
 
 ## 文件
 
 - `schema/eval_case.schema.json`：机器可读数据契约；
-- `sources/scenario_sources.jsonl`：来源、假设和准入状态；
-- `datasets/video_agent_smoke_v1.jsonl`：快速阻断集；
-- `datasets/video_agent_regression_v1.jsonl`：完整 seed 回归集。
+- `sources/scenario_sources.json`：来源、假设和准入状态；
+- `datasets/video_agent_smoke_v1.json`：快速阻断集；
+- `datasets/video_agent_regression_v1.json`：完整 seed 回归集；
+- `datasets/video_agent_multi_turn_v1.json`：高风险确认、取消和消歧 Pilot。
 
 ## 命令
 
 ```bash
-uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_smoke_v1.jsonl
-uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_regression_v1.jsonl
+uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_smoke_v1.json
+uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_regression_v1.json
+uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_multi_turn_v1.json
 
 # Langfuse 同步和实验命令由 eval CLI 提供；执行前通过环境变量注入凭证。
 uv run python -m video_agent eval --suite smoke --trials 1

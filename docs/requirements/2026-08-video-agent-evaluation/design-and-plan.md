@@ -69,7 +69,7 @@
 
 ### 4.1 已有能力
 
-- `ai-agent/evals/video_agent_eval.jsonl` 包含 49 条单轮用例。
+- `ai-agent/evals/video_agent_eval.json` 包含 49 条单轮用例。
 - `ai-agent/fixtures/videos.json` 提供固定的离线视频、评论、播放列表等数据。
 - `ai-agent/video_agent/eval_runner.py` 已能运行 case 并输出通过/失败。
 - 当前 grader 支持：
@@ -189,14 +189,14 @@ ai-agent/evals/
 ├── schema/
 │   └── eval_case.schema.json
 ├── sources/
-│   └── scenario_sources.jsonl
+│   └── scenario_sources.json
 ├── datasets/
-│   ├── video_agent_smoke_v1.jsonl
-│   └── video_agent_regression_v1.jsonl
+│   ├── video_agent_smoke_v1.json
+│   └── video_agent_regression_v1.json
 └── README.md
 ```
 
-`scenario_sources.jsonl` 每条至少包含：
+`scenario_sources.json` 数组中的每个对象至少包含：
 
 ```json
 {
@@ -472,7 +472,7 @@ Judge 不替代最终状态、安全和权限检查。
 - `video-agent-capability-v1`
 - `video-agent-production-badcases-v1`
 
-Git 中的 JSONL 是可审阅源，Langfuse Dataset 是执行和对比入口。同步脚本按稳定 case ID 幂等更新，不在代码中写入密钥。
+Git 中的格式化 JSON 数组是可审阅源，Langfuse Dataset 是执行和对比入口。同步脚本按稳定 case ID 幂等更新，不在代码中写入密钥。2026-08-12 起加载器仍兼容历史 JSONL，但新资产统一使用 `.json`。
 
 ### 13.2 Experiment Run
 
@@ -589,7 +589,7 @@ uv run pytest tests/test_trace.py -q
 
 **新增文件：**
 
-- `ai-agent/evals/sources/scenario_sources.jsonl`
+- `ai-agent/evals/sources/scenario_sources.json`
 - `ai-agent/evals/README.md`
 
 **工作：**
@@ -631,16 +631,16 @@ uv run pytest tests/test_trace.py -q
 ```bash
 cd ai-agent
 uv run pytest tests/test_eval_dataset.py -q
-uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_regression_v1.jsonl
+uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_regression_v1.json
 ```
 
 ### Task 3：迁移现有 49 条用例
 
 **新增/修改文件：**
 
-- Create: `ai-agent/evals/datasets/video_agent_smoke_v1.jsonl`
-- Create: `ai-agent/evals/datasets/video_agent_regression_v1.jsonl`
-- Modify: `ai-agent/evals/video_agent_eval.jsonl`（迁移完成后标记兼容或移除）
+- Create: `ai-agent/evals/datasets/video_agent_smoke_v1.json`
+- Create: `ai-agent/evals/datasets/video_agent_regression_v1.json`
+- Modify: `ai-agent/evals/video_agent_eval.json`（迁移完成后标记兼容或移除）
 
 **工作：**
 
@@ -690,7 +690,7 @@ uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_re
 
 **工作：**
 
-- 按稳定 case ID 将 Git JSONL 幂等同步到 Langfuse Dataset；
+- 按稳定 case ID 将 Git JSON 幂等同步到 Langfuse Dataset；
 - 从 Langfuse Dataset 创建可比较的 Experiment Run；
 - 一个 dataset item 的一次 trial 对应一个 trace；
 - 写入 commit、model、prompt version、backend、trial 等 metadata；
@@ -849,7 +849,7 @@ Task 10
 ```bash
 cd ai-agent
 uv run pytest -q
-uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_smoke_v1.jsonl
+uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_smoke_v1.json
 uv run python -m video_agent eval --suite smoke --trials 1
 ```
 

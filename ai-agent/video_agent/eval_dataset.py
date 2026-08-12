@@ -2,7 +2,8 @@
 
 校验规则对齐 ``ai-agent/evals/schema/eval_case.schema.json``，并在 schema 基础上
 额外要求：所有声明为非空的字符串字段，去空白后必须仍非空。不依赖 jsonschema，
-只使用 Python 标准库。加载返回的用例字典保持原样，不丢字段、不篡改值。
+只使用 Python 标准库。默认资产是便于人工审阅的 JSON 数组，同时兼容历史 JSONL。
+加载返回的用例字典保持原样，不丢字段、不篡改值。
 """
 
 from __future__ import annotations
@@ -69,6 +70,19 @@ _REQUIRED_FIELDS = (
     "expectations",
     "sources",
 )
+
+
+@dataclass(frozen=True)
+class _EvalRecord:
+    value: dict[str, Any]
+    line: int | None = None
+    index: int | None = None
+
+    @property
+    def location(self) -> str:
+        if self.line is not None:
+            return f"line {self.line}"
+        return f"数组索引 {self.index}"
 
 
 def _is_nonempty_str(value: Any) -> bool:
@@ -315,80 +329,106 @@ def validate_eval_cases(cases: list[dict[str, Any]]) -> list[EvalError]:
     return errs
 
 
-def load_eval_cases(path: str | Path) -> list[dict[str, Any]]:
-    """加载 JSONL 并返回规范化用例列表（保持原字段，不篡改值）。
+def _read_eval_records(path: str | Path) -> tuple[list[_EvalRecord], list[EvalError]]:
+    """Read a pretty JSON array or legacy JSONL with source locations."""
+    source = Path(path)
+    records: list[_EvalRecord] = []
+    errors: list[EvalError] = []
+    try:
+        if source.suffix.lower() == ".json":
+            with source.open(encoding="utf-8") as handle:
+                try:
+                    payload = json.load(handle)
+                except json.JSONDecodeError as exc:
+                    return [], [EvalError(f"非法 JSON：{exc.msg}", line=exc.lineno)]
+            if not isinstance(payload, list):
+                return [], [EvalError("JSON 文件顶层必须是数组")]
+            for index, value in enumerate(payload):
+                if not isinstance(value, dict):
+                    errors.append(
+                        EvalError(
+                            "数组元素必须是 JSON 对象",
+                            field=f"[{index}]",
+                        )
+                    )
+                    continue
+                records.append(_EvalRecord(value=value, index=index))
+            return records, errors
 
-    跳过空行；遇到非法 JSON 或顶层非对象时收集全部错误后抛
+        with source.open(encoding="utf-8") as handle:
+            for line_no, raw in enumerate(handle, start=1):
+                stripped = raw.strip()
+                if not stripped or stripped.startswith("#"):
+                    continue
+                try:
+                    value = json.loads(stripped)
+                except json.JSONDecodeError as exc:
+                    errors.append(EvalError(f"非法 JSON：{exc.msg}", line=line_no))
+                    continue
+                if not isinstance(value, dict):
+                    errors.append(EvalError("顶层必须是 JSON 对象", line=line_no))
+                    continue
+                records.append(_EvalRecord(value=value, line=line_no))
+    except OSError as exc:
+        return [], [EvalError(f"无法读取文件：{exc}")]
+    return records, errors
+
+
+def _with_record_location(error: EvalError, record: _EvalRecord) -> EvalError:
+    if record.index is None:
+        return error
+    field = f"[{record.index}]"
+    if error.field:
+        field = f"{field}.{error.field}"
+    return EvalError(
+        reason=error.reason,
+        line=error.line,
+        case_id=error.case_id,
+        field=field,
+    )
+
+
+def load_eval_cases(path: str | Path) -> list[dict[str, Any]]:
+    """加载 JSON 数组或历史 JSONL（保持原字段，不篡改值）。
+
+    JSONL 跳过空行；遇到非法 JSON、JSON 顶层非数组或元素非对象时收集错误后抛
     :class:`EvalDatasetError`。本函数只做加载，不做 schema 校验——
     schema 校验请用 :func:`validate_eval_cases` / :func:`validate_eval_file`。
     """
-    cases: list[dict[str, Any]] = []
-    errors: list[EvalError] = []
-    try:
-        with Path(path).open(encoding="utf-8") as f:
-            for line_no, raw in enumerate(f, start=1):
-                stripped = raw.strip()
-                if not stripped:
-                    continue
-                try:
-                    obj = json.loads(stripped)
-                except json.JSONDecodeError as e:
-                    errors.append(EvalError(f"非法 JSON：{e.msg}", line=line_no))
-                    continue
-                if not isinstance(obj, dict):
-                    errors.append(EvalError("顶层必须是 JSON 对象", line=line_no))
-                    continue
-                cases.append(obj)
-    except OSError as exc:
-        error = EvalError(f"无法读取文件：{exc}")
-        raise EvalDatasetError(f"加载 {path} 失败", errors=[error]) from exc
+    records, errors = _read_eval_records(path)
     if errors:
         raise EvalDatasetError(
             f"加载 {path} 失败，共 {len(errors)} 处加载错误",
             errors=errors,
         )
-    return cases
+    return [record.value for record in records]
 
 
 def validate_eval_file(path: str | Path) -> list[EvalError]:
-    """加载并校验整个 JSONL 文件，聚合所有错误（含行号、case id、字段路径）。"""
-    errs: list[EvalError] = []
-    cases: list[tuple[int, dict[str, Any]]] = []
-    seen_lines: dict[str, int] = {}
+    """加载并校验 JSON/JSONL，聚合错误并保留行号或数组索引。"""
+    records, errs = _read_eval_records(path)
+    seen_locations: dict[str, str] = {}
 
-    try:
-        with Path(path).open(encoding="utf-8") as f:
-            for line_no, raw in enumerate(f, start=1):
-                stripped = raw.strip()
-                if not stripped:
-                    continue
-                try:
-                    obj = json.loads(stripped)
-                except json.JSONDecodeError as e:
-                    errs.append(EvalError(f"非法 JSON：{e.msg}", line=line_no))
-                    continue
-                if not isinstance(obj, dict):
-                    errs.append(EvalError("顶层必须是 JSON 对象", line=line_no))
-                    continue
-                cases.append((line_no, obj))
-                cid = obj.get("id")
-                if isinstance(cid, str) and cid.strip():
-                    if cid in seen_lines:
-                        errs.append(
-                            EvalError(
-                                f"id 重复：{cid!r}（首次位于 line {seen_lines[cid]}）",
-                                line=line_no,
-                                case_id=cid,
-                                field="id",
-                            )
-                        )
-                    else:
-                        seen_lines[cid] = line_no
-    except OSError as exc:
-        return [EvalError(f"无法读取文件：{exc}")]
-
-    for line_no, obj in cases:
-        errs.extend(_validate_case(obj, line=line_no))
+    for record in records:
+        obj = record.value
+        cid = obj.get("id")
+        if isinstance(cid, str) and cid.strip():
+            if cid in seen_locations:
+                field = "id" if record.index is None else f"[{record.index}].id"
+                errs.append(
+                    EvalError(
+                        f"id 重复：{cid!r}（首次位于 {seen_locations[cid]}）",
+                        line=record.line,
+                        case_id=cid,
+                        field=field,
+                    )
+                )
+            else:
+                seen_locations[cid] = record.location
+        errs.extend(
+            _with_record_location(error, record)
+            for error in _validate_case(obj, line=record.line)
+        )
 
     # 稳定排序：按行号、case id、字段、原因
     errs.sort(
@@ -411,8 +451,8 @@ def _cli(argv: list[str] | None = None) -> int:
         description="eval 数据集加载与校验工具",
     )
     sub = parser.add_subparsers(dest="command", required=True)
-    v = sub.add_parser("validate", help="校验 JSONL 评测文件")
-    v.add_argument("path", help="JSONL 文件路径")
+    v = sub.add_parser("validate", help="校验 JSON/JSONL 评测文件")
+    v.add_argument("path", help="JSON 数组或 JSONL 文件路径")
 
     args = parser.parse_args(argv)
 

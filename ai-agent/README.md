@@ -19,7 +19,7 @@ ai-agent/
 │   ├── eval-plan.md
 │   └── implementation.md
 ├── evals/
-│   └── video_agent_eval.jsonl
+│   └── video_agent_eval.json
 ├── fixtures/
 │   └── videos.json
 └── video_agent/

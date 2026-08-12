@@ -132,7 +132,7 @@ def sync_dataset(
         try:
             client.create_dataset(
                 name=dataset_name,
-                description=f"video-2022 {suite} v1；Git JSONL 是版本化事实源。",
+                description=f"video-2022 {suite} v1；Git JSON 是版本化事实源。",
                 metadata={**metadata, "schema_enforced": True},
                 input_schema=_input_schema(),
                 expected_output_schema=_expected_output_schema(),
@@ -143,7 +143,7 @@ def sync_dataset(
             schema_enforced = False
             client.create_dataset(
                 name=dataset_name,
-                description=f"video-2022 {suite} v1；Git JSONL 是版本化事实源。",
+                description=f"video-2022 {suite} v1；Git JSON 是版本化事实源。",
                 metadata={
                     **metadata,
                     "schema_enforced": False,
