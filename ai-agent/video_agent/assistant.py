@@ -50,13 +50,7 @@ class VideoAssistant:
         api_key: str | None = None,
     ) -> None:
         self.tools = tools
-        self.client = ModelClient()
-        if model:
-            self.client.model = model
-        if base_url:
-            self.client.base_url = base_url
-        if api_key:
-            self.client.api_key = api_key
+        self.client = ModelClient(model=model, base_url=base_url, api_key=api_key)
 
     def answer(self, query: str) -> dict[str, Any]:
         """Single-turn answer (non-streaming, for eval)."""

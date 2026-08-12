@@ -35,11 +35,11 @@ class ModelClient:
     Also supports Anthropic Messages API via the same interface.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, model: str | None = None, base_url: str | None = None, api_key: str | None = None) -> None:
         cfg = get_config()
-        self.base_url = cfg.base_url
-        self.api_key = cfg.api_key
-        self.model = cfg.model
+        self.base_url = base_url or cfg.base_url
+        self.api_key = api_key or cfg.api_key
+        self.model = model or cfg.model
         self.temperature = cfg.temperature
         self.max_tokens = cfg.max_tokens
         self.timeout = cfg.timeout
@@ -662,13 +662,14 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_watch_progress",
-            "description": "获取视频的播放进度。用于回答'上次看到哪里了'等。",
+            "description": "获取视频的播放进度。用于回答'上次看到哪里了'等。注意：进度按设备存储，必须提供 client_id（观看设备标识），否则会返回错误。",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "video_id": {"type": "string", "description": "视频 ID"},
+                    "client_id": {"type": "string", "description": "观看设备标识（必需）"},
                 },
-                "required": ["video_id"],
+                "required": ["video_id", "client_id"],
             },
         },
     },
@@ -725,11 +726,11 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_youtube_info",
-            "description": "获取 YouTube 视频信息。用于回答'这个 YouTube 视频怎么样'等。",
+            "description": "获取 YouTube 视频信息。用于回答'这个 YouTube 视频怎么样'等。支持完整 URL（watch?v=、youtu.be、shorts 链接）或 11 位视频 ID。",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "url": {"type": "string", "description": "YouTube 视频 URL"},
+                    "url": {"type": "string", "description": "YouTube 视频 URL 或 11 位视频 ID"},
                 },
                 "required": ["url"],
             },
@@ -739,11 +740,11 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "transfer_youtube",
-            "description": "将 YouTube 视频转存到平台。⚠️ 写操作，需要确认。",
+            "description": "将 YouTube 视频转存到平台。⚠️ 写操作，需要确认。支持完整 URL 或 11 位视频 ID。",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "url": {"type": "string", "description": "YouTube 视频 URL"},
+                    "url": {"type": "string", "description": "YouTube 视频 URL 或 11 位视频 ID"},
                 },
                 "required": ["url"],
             },
