@@ -7,22 +7,45 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from video_agent.client import ModelClient
+from video_agent.client import AgentResponse, ToolCall
 from video_agent.server_optimized import create_optimized_app
 from video_agent.tools import VideoTools
 
 
+def _mongo_available() -> bool:
+    try:
+        from pymongo import MongoClient
+
+        MongoClient("mongodb://localhost:27017", serverSelectionTimeoutMS=500).admin.command("ping")
+        return True
+    except Exception:
+        return False
+
+
+class _FakeModelClient:
+    """离线假模型客户端：第一轮固定调 search_public_videos，拿到工具结果后回答。"""
+
+    model = "fake-model"
+    base_url = "http://fake"
+
+    def chat(self, messages, tools=None, *, stream=False):
+        if any(m.get("role") == "tool" for m in messages):
+            return AgentResponse(text="这是基于工具结果的回答")
+        return AgentResponse(
+            tool_calls=[ToolCall(id="call-1", name="search_public_videos", arguments={"keyword": "测试"})]
+        )
+
+
 @pytest.fixture
 def test_client():
-    """Create a test client with fixture backend."""
-    client = ModelClient(
-        model="MiniMax-M2.7",
-        base_url="https://api.minimaxi.com/v1",
-        api_key="test-key"
-    )
-    tools = VideoTools(backend="fixture")
-    app = create_optimized_app(client, tools)
-    return TestClient(app)
+    """Create a test client with fixture backend (offline, requires local MongoDB)."""
+    if not _mongo_available():
+        pytest.skip("本机没有运行 MongoDB")
+    app = create_optimized_app(_FakeModelClient(), VideoTools(backend="fixture"))
+    # 用 with 包住：让 startup/shutdown 正常执行，且所有请求共享同一个事件循环
+    # （否则 motor client 会绑定到已关闭的 loop 上，报 "Event loop is closed"）
+    with TestClient(app) as client:
+        yield client
 
 
 def test_health_endpoint(test_client):
@@ -57,8 +80,8 @@ def test_chat_stream_basic(test_client):
     # Parse SSE events
     events = []
     for line in response.iter_lines():
-        if line.startswith(b"data: "):
-            data = line[6:].decode("utf-8")
+        if line.startswith("data: "):
+            data = line[6:]
             if data != "[DONE]":
                 events.append(json.loads(data))
 
@@ -125,6 +148,8 @@ def test_error_handling_invalid_request(test_client):
 @pytest.mark.asyncio
 async def test_concurrent_sessions():
     """Test handling multiple concurrent sessions."""
+    if not _mongo_available():
+        pytest.skip("本机没有运行 MongoDB")
     from video_agent.session_manager import SessionManager
 
     manager = SessionManager(db_name="video_agent_test")

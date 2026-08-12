@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -149,7 +151,7 @@ class VideoTools:
     def comment_replies(self, comment_id: str) -> dict[str, Any]:
         if self.backend == "fixture":
             return {"list": [], "total": 0, "parentCommentId": comment_id}
-        return self._run_cli(["comment", "replies", "--id", comment_id])
+        return self._run_cli(["comment", "replies", "--parent-id", comment_id])
 
     # ── Playlist ─────────────────────────────────────────────────
 
@@ -230,7 +232,7 @@ class VideoTools:
             return {"requiresConfirmation": True, "message": "mark_notification_read is write; rerun with --confirm-write"}
         if self.backend == "fixture":
             return {"notificationId": notification_id, "read": True}
-        return self._run_cli(["notification", "read", "--id", notification_id])
+        return self._run_cli(["notification", "read", notification_id])
 
     def mark_all_notifications_read(self) -> dict[str, Any]:
         if not self.confirm_write:
@@ -283,10 +285,12 @@ class VideoTools:
             return wh
         return self._run_cli(["watch", "history", "--page", str(page), "--page-size", str(page_size)])
 
-    def get_watch_progress(self, video_id: str) -> dict[str, Any]:
+    def get_watch_progress(self, video_id: str, client_id: str | None = None) -> dict[str, Any]:
         if self.backend == "fixture":
             return {"videoId": video_id, "progressSeconds": 0, "durationSeconds": 0}
-        return self._run_cli(["watch", "progress", "--video-id", video_id])
+        if not client_id:
+            return {"error": "播放进度按设备存储，需要提供 client_id（观看设备标识）", "videoId": video_id}
+        return self._run_cli(["watch", "progress", "--video-id", video_id, "--client-id", client_id])
 
     def clear_watch_history(self) -> dict[str, Any]:
         if not self.confirm_write:
@@ -316,7 +320,9 @@ class VideoTools:
     def get_traffic_stats(self, days: int = 7) -> dict[str, Any]:
         if self.backend == "fixture":
             return {"days": days, "data": []}
-        return self._run_cli(["stats", "aggregate", "--days", str(days)])
+        end_ms = int(time.time() * 1000)
+        start_ms = end_ms - days * 86_400_000
+        return self._run_cli(["stats", "aggregate", "--start", str(start_ms), "--end", str(end_ms)])
 
     # ── Auth / User ──────────────────────────────────────────────
 
@@ -330,14 +336,20 @@ class VideoTools:
     def get_youtube_info(self, url: str) -> dict[str, Any]:
         if self.backend == "fixture":
             return {"url": url, "title": "YouTube 视频（fixture）", "duration": "10:00", "available": True}
-        return self._run_cli(["youtube", "info", url])
+        youtube_id = _extract_youtube_id(url)
+        if not youtube_id:
+            return {"error": f"无法解析 YouTube 视频 ID: {url}"}
+        return self._run_cli(["youtube", "info", "--youtube-id", youtube_id])
 
     def transfer_youtube(self, url: str) -> dict[str, Any]:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "transfer_youtube is write; rerun with --confirm-write", "planned": {"url": url}}
         if self.backend == "fixture":
             return {"videoId": "fixture-youtube-video", "url": url, "transferred": True}
-        return self._run_cli(["youtube", "transfer", url])
+        youtube_id = _extract_youtube_id(url)
+        if not youtube_id:
+            return {"error": f"无法解析 YouTube 视频 ID: {url}"}
+        return self._run_cli(["youtube", "transfer", "--youtube-id", youtube_id])
 
     # ── Helpers ──────────────────────────────────────────────────
 
@@ -449,6 +461,20 @@ class VideoTools:
 
 
 # ── HTTP helpers ──────────────────────────────────────────────────
+
+_YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
+_YOUTUBE_URL_RE = re.compile(
+    r"(?:youtube\.com/(?:watch\?[^#]*v=|shorts/|embed/|live/)|youtu\.be/)([A-Za-z0-9_-]{11})"
+)
+
+
+def _extract_youtube_id(value: str) -> str | None:
+    value = value.strip()
+    if _YOUTUBE_ID_RE.match(value):
+        return value
+    match = _YOUTUBE_URL_RE.search(value)
+    return match.group(1) if match else None
+
 
 def _api_get(url: str, params: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]:
     resp = requests.get(url, params=params, headers=headers, timeout=60)
