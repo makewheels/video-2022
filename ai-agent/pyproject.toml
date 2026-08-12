@@ -13,6 +13,12 @@ dependencies = [
     "uvicorn>=0.34.0",
 ]
 
+[project.optional-dependencies]
+# Langfuse trace 观测（video_agent/trace.py；未装或未配 LANGFUSE_* 时整体 no-op）
+langfuse = [
+    "langfuse>=4",
+]
+
 [dependency-groups]
 dev = [
     "click>=8.4.1",

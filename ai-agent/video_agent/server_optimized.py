@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
+from . import trace as lf_trace
 from .assistant import SYSTEM_PROMPT
 from .client import ALL_TOOLS, ModelClient
 from .context_manager import ContextManager
@@ -80,6 +81,15 @@ def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:
             tools.confirm_write = True
 
         async def generate():
+            # 每次请求一个 trace；session_id 透传为 trace 级属性，期间的 generation/tool span 自动挂到它下面
+            trace_handle = lf_trace.start_trace(
+                name="chat_stream",
+                input={"query": req.query},
+                session_id=req.session_id,
+                metadata={"confirm_write": req.confirm_write},
+            )
+            final_text: str | None = None
+            trace_error: str | None = None
             try:
                 # Load session history
                 history = await session_manager.get_messages(req.session_id)
@@ -108,6 +118,7 @@ def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:
                         # No tool calls - final response
                         if not event.has_tool_calls:
                             if text:
+                                final_text = text
                                 yield f"data: {json.dumps({'type': 'text', 'text': text, 'finish': True}, ensure_ascii=False)}\n\n"
                                 await session_manager.append_message(req.session_id, {"role": "assistant", "content": text})
                             break
@@ -173,10 +184,12 @@ def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:
 
             except Exception as e:
                 logger.error(f"Fatal error in chat_stream: {e}", exc_info=True)
+                trace_error = str(e)
                 yield f"data: {json.dumps({'type': 'error', 'error': {'message': '服务器错误', 'details': str(e)}}, ensure_ascii=False)}\n\n"
                 yield "data: [DONE]\n\n"
             finally:
                 tools.confirm_write = False
+                lf_trace.end_trace(trace_handle, output=final_text, error=trace_error)
 
         return StreamingResponse(generate(), media_type="text/event-stream")
 
@@ -207,8 +220,12 @@ async def _call_model_with_retry(client: ModelClient, messages: list[dict[str, A
     try:
         # Convert sync call to async (client.chat is sync)
         import asyncio
+        import contextvars
+
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, lambda: client.chat(messages, stream=False))
+        # run_in_executor 默认不带 contextvars；复制当前上下文，trace 父子关系在线程里才不断链
+        ctx = contextvars.copy_context()
+        return await loop.run_in_executor(None, lambda: ctx.run(client.chat, messages, stream=False))
     except Exception as e:
         logger.error(f"Model API call failed: {e}")
         raise ModelAPIError(f"Model API error: {e}") from e

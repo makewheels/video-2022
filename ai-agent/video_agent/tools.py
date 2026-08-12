@@ -19,6 +19,7 @@ from typing import Any
 
 import requests
 
+from . import trace as lf_trace
 from .config import get_config
 
 
@@ -45,13 +46,16 @@ class VideoTools:
         method = getattr(self, name, None)
         if method is None:
             return {"error": f"Unknown tool: {name}"}
+        span = lf_trace.start_tool_span(name, args)
         try:
             result = method(**args)
             self._record(name, args, result)
+            lf_trace.finish_tool_span(span, result=result)
             return result
         except Exception as exc:
             error_result = {"error": str(exc), "tool": name}
             self._record(name, args, error_result)
+            lf_trace.finish_tool_span(span, result=error_result, error=exc)
             return error_result
 
     # ── Video ────────────────────────────────────────────────────
