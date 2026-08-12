@@ -20,6 +20,36 @@ class TestVideoCommands:
             p.stop()
 
     @responses.activate
+    def test_video_public(self):
+        responses.add(
+            responses.GET,
+            "http://localhost:5022/video/getPublicVideoList",
+            json={"code": 0, "message": "ok", "data": {"list": [{"id": "v1", "title": "Public"}], "total": 1}},
+            status=200,
+        )
+        result = self.runner.invoke(cli, ["--token", "t", "video", "public"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["list"][0]["id"] == "v1"
+        assert "skip=0" in responses.calls[0].request.url
+        assert "limit=20" in responses.calls[0].request.url
+
+    @responses.activate
+    def test_video_public_with_keyword(self):
+        responses.add(
+            responses.GET,
+            "http://localhost:5022/video/getPublicVideoList",
+            json={"code": 0, "message": "ok", "data": {"list": [], "total": 0}},
+            status=200,
+        )
+        result = self.runner.invoke(cli, ["--token", "t", "video", "public", "--keyword", "美食", "--skip", "5", "--limit", "10"])
+        assert result.exit_code == 0
+        url = responses.calls[0].request.url
+        assert "keyword=" in url
+        assert "skip=5" in url
+        assert "limit=10" in url
+
+    @responses.activate
     def test_video_list(self):
         responses.add(
             responses.GET,

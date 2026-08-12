@@ -2,7 +2,7 @@
 import click
 from . import __version__
 from .config import get_base_url, get_token
-from .commands import auth, video, comment, like, playlist, youtube, stats, watch, search, api, developer, notification, share, config as config_commands
+from .commands import auth, video, comment, like, playlist, youtube, stats, watch, search, api, developer, notification, share, channel, user, config as config_commands
 
 
 @click.group()
@@ -45,6 +45,8 @@ cli.add_command(api.api)
 cli.add_command(developer.developer)
 cli.add_command(notification.notification)
 cli.add_command(share.share)
+cli.add_command(channel.channel)
+cli.add_command(user.user)
 cli.add_command(config_commands.config)
 
 

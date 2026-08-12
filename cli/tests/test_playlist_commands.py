@@ -127,6 +127,21 @@ class TestPlaylistCommands:
         assert body["playlistId"] == "p1"
 
     @responses.activate
+    def test_playlist_move_item(self):
+        responses.add(
+            responses.POST,
+            "http://localhost:5022/playlist/movePlaylistItem",
+            json={"code": 0, "message": "ok", "data": None},
+            status=200,
+        )
+        result = self.runner.invoke(cli, ["--token", "t", "playlist", "move-item", "--playlist-id", "p1", "--video-id", "v1", "--to-index", "0"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["success"] is True
+        body = json.loads(responses.calls[0].request.body)
+        assert body == {"playlistId": "p1", "videoId": "v1", "moveMode": "TO_INDEX", "toIndex": 0}
+
+    @responses.activate
     def test_playlist_create_api_error(self):
         responses.add(
             responses.POST,

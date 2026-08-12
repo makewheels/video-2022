@@ -39,6 +39,33 @@ def list_videos(ctx, skip, limit, keyword):
         print_error(e.message, e.code)
 
 
+@video.command("public")
+@click.option("--skip", default=0, help="Number of items to skip")
+@click.option("--limit", default=20, help="Number of items to return")
+@click.option("--keyword", default=None, help="Search keyword")
+@click.pass_context
+def public_videos(ctx, skip, limit, keyword):
+    """List public videos (no login required)."""
+    base_url = ctx.obj.get("base_url")
+    token = ctx.obj.get("token")
+    try:
+        params = {"skip": skip, "limit": limit}
+        if keyword:
+            params["keyword"] = keyword
+        result = get("/video/getPublicVideoList", params, base_url=base_url, token=token)
+        if ctx.obj.get("output_format") == "table" and result:
+            videos = result.get("list", []) if isinstance(result, dict) else result
+            if isinstance(videos, list):
+                rows = [[v.get("id", ""), v.get("title", ""), v.get("uploaderName", ""), v.get("watchCount", 0)] for v in videos]
+                print_table(["ID", "Title", "Uploader", "Views"], rows)
+            else:
+                print_json(result)
+        else:
+            print_json(result)
+    except APIError as e:
+        print_error(e.message, e.code)
+
+
 @video.command()
 @click.option("--id", "video_id", required=True, help="Video ID")
 @click.pass_context

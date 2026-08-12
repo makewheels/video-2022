@@ -91,6 +91,23 @@ def delete_item(ctx, playlist_id, video_id):
         print_error(e.message, e.code)
 
 
+@playlist.command("move-item")
+@click.option("--playlist-id", required=True, help="Playlist ID")
+@click.option("--video-id", required=True, help="Video ID to move")
+@click.option("--to-index", required=True, type=int, help="Target index position")
+@click.pass_context
+def move_item(ctx, playlist_id, video_id, to_index):
+    """Move a video to a new position within a playlist."""
+    base_url = ctx.obj.get("base_url")
+    token = ctx.obj.get("token")
+    try:
+        data = {"playlistId": playlist_id, "videoId": video_id, "moveMode": "TO_INDEX", "toIndex": to_index}
+        result = post("/playlist/movePlaylistItem", data, base_url=base_url, token=token)
+        print_success("Playlist item moved", result)
+    except APIError as e:
+        print_error(e.message, e.code)
+
+
 @playlist.command()
 @click.option("--id", "playlist_id", required=True, help="Playlist ID")
 @click.pass_context

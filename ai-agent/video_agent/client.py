@@ -574,6 +574,36 @@ ALL_TOOLS: list[dict[str, Any]] = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "move_playlist_item",
+            "description": "调整视频在播放列表中的位置（排序）。用于'把 xx 移到播放列表最前面/第 N 个'。⚠️ 写操作。to_index 为目标位置（0 开头）。需要 playlist_id 和 video_id（视频用标题指代时先 resolve_videos）。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "playlist_id": {"type": "string", "description": "播放列表 ID"},
+                    "video_id": {"type": "string", "description": "要移动的视频 ID"},
+                    "to_index": {"type": "integer", "description": "目标索引位置（0 开头）"},
+                },
+                "required": ["playlist_id", "video_id", "to_index"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "recover_playlist",
+            "description": "恢复已删除的播放列表（删除是逻辑删除，可恢复）。用于'找回/恢复之前删掉的播放列表'。⚠️ 写操作。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "playlist_id": {"type": "string", "description": "要恢复的播放列表 ID"},
+                },
+                "required": ["playlist_id"],
+            },
+        },
+    },
     # ── Notification ──
     {
         "type": "function",
@@ -746,6 +776,21 @@ ALL_TOOLS: list[dict[str, Any]] = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_public_video_list",
+            "description": "浏览全站公开视频信息流（按时间倒序，无需登录，返回 {list, total}）。用于'首页有什么视频''最近大家发了什么'这类无明确目标的浏览。与 search_public_videos 的区别：它支持 skip/limit 分页但只按 keyword 过滤标题/描述，不支持分类筛选；要找某类视频优先 search_public_videos。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "skip": {"type": "integer", "default": 0, "description": "跳过的记录数"},
+                    "limit": {"type": "integer", "default": 20, "description": "返回的记录数"},
+                    "keyword": {"type": "string", "description": "可选关键词，过滤标题/描述"},
+                },
+            },
+        },
+    },
     # ── Stats ──
     {
         "type": "function",
@@ -767,6 +812,85 @@ ALL_TOOLS: list[dict[str, Any]] = [
             "name": "get_my_info",
             "description": "获取当前登录用户的信息（昵称、手机号等）。用于'我是谁''我的账号信息'。",
             "parameters": {"type": "object", "properties": {}},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_my_profile",
+            "description": "获取我的个人资料页信息：昵称、简介 bio、头像 avatarUrl、订阅数 subscriberCount、视频数 videoCount。用于'我的主页/资料长什么样''我有多少订阅者'。与 get_my_info 的区别：get_my_info 偏账号信息（手机号），get_my_profile 偏对外展示的资料。",
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "update_profile",
+            "description": "更新我的个人资料（昵称、简介 bio）。⚠️ 写操作需确认。nickname 和 bio 至少提供一个；昵称上限 30 字，简介上限 200 字。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "nickname": {"type": "string", "description": "新昵称（最长 30 字）"},
+                    "bio": {"type": "string", "description": "新个人简介（最长 200 字）"},
+                },
+            },
+        },
+    },
+    # ── Channel / Subscription ──
+    {
+        "type": "function",
+        "function": {
+            "name": "subscribe_channel",
+            "description": "订阅某个用户的频道。⚠️ 写操作需确认。channel_user_id 是频道主的用户 ID（不是视频 ID）；不确定时先 get_channel 确认对方信息。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "channel_user_id": {"type": "string", "description": "频道主的用户 ID"},
+                },
+                "required": ["channel_user_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "unsubscribe_channel",
+            "description": "取消订阅某个频道。⚠️ 写操作需确认。channel_user_id 是频道主的用户 ID。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "channel_user_id": {"type": "string", "description": "频道主的用户 ID"},
+                },
+                "required": ["channel_user_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_my_subscriptions",
+            "description": "列出我订阅的频道（返回 {list, total}，list 是频道主的用户 ID 字符串）。用于'我订阅了哪些频道'。想看某个频道的昵称/头像等详情，拿返回的 userId 再调 get_channel。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "skip": {"type": "integer", "default": 0, "description": "跳过的记录数"},
+                    "limit": {"type": "integer", "default": 20, "description": "返回的记录数"},
+                },
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_channel",
+            "description": "获取某个用户的频道公开信息：昵称、头像、简介、订阅数 subscriberCount、视频数 videoCount。用于'xx 的频道有多少订阅/视频'。需要 user_id（频道主的用户 ID）。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "user_id": {"type": "string", "description": "频道主的用户 ID"},
+                },
+                "required": ["user_id"],
+            },
         },
     },
     # ── YouTube ──

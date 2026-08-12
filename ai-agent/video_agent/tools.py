@@ -217,6 +217,20 @@ class VideoTools:
             cmd += ["--description", description]
         return self._run_cli(cmd)
 
+    def move_playlist_item(self, playlist_id: str, video_id: str, to_index: int) -> dict[str, Any]:
+        if not self.confirm_write:
+            return {"requiresConfirmation": True, "message": "move_playlist_item is write; rerun with --confirm-write", "planned": {"playlist_id": playlist_id, "video_id": video_id, "to_index": to_index}}
+        if self.backend == "fixture":
+            return {"playlistId": playlist_id, "videoId": video_id, "toIndex": to_index, "moved": True}
+        return self._run_cli(["playlist", "move-item", "--playlist-id", playlist_id, "--video-id", video_id, "--to-index", str(to_index)])
+
+    def recover_playlist(self, playlist_id: str) -> dict[str, Any]:
+        if not self.confirm_write:
+            return {"requiresConfirmation": True, "message": "recover_playlist is write; rerun with --confirm-write", "planned": {"playlist_id": playlist_id}}
+        if self.backend == "fixture":
+            return {"playlistId": playlist_id, "recovered": True}
+        return self._run_cli(["playlist", "recover", "--id", playlist_id])
+
     # ── Notification ─────────────────────────────────────────────
 
     def unread_notification_count(self) -> dict[str, Any]:
@@ -319,6 +333,18 @@ class VideoTools:
             cmd += ["--category", category]
         return self._run_cli(cmd)
 
+    def get_public_video_list(self, skip: int = 0, limit: int = 20, keyword: str | None = None) -> dict[str, Any]:
+        if self.backend == "fixture":
+            videos = [v for v in self._load_fixture().get("videos", []) if v.get("visibility") == "PUBLIC"]
+            if keyword:
+                kw = keyword.lower()
+                videos = [v for v in videos if kw in v.get("title", "").lower() or kw in v.get("description", "").lower()]
+            return {"list": videos[skip: skip + limit], "total": len(videos)}
+        cmd = ["video", "public", "--skip", str(skip), "--limit", str(limit)]
+        if keyword:
+            cmd += ["--keyword", keyword]
+        return self._run_cli(cmd)
+
     # ── Stats ────────────────────────────────────────────────────
 
     def get_traffic_stats(self, days: int = 7) -> dict[str, Any]:
@@ -334,6 +360,56 @@ class VideoTools:
         if self.backend == "fixture":
             return {"id": "fixture-user", "nickname": "测试用户", "phone": "138****0000"}
         return self._run_cli(["auth", "me"])
+
+    def get_my_profile(self) -> dict[str, Any]:
+        if self.backend == "fixture":
+            return {"id": "fixture-user", "nickname": "测试用户", "bio": "fixture 简介", "avatarUrl": None, "subscriberCount": 0, "videoCount": 0}
+        return self._run_cli(["user", "profile"])
+
+    def update_profile(self, nickname: str | None = None, bio: str | None = None) -> dict[str, Any]:
+        if not self.confirm_write:
+            return {"requiresConfirmation": True, "message": "update_profile is write; rerun with --confirm-write", "planned": {"nickname": nickname, "bio": bio}}
+        if nickname is None and bio is None:
+            return {"error": "nickname 和 bio 至少提供一个"}
+        if self.backend == "fixture":
+            return {"updated": True, "nickname": nickname, "bio": bio}
+        cmd = ["user", "update-profile"]
+        if nickname is not None:
+            cmd += ["--nickname", nickname]
+        if bio is not None:
+            cmd += ["--bio", bio]
+        return self._run_cli(cmd)
+
+    # ── Channel / Subscription ───────────────────────────────────
+
+    def subscribe_channel(self, channel_user_id: str) -> dict[str, Any]:
+        if not self.confirm_write:
+            return {"requiresConfirmation": True, "message": "subscribe_channel is write; rerun with --confirm-write", "planned": {"channel_user_id": channel_user_id}}
+        if self.backend == "fixture":
+            return {"channelUserId": channel_user_id, "subscribed": True}
+        return self._run_cli(["channel", "subscribe", "--user-id", channel_user_id])
+
+    def unsubscribe_channel(self, channel_user_id: str) -> dict[str, Any]:
+        if not self.confirm_write:
+            return {"requiresConfirmation": True, "message": "unsubscribe_channel is write; rerun with --confirm-write", "planned": {"channel_user_id": channel_user_id}}
+        if self.backend == "fixture":
+            return {"channelUserId": channel_user_id, "unsubscribed": True}
+        return self._run_cli(["channel", "unsubscribe", "--user-id", channel_user_id])
+
+    def get_my_subscriptions(self, skip: int = 0, limit: int = 20) -> dict[str, Any]:
+        if self.backend == "fixture":
+            subs = self._load_fixture().get("subscriptions", [])
+            return {"list": subs[skip: skip + limit], "total": len(subs)}
+        result = self._run_cli(["channel", "subscriptions", "--skip", str(skip), "--limit", str(limit)])
+        # 服务端返回频道 userId 字符串数组，统一包成 {list, total}
+        if isinstance(result, list):
+            return {"list": result, "total": len(result)}
+        return result
+
+    def get_channel(self, user_id: str) -> dict[str, Any]:
+        if self.backend == "fixture":
+            return {"userId": user_id, "nickname": "fixture 频道", "avatarUrl": None, "bannerUrl": None, "bio": "", "subscriberCount": 0, "videoCount": 0, "isSubscribed": False}
+        return self._run_cli(["channel", "get", "--user-id", user_id])
 
     # ── YouTube ──────────────────────────────────────────────────
 
