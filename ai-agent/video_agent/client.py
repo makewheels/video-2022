@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Iterator
 
+from . import trace as lf_trace
 from .config import get_config
 
 
@@ -66,9 +67,20 @@ class ModelClient:
             body["tools"] = tools
             body["tool_choice"] = "auto"
 
-        if stream:
-            return self._handle_stream(body)
-        return self._handle_nonstream(body)
+        handle = lf_trace.start_generation(name="model.chat", model=self.model, messages=messages)
+        try:
+            result = self._handle_stream(body) if stream else self._handle_nonstream(body)
+        except Exception as e:
+            lf_trace.finish_generation(handle, error=e)
+            raise
+        output: Any = result.text
+        if result.tool_calls:
+            output = {
+                "text": result.text,
+                "tool_calls": [{"name": tc.name, "arguments": tc.arguments} for tc in result.tool_calls],
+            }
+        lf_trace.finish_generation(handle, output=output, usage=result.usage)
+        return result
 
     def _handle_nonstream(self, body: dict[str, Any]) -> AgentResponse:
         import urllib.request as req
@@ -127,6 +139,8 @@ class ModelClient:
 
         import urllib.request as req
 
+        handle = lf_trace.start_generation(name="model.chat_stream", model=self.model, messages=messages)
+
         body = json.dumps({
             "model": self.model,
             "messages": messages,
@@ -147,68 +161,87 @@ class ModelClient:
             method="POST",
         )
 
-        with req.urlopen(request, timeout=self.timeout) as resp:
-            content_parts: list[str] = []
-            tool_call_buf: dict[int, dict[str, Any]] = {}
-            finish_reason = ""
-            usage = {}
-            for line_bytes in resp:
-                line = line_bytes.decode("utf-8").strip()
-                if not line.startswith("data: "):
-                    continue
-                payload = line[6:]
-                if payload == "[DONE]":
-                    break
-                try:
-                    event = json.loads(payload)
-                except json.JSONDecodeError:
-                    continue
+        try:
+            with req.urlopen(request, timeout=self.timeout) as resp:
+                content_parts: list[str] = []
+                tool_call_buf: dict[int, dict[str, Any]] = {}
+                finish_reason = ""
+                usage = {}
+                for line_bytes in resp:
+                    line = line_bytes.decode("utf-8").strip()
+                    if not line.startswith("data: "):
+                        continue
+                    payload = line[6:]
+                    if payload == "[DONE]":
+                        break
+                    try:
+                        event = json.loads(payload)
+                    except json.JSONDecodeError:
+                        continue
 
-                choice = event.get("choices", [{}])[0]
-                delta = choice.get("delta", {})
-                finish_reason = finish_reason or choice.get("finish_reason", "")
-                event_usage = event.get("usage")
-                if event_usage:
-                    usage = event_usage
+                    choice = event.get("choices", [{}])[0]
+                    delta = choice.get("delta", {})
+                    finish_reason = finish_reason or choice.get("finish_reason", "")
+                    event_usage = event.get("usage")
+                    if event_usage:
+                        usage = event_usage
 
-                # Skip thinking/reasoning content (MiniMax M2.7)
-                text_delta = delta.get("content", "")
-                if text_delta and not delta.get("reasoning_content"):
-                    text_delta = _strip_thinking(text_delta)
-                    if text_delta:
-                        content_parts.append(text_delta)
-                        yield {"type": "text_delta", "text": text_delta}
+                    # Skip thinking/reasoning content (MiniMax M2.7)
+                    text_delta = delta.get("content", "")
+                    if text_delta and not delta.get("reasoning_content"):
+                        text_delta = _strip_thinking(text_delta)
+                        if text_delta:
+                            content_parts.append(text_delta)
+                            yield {"type": "text_delta", "text": text_delta}
 
-                for tc in delta.get("tool_calls", []):
-                    idx = tc.get("index", 0)
-                    if idx not in tool_call_buf:
-                        tool_call_buf[idx] = {"id": tc.get("id", ""), "name": "", "arguments": ""}
-                    if "id" in tc:
-                        tool_call_buf[idx]["id"] = tc["id"]
-                    if "function" in tc:
-                        if "name" in tc["function"] and tc["function"]["name"]:
-                            tool_call_buf[idx]["name"] += tc["function"]["name"]
-                        if "arguments" in tc["function"]:
-                            tool_call_buf[idx]["arguments"] += tc["function"]["arguments"]
-                            yield {"type": "tool_call_delta", "index": idx, "name": tool_call_buf[idx]["name"], "arguments": tool_call_buf[idx]["arguments"]}
+                    for tc in delta.get("tool_calls", []):
+                        idx = tc.get("index", 0)
+                        if idx not in tool_call_buf:
+                            tool_call_buf[idx] = {"id": tc.get("id", ""), "name": "", "arguments": ""}
+                        if "id" in tc:
+                            tool_call_buf[idx]["id"] = tc["id"]
+                        if "function" in tc:
+                            if "name" in tc["function"] and tc["function"]["name"]:
+                                tool_call_buf[idx]["name"] += tc["function"]["name"]
+                            if "arguments" in tc["function"]:
+                                tool_call_buf[idx]["arguments"] += tc["function"]["arguments"]
+                                yield {"type": "tool_call_delta", "index": idx, "name": tool_call_buf[idx]["name"], "arguments": tool_call_buf[idx]["arguments"]}
 
-            # Build final tool_calls
-            tool_calls = []
-            for idx in sorted(tool_call_buf):
-                buf = tool_call_buf[idx]
-                try:
-                    args = json.loads(buf["arguments"])
-                except (json.JSONDecodeError, TypeError):
-                    args = {}
-                tool_calls.append(ToolCall(id=buf["id"], name=buf["name"], arguments=args))
+                # Build final tool_calls
+                tool_calls = []
+                for idx in sorted(tool_call_buf):
+                    buf = tool_call_buf[idx]
+                    try:
+                        args = json.loads(buf["arguments"])
+                    except (json.JSONDecodeError, TypeError):
+                        args = {}
+                    tool_calls.append(ToolCall(id=buf["id"], name=buf["name"], arguments=args))
 
-            yield {
-                "type": "done",
-                "text": "".join(content_parts),
-                "tool_calls": tool_calls,
-                "finish_reason": finish_reason,
-                "usage": dict(usage) if usage else {},
-            }
+                text = "".join(content_parts)
+                done_output: Any = text
+                if tool_calls:
+                    done_output = {
+                        "text": text,
+                        "tool_calls": [{"name": tc.name, "arguments": tc.arguments} for tc in tool_calls],
+                    }
+                lf_trace.finish_generation(handle, output=done_output, usage=usage)
+                handle = None  # 已 finish，防止 finally 重复登记
+
+                yield {
+                    "type": "done",
+                    "text": text,
+                    "tool_calls": tool_calls,
+                    "finish_reason": finish_reason,
+                    "usage": dict(usage) if usage else {},
+                }
+        except Exception as e:
+            lf_trace.finish_generation(handle, error=e)
+            handle = None  # 已 finish，防止 finally 重复登记
+            raise
+        finally:
+            # 消费方提前放弃生成器（GeneratorExit）或异常路径：把手上的部分结果登记掉
+            if handle is not None:
+                lf_trace.finish_generation(handle, error="stream closed before done")
 
 
 # ── Tool definitions (OpenAI function-calling format) ────────────
