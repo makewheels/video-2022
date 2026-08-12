@@ -353,6 +353,23 @@ class VideoTools:
 
     # ── Helpers ──────────────────────────────────────────────────
 
+    def resolve_videos(self, keyword: str, limit: int = 5) -> dict[str, Any]:
+        """按标题关键词解析出候选视频，供 video_id 消歧（模型可见工具）。"""
+        result = self.list_my_videos(keyword=keyword, limit=limit)
+        if "error" in result:
+            return result
+        candidates = [
+            {
+                "videoId": v.get("id") or v.get("videoId"),
+                "title": v.get("title"),
+                "status": v.get("status"),
+                "watchCount": v.get("watchCount"),
+                "createTime": v.get("createTime"),
+            }
+            for v in result.get("list", [])
+        ]
+        return {"keyword": keyword, "total": result.get("total", len(candidates)), "candidates": candidates}
+
     def find_video_candidates(self, keyword: str | None, limit: int = 10) -> list[dict[str, Any]]:
         """Search user's own videos by keyword, returning candidate list for disambiguation."""
         if not keyword:

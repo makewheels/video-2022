@@ -98,6 +98,7 @@ def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:
                 await session_manager.append_message(req.session_id, {"role": "user", "content": req.query})
 
                 max_turns = 8
+                confirmation_announced = False
                 for turn in range(max_turns):
                     try:
                         # Call model with retry
@@ -151,10 +152,13 @@ def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:
                             messages.append(tool_msg)
                             await session_manager.append_message(req.session_id, tool_msg)
 
-                        # Check for confirmation needed
+                        # 写操作被拒绝执行（需确认）：结果已在轨迹里，让模型多走一轮向用户解释计划，而非直接断流；
+                        # 若模型下一轮仍重复调用写工具，则不再给机会，直接结束
                         if any(isinstance(tr["result"], dict) and tr["result"].get("requiresConfirmation") for tr in tool_results):
                             yield f"data: {json.dumps({'type': 'confirmation_needed', 'message': '以上写操作需要确认'}, ensure_ascii=False)}\n\n"
-                            break
+                            if confirmation_announced:
+                                break
+                            confirmation_announced = True
 
                     except ModelAPIError as e:
                         error_info = error_handler.handle_model_error(e)
