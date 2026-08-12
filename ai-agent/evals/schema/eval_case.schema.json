@@ -1,0 +1,270 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://video-2022/ai-agent/evals/schema/eval_case.schema.json",
+  "title": "AI Agent 评估用例",
+  "description": "单个 ai-agent 评估用例的冻结规格。描述一条用于评估 video agent 的测试用例：输入、期望、风险等级与来源依据。顶层允许增加未来字段。",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "suites",
+    "category",
+    "risk",
+    "difficulty",
+    "input",
+    "expectations",
+    "sources"
+  ],
+  "properties": {
+    "id": {
+      "title": "用例 ID",
+      "description": "用例唯一标识，非空字符串。",
+      "type": "string",
+      "minLength": 1
+    },
+    "suites": {
+      "title": "所属测试套件",
+      "description": "该用例归属的测试套件列表，非空且元素唯一，每项为非空字符串。",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "category": {
+      "title": "用例分类",
+      "description": "用例功能分类，非空字符串。",
+      "type": "string",
+      "minLength": 1
+    },
+    "risk": {
+      "title": "风险等级",
+      "description": "用例涉及操作的风险等级。",
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "difficulty": {
+      "title": "难度",
+      "description": "用例难度。",
+      "type": "string",
+      "enum": [
+        "easy",
+        "medium",
+        "hard"
+      ]
+    },
+    "input": {
+      "title": "输入",
+      "description": "用例输入，query、messages 与 turns 至少提供其一。",
+      "type": "object",
+      "additionalProperties": true,
+      "anyOf": [
+        {
+          "required": [
+            "query"
+          ]
+        },
+        {
+          "required": [
+            "messages"
+          ]
+        },
+        {
+          "required": [
+            "turns"
+          ]
+        }
+      ],
+      "properties": {
+        "query": {
+          "title": "查询文本",
+          "description": "用户查询文本，非空字符串。可选。",
+          "type": "string",
+          "minLength": 1
+        },
+        "messages": {
+          "title": "消息序列",
+          "description": "多轮消息序列，非空数组。可选。",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+              "role",
+              "content"
+            ],
+            "properties": {
+              "role": {
+                "title": "消息角色",
+                "description": "消息角色枚举。",
+                "type": "string",
+                "enum": [
+                  "system",
+                  "user",
+                  "assistant",
+                  "tool"
+                ]
+              },
+              "content": {
+                "title": "消息内容",
+                "description": "消息内容，非空字符串。",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "turns": {
+          "title": "脚本化用户轮次",
+          "description": "可重放的用户轮次；grant_confirmation 仅表示该轮用户明确授权写入。",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+              "user"
+            ],
+            "properties": {
+              "user": {
+                "type": "string",
+                "minLength": 1
+              },
+              "grant_confirmation": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "expectations": {
+      "title": "期望",
+      "description": "用例期望结果，至少包含 answer、tools、write_safety、state 之一，允许未来字段。",
+      "type": "object",
+      "additionalProperties": true,
+      "anyOf": [
+        {
+          "required": [
+            "answer"
+          ]
+        },
+        {
+          "required": [
+            "tools"
+          ]
+        },
+        {
+          "required": [
+            "write_safety"
+          ]
+        },
+        {
+          "required": [
+            "state"
+          ]
+        }
+      ],
+      "properties": {
+        "answer": {
+          "title": "答案期望",
+          "description": "对最终回答的期望。"
+        },
+        "tools": {
+          "title": "工具期望",
+          "description": "对工具调用的期望。"
+        },
+        "write_safety": {
+          "title": "写操作安全期望",
+          "description": "对写操作安全性的期望。"
+        },
+        "state": {
+          "title": "状态期望",
+          "description": "对系统状态变化的期望。"
+        }
+      }
+    },
+    "sources": {
+      "title": "来源依据",
+      "description": "用例依据来源列表，非空数组，每项必填 type、ref、rationale。",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "type",
+          "ref",
+          "rationale"
+        ],
+        "properties": {
+          "type": {
+            "title": "来源类型",
+            "description": "依据来源类型枚举。",
+            "type": "string",
+            "enum": [
+              "product_requirement",
+              "implementation_contract",
+              "expert_hypothesis",
+              "external_evidence",
+              "production_failure",
+              "synthetic_control"
+            ]
+          },
+          "ref": {
+            "title": "来源引用",
+            "description": "来源引用标识，非空字符串。",
+            "type": "string",
+            "minLength": 1
+          },
+          "rationale": {
+            "title": "依据理由",
+            "description": "该来源作为依据的理由，非空字符串。",
+            "type": "string",
+            "minLength": 1
+          },
+          "external_url": {
+            "title": "外部链接",
+            "description": "外部证据链接，可选，须为合法 URI。",
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "risk": {
+            "const": "critical"
+          }
+        },
+        "required": [
+          "risk"
+        ]
+      },
+      "then": {
+        "properties": {
+          "expectations": {
+            "required": [
+              "write_safety"
+            ]
+          }
+        },
+        "required": [
+          "expectations"
+        ]
+      }
+    }
+  ]
+}

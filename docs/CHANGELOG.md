@@ -6,6 +6,17 @@
 
 ---
 
+## feat: Video Agent 版本化评测与 Langfuse Experiment
+- 新增一需求一目录文档规范，需求计划、验收记录和结果不再混入扁平 `docs/plans`
+- 将旧 49 条 seed 迁移为 Regression，建立 15 条 Smoke 和 5 条高风险多轮 Dataset
+- 新增 schema/validator、多维确定性 grader、可重置 fixture、脚本化多轮模拟器和可选 LLM Judge
+- 接入腾讯云 Langfuse Dataset/Experiment，使用稳定 item ID、trial metadata 和多维 trace scores
+- Kimi K3 fixture baseline：Regression 49/49、Smoke 15/15 `pass^3`、Multi-turn + Judge 4/5
+- 发现多轮确认后未调用删除工具却声称成功的真实失败；安全与最终状态仍由确定性 veto 裁决
+- 对 429/5xx 增加有限退避重试；401 不重试；密钥不进入仓库
+
+---
+
 ## feat: 本地转码通道（客户端 FFmpeg 转码后回传，零云转码成本）
 - 新增转码方式 `transcodeMode`：`AUTO`（默认，云端 MPS/云函数）/ `LOCAL`（客户端本机 FFmpeg 转码后回传）
 - `LOCAL` 模式下 `onRawFileUploadFinish` 跳过服务端云转码与 MPS 截帧，等待客户端回传

@@ -7,6 +7,7 @@ Supports two backends:
 
 from __future__ import annotations
 
+import copy
 import json
 import os
 import re
@@ -38,6 +39,7 @@ class VideoTools:
     token: str | None = None
     confirm_write: bool = False
     trace: list[ToolCall] = field(default_factory=list)
+    _fixture_state: dict[str, Any] | None = field(default=None, init=False, repr=False)
 
     # ── Dispatch ─────────────────────────────────────────────────
 
@@ -89,6 +91,10 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "update_video is write; rerun with --confirm-write", "planned": {"video_id": video_id, "title": title, "visibility": visibility}}
         if self.backend == "fixture":
+            video = self._fixture_get_video(video_id)
+            for key, value in (("title", title), ("description", description), ("visibility", visibility)):
+                if value is not None:
+                    video[key] = value
             return {"videoId": video_id, "updated": True}
         self._run_cli(["video", "update", "--id", video_id, "--title", title or "", "--description", description or "", "--visibility", visibility or ""])
         return {"videoId": video_id, "updated": True}
@@ -97,6 +103,9 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "delete_video is write, IRREVERSIBLE; rerun with --confirm-write", "planned": {"video_id": video_id}}
         if self.backend == "fixture":
+            data = self._load_fixture()
+            self._fixture_get_video(video_id)
+            data["videos"] = [video for video in data.get("videos", []) if video.get("id") != video_id]
             return {"videoId": video_id, "deleted": True}
         self._run_cli(["video", "delete", "--id", video_id])
         return {"videoId": video_id, "deleted": True}
@@ -105,7 +114,22 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "upload_video is write; rerun with --confirm-write", "planned": {"file_path": file_path, "title": title, "visibility": visibility}}
         if self.backend == "fixture":
-            return {"videoId": "fixture-upload-id", "status": "CREATED"}
+            video_id = f"fixture-upload-{len(self._load_fixture().get('videos', [])) + 1}"
+            self._load_fixture().setdefault("videos", []).append(
+                {
+                    "id": video_id,
+                    "title": title or Path(file_path).stem,
+                    "description": "",
+                    "tags": [],
+                    "category": "未分类",
+                    "status": "CREATED",
+                    "visibility": visibility or "PRIVATE",
+                    "watchCount": 0,
+                    "trafficBytes": 0,
+                    "createTime": "fixture-now",
+                }
+            )
+            return {"videoId": video_id, "status": "CREATED"}
         return self._upload_via_http(file_path, title=title, visibility=visibility)
 
     def get_video_download_url(self, video_id: str) -> dict[str, Any]:
@@ -131,7 +155,11 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "add_comment is write; rerun with --confirm-write", "planned": {"video_id": video_id, "content": content[:50]}}
         if self.backend == "fixture":
-            return {"commentId": "fixture-comment-id", "videoId": video_id, "added": True}
+            self._fixture_get_video(video_id)
+            comments = self._load_fixture().setdefault("comments", {}).setdefault(video_id, [])
+            comment_id = f"fixture-comment-{sum(len(items) for items in self._load_fixture().get('comments', {}).values()) + 1}"
+            comments.append({"id": comment_id, "content": content, "likeCount": 0, "parentCommentId": parent_comment_id})
+            return {"commentId": comment_id, "videoId": video_id, "added": True}
         cmd = ["comment", "add", "--video-id", video_id, "--content", content]
         if parent_comment_id:
             cmd += ["--parent-id", parent_comment_id]
@@ -141,7 +169,13 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "delete_comment is write, IRREVERSIBLE; rerun with --confirm-write", "planned": {"comment_id": comment_id}}
         if self.backend == "fixture":
-            return {"commentId": comment_id, "deleted": True}
+            comments_by_video = self._load_fixture().setdefault("comments", {})
+            for comments in comments_by_video.values():
+                for index, comment in enumerate(comments):
+                    if comment.get("id") == comment_id:
+                        comments.pop(index)
+                        return {"commentId": comment_id, "deleted": True}
+            raise KeyError(f"comment not found: {comment_id}")
         self._run_cli(["comment", "delete", "--id", comment_id])
         return {"commentId": comment_id, "deleted": True}
 
@@ -149,6 +183,9 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "like_comment is write; rerun with --confirm-write", "planned": {"comment_id": comment_id}}
         if self.backend == "fixture":
+            comment = self._fixture_comment(comment_id)
+            comment["likeCount"] = int(comment.get("likeCount", 0)) + 1
+            comment["liked"] = True
             return {"commentId": comment_id, "liked": True}
         return self._run_cli(["comment", "like", "--id", comment_id])
 
@@ -177,7 +214,12 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "create_playlist is write; rerun with --confirm-write", "planned": {"title": title, "description": description}}
         if self.backend == "fixture":
-            return {"playlistId": "fixture-playlist-id", "title": title, "created": True}
+            playlists = self._load_fixture().setdefault("playlists", [])
+            playlist_id = f"fixture-playlist-{len(playlists) + 1}"
+            playlists.append(
+                {"id": playlist_id, "title": title, "description": description or "", "videoCount": 0, "videoIds": []}
+            )
+            return {"playlistId": playlist_id, "title": title, "created": True}
         cmd = ["playlist", "create", "--title", title]
         if description:
             cmd += ["--description", description]
@@ -187,6 +229,12 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "add_video_to_playlist is write; rerun with --confirm-write"}
         if self.backend == "fixture":
+            playlist = self._fixture_playlist(playlist_id)
+            self._fixture_get_video(video_id)
+            ids = playlist.setdefault("videoIds", [])
+            if video_id not in ids:
+                ids.append(video_id)
+            playlist["videoCount"] = len(ids)
             return {"playlistId": playlist_id, "videoId": video_id, "added": True}
         return self._run_cli(["playlist", "add-item", "--playlist-id", playlist_id, "--video-id", video_id])
 
@@ -194,6 +242,11 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "remove_video_from_playlist is write; rerun with --confirm-write"}
         if self.backend == "fixture":
+            playlist = self._fixture_playlist(playlist_id)
+            ids = playlist.setdefault("videoIds", [])
+            if video_id in ids:
+                ids.remove(video_id)
+            playlist["videoCount"] = len(ids)
             return {"playlistId": playlist_id, "videoId": video_id, "removed": True}
         return self._run_cli(["playlist", "delete-item", "--playlist-id", playlist_id, "--video-id", video_id])
 
@@ -201,6 +254,8 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "delete_playlist is write, IRREVERSIBLE; rerun with --confirm-write", "planned": {"playlist_id": playlist_id}}
         if self.backend == "fixture":
+            playlist = self._fixture_playlist(playlist_id)
+            playlist["deleted"] = True
             return {"playlistId": playlist_id, "deleted": True}
         self._run_cli(["playlist", "delete", "--id", playlist_id])
         return {"playlistId": playlist_id, "deleted": True}
@@ -209,6 +264,11 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "update_playlist is write; rerun with --confirm-write"}
         if self.backend == "fixture":
+            playlist = self._fixture_playlist(playlist_id)
+            if title is not None:
+                playlist["title"] = title
+            if description is not None:
+                playlist["description"] = description
             return {"playlistId": playlist_id, "updated": True}
         cmd = ["playlist", "update", "--id", playlist_id]
         if title:
@@ -221,6 +281,12 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "move_playlist_item is write; rerun with --confirm-write", "planned": {"playlist_id": playlist_id, "video_id": video_id, "to_index": to_index}}
         if self.backend == "fixture":
+            playlist = self._fixture_playlist(playlist_id)
+            ids = playlist.setdefault("videoIds", [])
+            if video_id not in ids:
+                raise KeyError(f"playlist item not found: {video_id}")
+            ids.remove(video_id)
+            ids.insert(max(0, min(to_index, len(ids))), video_id)
             return {"playlistId": playlist_id, "videoId": video_id, "toIndex": to_index, "moved": True}
         return self._run_cli(["playlist", "move-item", "--playlist-id", playlist_id, "--video-id", video_id, "--to-index", str(to_index)])
 
@@ -228,6 +294,7 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "recover_playlist is write; rerun with --confirm-write", "planned": {"playlist_id": playlist_id}}
         if self.backend == "fixture":
+            self._fixture_playlist(playlist_id)["deleted"] = False
             return {"playlistId": playlist_id, "recovered": True}
         return self._run_cli(["playlist", "recover", "--id", playlist_id])
 
@@ -249,13 +316,19 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "mark_notification_read is write; rerun with --confirm-write"}
         if self.backend == "fixture":
-            return {"notificationId": notification_id, "read": True}
+            for notification in self._load_fixture().get("notifications", []):
+                if notification.get("id") == notification_id:
+                    notification["read"] = True
+                    return {"notificationId": notification_id, "read": True}
+            raise KeyError(f"notification not found: {notification_id}")
         return self._run_cli(["notification", "read", notification_id])
 
     def mark_all_notifications_read(self) -> dict[str, Any]:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "mark_all_notifications_read is write; rerun with --confirm-write"}
         if self.backend == "fixture":
+            for notification in self._load_fixture().get("notifications", []):
+                notification["read"] = True
             return {"allRead": True}
         return self._run_cli(["notification", "read-all"])
 
@@ -270,6 +343,8 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "like_video is write; rerun with --confirm-write"}
         if self.backend == "fixture":
+            self._fixture_get_video(video_id)
+            self._load_fixture().setdefault("likeStatus", {})[video_id] = {"liked": True, "disliked": False}
             return {"videoId": video_id, "liked": True}
         return self._run_cli(["like", "like", "--video-id", video_id])
 
@@ -277,6 +352,8 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "dislike_video is write; rerun with --confirm-write"}
         if self.backend == "fixture":
+            self._fixture_get_video(video_id)
+            self._load_fixture().setdefault("likeStatus", {})[video_id] = {"liked": False, "disliked": True}
             return {"videoId": video_id, "disliked": True}
         return self._run_cli(["like", "dislike", "--video-id", video_id])
 
@@ -286,7 +363,11 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "create_share is write; rerun with --confirm-write", "planned": {"video_id": video_id}}
         if self.backend == "fixture":
-            return {"shortCode": "fixture-share", "videoId": video_id, "clickCount": 0}
+            self._fixture_get_video(video_id)
+            links = self._load_fixture().setdefault("shareLinks", {})
+            short_code = f"fixture-share-{len(links) + 1}"
+            links[short_code] = {"shortCode": short_code, "videoId": video_id, "clickCount": 0}
+            return links[short_code]
         return self._run_cli(["share", "create", "--video-id", video_id])
 
     def share_stats(self, short_code: str) -> dict[str, Any]:
@@ -314,6 +395,7 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "clear_watch_history is write, IRREVERSIBLE; rerun with --confirm-write"}
         if self.backend == "fixture":
+            self._load_fixture()["watchHistory"] = {"list": [], "total": 0, "page": 0, "pageSize": 20}
             return {"cleared": True}
         return self._run_cli(["watch", "clear-history"])
 
@@ -363,7 +445,15 @@ class VideoTools:
 
     def get_my_profile(self) -> dict[str, Any]:
         if self.backend == "fixture":
-            return {"id": "fixture-user", "nickname": "测试用户", "bio": "fixture 简介", "avatarUrl": None, "subscriberCount": 0, "videoCount": 0}
+            return {
+                "id": "fixture-user",
+                "nickname": "测试用户",
+                "bio": "fixture 简介",
+                "avatarUrl": None,
+                "subscriberCount": 0,
+                "videoCount": len(self._load_fixture().get("videos", [])),
+                **self._load_fixture().get("profile", {}),
+            }
         return self._run_cli(["user", "profile"])
 
     def update_profile(self, nickname: str | None = None, bio: str | None = None) -> dict[str, Any]:
@@ -372,6 +462,13 @@ class VideoTools:
         if nickname is None and bio is None:
             return {"error": "nickname 和 bio 至少提供一个"}
         if self.backend == "fixture":
+            profile = self._load_fixture().setdefault(
+                "profile", {"id": "fixture-user", "nickname": "测试用户", "bio": "fixture 简介"}
+            )
+            if nickname is not None:
+                profile["nickname"] = nickname
+            if bio is not None:
+                profile["bio"] = bio
             return {"updated": True, "nickname": nickname, "bio": bio}
         cmd = ["user", "update-profile"]
         if nickname is not None:
@@ -386,6 +483,9 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "subscribe_channel is write; rerun with --confirm-write", "planned": {"channel_user_id": channel_user_id}}
         if self.backend == "fixture":
+            subscriptions = self._load_fixture().setdefault("subscriptions", [])
+            if channel_user_id not in subscriptions:
+                subscriptions.append(channel_user_id)
             return {"channelUserId": channel_user_id, "subscribed": True}
         return self._run_cli(["channel", "subscribe", "--user-id", channel_user_id])
 
@@ -393,6 +493,9 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "unsubscribe_channel is write; rerun with --confirm-write", "planned": {"channel_user_id": channel_user_id}}
         if self.backend == "fixture":
+            subscriptions = self._load_fixture().setdefault("subscriptions", [])
+            if channel_user_id in subscriptions:
+                subscriptions.remove(channel_user_id)
             return {"channelUserId": channel_user_id, "unsubscribed": True}
         return self._run_cli(["channel", "unsubscribe", "--user-id", channel_user_id])
 
@@ -408,7 +511,7 @@ class VideoTools:
 
     def get_channel(self, user_id: str) -> dict[str, Any]:
         if self.backend == "fixture":
-            return {"userId": user_id, "nickname": "fixture 频道", "avatarUrl": None, "bannerUrl": None, "bio": "", "subscriberCount": 0, "videoCount": 0, "isSubscribed": False}
+            return {"userId": user_id, "nickname": "fixture 频道", "avatarUrl": None, "bannerUrl": None, "bio": "", "subscriberCount": 0, "videoCount": 0, "isSubscribed": user_id in self._load_fixture().get("subscriptions", [])}
         return self._run_cli(["channel", "get", "--user-id", user_id])
 
     # ── YouTube ──────────────────────────────────────────────────
@@ -425,7 +528,22 @@ class VideoTools:
         if not self.confirm_write:
             return {"requiresConfirmation": True, "message": "transfer_youtube is write; rerun with --confirm-write", "planned": {"url": url}}
         if self.backend == "fixture":
-            return {"videoId": "fixture-youtube-video", "url": url, "transferred": True}
+            video_id = f"fixture-youtube-{len(self._load_fixture().get('videos', [])) + 1}"
+            self._load_fixture().setdefault("videos", []).append(
+                {
+                    "id": video_id,
+                    "title": "YouTube 视频（fixture）",
+                    "description": url,
+                    "tags": ["YouTube"],
+                    "category": "转存",
+                    "status": "CREATED",
+                    "visibility": "PRIVATE",
+                    "watchCount": 0,
+                    "trafficBytes": 0,
+                    "createTime": "fixture-now",
+                }
+            )
+            return {"videoId": video_id, "url": url, "transferred": True}
         youtube_id = _extract_youtube_id(url)
         if not youtube_id:
             return {"error": f"无法解析 YouTube 视频 ID: {url}"}
@@ -469,6 +587,21 @@ class VideoTools:
             videos.extend(chunk)
         return videos
 
+    def snapshot_state(self) -> dict[str, Any] | None:
+        """Return an isolated fixture snapshot for deterministic eval grading.
+
+        The real CLI backend has no safe whole-account snapshot API, so callers
+        must provide a purpose-built test backend snapshot for state assertions.
+        """
+        if self.backend != "fixture":
+            return None
+        return copy.deepcopy(self._load_fixture())
+
+    def reset_fixture_state(self) -> None:
+        """Reload fixture state so every eval trial starts from the same data."""
+        if self.backend == "fixture":
+            self._fixture_state = self._read_fixture()
+
     # ── Internal: CLI backend ────────────────────────────────────
 
     def _run_cli(self, args: list[str]) -> dict[str, Any]:
@@ -497,7 +630,7 @@ class VideoTools:
         try:
             import oss2
         except ImportError:
-            raise RuntimeError("oss2 is required for real uploads; run `pip install -r requirements.txt`")
+            raise RuntimeError("oss2 is required for real uploads; run `uv sync`")
 
         path = Path(file_path).expanduser().resolve()
         if not path.exists():
@@ -547,7 +680,25 @@ class VideoTools:
                 return v
         raise KeyError(f"video not found: {video_id}")
 
+    def _fixture_playlist(self, playlist_id: str) -> dict[str, Any]:
+        for playlist in self._load_fixture().get("playlists", []):
+            if playlist.get("id") == playlist_id:
+                return playlist
+        raise KeyError(f"playlist not found: {playlist_id}")
+
+    def _fixture_comment(self, comment_id: str) -> dict[str, Any]:
+        for comments in self._load_fixture().get("comments", {}).values():
+            for comment in comments:
+                if comment.get("id") == comment_id:
+                    return comment
+        raise KeyError(f"comment not found: {comment_id}")
+
     def _load_fixture(self) -> dict[str, Any]:
+        if self._fixture_state is None:
+            self._fixture_state = self._read_fixture()
+        return self._fixture_state
+
+    def _read_fixture(self) -> dict[str, Any]:
         cfg = get_config()
         path = Path(self.fixture_path or cfg.fixture_path or Path(__file__).resolve().parents[1] / "fixtures" / "videos.json")
         with path.open(encoding="utf-8") as f:
