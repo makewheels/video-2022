@@ -11,7 +11,7 @@ from pathlib import Path
 
 from .assistant import VideoAssistant
 from .config import get_config
-from .eval_runner import run_eval_suite
+from .evaluation.eval_runner import run_eval_suite
 from .tools import VideoTools
 
 
@@ -185,8 +185,8 @@ def main() -> None:
         )
 
         if args.langfuse or args.sync_only:
-            from .eval_dataset import load_eval_cases, validate_eval_file
-            from .eval_langfuse import run_dataset_experiments, sync_dataset
+            from .evaluation.eval_dataset import load_eval_cases, validate_eval_file
+            from .evaluation.eval_langfuse import run_dataset_experiments, sync_dataset
 
             errors = validate_eval_file(cases_path)
             if errors:

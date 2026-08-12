@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
-_DEFAULT_RUBRIC = Path(__file__).resolve().parents[1] / "evals" / "judges" / "response_quality_v1.json"
+_DEFAULT_RUBRIC = Path(__file__).resolve().parents[2] / "evals" / "judges" / "response_quality_v1.json"
 
 
 @dataclass(frozen=True)

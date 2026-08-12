@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from video_agent.eval_langfuse import (
+from video_agent.evaluation.eval_langfuse import (
     _apply_task_error_veto,
     dataset_name_for_suite,
     stable_item_id,

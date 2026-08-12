@@ -50,9 +50,9 @@
 ## 命令
 
 ```bash
-uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_smoke_v1.json
-uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_regression_v1.json
-uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_multi_turn_v1.json
+uv run python -m video_agent.evaluation.eval_dataset validate evals/datasets/video_agent_smoke_v1.json
+uv run python -m video_agent.evaluation.eval_dataset validate evals/datasets/video_agent_regression_v1.json
+uv run python -m video_agent.evaluation.eval_dataset validate evals/datasets/video_agent_multi_turn_v1.json
 
 # Langfuse 同步和实验命令由 eval CLI 提供；执行前通过环境变量注入凭证。
 uv run python -m video_agent eval --suite smoke --trials 1

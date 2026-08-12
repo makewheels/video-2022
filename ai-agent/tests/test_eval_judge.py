@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from video_agent.eval_judge import judge_case, load_rubric, parse_judge_result
+from video_agent.evaluation.eval_judge import judge_case, load_rubric, parse_judge_result
 
 
 def _valid(rubric):
