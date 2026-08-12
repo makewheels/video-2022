@@ -59,6 +59,7 @@ video-2022/
 ├── android/             # Kotlin + Jetpack Compose 安卓客户端
 ├── ios/                 # Swift + SwiftUI iOS 客户端
 ├── cli/                 # Python 命令行工具
+├── ai-agent/            # 自然语言视频助手与评测体系（Python，封装 video-cli）
 ├── console/    # React 开发者门户
 ├── test/                # Python E2E 测试（API + Browser）
 ├── docs/                # 项目文档
@@ -86,25 +87,26 @@ improve/xxx     # 优化改进
 1. 基于最新 `master` 创建分支
 2. 开发 + 本地测试通过
 3. 推送分支到 GitHub
-4. 创建 PR → CI 自动运行（9 个 Job）
+4. 创建 PR → CI 自动运行（10 个 Job）
 5. CI 全部通过后合并
 6. 合并到 master 后自动部署到服务器
 
-### 2.3 CI 流水线（9 个 Job）
+### 2.3 CI 流水线（10 个 Job）
 
 | # | Job | 说明 |
 |---|-----|------|
 | 1 | Backend 单元测试 | `mvn test`（~440 个测试） |
 | 2 | Frontend 单元测试 | `npm run test`（Vitest） |
 | 3 | CLI 单元测试 | `pytest cli/`（89 个测试） |
-| 4 | Android 单元测试 | `./gradlew testDebugUnitTest`（~13 个测试） |
-| 5 | iOS 单元测试 | `xcodebuild test`（~51 个测试） |
-| 6 | 构建 E2E 产物 | 构建前端 + 后端 JAR |
-| 7 | API E2E 测试 | `pytest test/api/`（75 个测试） |
-| 8 | Browser E2E 测试 | Playwright 浏览器自动化测试 |
-| 9 | 最终汇总 | 检查所有 Job 通过 |
+| 4 | AI Agent 测试 | `pytest ai-agent/`（离线 fixture） |
+| 5 | Android 单元测试 | `./gradlew testDebugUnitTest`（~13 个测试） |
+| 6 | iOS 单元测试 | `xcodebuild test`（~51 个测试） |
+| 7 | 构建 E2E 产物 | 构建前端 + 后端 JAR |
+| 8 | API E2E 测试 | `pytest test/api/`（75 个测试） |
+| 9 | Browser E2E 测试 | Playwright 浏览器自动化测试 |
+| 10 | 最终汇总 | 检查所有 Job 通过 |
 
-**所有 9 个 Job 必须通过才能合并。**
+**所有 10 个 Job 必须通过才能合并。**
 
 ---
 

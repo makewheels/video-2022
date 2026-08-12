@@ -2,6 +2,8 @@
 
 > 基线：`origin/master` / `0d782215980fc52af3b92d9371666cb637b31417`
 > 事实源：`git ls-files`（共 936 个被跟踪文件）；所有引用关系用 `grep` 在基线上实测。
+>
+> **实施状态（2026-08-12）**：本报告中"必须修"与"建议修"项已在同一 PR 直接实施，执行细节与验证结果见 [plan.md](plan.md)。两处与下表原建议不同：① `docs/plans/` 未维持现状，已整体迁入 `docs/归档/plans/`（与"归档=历史材料"的既定分层一致）；② 子包化过程中新发现并删除了另外两个 orphan 模块 `planner.py`、`llm.py`（v0.1 架构残留，零引用）。
 
 # 总体结论
 
@@ -97,29 +99,28 @@
 
 # 建议目标结构
 
-顶层目录**完全不变**。仅 `ai-agent/` 内部与忽略规则有目标态调整（全部经后续 PR、复核后实施）：
+顶层目录**完全不变**。仅 `ai-agent/` 内部与忽略规则有调整（以下目标态已全部在本 PR 落地）：
 
 ```text
 ai-agent/
-├── README.md                  # 重写：现状目录树 + uv 安装 + eval 入口
+├── README.md                  # 已重写：现状目录树 + uv 安装 + eval 入口
 ├── docs/
-│   ├── archive/               # eval-plan / implementation / agent-product-plan /
-│   │                          # optimization-plan / OPTIMIZED（加状态头或迁入）
-│   └── （ANTHROPIC_SDK.md 若保留则迁此；eval-report.md 入链检查后删除）
+│   └── archive/               # eval-plan / implementation / agent-product-plan /
+│                              # optimization-plan / OPTIMIZED 已迁入；eval-report 已删
 ├── evals/
-│   ├── README.md              # 同步 legacy 路径与命令
+│   ├── README.md              # 已同步 legacy 路径与新模块命令
 │   ├── datasets/  judges/  schema/  sources/   # 不变
 │   └── legacy/
-│       └── video_agent_eval.json   # 旧 seed 归位
+│       └── video_agent_eval.json   # 旧 seed 已归位
 ├── video_agent/
-│   ├── evaluation/            # 可选（PR-4）：eval_dataset / eval_graders / eval_judge /
+│   ├── evaluation/            # 已迁入：eval_dataset / eval_graders / eval_judge /
 │   │                          #   eval_langfuse / eval_runner / eval_user_simulator
-│   └── …其余 16 个模块不变     # server_anthropic.py / anthropic_client.py 由 owner 决策去留
-└── tests/                     # 可选（PR-4）：eval 相关 5 个测试文件的导入同步更新
+│   └── …其余模块               # server_anthropic / anthropic_client / planner / llm 已删除
+└── tests/                     # eval 相关 5 个测试文件的导入已同步
 ```
 
 ```text
-# 根 .gitignore 增补（PR-1）
+# 根 .gitignore 增补（已落地）
 .venv/
 test-results/
 playwright-report/
@@ -127,22 +128,17 @@ playwright-report/
 
 # 不确定项
 
-- `server_anthropic.py` / `anthropic_client.py` 的去留：代码与文档均已断线，但是否代表已放弃的产品方向，需 owner 决策。
+- ~~`server_anthropic.py` / `anthropic_client.py` 的去留~~：已随本 PR 删除（Git 历史可恢复）；若该产品方向重启，从历史找回即可。
 - `web/test-chat-ui.mjs` 中 token 是否仍然有效：按安全惯例不验证凭证有效性，直接按泄露处理（作废）最稳妥。
 - `.readthedocs.yaml` 是否在 Read the Docs 平台绑定过实际站点：仓内无 mkdocs 配置可断定其为死配置，但平台侧绑定状态只有 owner 能查。
-- `ai-agent` 未进 CI 是有意省略还是遗漏：测试为离线 fixture，接入成本低，倾向遗漏，但需 owner 确认。
-- `docs/plans/` 渐进迁移的时间表：现有约定未给期限，本报告不增设。
-- `web/e2e` 是否值得接入 CI：需权衡 python 环境准备与端口占用的 CI 成本。
+- `ai-agent` 未进 CI 是有意省略还是遗漏：测试为离线 fixture，接入成本低，倾向遗漏，但需 owner 确认。（已在本 PR 接入，若有异议可单独 revert 对应 commit。）
+- ~~`docs/plans/` 渐进迁移的时间表~~：已随本 PR 整体迁入 `docs/归档/plans/`。
+- `web/e2e` 是否值得接入 CI：需权衡 python 环境准备与端口占用的 CI 成本（本 PR 未接入，仅在 `web/README.md` 记录本地运行前提）。
 
 # 最终建议
 
-按 [plan.md](plan.md) 拆分的 4 个后续 PR 推进，顺序即优先级：
+"必须修"与"建议修"项已全部在本 PR 实施（见 [plan.md](plan.md) 的 commit 清单与验证结果），不再拆后续 PR。
 
-1. **PR-1 安全与生成文件清理**（必须修 + .gitignore 缺口 + 死配置/遗留文件确认删除）；
-2. **PR-2 文档索引同步与 ai-agent 文档分层**（README/关键设计/llms.txt/需求状态同步，web 与 ai-agent README 重写，历史文档标记归档）；
-3. **PR-3 evals legacy 归位**（`video_agent_eval.json` → `evals/legacy/`）；
-4. **PR-4（可选）evaluation 子包化 + ai-agent CI job**。
+复核时建议按 commit 逐条评审；任何一项不合意都可单独 revert（文件移动均经 `git mv`，历史连续）。仓库外遗留动作只有四项：服务端作废泄露 token、确认 RTD 平台无站点绑定、确认服务器无遗留脚本手工引用、处置远端残留分支 `improve/eval-json-format`。
 
-全部后续 PR **不依赖** `improve/eval-json-format` 先合并：该分支与 `origin/master` 的内容 diff 为空（`git diff --stat origin/master origin/improve/eval-json-format` 无输出），其改动已以 PR #108 合入基线。
-
-本审计 PR 本身只新增本目录三个文档，不触碰任何现有文件；`docs/requirements/README.md` 的索引登记与 `docs/CHANGELOG.md` 更新并入 PR-2 处理，以满足本 PR "只含三个新文件" 的验收约束。
+顶层目录保持现状。如仍有整体重排（如 `apps/`、`services/` 分组）的意愿，请注意其真实成本：`.github/workflows`（10 个 Job 的路径与 cache key）、根 `Dockerfile` 多阶段构建路径、`deploy.yml`、全仓 Markdown 链接都绑定现有顶层名，而收益仅是观感对称；建议不做，或作为独立 PR 单独评估。

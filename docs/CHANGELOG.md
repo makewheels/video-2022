@@ -6,6 +6,19 @@
 
 ---
 
+## refactor: 项目文件与文档结构重组（[PR #109](https://github.com/makewheels/video-2022/pull/109)）
+- 结构审计：新增 `docs/requirements/2026-08-project-structure-review/`（分析、实施记录）
+- 历史计划文档 `docs/plans/` 整体迁入 `docs/归档/plans/`，同步 living 文档与 `.github/skills/` 的路径指引
+- `ai-agent/docs/` 历史文档迁入 `archive/`；删除断线的 Anthropic SDK 文档与两个 orphan 模块，移除 `anthropic` 依赖
+- eval 子系统迁入 `video_agent/evaluation/` 子包；旧 seed 归位 `evals/legacy/`；Langfuse 稳定 ID 不受影响
+- `web/test-results/.last-run.json` 退出 Git 跟踪；`.gitignore` 补 `.venv/`、`test-results/`、`playwright-report/`
+- 删除含硬编码 token 的一次性脚本 `web/test-chat-ui.mjs`、死配置 `.readthedocs.yaml`、遗留部署文件 `Dockerfile-video` / `deploy-video.sh`
+- 新增 ai-agent CI Job（CI 由 9 个 Job 变为 10 个）
+- 索引同步：README/关键设计补全 API 9-10 与业务 11-13，`llms.txt` 补 ai-agent，重写 `web/README.md` 与 `ai-agent/README.md`
+- 验证：`uv run pytest`（ai-agent 178 通过）、`git diff --check`、全仓引用 grep
+
+---
+
 ## feat: Video Agent 版本化评测与 Langfuse Experiment
 - 新增一需求一目录文档规范，需求计划、验收记录和结果不再混入扁平 `docs/plans`
 - 将旧 49 条 seed 迁移为 Regression，建立 15 条 Smoke 和 5 条高风险多轮 Dataset
