@@ -181,7 +181,7 @@ def main() -> None:
             config.project_root,
             "evals",
             "datasets",
-            f"video_agent_{args.suite}_v1.jsonl",
+            f"video_agent_{args.suite}_v1.json",
         )
 
         if args.langfuse or args.sync_only:

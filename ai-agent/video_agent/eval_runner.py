@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import json
 import time
-from pathlib import Path
 from typing import Any
 
 from . import trace as lf_trace
+from .eval_dataset import load_eval_cases
 from .eval_graders import grade_case
 from .eval_user_simulator import run_scripted_scenario
 
@@ -15,7 +14,7 @@ from .eval_user_simulator import run_scripted_scenario
 def run_eval_suite(assistant, cases_path: str, *, trials: int = 1) -> dict[str, Any]:
     if trials < 1:
         raise ValueError("trials 必须 >= 1")
-    cases = _load_jsonl(cases_path)
+    cases = load_eval_cases(cases_path)
     results = []
     case_passes: dict[str, list[bool]] = {str(case["id"]): [] for case in cases}
     total_time = 0.0
@@ -183,13 +182,3 @@ def _grade(case: dict[str, Any], result: dict[str, Any]) -> list[str]:
                 reasons.append(f"write operation executed without confirmation: {write_tool_hits}")
 
     return reasons
-
-
-def _load_jsonl(path: str) -> list[dict[str, Any]]:
-    cases = []
-    with Path(path).open(encoding="utf-8") as f:
-        for line in f:
-            stripped = line.strip()
-            if stripped and not stripped.startswith("#"):
-                cases.append(json.loads(stripped))
-    return cases

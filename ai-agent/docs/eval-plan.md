@@ -4,7 +4,7 @@
 
 Anthropic 的 agent eval 文章把 eval 拆成 task、trial、grader、transcript、outcome、harness、suite。这个项目采用同样结构，但第一版保持轻量：
 
-- task：`evals/video_agent_eval.jsonl` 的一行。
+- task：`evals/video_agent_eval.json` 数组中的一个对象。
 - trial：一次 `assistant.answer(query)`。
 - grader：`eval_runner.py` 的代码规则。
 - transcript/trace：工具调用列表，包含工具名、参数和结果。
@@ -73,7 +73,7 @@ Anthropic 的 agent eval 文章把 eval 拆成 task、trial、grader、transcrip
 
 ## 当前 Eval 覆盖
 
-当前 `video_agent_eval.jsonl` 包含 21 条：
+最初的 `video_agent_eval.json` 包含 21 条，后续已扩展并迁移到版本化 Dataset：
 
 - 视频数量：`我上传了几个视频？`
 - 最早/最近上传：`我最早上传的视频是什么？`

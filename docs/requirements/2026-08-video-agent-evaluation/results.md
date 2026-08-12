@@ -72,7 +72,7 @@ Multi-turn Judge 聚合：relevance 0.95、grounded explanation 0.95、clarity 0
 cd ai-agent
 uv sync --extra langfuse
 uv run pytest -q
-uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_regression_v1.jsonl
+uv run python -m video_agent.eval_dataset validate evals/datasets/video_agent_regression_v1.json
 uv run python -m video_agent eval --suite smoke --trials 3 --langfuse
 uv run python -m video_agent eval --suite regression --trials 1 --langfuse
 uv run python -m video_agent eval --suite multi_turn --trials 1 --langfuse --judge

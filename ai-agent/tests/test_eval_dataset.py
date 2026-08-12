@@ -31,10 +31,17 @@ def _base(**over):
     return c
 
 
-def _write(tmp_path, cases):
+def _write_jsonl(tmp_path, cases):
     """把若干 case 对象写成 JSONL，返回路径。"""
     p = tmp_path / "cases.jsonl"
     p.write_text("".join(json.dumps(c) + "\n" for c in cases), encoding="utf-8")
+    return p
+
+
+def _write_json(tmp_path, cases):
+    """把若干 case 对象写成便于人工审阅的 JSON 数组。"""
+    p = tmp_path / "cases.json"
+    p.write_text(json.dumps(cases, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return p
 
 
@@ -42,8 +49,9 @@ def _write(tmp_path, cases):
 
 
 def test_valid_single_turn(tmp_path):
-    p = _write(tmp_path, [_base()])
+    p = _write_json(tmp_path, [_base()])
     assert validate_eval_file(p) == []
+    assert load_eval_cases(p) == [_base()]
     assert validate_eval_cases([_base()]) == []
 
 
@@ -151,7 +159,7 @@ def test_critical_missing_write_safety():
 
 
 def test_duplicate_id_line_case_field(tmp_path):
-    p = _write(tmp_path, [_base(id="dup"), _base(id="dup", input={"query": "other"})])
+    p = _write_jsonl(tmp_path, [_base(id="dup"), _base(id="dup", input={"query": "other"})])
     errs = validate_eval_file(p)
     dup = [e for e in errs if e.field == "id" and "重复" in e.reason]
     assert dup, "expected duplicate-id error"
@@ -163,7 +171,7 @@ def test_duplicate_id_line_case_field(tmp_path):
 
 def test_multiple_errors_aggregated_and_sorted(tmp_path):
     case = _base(risk="bogus", difficulty="bogus", input={"query": "   "})
-    p = _write(tmp_path, [case])
+    p = _write_jsonl(tmp_path, [case])
     errs = validate_eval_file(p)
     assert len(errs) >= 3
     # validate_eval_file 稳定排序：按 line → case_id → field → reason
@@ -190,10 +198,47 @@ def test_invalid_json_and_non_object(tmp_path):
     assert sum("顶层必须是 JSON 对象" in e.reason for e in ferrs) == 2
 
 
+def test_legacy_jsonl_comments_remain_supported(tmp_path):
+    p = tmp_path / "commented.jsonl"
+    p.write_text(
+        "# historical dataset note\n" + json.dumps(_base()) + "\n",
+        encoding="utf-8",
+    )
+    assert load_eval_cases(p) == [_base()]
+    assert validate_eval_file(p) == []
+
+
+def test_json_array_requires_array_top_level(tmp_path):
+    p = tmp_path / "bad.json"
+    p.write_text(json.dumps(_base()), encoding="utf-8")
+    with pytest.raises(EvalDatasetError) as exc:
+        load_eval_cases(p)
+    assert "顶层必须是数组" in exc.value.errors[0].reason
+
+
+def test_json_array_rejects_non_object_and_localizes_validation_errors(tmp_path):
+    p = _write_json(tmp_path, [_base(risk="bogus"), 42])
+    with pytest.raises(EvalDatasetError) as exc:
+        load_eval_cases(p)
+    assert exc.value.errors[0].field == "[1]"
+
+    p = _write_json(tmp_path, [_base(risk="bogus")])
+    errs = validate_eval_file(p)
+    assert any(error.field == "[0].risk" for error in errs)
+
+
+def test_json_array_duplicate_id_reports_indexes(tmp_path):
+    p = _write_json(tmp_path, [_base(id="dup"), _base(id="dup")])
+    errs = validate_eval_file(p)
+    duplicate = next(error for error in errs if "重复" in error.reason)
+    assert duplicate.field == "[1].id"
+    assert "数组索引 0" in duplicate.reason
+
+
 def test_load_preserves_unknown_fields(tmp_path):
     case = _base(extra_top="x", nested={"k": 1})
     case["input"]["extra_in"] = [1, 2]
-    p = _write(tmp_path, [case])
+    p = _write_json(tmp_path, [case])
     loaded = load_eval_cases(p)
     assert loaded[0]["extra_top"] == "x"
     assert loaded[0]["nested"] == {"k": 1}
@@ -204,14 +249,14 @@ def test_load_preserves_unknown_fields(tmp_path):
 
 
 def test_cli_success_counts(capsys, tmp_path):
-    p = _write(tmp_path, [_base(), _base(id="c2")])
+    p = _write_json(tmp_path, [_base(), _base(id="c2")])
     assert _cli(["validate", str(p)]) == 0
     out = capsys.readouterr().out
     assert "2 条用例校验通过" in out
 
 
 def test_cli_failure_stderr_localization(capsys, tmp_path):
-    p = _write(tmp_path, [_base(risk="bogus")])
+    p = _write_json(tmp_path, [_base(risk="bogus")])
     assert _cli(["validate", str(p)]) == 1
     err = capsys.readouterr().err
     assert "处错误" in err
@@ -219,7 +264,7 @@ def test_cli_failure_stderr_localization(capsys, tmp_path):
 
 
 def test_cli_missing_path_is_controlled(capsys, tmp_path):
-    missing = tmp_path / "missing.jsonl"
+    missing = tmp_path / "missing.json"
     assert _cli(["validate", str(missing)]) == 1
     captured = capsys.readouterr()
     assert "无法读取文件" in captured.err

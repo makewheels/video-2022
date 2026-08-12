@@ -45,7 +45,7 @@ video-cli / fixture → 后端 API
 | 文件 | 变更 |
 |------|------|
 | `fixtures/videos.json` | 从 4 个视频扩展到 8 个，新增音乐/游戏/科技/体育类，丰富评论/通知/播放列表/观看历史 |
-| `evals/video_agent_eval.jsonl` | 从 21 条扩展到 49 条，覆盖查询、搜索、消歧、写操作保护、跨实体查询、边界场景 |
+| `evals/video_agent_eval.json` | 从 21 条扩展到 49 条，覆盖查询、搜索、消歧、写操作保护、跨实体查询、边界场景 |
 
 ### Tool Coverage
 
