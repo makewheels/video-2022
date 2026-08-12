@@ -299,6 +299,24 @@ jobs:
         working-directory: cli
         run: uv run --extra test pytest tests/ -v --tb=short
 
+  ai-agent-tests:
+    name: AI Agent 测试
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          python-version: '3.12'
+          enable-cache: true
+          cache-dependency-glob: ai-agent/uv.lock
+
+      - name: Run AI Agent tests
+        working-directory: ai-agent
+        run: uv run pytest tests/ -v --tb=short
+
   android-tests:
     name: Android 单元测试
     runs-on: ubuntu-latest
@@ -366,7 +384,7 @@ jobs:
 
   build-and-test:
     name: build-and-test
-    needs: [backend-tests, frontend-tests, api-e2e-tests, browser-e2e-tests, cli-tests, android-tests, ios-tests]
+    needs: [backend-tests, frontend-tests, api-e2e-tests, browser-e2e-tests, cli-tests, ai-agent-tests, android-tests, ios-tests]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -377,6 +395,7 @@ jobs:
              [ "${{ needs.api-e2e-tests.result }}" != "success" ] || \
              [ "${{ needs.browser-e2e-tests.result }}" != "success" ] || \
              [ "${{ needs.cli-tests.result }}" != "success" ] || \
+             [ "${{ needs.ai-agent-tests.result }}" != "success" ] || \
              [ "${{ needs.android-tests.result }}" != "success" ] || \
              [ "${{ needs.ios-tests.result }}" != "success" ]; then
             echo "One or more jobs failed"
