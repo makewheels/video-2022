@@ -87,7 +87,7 @@ export VIDEO_AGENT_LLM_MODEL=<model>
 uv run pytest tests/ -v
 ```
 
-测试全部离线运行（fixture + mock），也是 CI `AI Agent 测试` Job 的内容。
+除 session manager 测试需要本地 MongoDB（`mongodb://localhost:27017`）外，其余测试全部离线运行（fixture + mock）。CI 的 `AI Agent 测试` Job 自带 MongoDB service。
 
 ## 文档导航
 
