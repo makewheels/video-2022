@@ -151,7 +151,7 @@ jobs:
           identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
           oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
           domain: ${{ vars.INFISICAL_DOMAIN }}
-          project-slug: video-2022
+          project-slug: video-2022-secrets
           env-slug: dev
           secret-path: /
           recursive: true
@@ -217,7 +217,7 @@ jobs:
           identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
           oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
           domain: ${{ vars.INFISICAL_DOMAIN }}
-          project-slug: video-2022
+          project-slug: video-2022-secrets
           env-slug: dev
           secret-path: /
           recursive: true
