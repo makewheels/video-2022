@@ -20,7 +20,7 @@ def test_chat_retries_429_then_succeeds(monkeypatch):
         calls.append(1)
         if len(calls) < 3:
             raise _http_error(429)
-        return AgentResponse(text="ok")
+        return AgentResponse(text="ok"), {"choices": [{"message": {"content": "ok"}}]}
 
     monkeypatch.setattr(client, "_handle_nonstream", fake)
     monkeypatch.setattr(client_module.time, "sleep", lambda _seconds: None)

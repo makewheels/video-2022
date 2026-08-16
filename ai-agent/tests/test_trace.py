@@ -202,16 +202,20 @@ def test_eval_score_goes_to_eval_env(monkeypatch):
 
 
 def test_model_client_chat_wiring(monkeypatch):
-    """ModelClient.chat：fake langfuse 下 generation 带 model/usage/output。"""
+    """ModelClient.chat：fake langfuse 下 generation 记录完整请求体（含 tools）与原始响应。"""
     captured: dict = {}
     _enable(monkeypatch, captured)
     from video_agent.client import AgentResponse, ModelClient
 
+    raw_response = {"choices": [{"message": {"content": "你好"}}], "usage": {"prompt_tokens": 3}}
     client = ModelClient(model="fake-model", base_url="http://fake", api_key="k")
     monkeypatch.setattr(
         client,
         "_handle_nonstream",
-        lambda body: AgentResponse(text="你好", usage={"prompt_tokens": 3, "completion_tokens": 2, "total_tokens": 5}),
+        lambda body: (
+            AgentResponse(text="你好", usage={"prompt_tokens": 3, "completion_tokens": 2, "total_tokens": 5}),
+            raw_response,
+        ),
     )
     resp = client.chat([{"role": "user", "content": "hi"}])
     assert resp.text == "你好"
@@ -219,7 +223,14 @@ def test_model_client_chat_wiring(monkeypatch):
     obs = captured["observations"][0]
     assert obs.kw["name"] == "model.chat"
     assert obs.kw["model"] == "fake-model"
-    assert obs.updates[0]["output"] == "你好"
+    # input = 发给 LLM 的完整请求体：messages + tools + 参数，一字不少
+    full_input = obs.updates[0]["input"]
+    assert full_input["model"] == "fake-model"
+    assert full_input["messages"] == [{"role": "user", "content": "hi"}]
+    assert len(full_input["tools"]) > 0 and full_input["tool_choice"] == "auto"
+    assert "temperature" in full_input and "max_tokens" in full_input
+    # output = 原始响应 JSON（不再是摘要）
+    assert obs.updates[0]["output"] == raw_response
     assert obs.updates[0]["usage_details"] == {"input": 3, "output": 2, "total": 5}
     assert obs.ended
 
@@ -229,7 +240,7 @@ def test_model_client_chat_noop_when_disabled(monkeypatch):
     from video_agent.client import AgentResponse, ModelClient
 
     client = ModelClient(model="fake-model", base_url="http://fake", api_key="k")
-    monkeypatch.setattr(client, "_handle_nonstream", lambda body: AgentResponse(text="ok"))
+    monkeypatch.setattr(client, "_handle_nonstream", lambda body: (AgentResponse(text="ok"), {}))
     assert client.chat([{"role": "user", "content": "hi"}]).text == "ok"
 
 
@@ -261,7 +272,7 @@ def _stub_urlopen(monkeypatch):
 
 
 def test_chat_stream_wiring(monkeypatch):
-    """ModelClient.chat_stream：事件序列不变，generation 在 done 时回填 text/usage。"""
+    """ModelClient.chat_stream：事件序列不变，generation 记录完整请求体 + SSE 原文 + usage。"""
     captured: dict = {}
     _enable(monkeypatch, captured)
     _stub_urlopen(monkeypatch)
@@ -276,7 +287,13 @@ def test_chat_stream_wiring(monkeypatch):
 
     obs = captured["observations"][0]
     assert obs.kw["name"] == "model.chat_stream"
-    assert obs.updates[0]["output"] == "你好"
+    # input = 完整请求体（含 tools）；output = SSE 事件原文 + 拼装结果
+    full_input = obs.updates[0]["input"]
+    assert full_input["messages"] == [{"role": "user", "content": "hi"}]
+    assert len(full_input["tools"]) > 0 and full_input["stream"] is True
+    stream_output = obs.updates[0]["output"]
+    assert len(stream_output["events"]) == 2  # 两个 data: 事件（[DONE] 不计）
+    assert stream_output["assembled"] == "你好"
     assert obs.updates[0]["usage_details"] == {"input": 1, "output": 2, "total": 3}
     assert obs.ended
 

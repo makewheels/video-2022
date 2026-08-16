@@ -124,19 +124,27 @@ def finish_generation(
     output: Any = None,
     usage: dict | None = None,
     error: BaseException | str | None = None,
+    input: Any = None,
 ) -> None:
-    """结束 generation 并回填 output/usage/延迟。handle 为 None（未启用）时什么都不做。"""
+    """结束 generation 并回填 output/usage/延迟。handle 为 None（未启用）时什么都不做。
+
+    input：HTTP 层完整请求体快照（含 messages/tools/全部参数），提供时覆盖
+    start 时的 messages 快照——Langfuse 里看到的即线上发送原文，一字不少。
+    """
     if handle is None:
         return
     try:
         if handle.obs is not None:
-            handle.obs.update(
-                output=output,
-                usage_details=_usage_details(usage),
-                level="ERROR" if error else "DEFAULT",
-                status_message=str(error) if error else None,
-                metadata={"latencyMs": _latency_ms(handle)},
-            )
+            update_kw: dict[str, Any] = {
+                "output": output,
+                "usage_details": _usage_details(usage),
+                "level": "ERROR" if error else "DEFAULT",
+                "status_message": str(error) if error else None,
+                "metadata": {"latencyMs": _latency_ms(handle)},
+            }
+            if input is not None:
+                update_kw["input"] = input
+            handle.obs.update(**update_kw)
             handle.obs.end()
     except Exception as e:
         logger.warning("langfuse finish_generation 失败（不影响主路径）: %s", e)

@@ -74,7 +74,9 @@ class ModelClient:
         try:
             for attempt in range(3):
                 try:
-                    result = self._handle_stream(body) if stream else self._handle_nonstream(body)
+                    result, raw_response = (
+                        self._handle_stream(body) if stream else self._handle_nonstream(body)
+                    )
                     break
                 except Exception as exc:
                     if attempt == 2 or not _is_retryable_transport_error(exc):
@@ -83,15 +85,12 @@ class ModelClient:
         except Exception as e:
             lf_trace.finish_generation(handle, error=e)
             raise
-        output: Any = result.text
-        if result.tool_calls:
-            output = {
-                "text": result.text,
-                "tool_calls": [{"name": tc.name, "arguments": tc.arguments} for tc in result.tool_calls],
-            }
-        lf_trace.finish_generation(handle, output=output, usage=result.usage)
+        # input=完整请求体（含 tools/参数）、output=原始响应 JSON：线上原文一字不少
+        lf_trace.finish_generation(handle, input=body, output=raw_response, usage=result.usage)
         return result
-    def _handle_nonstream(self, body: dict[str, Any]) -> AgentResponse:
+
+    def _handle_nonstream(self, body: dict[str, Any]) -> tuple[AgentResponse, dict[str, Any]]:
+        """返回 (解析后的 AgentResponse, 原始响应 JSON)——原始响应供 trace 全量记录。"""
         import urllib.request as req
 
         data = json.dumps(body).encode("utf-8")
@@ -123,14 +122,17 @@ class ModelClient:
                 args = {}
             tool_calls.append(ToolCall(id=tc.get("id", ""), name=fn["name"], arguments=args))
 
-        return AgentResponse(
-            text=content,
-            tool_calls=tool_calls,
-            finish_reason=choice.get("finish_reason", "stop"),
-            usage=dict(usage),
+        return (
+            AgentResponse(
+                text=content,
+                tool_calls=tool_calls,
+                finish_reason=choice.get("finish_reason", "stop"),
+                usage=dict(usage),
+            ),
+            result,
         )
 
-    def _handle_stream(self, body: dict[str, Any]) -> AgentResponse:
+    def _handle_stream(self, body: dict[str, Any]) -> tuple[AgentResponse, dict[str, Any]]:
         """Streaming chat that yields deltas, returns the accumulated response."""
         # Non-streaming for simplicity in the first version;
         # streaming events are handled in the assistant layer.
@@ -150,7 +152,7 @@ class ModelClient:
 
         handle = lf_trace.start_generation(name="model.chat_stream", model=self.model, messages=messages)
 
-        body = json.dumps({
+        request_body = {
             "model": self.model,
             "messages": messages,
             "temperature": self.temperature,
@@ -158,7 +160,8 @@ class ModelClient:
             "stream": True,
             "tools": tools,
             "tool_choice": "auto",
-        }).encode("utf-8")
+        }
+        body = json.dumps(request_body).encode("utf-8")
 
         request = req.Request(
             f"{self.base_url}/chat/completions",
@@ -176,6 +179,7 @@ class ModelClient:
                 tool_call_buf: dict[int, dict[str, Any]] = {}
                 finish_reason = ""
                 usage = {}
+                raw_events: list[dict[str, Any]] = []  # 全部 SSE 事件原文（流式响应的完整记录）
                 for line_bytes in resp:
                     line = line_bytes.decode("utf-8").strip()
                     if not line.startswith("data: "):
@@ -187,6 +191,7 @@ class ModelClient:
                         event = json.loads(payload)
                     except json.JSONDecodeError:
                         continue
+                    raw_events.append(event)
 
                     choice = event.get("choices", [{}])[0]
                     delta = choice.get("delta", {})
@@ -233,7 +238,13 @@ class ModelClient:
                         "text": text,
                         "tool_calls": [{"name": tc.name, "arguments": tc.arguments} for tc in tool_calls],
                     }
-                lf_trace.finish_generation(handle, output=done_output, usage=usage)
+                # input=完整请求体；output=SSE 事件原文+拼装结果：流式也一字不少
+                lf_trace.finish_generation(
+                    handle,
+                    input=request_body,
+                    output={"events": raw_events, "assembled": done_output},
+                    usage=usage,
+                )
                 handle = None  # 已 finish，防止 finally 重复登记
 
                 yield {
