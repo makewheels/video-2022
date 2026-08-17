@@ -67,6 +67,10 @@ jobs:
         working-directory: web
         run: pnpm install --frozen-lockfile && pnpm run lint
 
+      - name: Lint console
+        working-directory: console
+        run: pnpm install --frozen-lockfile && pnpm run lint
+
   backend-tests:
     name: 后端测试
     runs-on: ubuntu-latest
