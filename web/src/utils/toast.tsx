@@ -1,3 +1,5 @@
+/* ToastProvider 与配套 useToast hook 有意同文件导出（context 模式），豁免 fast-refresh 检查 */
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import { ToastContainer } from '../components/Toast';
 

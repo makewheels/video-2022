@@ -33,6 +33,8 @@ function StatisticsPage() {
 
   useEffect(() => {
     const { start, end } = getTimestampRange(7);
+    // loadData 内部同步置 loading 态，属正常首次加载；豁免 set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData(start, end);
   }, [loadData]);
 
