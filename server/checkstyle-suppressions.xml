@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<!-- 存量基线，只减不增：历史存在的 6+ 参数方法豁免 ParameterNumber；新增方法仍受 ≤5 参数约束 -->
+<suppressions>
+    <suppress files="file[\\/]access[\\/]FileAccessLogService\.java" checks="ParameterNumber"/>
+    <suppress files="file[\\/]FileService\.java" checks="ParameterNumber"/>
+    <suppress files="file[\\/]FileAccessSignatureService\.java" checks="ParameterNumber"/>
+    <suppress files="notification[\\/]NotificationService\.java" checks="ParameterNumber"/>
+    <suppress files="transcode[\\/]cloudfunction[\\/]CloudFunctionTranscodeService\.java" checks="ParameterNumber"/>
+    <suppress files="finance[\\/]fee[\\/]ossaccess[\\/]OssAccessFeeService\.java" checks="ParameterNumber"/>
+</suppressions>

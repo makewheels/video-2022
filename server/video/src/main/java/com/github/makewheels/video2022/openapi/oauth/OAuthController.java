@@ -32,7 +32,9 @@ public class OAuthController {
     /**
      * OAuth token端点，支持client_credentials和refresh_token两种grant_type
      */
-    @Operation(summary = "获取访问令牌", description = "支持 client_credentials 和 refresh_token 两种授权方式。可通过参数传递 client_id/client_secret，也支持 HTTP Basic Auth。")
+    @Operation(summary = "获取访问令牌",
+            description = "支持 client_credentials 和 refresh_token 两种授权方式。可通过参数传递 client_id/client_secret，"
+                    + "也支持 HTTP Basic Auth。")
     @PostMapping("token")
     public Result<OAuthTokenResponse> token(
             @RequestParam("grant_type") String grantType,
