@@ -24,7 +24,11 @@ class TestUserCommands:
         responses.add(
             responses.GET,
             "http://localhost:5022/user/getMyProfile",
-            json={"code": 0, "message": "ok", "data": {"id": "u1", "nickname": "我", "bio": "简介", "subscriberCount": 5}},
+            json={
+                "code": 0,
+                "message": "ok",
+                "data": {"id": "u1", "nickname": "我", "bio": "简介", "subscriberCount": 5},
+            },
             status=200,
         )
         result = self.runner.invoke(cli, ["--token", "t", "user", "profile"])
@@ -41,7 +45,9 @@ class TestUserCommands:
             json={"code": 0, "message": "ok", "data": None},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "user", "update-profile", "--nickname", "新昵称", "--bio", "新简介"])
+        result = self.runner.invoke(
+            cli, ["--token", "t", "user", "update-profile", "--nickname", "新昵称", "--bio", "新简介"]
+        )
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert data["success"] is True

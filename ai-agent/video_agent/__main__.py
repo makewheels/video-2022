@@ -113,7 +113,7 @@ def _make_assistant(args: argparse.Namespace) -> tuple[VideoAssistant, VideoTool
     return assistant, tools
 
 
-def main() -> None:
+def main() -> None:  # noqa: C901, PLR0912, PLR0915
     args = build_parser().parse_args()
 
     if args.command == "ask":
@@ -195,7 +195,9 @@ def main() -> None:
                 raise SystemExit(1)
             cases = load_eval_cases(cases_path)
             synced = sync_dataset(cases, suite=args.suite)
-            schema_note = "服务端 schema 已启用" if synced.schema_enforced else "服务端 schema 未启用，使用 Git + 本地校验器"
+            schema_note = (
+                "服务端 schema 已启用" if synced.schema_enforced else "服务端 schema 未启用，使用 Git + 本地校验器"
+            )
             print(f"✅ Langfuse Dataset: {synced.dataset_name}，upsert {synced.items_upserted} 条；{schema_note}")
             if args.sync_only:
                 return

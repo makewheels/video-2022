@@ -54,7 +54,9 @@ class SessionManager:
         await self.sessions.insert_one(session)
         return session
 
-    async def update_session(self, session_id: str, messages: list[dict[str, Any]], metadata: dict[str, Any] | None = None):
+    async def update_session(
+        self, session_id: str, messages: list[dict[str, Any]], metadata: dict[str, Any] | None = None
+    ):
         """Update session messages and metadata."""
         await self.connect()
         update_data = {

@@ -197,7 +197,7 @@ def finish_tool_span(
 # ── trace（一次请求 / 一个 eval case） ─────────────────────────
 
 
-def start_trace(
+def start_trace(  # noqa: PLR0913
     *,
     name: str,
     input: Any = None,
@@ -268,7 +268,7 @@ def end_trace(
         _close(handle)
 
 
-def score(
+def score(  # noqa: PLR0913
     *,
     name: str,
     value: float,

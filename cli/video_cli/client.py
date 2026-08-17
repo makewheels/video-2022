@@ -56,9 +56,11 @@ def _handle_response(resp: requests.Response) -> dict:
     return data.get("data")
 
 
-def _request(method: str, path: str, *, params: dict | None = None,
-             json_data: dict | None = None, base_url: str | None = None,
-             token: str | None = None) -> dict:
+def _request(  # noqa: PLR0913
+    method: str, path: str, *, params: dict | None = None,
+    json_data: dict | None = None, base_url: str | None = None,
+    token: str | None = None,
+) -> dict:
     url = (base_url or get_base_url()) + path
     try:
         resp = requests.request(

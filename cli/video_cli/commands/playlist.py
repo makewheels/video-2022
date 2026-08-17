@@ -55,7 +55,12 @@ def detail(ctx, playlist_id, show_videos):
     base_url = ctx.obj.get("base_url")
     token = ctx.obj.get("token")
     try:
-        result = get("/playlist/getPlaylistById", {"playlistId": playlist_id, "showVideoList": show_videos}, base_url=base_url, token=token)
+        result = get(
+            "/playlist/getPlaylistById",
+            {"playlistId": playlist_id, "showVideoList": show_videos},
+            base_url=base_url,
+            token=token,
+        )
         print_json(result)
     except APIError as e:
         print_error(e.message, e.code)
@@ -70,7 +75,12 @@ def add_item(ctx, playlist_id, video_id):
     base_url = ctx.obj.get("base_url")
     token = ctx.obj.get("token")
     try:
-        result = post("/playlist/addPlaylistItem", {"playlistId": playlist_id, "videoId": video_id}, base_url=base_url, token=token)
+        result = post(
+            "/playlist/addPlaylistItem",
+            {"playlistId": playlist_id, "videoId": video_id},
+            base_url=base_url,
+            token=token,
+        )
         print_success("Video added to playlist", result)
     except APIError as e:
         print_error(e.message, e.code)
@@ -85,7 +95,12 @@ def delete_item(ctx, playlist_id, video_id):
     base_url = ctx.obj.get("base_url")
     token = ctx.obj.get("token")
     try:
-        result = post("/playlist/deletePlaylistItem", {"playlistId": playlist_id, "videoId": video_id}, base_url=base_url, token=token)
+        result = post(
+            "/playlist/deletePlaylistItem",
+            {"playlistId": playlist_id, "videoId": video_id},
+            base_url=base_url,
+            token=token,
+        )
         print_success("Video removed from playlist", result)
     except APIError as e:
         print_error(e.message, e.code)

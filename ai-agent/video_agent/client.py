@@ -138,7 +138,7 @@ class ModelClient:
         # streaming events are handled in the assistant layer.
         return self._handle_nonstream(body)
 
-    def chat_stream(
+    def chat_stream(  # noqa: C901, PLR0912, PLR0915
         self,
         messages: list[dict[str, Any]],
         tools: list[dict[str, Any]] | None = None,
@@ -219,7 +219,12 @@ class ModelClient:
                                 tool_call_buf[idx]["name"] += tc["function"]["name"]
                             if "arguments" in tc["function"]:
                                 tool_call_buf[idx]["arguments"] += tc["function"]["arguments"]
-                                yield {"type": "tool_call_delta", "index": idx, "name": tool_call_buf[idx]["name"], "arguments": tool_call_buf[idx]["arguments"]}
+                                yield {
+                                    "type": "tool_call_delta",
+                                    "index": idx,
+                                    "name": tool_call_buf[idx]["name"],
+                                    "arguments": tool_call_buf[idx]["arguments"],
+                                }
 
                 # Build final tool_calls
                 tool_calls = []

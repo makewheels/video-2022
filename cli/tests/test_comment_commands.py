@@ -42,7 +42,9 @@ class TestCommentCommands:
             json={"code": 0, "message": "ok", "data": {"id": "c2"}},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "comment", "add", "--video-id", "v1", "--content", "reply", "--parent-id", "c1"])
+        result = self.runner.invoke(
+            cli, ["--token", "t", "comment", "add", "--video-id", "v1", "--content", "reply", "--parent-id", "c1"]
+        )
         assert result.exit_code == 0
         body = json.loads(responses.calls[0].request.body)
         assert body["parentId"] == "c1"

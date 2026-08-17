@@ -53,7 +53,13 @@ class TestWatchCommands:
             json={"code": 0, "message": "ok", "data": {"playbackSessionId": "pb1"}},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "watch", "start", "--watch-id", "w1", "--video-id", "v1", "--client-id", "c1", "--session-id", "s1"])
+        result = self.runner.invoke(
+            cli,
+            [
+                "--token", "t", "watch", "start",
+                "--watch-id", "w1", "--video-id", "v1", "--client-id", "c1", "--session-id", "s1",
+            ],
+        )
         assert result.exit_code == 0
         body = json.loads(responses.calls[0].request.body)
         assert body["videoId"] == "v1"
@@ -157,7 +163,16 @@ class TestWatchCommands:
         responses.add(
             responses.GET,
             "http://localhost:5022/watchHistory/getMyHistory",
-            json={"code": 0, "message": "ok", "data": {"list": [{"videoId": "v1", "title": "Test", "watchTime": "2024-01-01"}], "total": 1, "page": 0, "pageSize": 20}},
+            json={
+                "code": 0,
+                "message": "ok",
+                "data": {
+                    "list": [{"videoId": "v1", "title": "Test", "watchTime": "2024-01-01"}],
+                    "total": 1,
+                    "page": 0,
+                    "pageSize": 20,
+                },
+            },
             status=200,
         )
         result = self.runner.invoke(cli, ["--token", "t", "watch", "history"])

@@ -63,7 +63,9 @@ def start(ctx, watch_id, client_id, session_id, video_id):
 @click.option("--resolution", default=None, help="Current playback resolution")
 @click.option("--total-play-duration-ms", default=None, type=int, help="Total active playback duration in milliseconds")
 @click.pass_context
-def heartbeat(ctx, playback_session_id, current_time_ms, is_playing, resolution, total_play_duration_ms):
+def heartbeat(  # noqa: PLR0913
+    ctx, playback_session_id, current_time_ms, is_playing, resolution, total_play_duration_ms
+):
     """Send playback heartbeat."""
     base_url = ctx.obj.get("base_url")
     token = ctx.obj.get("token")
@@ -98,7 +100,9 @@ def heartbeat(ctx, playback_session_id, current_time_ms, is_playing, resolution,
 @click.option("--exit-type", default="CLOSE_TAB", show_default=True, help="Exit type, e.g. CLOSE_TAB or NAVIGATE_AWAY")
 @click.option("--resolution", default=None, help="Final playback resolution")
 @click.pass_context
-def exit(ctx, playback_session_id, current_time_ms, total_play_duration_ms, exit_type, resolution):
+def exit(  # noqa: PLR0913
+    ctx, playback_session_id, current_time_ms, total_play_duration_ms, exit_type, resolution
+):
     """Record playback session exit."""
     base_url = ctx.obj.get("base_url")
     token = ctx.obj.get("token")
@@ -127,7 +131,9 @@ def progress(ctx, video_id, client_id):
     base_url = ctx.obj.get("base_url")
     token = ctx.obj.get("token")
     try:
-        result = get("/progress/getProgress", {"videoId": video_id, "clientId": client_id}, base_url=base_url, token=token)
+        result = get(
+            "/progress/getProgress", {"videoId": video_id, "clientId": client_id}, base_url=base_url, token=token
+        )
         print_json(result)
     except APIError as e:
         print_error(e.message, e.code)
@@ -142,7 +148,9 @@ def history(ctx, page, page_size):
     base_url = ctx.obj.get("base_url")
     token = ctx.obj.get("token")
     try:
-        result = get("/watchHistory/getMyHistory", {"page": page, "pageSize": page_size}, base_url=base_url, token=token)
+        result = get(
+            "/watchHistory/getMyHistory", {"page": page, "pageSize": page_size}, base_url=base_url, token=token
+        )
         print_json(result)
     except APIError as e:
         print_error(e.message, e.code)

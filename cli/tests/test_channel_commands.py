@@ -67,7 +67,17 @@ class TestChannelCommands:
         responses.add(
             responses.GET,
             "http://localhost:5022/user/getChannel",
-            json={"code": 0, "message": "ok", "data": {"userId": "u1", "nickname": "频道主", "subscriberCount": 10, "videoCount": 3, "isSubscribed": False}},
+            json={
+                "code": 0,
+                "message": "ok",
+                "data": {
+                    "userId": "u1",
+                    "nickname": "频道主",
+                    "subscriberCount": 10,
+                    "videoCount": 3,
+                    "isSubscribed": False,
+                },
+            },
             status=200,
         )
         result = self.runner.invoke(cli, ["--token", "t", "channel", "get", "--user-id", "u1"])

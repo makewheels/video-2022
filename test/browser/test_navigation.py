@@ -4,7 +4,8 @@ NavBar structure (from NavBar.tsx):
 - header.page-header
   - Link.logo → "📹 Video" → /
   - form.nav-search with search input and button
-  - nav.nav-menu with nav-links: 首页(/), 我的视频(/my-videos), 上传(/upload), AI 助手(/chat), 统计(/statistics), YouTube(/youtube)
+  - nav.nav-menu with nav-links: 首页(/), 我的视频(/my-videos), 上传(/upload), AI 助手(/chat),
+    统计(/statistics), YouTube(/youtube)
   - .header-right with theme toggle and auth section
   - button.mobile-menu-btn (hamburger)
 - footer.page-footer with "Video Platform"

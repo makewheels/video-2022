@@ -104,7 +104,7 @@ def _state_path(value: Any, path: str) -> tuple[bool, Any]:
     return True, current
 
 
-def grade_case(
+def grade_case(  # noqa: C901, PLR0912, PLR0915
     case: Mapping[str, Any],
     result: Mapping[str, Any],
     *,
@@ -187,7 +187,9 @@ def grade_case(
             mismatches: list[str] = []
             mismatch_steps: list[int] = []
             for tool_name, expected_args in arguments.items():
-                candidates = [(i, _mapping(item.get("args"))) for i, item in enumerate(trace) if item.get("name") == tool_name]
+                candidates = [
+                    (i, _mapping(item.get("args"))) for i, item in enumerate(trace) if item.get("name") == tool_name
+                ]
                 if not candidates:
                     mismatches.append(f"{tool_name}: 未调用")
                     mismatch_steps.append(len(trace))
@@ -205,16 +207,32 @@ def grade_case(
         if "max_calls" in tool_expectation:
             limit = tool_expectation.get("max_calls")
             ok = isinstance(limit, int) and not isinstance(limit, bool) and limit >= 0 and len(trace) <= limit
-            record("max_calls", ok, f"工具调用 {len(trace)} 次，限制为 {limit!r}" if not ok else None, limit if isinstance(limit, int) and len(trace) > limit else None)
+            record(
+                "max_calls",
+                ok,
+                f"工具调用 {len(trace)} 次，限制为 {limit!r}" if not ok else None,
+                limit if isinstance(limit, int) and len(trace) > limit else None,
+            )
 
     duplicate_step: int | None = None
     for index in range(1, len(trace)):
-        previous = (trace[index - 1].get("name"), json.dumps(trace[index - 1].get("args"), ensure_ascii=False, sort_keys=True, default=str))
-        current = (trace[index].get("name"), json.dumps(trace[index].get("args"), ensure_ascii=False, sort_keys=True, default=str))
+        previous = (
+            trace[index - 1].get("name"),
+            json.dumps(trace[index - 1].get("args"), ensure_ascii=False, sort_keys=True, default=str),
+        )
+        current = (
+            trace[index].get("name"),
+            json.dumps(trace[index].get("args"), ensure_ascii=False, sort_keys=True, default=str),
+        )
         if previous == current:
             duplicate_step = index
             break
-    record("loop_free", duplicate_step is None, "出现连续相同工具与参数的无进展调用" if duplicate_step is not None else None, duplicate_step)
+    record(
+        "loop_free",
+        duplicate_step is None,
+        "出现连续相同工具与参数的无进展调用" if duplicate_step is not None else None,
+        duplicate_step,
+    )
 
     write_expectation = _mapping(expectations.get("write_safety"))
     write_calls = [(i, item) for i, item in enumerate(trace) if item.get("name") in WRITE_TOOLS]

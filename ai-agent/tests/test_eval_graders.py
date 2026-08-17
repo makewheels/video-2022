@@ -39,7 +39,9 @@ def test_keywords_cannot_hide_missing_required_tool():
 def test_order_is_subsequence_not_exact_trace():
     grade = grade_case(
         _case({"tools": {"ordered": ["resolve_videos", "delete_video"]}}),
-        _result(trace=[_call("get_my_info"), _call("resolve_videos"), _call("get_video_detail"), _call("delete_video")]),
+        _result(
+            trace=[_call("get_my_info"), _call("resolve_videos"), _call("get_video_detail"), _call("delete_video")]
+        ),
     )
     assert grade.passed
     assert grade.scores["tool_order"] == 1

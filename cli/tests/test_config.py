@@ -1,7 +1,16 @@
 import json
 import pytest
 from unittest.mock import patch
-from video_cli.config import load_config, save_config, get_token, set_token, clear_token, get_base_url, set_base_url, clear_config
+from video_cli.config import (
+    load_config,
+    save_config,
+    get_token,
+    set_token,
+    clear_token,
+    get_base_url,
+    set_base_url,
+    clear_config,
+)
 
 
 class TestConfig:
