@@ -104,7 +104,9 @@ class AgentConfig:
 
         # backend
         self.backend = os.getenv("VIDEO_AGENT_BACKEND") or self.backend
-        self.fixture_path = os.getenv("VIDEO_AGENT_FIXTURE") or os.path.join(self.project_root, "fixtures", "videos.json")
+        self.fixture_path = os.getenv("VIDEO_AGENT_FIXTURE") or os.path.join(
+            self.project_root, "fixtures", "videos.json"
+        )
         self.base_url_video = os.getenv("VIDEO_CLI_BASE_URL") or self.base_url_video
         self.video_token = os.getenv("VIDEO_CLI_TOKEN") or ""
         self.confirm_write = os.getenv("VIDEO_AGENT_CONFIRM_WRITE", "").lower() in ("1", "true", "yes")

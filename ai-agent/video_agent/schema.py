@@ -18,7 +18,10 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "list_my_videos",
-            "description": "列出我的视频（按上传时间倒序，keyword 匹配标题/描述/标签）。用于'我上传了几个视频''最早/最近上传''我的视频列表'。返回 {list, total}，list 项含 id/title/status/watchCount/createTime。若最终目的是拿某个具体视频的 video_id，优先用 resolve_videos（返回更精简）。",
+            "description": "列出我的视频（按上传时间倒序，keyword 匹配标题/描述/标签）。"
+            "用于'我上传了几个视频''最早/最近上传''我的视频列表'。"
+            "返回 {list, total}，list 项含 id/title/status/watchCount/createTime。"
+            "若最终目的是拿某个具体视频的 video_id，优先用 resolve_videos（返回更精简）。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -33,7 +36,11 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "resolve_videos",
-            "description": "按标题关键词从我的视频中解析出候选及 video_id。凡用户用标题（如《xx》）指代视频、而后续操作需要 video_id 时，先调它。返回 {candidates: [{videoId, title, status, watchCount, createTime}], total}：0 个候选=没有匹配，如实告知用户；1 个=直接用其 video_id；多个=列出让用户选，不要自己猜。示例：resolve_videos(keyword='春节旅行')",
+            "description": "按标题关键词从我的视频中解析出候选及 video_id。"
+            "凡用户用标题（如《xx》）指代视频、而后续操作需要 video_id 时，先调它。"
+            "返回 {candidates: [{videoId, title, status, watchCount, createTime}], total}："
+            "0 个候选=没有匹配，如实告知用户；1 个=直接用其 video_id；多个=列出让用户选，不要自己猜。"
+            "示例：resolve_videos(keyword='春节旅行')",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -48,7 +55,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_video_detail",
-            "description": "获取单个视频详情：播放量、描述、标签、创建时间等。用于'《xx》播放量多少''视频详细信息'。需要 video_id——用户只给标题时先 resolve_videos 消歧。",
+            "description": "获取单个视频详情：播放量、描述、标签、创建时间等。"
+            "用于'《xx》播放量多少''视频详细信息'。需要 video_id——用户只给标题时先 resolve_videos 消歧。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -62,7 +70,9 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_video_status",
-            "description": "获取视频处理状态。用于'转码好了没''处理到哪了'。返回 {status, isReady}，status 常见值 READY/TRANSCODING/FAILED。需要 video_id（用户只给标题时先 resolve_videos）。",
+            "description": "获取视频处理状态。用于'转码好了没''处理到哪了'。"
+            "返回 {status, isReady}，status 常见值 READY/TRANSCODING/FAILED。"
+            "需要 video_id（用户只给标题时先 resolve_videos）。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -76,7 +86,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_video_traffic",
-            "description": "获取单个视频的流量消耗（字节数）。用于'这个视频耗了多少流量'。需要 video_id（标题先 resolve_videos）；全账号按日流量趋势用 get_traffic_stats。",
+            "description": "获取单个视频的流量消耗（字节数）。用于'这个视频耗了多少流量'。"
+            "需要 video_id（标题先 resolve_videos）；全账号按日流量趋势用 get_traffic_stats。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -90,14 +101,19 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "update_video",
-            "description": "更新视频标题/描述/可见性。⚠️ 写操作需确认。需要 video_id（标题先 resolve_videos）。做不到：一次只改一个视频，批量需逐个调用。",
+            "description": "更新视频标题/描述/可见性。⚠️ 写操作需确认。需要 video_id（标题先 resolve_videos）。"
+            "做不到：一次只改一个视频，批量需逐个调用。",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "video_id": {"type": "string", "description": "要更新的视频 ID"},
                     "title": {"type": "string", "description": "新标题"},
                     "description": {"type": "string", "description": "新描述"},
-                    "visibility": {"type": "string", "enum": ["PUBLIC", "PRIVATE", "UNLISTED"], "description": "可见性：PUBLIC 公开，PRIVATE 私密，UNLISTED 不列出"},
+                    "visibility": {
+                        "type": "string",
+                        "enum": ["PUBLIC", "PRIVATE", "UNLISTED"],
+                        "description": "可见性：PUBLIC 公开，PRIVATE 私密，UNLISTED 不列出",
+                    },
                 },
                 "required": ["video_id"],
             },
@@ -107,7 +123,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "delete_video",
-            "description": "删除视频，不可恢复。⚠️ 写操作需确认，确认时必须明确告知用户不可逆。需要 video_id（标题先 resolve_videos）。",
+            "description": "删除视频，不可恢复。⚠️ 写操作需确认，确认时必须明确告知用户不可逆。"
+            "需要 video_id（标题先 resolve_videos）。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -121,13 +138,20 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "upload_video",
-            "description": "上传本地视频文件（OSS 直传后自动触发转码，大文件耗时较长）。⚠️ 写操作需确认。file_path 必须是已存在的本地路径。示例：upload_video(file_path='./demo.mp4', title='演示', visibility='PRIVATE')。做不到：一次只传一个文件，多个需逐个上传。",
+            "description": "上传本地视频文件（OSS 直传后自动触发转码，大文件耗时较长）。⚠️ 写操作需确认。"
+            "file_path 必须是已存在的本地路径。"
+            "示例：upload_video(file_path='./demo.mp4', title='演示', visibility='PRIVATE')。"
+            "做不到：一次只传一个文件，多个需逐个上传。",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "file_path": {"type": "string", "description": "本地视频文件路径"},
                     "title": {"type": "string", "description": "视频标题（可选，默认用文件名）"},
-                    "visibility": {"type": "string", "enum": ["PUBLIC", "PRIVATE", "UNLISTED"], "description": "可见性设置"},
+                    "visibility": {
+                        "type": "string",
+                        "enum": ["PUBLIC", "PRIVATE", "UNLISTED"],
+                        "description": "可见性设置",
+                    },
                 },
                 "required": ["file_path"],
             },
@@ -166,7 +190,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "list_comments",
-            "description": "列出视频的评论（默认最新在前），返回 {list, total}。需要 video_id（标题先 resolve_videos）。看某条评论的回复用 comment_replies。",
+            "description": "列出视频的评论（默认最新在前），返回 {list, total}。"
+            "需要 video_id（标题先 resolve_videos）。看某条评论的回复用 comment_replies。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -182,7 +207,9 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "add_comment",
-            "description": "给视频添加评论。⚠️ 写操作，执行前必须确认。回复某条评论时传 parent_comment_id（从 list_comments 拿 comment_id）。示例：add_comment(video_id='v_1', content='讲得很清楚')。做不到：发出即对外可见，无草稿/撤回。",
+            "description": "给视频添加评论。⚠️ 写操作，执行前必须确认。"
+            "回复某条评论时传 parent_comment_id（从 list_comments 拿 comment_id）。"
+            "示例：add_comment(video_id='v_1', content='讲得很清楚')。做不到：发出即对外可见，无草稿/撤回。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -241,7 +268,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "list_playlists",
-            "description": "列出我的播放列表，返回 {list, total}。用于'我的播放列表有哪些'。看某个列表里有什么视频用 get_playlist_detail。",
+            "description": "列出我的播放列表，返回 {list, total}。用于'我的播放列表有哪些'。"
+            "看某个列表里有什么视频用 get_playlist_detail。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -269,7 +297,9 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "create_playlist",
-            "description": "创建新的播放列表。⚠️ 写操作，执行前必须确认。示例：create_playlist(title='旅行合集', description='2026 旅行记录')。做不到：不查重名，同名列表会并存。",
+            "description": "创建新的播放列表。⚠️ 写操作，执行前必须确认。"
+            "示例：create_playlist(title='旅行合集', description='2026 旅行记录')。"
+            "做不到：不查重名，同名列表会并存。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -344,7 +374,9 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "move_playlist_item",
-            "description": "调整视频在播放列表中的位置（排序）。用于'把 xx 移到播放列表最前面/第 N 个'。⚠️ 写操作。to_index 为目标位置（0 开头），超出范围自动钳到首/尾。需要 playlist_id 和 video_id（视频用标题指代时先 resolve_videos）。",
+            "description": "调整视频在播放列表中的位置（排序）。用于'把 xx 移到播放列表最前面/第 N 个'。⚠️ 写操作。"
+            "to_index 为目标位置（0 开头），超出范围自动钳到首/尾。"
+            "需要 playlist_id 和 video_id（视频用标题指代时先 resolve_videos）。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -360,7 +392,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "recover_playlist",
-            "description": "恢复已删除的播放列表（删除是逻辑删除，可恢复）。用于'找回/恢复之前删掉的播放列表'。⚠️ 写操作。",
+            "description": "恢复已删除的播放列表（删除是逻辑删除，可恢复）。"
+            "用于'找回/恢复之前删掉的播放列表'。⚠️ 写操作。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -420,7 +453,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "like_status",
-            "description": "查询当前用户对某个视频是否已点赞/点踩。用于'我点赞了吗''有没有点踩'。返回 {liked, disliked}。需要 video_id（标题先 resolve_videos）。",
+            "description": "查询当前用户对某个视频是否已点赞/点踩。用于'我点赞了吗''有没有点踩'。"
+            "返回 {liked, disliked}。需要 video_id（标题先 resolve_videos）。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -477,7 +511,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "share_stats",
-            "description": "查询分享短链的统计数据（点击量等）。用于'分享链接被点了多少次'。需要 short_code（分享短码，如 abc123）。",
+            "description": "查询分享短链的统计数据（点击量等）。用于'分享链接被点了多少次'。"
+            "需要 short_code（分享短码，如 abc123）。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -492,7 +527,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "watch_history",
-            "description": "我的观看历史（按观看时间倒序，含 videoId/title/watchTime）。用于'我最近看过什么'。注意：历史项不含播放进度，查进度用 get_watch_progress。",
+            "description": "我的观看历史（按观看时间倒序，含 videoId/title/watchTime）。用于'我最近看过什么'。"
+            "注意：历史项不含播放进度，查进度用 get_watch_progress。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -506,7 +542,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_watch_progress",
-            "description": "获取视频的播放进度。用于回答'上次看到哪里了'等。注意：进度按设备存储，必须提供 client_id（观看设备标识），否则会返回错误。",
+            "description": "获取视频的播放进度。用于回答'上次看到哪里了'等。"
+            "注意：进度按设备存储，必须提供 client_id（观看设备标识），否则会返回错误。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -530,7 +567,10 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "search_public_videos",
-            "description": "搜索全站公开视频。用于'有没有 xx 视频''找 xx 类视频'。注意：只含公开视频，搜我自己的视频（含私密）用 list_my_videos。keyword、category（如'教育''美食'）均可选。示例：search_public_videos(keyword='AI', category='教育')",
+            "description": "搜索全站公开视频。用于'有没有 xx 视频''找 xx 类视频'。"
+            "注意：只含公开视频，搜我自己的视频（含私密）用 list_my_videos。"
+            "keyword、category（如'教育''美食'）均可选。"
+            "示例：search_public_videos(keyword='AI', category='教育')",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -546,7 +586,10 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_public_video_list",
-            "description": "浏览全站公开视频信息流（按时间倒序，无需登录，返回 {list, total}）。用于'首页有什么视频''最近大家发了什么'这类无明确目标的浏览。与 search_public_videos 的区别：它支持 skip/limit 分页但只按 keyword 过滤标题/描述，不支持分类筛选；要找某类视频优先 search_public_videos。",
+            "description": "浏览全站公开视频信息流（按时间倒序，无需登录，返回 {list, total}）。"
+            "用于'首页有什么视频''最近大家发了什么'这类无明确目标的浏览。"
+            "与 search_public_videos 的区别：它支持 skip/limit 分页但只按 keyword 过滤标题/描述，"
+            "不支持分类筛选；要找某类视频优先 search_public_videos。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -562,7 +605,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_traffic_stats",
-            "description": "全账号按日聚合的流量统计，days 默认 7 天。用于'最近流量趋势''每天消耗多少'。单个视频的流量用 get_video_traffic。",
+            "description": "全账号按日聚合的流量统计，days 默认 7 天。用于'最近流量趋势''每天消耗多少'。"
+            "单个视频的流量用 get_video_traffic。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -584,7 +628,10 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_my_profile",
-            "description": "获取我的个人资料页信息：昵称、简介 bio、头像 avatarUrl、订阅数 subscriberCount、视频数 videoCount。用于'我的主页/资料长什么样''我有多少订阅者'。与 get_my_info 的区别：get_my_info 偏账号信息（手机号），get_my_profile 偏对外展示的资料。",
+            "description": "获取我的个人资料页信息：昵称、简介 bio、头像 avatarUrl、"
+            "订阅数 subscriberCount、视频数 videoCount。"
+            "用于'我的主页/资料长什么样''我有多少订阅者'。"
+            "与 get_my_info 的区别：get_my_info 偏账号信息（手机号），get_my_profile 偏对外展示的资料。",
             "parameters": {"type": "object", "properties": {}},
         },
     },
@@ -592,7 +639,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "update_profile",
-            "description": "更新我的个人资料（昵称、简介 bio）。⚠️ 写操作需确认。nickname 和 bio 至少提供一个；昵称上限 30 字，简介上限 200 字。",
+            "description": "更新我的个人资料（昵称、简介 bio）。⚠️ 写操作需确认。"
+            "nickname 和 bio 至少提供一个；昵称上限 30 字，简介上限 200 字。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -607,7 +655,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "subscribe_channel",
-            "description": "订阅某个用户的频道。⚠️ 写操作需确认。channel_user_id 是频道主的用户 ID（不是视频 ID）；不确定时先 get_channel 确认对方信息。",
+            "description": "订阅某个用户的频道。⚠️ 写操作需确认。"
+            "channel_user_id 是频道主的用户 ID（不是视频 ID）；不确定时先 get_channel 确认对方信息。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -635,7 +684,9 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_my_subscriptions",
-            "description": "列出我订阅的频道（返回 {list, total}，list 是频道主的用户 ID 字符串）。用于'我订阅了哪些频道'。想看某个频道的昵称/头像等详情，拿返回的 userId 再调 get_channel。",
+            "description": "列出我订阅的频道（返回 {list, total}，list 是频道主的用户 ID 字符串）。"
+            "用于'我订阅了哪些频道'。"
+            "想看某个频道的昵称/头像等详情，拿返回的 userId 再调 get_channel。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -649,7 +700,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_channel",
-            "description": "获取某个用户的频道公开信息：昵称、头像、简介、订阅数 subscriberCount、视频数 videoCount。用于'xx 的频道有多少订阅/视频'。需要 user_id（频道主的用户 ID）。",
+            "description": "获取某个用户的频道公开信息：昵称、头像、简介、订阅数 subscriberCount、视频数 videoCount。"
+            "用于'xx 的频道有多少订阅/视频'。需要 user_id（频道主的用户 ID）。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -664,7 +716,8 @@ ALL_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_youtube_info",
-            "description": "获取 YouTube 视频信息。用于回答'这个 YouTube 视频怎么样'等。支持完整 URL（watch?v=、youtu.be、shorts 链接）或 11 位视频 ID。",
+            "description": "获取 YouTube 视频信息。用于回答'这个 YouTube 视频怎么样'等。"
+            "支持完整 URL（watch?v=、youtu.be、shorts 链接）或 11 位视频 ID。",
             "parameters": {
                 "type": "object",
                 "properties": {

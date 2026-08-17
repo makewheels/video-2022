@@ -29,7 +29,9 @@ def list_videos(ctx, skip, limit, keyword):
         if ctx.obj.get("output_format") == "table" and result:
             videos = result.get("list", []) if isinstance(result, dict) else result
             if isinstance(videos, list):
-                rows = [[v.get("id", ""), v.get("title", ""), v.get("status", ""), v.get("watchCount", 0)] for v in videos]
+                rows = [
+                    [v.get("id", ""), v.get("title", ""), v.get("status", ""), v.get("watchCount", 0)] for v in videos
+                ]
                 print_table(["ID", "Title", "Status", "Views"], rows)
             else:
                 print_json(result)
@@ -56,7 +58,10 @@ def public_videos(ctx, skip, limit, keyword):
         if ctx.obj.get("output_format") == "table" and result:
             videos = result.get("list", []) if isinstance(result, dict) else result
             if isinstance(videos, list):
-                rows = [[v.get("id", ""), v.get("title", ""), v.get("uploaderName", ""), v.get("watchCount", 0)] for v in videos]
+                rows = [
+                    [v.get("id", ""), v.get("title", ""), v.get("uploaderName", ""), v.get("watchCount", 0)]
+                    for v in videos
+                ]
                 print_table(["ID", "Title", "Uploader", "Views"], rows)
             else:
                 print_json(result)
@@ -185,7 +190,7 @@ def create(ctx, filename, video_type):
     help="Video type",
 )
 @click.pass_context
-def upload(ctx, filepath, title, description, visibility, video_type):
+def upload(ctx, filepath, title, description, visibility, video_type):  # noqa: C901, PLR0913
     """Upload a local video file end-to-end.
 
     Runs the full flow: create -> getUploadCredentials -> OSS multipart
@@ -293,7 +298,7 @@ def upload(ctx, filepath, title, description, visibility, video_type):
 )
 @click.option("--no-cover", is_flag=True, help="Skip local cover extraction")
 @click.pass_context
-def upload_local(ctx, filepath, title, description, visibility, no_cover):
+def upload_local(ctx, filepath, title, description, visibility, no_cover):  # noqa: C901, PLR0913, PLR0915
     """Upload a video transcoded LOCALLY with FFmpeg — zero cloud transcoding cost.
 
     Flow: ffprobe -> create(transcodeMode=LOCAL) -> upload raw to OSS ->

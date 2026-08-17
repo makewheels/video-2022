@@ -123,15 +123,11 @@ async function loadMyPlaylists(
 
 async function updateVideoInfo(
   videoId: string,
-  title: string,
-  description: string,
-  visibility: string,
-  tags: string[],
-  category: string,
+  fields: { title: string; description: string; visibility: string; tags: string[]; category: string },
   toast: (msg: string, type?: 'info' | 'success' | 'error') => void,
 ): Promise<void> {
   try {
-    await api.post('/video/updateInfo', { id: videoId, title, description, visibility, tags, category });
+    await api.post('/video/updateInfo', { id: videoId, ...fields });
     toast('信息已更新', 'success');
   } catch (err) {
     toast(err instanceof Error ? err.message : '更新失败', 'error');
@@ -390,7 +386,17 @@ function UploadPage() {
             onTitleChange={state.setTitle} onDescriptionChange={state.setDescription}
             onVisibilityChange={state.setVisibility}
             onTagsChange={state.setTags} onCategoryChange={state.setCategory}
-            onUpdateInfo={() => updateVideoInfo(state.videoData!.videoId, state.title, state.description, state.visibility, state.tags, state.category, state.toast)}
+            onUpdateInfo={() => updateVideoInfo(
+              state.videoData!.videoId,
+              {
+                title: state.title,
+                description: state.description,
+                visibility: state.visibility,
+                tags: state.tags,
+                category: state.category,
+              },
+              state.toast,
+            )}
             onCopy={() => copyVideoInfo(state.title, state.videoData!.watchUrl, state.toast)}
           />
           <PlaylistManager

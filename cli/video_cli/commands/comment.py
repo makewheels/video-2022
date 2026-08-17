@@ -103,7 +103,9 @@ def replies(ctx, parent_id, skip, limit):
     base_url = ctx.obj.get("base_url")
     token = ctx.obj.get("token")
     try:
-        result = get("/comment/getReplies", {"parentId": parent_id, "skip": skip, "limit": limit}, base_url=base_url, token=token)
+        result = get(
+            "/comment/getReplies", {"parentId": parent_id, "skip": skip, "limit": limit}, base_url=base_url, token=token
+        )
         print_json(result)
     except APIError as e:
         print_error(e.message, e.code)

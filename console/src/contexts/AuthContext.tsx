@@ -13,7 +13,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [developer, setDeveloper] = useState<Developer | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !!apiClient.getToken());
 
   useEffect(() => {
     const token = apiClient.getToken();
@@ -25,8 +25,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           apiClient.setToken(null);
         })
         .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
     }
   }, []);
 
@@ -56,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- context 文件按惯例同时导出 Provider 与 useAuth
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');

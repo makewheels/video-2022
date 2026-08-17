@@ -35,7 +35,7 @@ def _strip_think(text: str) -> str:
     return re.sub(r"<think>.*?</think>\s*", "", text, flags=re.DOTALL).strip()
 
 
-def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:
+def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:  # noqa: C901, PLR0915
     app = FastAPI(title="video-2022 AI Agent (Optimized)", version="0.3.0")
     app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
@@ -75,12 +75,12 @@ def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:
         return FileResponse(str(path))
 
     @app.post("/chat/stream")
-    async def chat_stream(req: ChatRequest):
+    async def chat_stream(req: ChatRequest):  # noqa: C901, PLR0915
         """Optimized SSE streaming with session management and error handling."""
         if req.confirm_write:
             tools.confirm_write = True
 
-        async def generate():
+        async def generate():  # noqa: C901, PLR0912, PLR0915
             # 每次请求一个 trace；session_id 透传为 trace 级属性，期间的 generation/tool span 自动挂到它下面
             trace_handle = lf_trace.start_trace(
                 name="chat_stream",
@@ -119,33 +119,53 @@ def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:
                         if not event.has_tool_calls:
                             if text:
                                 final_text = text
-                                yield f"data: {json.dumps({'type': 'text', 'text': text, 'finish': True}, ensure_ascii=False)}\n\n"
-                                await session_manager.append_message(req.session_id, {"role": "assistant", "content": text})
+                                text_payload = {"type": "text", "text": text, "finish": True}
+                                yield f"data: {json.dumps(text_payload, ensure_ascii=False)}\n\n"
+                                await session_manager.append_message(
+                                    req.session_id, {"role": "assistant", "content": text}
+                                )
                             break
 
                         # Stream text if present
                         if text:
-                            yield f"data: {json.dumps({'type': 'text', 'text': text, 'finish': False}, ensure_ascii=False)}\n\n"
+                            text_payload = {"type": "text", "text": text, "finish": False}
+                            yield f"data: {json.dumps(text_payload, ensure_ascii=False)}\n\n"
 
                         # Execute tools with error handling
                         tool_results = []
                         for tc in event.tool_calls:
-                            yield f"data: {json.dumps({'type': 'tool_start', 'tool': {'name': tc.name, 'args': tc.arguments}}, ensure_ascii=False)}\n\n"
+                            start_payload = {"type": "tool_start", "tool": {"name": tc.name, "args": tc.arguments}}
+                            yield f"data: {json.dumps(start_payload, ensure_ascii=False)}\n\n"
 
                             try:
                                 result = tools.execute(tc.name, tc.arguments)
                                 tool_results.append({"name": tc.name, "args": tc.arguments, "result": result})
-                                yield f"data: {json.dumps({'type': 'tool_call', 'tool': {'name': tc.name, 'args': tc.arguments, 'result': result}}, ensure_ascii=False, default=str)}\n\n"
+                                call_payload = {
+                                    "type": "tool_call",
+                                    "tool": {"name": tc.name, "args": tc.arguments, "result": result},
+                                }
+                                yield f"data: {json.dumps(call_payload, ensure_ascii=False, default=str)}\n\n"
                             except Exception as e:
                                 error_result = error_handler.handle_tool_error(tc.name, e)
                                 tool_results.append({"name": tc.name, "args": tc.arguments, "result": error_result})
-                                yield f"data: {json.dumps({'type': 'tool_call', 'tool': {'name': tc.name, 'args': tc.arguments, 'result': error_result}}, ensure_ascii=False)}\n\n"
+                                err_payload = {
+                                    "type": "tool_call",
+                                    "tool": {"name": tc.name, "args": tc.arguments, "result": error_result},
+                                }
+                                yield f"data: {json.dumps(err_payload, ensure_ascii=False)}\n\n"
 
                         # Build assistant message
                         assistant_msg: dict[str, Any] = {"role": "assistant", "content": text or None}
                         if event.tool_calls:
                             assistant_msg["tool_calls"] = [
-                                {"id": tc.id, "type": "function", "function": {"name": tc.name, "arguments": json.dumps(tc.arguments, ensure_ascii=False)}}
+                                {
+                                    "id": tc.id,
+                                    "type": "function",
+                                    "function": {
+                                        "name": tc.name,
+                                        "arguments": json.dumps(tc.arguments, ensure_ascii=False),
+                                    },
+                                }
                                 for tc in event.tool_calls
                             ]
                         messages.append(assistant_msg)
@@ -165,8 +185,13 @@ def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:
 
                         # 写操作被拒绝执行（需确认）：结果已在轨迹里，让模型多走一轮向用户解释计划，而非直接断流；
                         # 若模型下一轮仍重复调用写工具，则不再给机会，直接结束
-                        if any(isinstance(tr["result"], dict) and tr["result"].get("requiresConfirmation") for tr in tool_results):
-                            yield f"data: {json.dumps({'type': 'confirmation_needed', 'message': '以上写操作需要确认'}, ensure_ascii=False)}\n\n"
+                        needs_confirm = any(
+                            isinstance(tr["result"], dict) and tr["result"].get("requiresConfirmation")
+                            for tr in tool_results
+                        )
+                        if needs_confirm:
+                            confirm_payload = {"type": "confirmation_needed", "message": "以上写操作需要确认"}
+                            yield f"data: {json.dumps(confirm_payload, ensure_ascii=False)}\n\n"
                             if confirmation_announced:
                                 break
                             confirmation_announced = True
@@ -177,7 +202,8 @@ def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:
                         break
                     except Exception as e:
                         logger.error(f"Unexpected error in turn {turn}: {e}", exc_info=True)
-                        yield f"data: {json.dumps({'type': 'error', 'error': {'message': str(e), 'type': 'unknown'}}, ensure_ascii=False)}\n\n"
+                        unknown_payload = {"type": "error", "error": {"message": str(e), "type": "unknown"}}
+                        yield f"data: {json.dumps(unknown_payload, ensure_ascii=False)}\n\n"
                         break
 
                 yield "data: [DONE]\n\n"
@@ -185,7 +211,8 @@ def create_optimized_app(client: ModelClient, tools: VideoTools) -> FastAPI:
             except Exception as e:
                 logger.error(f"Fatal error in chat_stream: {e}", exc_info=True)
                 trace_error = str(e)
-                yield f"data: {json.dumps({'type': 'error', 'error': {'message': '服务器错误', 'details': str(e)}}, ensure_ascii=False)}\n\n"
+                fatal_payload = {"type": "error", "error": {"message": "服务器错误", "details": str(e)}}
+                yield f"data: {json.dumps(fatal_payload, ensure_ascii=False)}\n\n"
                 yield "data: [DONE]\n\n"
             finally:
                 tools.confirm_write = False

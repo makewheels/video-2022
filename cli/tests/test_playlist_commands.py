@@ -66,7 +66,9 @@ class TestPlaylistCommands:
             json={"code": 0, "message": "ok", "data": None},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "playlist", "add-item", "--playlist-id", "p1", "--video-id", "v1"])
+        result = self.runner.invoke(
+            cli, ["--token", "t", "playlist", "add-item", "--playlist-id", "p1", "--video-id", "v1"]
+        )
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert data["success"] is True
@@ -79,7 +81,9 @@ class TestPlaylistCommands:
             json={"code": 0, "message": "ok", "data": None},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "playlist", "delete-item", "--playlist-id", "p1", "--video-id", "v1"])
+        result = self.runner.invoke(
+            cli, ["--token", "t", "playlist", "delete-item", "--playlist-id", "p1", "--video-id", "v1"]
+        )
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert data["success"] is True
@@ -134,7 +138,10 @@ class TestPlaylistCommands:
             json={"code": 0, "message": "ok", "data": None},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "playlist", "move-item", "--playlist-id", "p1", "--video-id", "v1", "--to-index", "0"])
+        result = self.runner.invoke(
+            cli,
+            ["--token", "t", "playlist", "move-item", "--playlist-id", "p1", "--video-id", "v1", "--to-index", "0"],
+        )
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert data["success"] is True

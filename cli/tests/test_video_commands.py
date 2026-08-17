@@ -42,7 +42,9 @@ class TestVideoCommands:
             json={"code": 0, "message": "ok", "data": {"list": [], "total": 0}},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "video", "public", "--keyword", "美食", "--skip", "5", "--limit", "10"])
+        result = self.runner.invoke(
+            cli, ["--token", "t", "video", "public", "--keyword", "美食", "--skip", "5", "--limit", "10"]
+        )
         assert result.exit_code == 0
         url = responses.calls[0].request.url
         assert "keyword=" in url
@@ -179,7 +181,9 @@ class TestVideoCommands:
             json={"code": 0, "message": "ok", "data": {"videoId": "new-v1"}},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "video", "create", "--file", "nonexistent.mp4", "--type", "UPLOAD"])
+        result = self.runner.invoke(
+            cli, ["--token", "t", "video", "create", "--file", "nonexistent.mp4", "--type", "UPLOAD"]
+        )
         assert result.exit_code == 0
         body = json.loads(responses.calls[0].request.body)
         assert body["videoType"] == "USER_UPLOAD"
@@ -213,7 +217,11 @@ class TestVideoCommands:
         responses.add(
             responses.GET,
             "http://localhost:5022/video/getMyVideoList",
-            json={"code": 0, "message": "ok", "data": {"list": [{"id": "v1", "title": "T", "status": "READY", "watchCount": 5}], "total": 1}},
+            json={
+                "code": 0,
+                "message": "ok",
+                "data": {"list": [{"id": "v1", "title": "T", "status": "READY", "watchCount": 5}], "total": 1},
+            },
             status=200,
         )
         result = self.runner.invoke(cli, ["--token", "t", "--output", "table", "video", "list"])

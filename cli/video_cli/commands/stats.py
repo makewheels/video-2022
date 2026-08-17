@@ -58,7 +58,12 @@ def aggregate(ctx, start_time, end_time):
     base_url = ctx.obj.get("base_url")
     token = ctx.obj.get("token")
     try:
-        result = get("/statistics/aggregateTrafficData", {"startTime": start_time, "endTime": end_time}, base_url=base_url, token=token)
+        result = get(
+            "/statistics/aggregateTrafficData",
+            {"startTime": start_time, "endTime": end_time},
+            base_url=base_url,
+            token=token,
+        )
         if ctx.obj.get("output_format") == "table":
             _print_aggregate_table(result)
         else:

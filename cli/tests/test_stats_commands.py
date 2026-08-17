@@ -40,7 +40,9 @@ class TestStatsCommands:
             json={"code": 0, "message": "ok", "data": [{"date": "2024-01-01", "traffic": 500}]},
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "stats", "aggregate", "--start", "1704067200000", "--end", "1704153600000"])
+        result = self.runner.invoke(
+            cli, ["--token", "t", "stats", "aggregate", "--start", "1704067200000", "--end", "1704153600000"]
+        )
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert data[0]["date"] == "2024-01-01"
@@ -61,7 +63,13 @@ class TestStatsCommands:
             },
             status=200,
         )
-        result = self.runner.invoke(cli, ["--token", "t", "--output", "table", "stats", "aggregate", "--start", "1704067200000", "--end", "1704153600000"])
+        result = self.runner.invoke(
+            cli,
+            [
+                "--token", "t", "--output", "table", "stats", "aggregate",
+                "--start", "1704067200000", "--end", "1704153600000",
+            ],
+        )
         assert result.exit_code == 0
         assert "2024-01-01" in result.output
         assert "500 B" in result.output

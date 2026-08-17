@@ -90,7 +90,7 @@ def _is_nonempty_str(value: Any) -> bool:
     return isinstance(value, str) and value.strip() != ""
 
 
-def _enum_field(
+def _enum_field(  # noqa: PLR0913
     value: Any,
     allowed: set[str],
     name: str,
@@ -112,7 +112,7 @@ def _enum_field(
         )
 
 
-def _validate_case(case: Any, line: int | None = None) -> list[EvalError]:
+def _validate_case(case: Any, line: int | None = None) -> list[EvalError]:  # noqa: C901, PLR0912, PLR0915
     """校验单条用例，返回该用例的全部错误（不检查跨用例唯一性）。"""
     errs: list[EvalError] = []
     if not isinstance(case, dict):
@@ -329,7 +329,7 @@ def validate_eval_cases(cases: list[dict[str, Any]]) -> list[EvalError]:
     return errs
 
 
-def _read_eval_records(path: str | Path) -> tuple[list[_EvalRecord], list[EvalError]]:
+def _read_eval_records(path: str | Path) -> tuple[list[_EvalRecord], list[EvalError]]:  # noqa: C901
     """Read a pretty JSON array or legacy JSONL with source locations."""
     source = Path(path)
     records: list[_EvalRecord] = []

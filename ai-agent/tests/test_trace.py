@@ -23,7 +23,7 @@ def _reset_trace(monkeypatch):
     monkeypatch.setattr(trace, "_tried_init", False)
 
 
-def _fake_langfuse_module(captured: dict):
+def _fake_langfuse_module(captured: dict):  # noqa: C901
     class _FakeObs:
         def __init__(self, **kw):
             self.kw = kw
@@ -128,7 +128,9 @@ def test_generation_mapping(monkeypatch):
     messages = [{"role": "user", "content": "hi"}]
     handle = trace.start_generation(name="model.chat", model="MiniMax-M2.7", messages=messages)
     assert handle is not None
-    trace.finish_generation(handle, output="你好", usage={"prompt_tokens": 3, "completion_tokens": 2, "total_tokens": 5})
+    trace.finish_generation(
+        handle, output="你好", usage={"prompt_tokens": 3, "completion_tokens": 2, "total_tokens": 5}
+    )
 
     obs = captured["observations"][0]
     assert obs.kw["name"] == "model.chat"
@@ -260,7 +262,10 @@ class _FakeHTTPResponse:
 
 _STREAM_LINES = [
     'data: {"choices": [{"delta": {"content": "你"}}]}\n'.encode("utf-8"),
-    'data: {"choices": [{"delta": {"content": "好"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 1, "completion_tokens": 2, "total_tokens": 3}}\n'.encode("utf-8"),
+    (
+        'data: {"choices": [{"delta": {"content": "好"}, "finish_reason": "stop"}], '
+        '"usage": {"prompt_tokens": 1, "completion_tokens": 2, "total_tokens": 3}}\n'
+    ).encode("utf-8"),
     b"data: [DONE]\n",
 ]
 

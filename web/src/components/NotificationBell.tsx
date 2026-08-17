@@ -74,6 +74,8 @@ export default function NotificationBell() {
   }, []);
 
   useEffect(() => {
+    // fetchUnreadCount 内部同步置 loading 态，属正常轮询初始化；豁免 set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUnreadCount();
     const timer = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(timer);

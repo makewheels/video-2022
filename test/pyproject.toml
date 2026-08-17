@@ -9,3 +9,23 @@ dependencies = [
     "pytest-xdist==3.8.0",
     "requests==2.32.5",
 ]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E501", "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915"]
+
+[tool.ruff.lint.pylint]
+max-args = 5
+max-branches = 12
+max-statements = 50
+max-returns = 6
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.3",
+]

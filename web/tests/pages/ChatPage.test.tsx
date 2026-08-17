@@ -79,7 +79,7 @@ describe('ChatPage', () => {
   });
 
   it('sends message and displays streaming text response', async () => {
-    mockFetch.mockImplementation((url: string, opts?: RequestInit) => {
+    mockFetch.mockImplementation((url: string) => {
       if (url === '/agent-api/health') {
         return Promise.resolve({ ok: true, json: () => Promise.resolve(HEALTH_OK) });
       }
@@ -106,7 +106,7 @@ describe('ChatPage', () => {
   });
 
   it('displays tool call cards when SSE includes tool_call events', async () => {
-    mockFetch.mockImplementation((url: string, opts?: RequestInit) => {
+    mockFetch.mockImplementation((url: string) => {
       if (url === '/agent-api/health') {
         return Promise.resolve({ ok: true, json: () => Promise.resolve(HEALTH_OK) });
       }
@@ -144,7 +144,7 @@ describe('ChatPage', () => {
   });
 
   it('shows stop button while loading', async () => {
-    mockFetch.mockImplementation((url: string, opts?: RequestInit) => {
+    mockFetch.mockImplementation((url: string) => {
       if (url === '/agent-api/health') {
         return Promise.resolve({ ok: true, json: () => Promise.resolve(HEALTH_OK) });
       }

@@ -40,13 +40,17 @@ function computeSeekTimeSeconds(tParam: string | null, progressInMillis: number,
   return stored ? parseFloat(stored) : 0;
 }
 
+type WatchDataSetters = {
+  setWatchInfo: (w: WatchInfo) => void;
+  setVideoDetail: (v: Video) => void;
+  setSeekTimeSeconds: (n: number) => void;
+  setError: (s: string) => void;
+};
+
 async function loadWatchData(
   watchId: string,
   tParam: string | null,
-  setWatchInfo: (w: WatchInfo) => void,
-  setVideoDetail: (v: Video) => void,
-  setSeekTimeSeconds: (n: number) => void,
-  setError: (s: string) => void,
+  { setWatchInfo, setVideoDetail, setSeekTimeSeconds, setError }: WatchDataSetters,
 ): Promise<void> {
   try {
     const clientId = await ensureClientId();
@@ -92,10 +96,12 @@ function WatchPage() {
 
   useEffect(() => {
     if (!watchId) return;
+    // 切换视频时清空旧数据是有意行为（避免串数据），此处豁免 set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setWatchInfo(null);
     setVideoDetail(null);
     setError('');
-    loadWatchData(watchId, tParam, setWatchInfo, setVideoDetail, setSeekTimeSeconds, setError);
+    loadWatchData(watchId, tParam, { setWatchInfo, setVideoDetail, setSeekTimeSeconds, setError });
   }, [watchId, tParam]);
 
   if (error) return <div className="not-ready-state">{error}</div>;

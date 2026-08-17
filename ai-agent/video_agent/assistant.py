@@ -15,8 +15,10 @@ SYSTEM_PROMPT = """你是 video-2022 视频分享平台的 AI 助手。你帮助
 
 ## 核心规则
 
-1. **写操作必须确认**：涉及上传、删除、创建、更新、点赞、点踩等修改数据的操作，必须先告知用户计划并请求确认，不要直接执行。工具会返回 requiresConfirmation，你应据此告知用户。
-2. **先 resolve 再操作**：用户用标题（如《xx》）指代视频时，先调 resolve_videos 拿 video_id，再调需要 video_id 的工具；不要自己编造 video_id。
+1. **写操作必须确认**：涉及上传、删除、创建、更新、点赞、点踩等修改数据的操作，必须先告知用户计划并请求确认，
+不要直接执行。工具会返回 requiresConfirmation，你应据此告知用户。
+2. **先 resolve 再操作**：用户用标题（如《xx》）指代视频时，先调 resolve_videos 拿 video_id，
+再调需要 video_id 的工具；不要自己编造 video_id。
 3. **不确定就追问**：resolve_videos 返回多个候选时，列出候选让用户选择，不要猜。
 4. **用最合适的工具**：每个意图有对应的工具，仔细选择。
 5. **中文回答**：始终用中文回答。视频标题用《》包起来。
@@ -83,7 +85,7 @@ class VideoAssistant:
             "messages": messages,  # return full conversation for next turn
         }
 
-    def chat_stream(self, query: str, history: list[dict[str, Any]] | None = None):
+    def chat_stream(self, query: str, history: list[dict[str, Any]] | None = None):  # noqa: C901, PLR0912
         """Multi-turn chat with streaming output to stdout."""
         self.tools.trace.clear()
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
@@ -117,7 +119,11 @@ class VideoAssistant:
             # Execute tools
             print()  # newline before tool calls
             messages.append({"role": "assistant", "content": text or None, "tool_calls": [
-                {"id": tc.id, "type": "function", "function": {"name": tc.name, "arguments": json.dumps(tc.arguments, ensure_ascii=False)}}
+                {
+                    "id": tc.id,
+                    "type": "function",
+                    "function": {"name": tc.name, "arguments": json.dumps(tc.arguments, ensure_ascii=False)},
+                }
                 for tc in tool_calls
             ]})
             # Also add with null content if empty
@@ -166,7 +172,11 @@ class VideoAssistant:
             assistant_msg: dict[str, Any] = {"role": "assistant", "content": response.text or None}
             if response.tool_calls:
                 assistant_msg["tool_calls"] = [
-                    {"id": tc.id, "type": "function", "function": {"name": tc.name, "arguments": json.dumps(tc.arguments, ensure_ascii=False)}}
+                    {
+                        "id": tc.id,
+                        "type": "function",
+                        "function": {"name": tc.name, "arguments": json.dumps(tc.arguments, ensure_ascii=False)},
+                    }
                     for tc in response.tool_calls
                 ]
             messages.append(assistant_msg)

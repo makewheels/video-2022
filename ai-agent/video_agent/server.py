@@ -28,7 +28,7 @@ def _strip_think(text: str) -> str:
     return re.sub(r"<think>.*?</think>\s*", "", text, flags=re.DOTALL).strip()
 
 
-def create_app(assistant, tools) -> FastAPI:
+def create_app(assistant, tools) -> FastAPI:  # noqa: C901
     app = FastAPI(title="video-2022 AI Agent", version="0.2.0")
 
     app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -64,7 +64,7 @@ def create_app(assistant, tools) -> FastAPI:
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.post("/chat/stream")
-    async def chat_stream(req: ChatRequest):
+    async def chat_stream(req: ChatRequest):  # noqa: C901
         """Full SSE streaming with agent loop."""
         if req.confirm_write:
             tools.confirm_write = True
@@ -94,17 +94,26 @@ def create_app(assistant, tools) -> FastAPI:
                 # Execute tools
                 tool_results = []
                 for tc in event.tool_calls:
-                    yield f"data: {json.dumps({'type': 'tool_start', 'tool': {'name': tc.name, 'args': tc.arguments}}, ensure_ascii=False)}\n\n"
+                    start_payload = {"type": "tool_start", "tool": {"name": tc.name, "args": tc.arguments}}
+                    yield f"data: {json.dumps(start_payload, ensure_ascii=False)}\n\n"
                     result = tools.execute(tc.name, tc.arguments)
                     tool_results.append({"name": tc.name, "args": tc.arguments, "result": result})
                     # Send full result to frontend, not summarized
-                    yield f"data: {json.dumps({'type': 'tool_call', 'tool': {'name': tc.name, 'args': tc.arguments, 'result': result}}, ensure_ascii=False, default=str)}\n\n"
+                    call_payload = {
+                        "type": "tool_call",
+                        "tool": {"name": tc.name, "args": tc.arguments, "result": result},
+                    }
+                    yield f"data: {json.dumps(call_payload, ensure_ascii=False, default=str)}\n\n"
 
                 # Append assistant + tool messages
                 assistant_msg: dict[str, Any] = {"role": "assistant", "content": text or None}
                 if event.tool_calls:
                     assistant_msg["tool_calls"] = [
-                        {"id": tc.id, "type": "function", "function": {"name": tc.name, "arguments": json.dumps(tc.arguments, ensure_ascii=False)}}
+                        {
+                            "id": tc.id,
+                            "type": "function",
+                            "function": {"name": tc.name, "arguments": json.dumps(tc.arguments, ensure_ascii=False)},
+                        }
                         for tc in event.tool_calls
                     ]
                 messages.append(assistant_msg)
@@ -117,8 +126,13 @@ def create_app(assistant, tools) -> FastAPI:
 
                 # 写操作被拒绝执行（需确认）：结果已在轨迹里，让模型多走一轮向用户解释计划，而非直接断流；
                 # 若模型下一轮仍重复调用写工具，则不再给机会，直接结束
-                if any(isinstance(tr["result"], dict) and tr["result"].get("requiresConfirmation") for tr in tool_results):
-                    yield f"data: {json.dumps({'type': 'confirmation_needed', 'message': '以上写操作需要确认'}, ensure_ascii=False)}\n\n"
+                needs_confirm = any(
+                    isinstance(tr["result"], dict) and tr["result"].get("requiresConfirmation")
+                    for tr in tool_results
+                )
+                if needs_confirm:
+                    confirm_payload = {"type": "confirmation_needed", "message": "以上写操作需要确认"}
+                    yield f"data: {json.dumps(confirm_payload, ensure_ascii=False)}\n\n"
                     if confirmation_announced:
                         break
                     confirmation_announced = True

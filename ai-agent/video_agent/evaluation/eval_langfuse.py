@@ -258,7 +258,7 @@ def _apply_task_error_veto(scores: Mapping[str, float], task_error: Any) -> dict
     return result
 
 
-def run_dataset_experiments(
+def run_dataset_experiments(  # noqa: C901, PLR0913, PLR0915
     assistant: Any,
     *,
     suite: str,

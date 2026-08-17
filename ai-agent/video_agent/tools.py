@@ -87,21 +87,48 @@ class VideoTools:
             return {"videoId": video_id, "trafficBytes": v.get("trafficBytes", 0)}
         return self._run_cli(["stats", "traffic", "--video-id", video_id])
 
-    def update_video(self, video_id: str, title: str | None = None, description: str | None = None, visibility: str | None = None) -> dict[str, Any]:
+    def update_video(
+        self,
+        video_id: str,
+        title: str | None = None,
+        description: str | None = None,
+        visibility: str | None = None,
+    ) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "update_video is write; rerun with --confirm-write", "planned": {"video_id": video_id, "title": title, "visibility": visibility}}
+            return {
+                "requiresConfirmation": True,
+                "message": "update_video is write; rerun with --confirm-write",
+                "planned": {"video_id": video_id, "title": title, "visibility": visibility},
+            }
         if self.backend == "fixture":
             video = self._fixture_get_video(video_id)
             for key, value in (("title", title), ("description", description), ("visibility", visibility)):
                 if value is not None:
                     video[key] = value
             return {"videoId": video_id, "updated": True}
-        self._run_cli(["video", "update", "--id", video_id, "--title", title or "", "--description", description or "", "--visibility", visibility or ""])
+        self._run_cli(
+            [
+                "video",
+                "update",
+                "--id",
+                video_id,
+                "--title",
+                title or "",
+                "--description",
+                description or "",
+                "--visibility",
+                visibility or "",
+            ]
+        )
         return {"videoId": video_id, "updated": True}
 
     def delete_video(self, video_id: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "delete_video is write, IRREVERSIBLE; rerun with --confirm-write", "planned": {"video_id": video_id}}
+            return {
+                "requiresConfirmation": True,
+                "message": "delete_video is write, IRREVERSIBLE; rerun with --confirm-write",
+                "planned": {"video_id": video_id},
+            }
         if self.backend == "fixture":
             data = self._load_fixture()
             self._fixture_get_video(video_id)
@@ -112,7 +139,11 @@ class VideoTools:
 
     def upload_video(self, file_path: str, title: str | None = None, visibility: str | None = None) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "upload_video is write; rerun with --confirm-write", "planned": {"file_path": file_path, "title": title, "visibility": visibility}}
+            return {
+                "requiresConfirmation": True,
+                "message": "upload_video is write; rerun with --confirm-write",
+                "planned": {"file_path": file_path, "title": title, "visibility": visibility},
+            }
         if self.backend == "fixture":
             video_id = f"fixture-upload-{len(self._load_fixture().get('videos', [])) + 1}"
             self._load_fixture().setdefault("videos", []).append(
@@ -153,12 +184,19 @@ class VideoTools:
 
     def add_comment(self, video_id: str, content: str, parent_comment_id: str | None = None) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "add_comment is write; rerun with --confirm-write", "planned": {"video_id": video_id, "content": content[:50]}}
+            return {
+                "requiresConfirmation": True,
+                "message": "add_comment is write; rerun with --confirm-write",
+                "planned": {"video_id": video_id, "content": content[:50]},
+            }
         if self.backend == "fixture":
             self._fixture_get_video(video_id)
             comments = self._load_fixture().setdefault("comments", {}).setdefault(video_id, [])
-            comment_id = f"fixture-comment-{sum(len(items) for items in self._load_fixture().get('comments', {}).values()) + 1}"
-            comments.append({"id": comment_id, "content": content, "likeCount": 0, "parentCommentId": parent_comment_id})
+            existing = sum(len(items) for items in self._load_fixture().get("comments", {}).values())
+            comment_id = f"fixture-comment-{existing + 1}"
+            comments.append(
+                {"id": comment_id, "content": content, "likeCount": 0, "parentCommentId": parent_comment_id}
+            )
             return {"commentId": comment_id, "videoId": video_id, "added": True}
         cmd = ["comment", "add", "--video-id", video_id, "--content", content]
         if parent_comment_id:
@@ -167,7 +205,11 @@ class VideoTools:
 
     def delete_comment(self, comment_id: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "delete_comment is write, IRREVERSIBLE; rerun with --confirm-write", "planned": {"comment_id": comment_id}}
+            return {
+                "requiresConfirmation": True,
+                "message": "delete_comment is write, IRREVERSIBLE; rerun with --confirm-write",
+                "planned": {"comment_id": comment_id},
+            }
         if self.backend == "fixture":
             comments_by_video = self._load_fixture().setdefault("comments", {})
             for comments in comments_by_video.values():
@@ -181,7 +223,11 @@ class VideoTools:
 
     def like_comment(self, comment_id: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "like_comment is write; rerun with --confirm-write", "planned": {"comment_id": comment_id}}
+            return {
+                "requiresConfirmation": True,
+                "message": "like_comment is write; rerun with --confirm-write",
+                "planned": {"comment_id": comment_id},
+            }
         if self.backend == "fixture":
             comment = self._fixture_comment(comment_id)
             comment["likeCount"] = int(comment.get("likeCount", 0)) + 1
@@ -212,7 +258,11 @@ class VideoTools:
 
     def create_playlist(self, title: str, description: str | None = None) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "create_playlist is write; rerun with --confirm-write", "planned": {"title": title, "description": description}}
+            return {
+                "requiresConfirmation": True,
+                "message": "create_playlist is write; rerun with --confirm-write",
+                "planned": {"title": title, "description": description},
+            }
         if self.backend == "fixture":
             playlists = self._load_fixture().setdefault("playlists", [])
             playlist_id = f"fixture-playlist-{len(playlists) + 1}"
@@ -227,7 +277,10 @@ class VideoTools:
 
     def add_video_to_playlist(self, playlist_id: str, video_id: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "add_video_to_playlist is write; rerun with --confirm-write"}
+            return {
+                "requiresConfirmation": True,
+                "message": "add_video_to_playlist is write; rerun with --confirm-write",
+            }
         if self.backend == "fixture":
             playlist = self._fixture_playlist(playlist_id)
             self._fixture_get_video(video_id)
@@ -240,7 +293,10 @@ class VideoTools:
 
     def remove_video_from_playlist(self, playlist_id: str, video_id: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "remove_video_from_playlist is write; rerun with --confirm-write"}
+            return {
+                "requiresConfirmation": True,
+                "message": "remove_video_from_playlist is write; rerun with --confirm-write",
+            }
         if self.backend == "fixture":
             playlist = self._fixture_playlist(playlist_id)
             ids = playlist.setdefault("videoIds", [])
@@ -252,7 +308,11 @@ class VideoTools:
 
     def delete_playlist(self, playlist_id: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "delete_playlist is write, IRREVERSIBLE; rerun with --confirm-write", "planned": {"playlist_id": playlist_id}}
+            return {
+                "requiresConfirmation": True,
+                "message": "delete_playlist is write, IRREVERSIBLE; rerun with --confirm-write",
+                "planned": {"playlist_id": playlist_id},
+            }
         if self.backend == "fixture":
             playlist = self._fixture_playlist(playlist_id)
             playlist["deleted"] = True
@@ -260,9 +320,14 @@ class VideoTools:
         self._run_cli(["playlist", "delete", "--id", playlist_id])
         return {"playlistId": playlist_id, "deleted": True}
 
-    def update_playlist(self, playlist_id: str, title: str | None = None, description: str | None = None) -> dict[str, Any]:
+    def update_playlist(
+        self, playlist_id: str, title: str | None = None, description: str | None = None
+    ) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "update_playlist is write; rerun with --confirm-write"}
+            return {
+                "requiresConfirmation": True,
+                "message": "update_playlist is write; rerun with --confirm-write",
+            }
         if self.backend == "fixture":
             playlist = self._fixture_playlist(playlist_id)
             if title is not None:
@@ -279,7 +344,11 @@ class VideoTools:
 
     def move_playlist_item(self, playlist_id: str, video_id: str, to_index: int) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "move_playlist_item is write; rerun with --confirm-write", "planned": {"playlist_id": playlist_id, "video_id": video_id, "to_index": to_index}}
+            return {
+                "requiresConfirmation": True,
+                "message": "move_playlist_item is write; rerun with --confirm-write",
+                "planned": {"playlist_id": playlist_id, "video_id": video_id, "to_index": to_index},
+            }
         if self.backend == "fixture":
             playlist = self._fixture_playlist(playlist_id)
             ids = playlist.setdefault("videoIds", [])
@@ -288,11 +357,17 @@ class VideoTools:
             ids.remove(video_id)
             ids.insert(max(0, min(to_index, len(ids))), video_id)
             return {"playlistId": playlist_id, "videoId": video_id, "toIndex": to_index, "moved": True}
-        return self._run_cli(["playlist", "move-item", "--playlist-id", playlist_id, "--video-id", video_id, "--to-index", str(to_index)])
+        return self._run_cli(
+            ["playlist", "move-item", "--playlist-id", playlist_id, "--video-id", video_id, "--to-index", str(to_index)]
+        )
 
     def recover_playlist(self, playlist_id: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "recover_playlist is write; rerun with --confirm-write", "planned": {"playlist_id": playlist_id}}
+            return {
+                "requiresConfirmation": True,
+                "message": "recover_playlist is write; rerun with --confirm-write",
+                "planned": {"playlist_id": playlist_id},
+            }
         if self.backend == "fixture":
             self._fixture_playlist(playlist_id)["deleted"] = False
             return {"playlistId": playlist_id, "recovered": True}
@@ -314,7 +389,10 @@ class VideoTools:
 
     def mark_notification_read(self, notification_id: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "mark_notification_read is write; rerun with --confirm-write"}
+            return {
+                "requiresConfirmation": True,
+                "message": "mark_notification_read is write; rerun with --confirm-write",
+            }
         if self.backend == "fixture":
             for notification in self._load_fixture().get("notifications", []):
                 if notification.get("id") == notification_id:
@@ -325,7 +403,10 @@ class VideoTools:
 
     def mark_all_notifications_read(self) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "mark_all_notifications_read is write; rerun with --confirm-write"}
+            return {
+                "requiresConfirmation": True,
+                "message": "mark_all_notifications_read is write; rerun with --confirm-write",
+            }
         if self.backend == "fixture":
             for notification in self._load_fixture().get("notifications", []):
                 notification["read"] = True
@@ -361,7 +442,11 @@ class VideoTools:
 
     def create_share(self, video_id: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "create_share is write; rerun with --confirm-write", "planned": {"video_id": video_id}}
+            return {
+                "requiresConfirmation": True,
+                "message": "create_share is write; rerun with --confirm-write",
+                "planned": {"video_id": video_id},
+            }
         if self.backend == "fixture":
             self._fixture_get_video(video_id)
             links = self._load_fixture().setdefault("shareLinks", {})
@@ -393,7 +478,10 @@ class VideoTools:
 
     def clear_watch_history(self) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "clear_watch_history is write, IRREVERSIBLE; rerun with --confirm-write"}
+            return {
+                "requiresConfirmation": True,
+                "message": "clear_watch_history is write, IRREVERSIBLE; rerun with --confirm-write",
+            }
         if self.backend == "fixture":
             self._load_fixture()["watchHistory"] = {"list": [], "total": 0, "page": 0, "pageSize": 20}
             return {"cleared": True}
@@ -401,15 +489,27 @@ class VideoTools:
 
     # ── Search ───────────────────────────────────────────────────
 
-    def search_public_videos(self, keyword: str | None = None, category: str | None = None, page: int = 0, page_size: int = 20) -> dict[str, Any]:
+    def search_public_videos(
+        self, keyword: str | None = None, category: str | None = None, page: int = 0, page_size: int = 20
+    ) -> dict[str, Any]:
         if self.backend == "fixture":
             videos = [v for v in self._load_fixture().get("videos", []) if v.get("visibility") == "PUBLIC"]
             if keyword:
                 kw = keyword.lower()
-                videos = [v for v in videos if kw in v.get("title", "").lower() or kw in v.get("description", "").lower() or any(kw in str(t).lower() for t in v.get("tags", []))]
+                videos = [
+                    v
+                    for v in videos
+                    if kw in v.get("title", "").lower()
+                    or kw in v.get("description", "").lower()
+                    or any(kw in str(t).lower() for t in v.get("tags", []))
+                ]
             if category:
                 videos = [v for v in videos if v.get("category") == category]
-            return {"content": videos[page * page_size: (page + 1) * page_size], "total": len(videos), "currentPage": page}
+            return {
+                "content": videos[page * page_size: (page + 1) * page_size],
+                "total": len(videos),
+                "currentPage": page,
+            }
         cmd = ["search", keyword or "", "--page", str(page), "--page-size", str(page_size)]
         if category:
             cmd += ["--category", category]
@@ -420,7 +520,11 @@ class VideoTools:
             videos = [v for v in self._load_fixture().get("videos", []) if v.get("visibility") == "PUBLIC"]
             if keyword:
                 kw = keyword.lower()
-                videos = [v for v in videos if kw in v.get("title", "").lower() or kw in v.get("description", "").lower()]
+                videos = [
+                    v
+                    for v in videos
+                    if kw in v.get("title", "").lower() or kw in v.get("description", "").lower()
+                ]
             return {"list": videos[skip: skip + limit], "total": len(videos)}
         cmd = ["video", "public", "--skip", str(skip), "--limit", str(limit)]
         if keyword:
@@ -458,7 +562,11 @@ class VideoTools:
 
     def update_profile(self, nickname: str | None = None, bio: str | None = None) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "update_profile is write; rerun with --confirm-write", "planned": {"nickname": nickname, "bio": bio}}
+            return {
+                "requiresConfirmation": True,
+                "message": "update_profile is write; rerun with --confirm-write",
+                "planned": {"nickname": nickname, "bio": bio},
+            }
         if nickname is None and bio is None:
             return {"error": "nickname 和 bio 至少提供一个"}
         if self.backend == "fixture":
@@ -481,7 +589,11 @@ class VideoTools:
 
     def subscribe_channel(self, channel_user_id: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "subscribe_channel is write; rerun with --confirm-write", "planned": {"channel_user_id": channel_user_id}}
+            return {
+                "requiresConfirmation": True,
+                "message": "subscribe_channel is write; rerun with --confirm-write",
+                "planned": {"channel_user_id": channel_user_id},
+            }
         if self.backend == "fixture":
             subscriptions = self._load_fixture().setdefault("subscriptions", [])
             if channel_user_id not in subscriptions:
@@ -491,7 +603,11 @@ class VideoTools:
 
     def unsubscribe_channel(self, channel_user_id: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "unsubscribe_channel is write; rerun with --confirm-write", "planned": {"channel_user_id": channel_user_id}}
+            return {
+                "requiresConfirmation": True,
+                "message": "unsubscribe_channel is write; rerun with --confirm-write",
+                "planned": {"channel_user_id": channel_user_id},
+            }
         if self.backend == "fixture":
             subscriptions = self._load_fixture().setdefault("subscriptions", [])
             if channel_user_id in subscriptions:
@@ -511,7 +627,16 @@ class VideoTools:
 
     def get_channel(self, user_id: str) -> dict[str, Any]:
         if self.backend == "fixture":
-            return {"userId": user_id, "nickname": "fixture 频道", "avatarUrl": None, "bannerUrl": None, "bio": "", "subscriberCount": 0, "videoCount": 0, "isSubscribed": user_id in self._load_fixture().get("subscriptions", [])}
+            return {
+                "userId": user_id,
+                "nickname": "fixture 频道",
+                "avatarUrl": None,
+                "bannerUrl": None,
+                "bio": "",
+                "subscriberCount": 0,
+                "videoCount": 0,
+                "isSubscribed": user_id in self._load_fixture().get("subscriptions", []),
+            }
         return self._run_cli(["channel", "get", "--user-id", user_id])
 
     # ── YouTube ──────────────────────────────────────────────────
@@ -526,7 +651,11 @@ class VideoTools:
 
     def transfer_youtube(self, url: str) -> dict[str, Any]:
         if not self.confirm_write:
-            return {"requiresConfirmation": True, "message": "transfer_youtube is write; rerun with --confirm-write", "planned": {"url": url}}
+            return {
+                "requiresConfirmation": True,
+                "message": "transfer_youtube is write; rerun with --confirm-write",
+                "planned": {"url": url},
+            }
         if self.backend == "fixture":
             video_id = f"fixture-youtube-{len(self._load_fixture().get('videos', [])) + 1}"
             self._load_fixture().setdefault("videos", []).append(
@@ -626,7 +755,9 @@ class VideoTools:
 
     # ── Internal: HTTP upload ────────────────────────────────────
 
-    def _upload_via_http(self, file_path: str, title: str | None = None, visibility: str | None = None) -> dict[str, Any]:
+    def _upload_via_http(
+        self, file_path: str, title: str | None = None, visibility: str | None = None
+    ) -> dict[str, Any]:
         try:
             import oss2
         except ImportError:
@@ -661,7 +792,12 @@ class VideoTools:
                 update_body["visibility"] = visibility
             _api_post(f"{base_url}/video/updateInfo", update_body, headers)
 
-        return {"fileId": file_id, "videoId": video_id, "watchId": create_data.get("watchId"), "watchUrl": create_data.get("watchUrl")}
+        return {
+            "fileId": file_id,
+            "videoId": video_id,
+            "watchId": create_data.get("watchId"),
+            "watchUrl": create_data.get("watchUrl"),
+        }
 
     # ── Internal: Fixture backend ────────────────────────────────
 
@@ -670,7 +806,13 @@ class VideoTools:
         videos = list(data.get("videos", []))
         if keyword:
             kw = keyword.lower()
-            videos = [v for v in videos if kw in str(v.get("title", "")).lower() or kw in str(v.get("description", "")).lower() or any(kw in str(t).lower() for t in v.get("tags", []))]
+            videos = [
+                v
+                for v in videos
+                if kw in str(v.get("title", "")).lower()
+                or kw in str(v.get("description", "")).lower()
+                or any(kw in str(t).lower() for t in v.get("tags", []))
+            ]
         videos.sort(key=lambda item: item.get("createTime", ""), reverse=True)
         return {"list": videos[skip: skip + limit], "total": len(videos)}
 
@@ -700,7 +842,8 @@ class VideoTools:
 
     def _read_fixture(self) -> dict[str, Any]:
         cfg = get_config()
-        path = Path(self.fixture_path or cfg.fixture_path or Path(__file__).resolve().parents[1] / "fixtures" / "videos.json")
+        default_path = Path(__file__).resolve().parents[1] / "fixtures" / "videos.json"
+        path = Path(self.fixture_path or cfg.fixture_path or default_path)
         with path.open(encoding="utf-8") as f:
             return json.load(f)
 

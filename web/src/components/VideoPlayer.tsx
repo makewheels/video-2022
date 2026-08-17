@@ -73,7 +73,11 @@ function setupKeyboardShortcuts(
       case ' ':
       case 'k':
         e.preventDefault();
-        player.paused() ? player.play() : player.pause();
+        if (player.paused()) {
+          player.play();
+        } else {
+          player.pause();
+        }
         break;
       case 'ArrowLeft':
         e.preventDefault();
@@ -93,7 +97,11 @@ function setupKeyboardShortcuts(
         break;
       case 'f':
         e.preventDefault();
-        player.isFullscreen() ? player.exitFullscreen() : player.requestFullscreen();
+        if (player.isFullscreen()) {
+          player.exitFullscreen();
+        } else {
+          player.requestFullscreen();
+        }
         break;
       case 'm':
         e.preventDefault();
