@@ -477,11 +477,12 @@ jobs:
     steps:
       - name: Check results
         run: |
+          # E2E 只在推送 master 时运行（取密范围限制），PR 上为 skipped，允许通过；其余 job 必须 success
           if [ "${{ needs.lint.result }}" != "success" ] || \
              [ "${{ needs.backend-tests.result }}" != "success" ] || \
              [ "${{ needs.frontend-tests.result }}" != "success" ] || \
-             [ "${{ needs.api-e2e-tests.result }}" != "success" ] || \
-             [ "${{ needs.browser-e2e-tests.result }}" != "success" ] || \
+             { [ "${{ needs.api-e2e-tests.result }}" != "success" ] && [ "${{ needs.api-e2e-tests.result }}" != "skipped" ]; } || \
+             { [ "${{ needs.browser-e2e-tests.result }}" != "success" ] && [ "${{ needs.browser-e2e-tests.result }}" != "skipped" ]; } || \
              [ "${{ needs.cli-tests.result }}" != "success" ] || \
              [ "${{ needs.ai-agent-tests.result }}" != "success" ] || \
              [ "${{ needs.android-tests.result }}" != "success" ] || \
