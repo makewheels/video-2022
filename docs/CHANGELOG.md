@@ -6,6 +6,19 @@
 
 ---
 
+## ci: 部署链路迁到 services 机 compose + Infisical OIDC（[PR #114](https://github.com/makewheels/video-2022/pull/114)）
+- 背景：生产于 2026-08-14 下线（独占机重装、`deploy.yml` 禁用、GitHub Secrets 清零），本 PR 重建生产取密与部署通道，落点改为 services 机，域名仍是 `oneclick.video`
+- `deploy.yml`：改用 GitHub OIDC 从 Infisical 取密——应用配置与部署身份读 `video-2022-secrets` prod（递归），镜像仓库凭据读 `common-shared` dev `/deployment`；部署段沿用 speakup 已验证的安全模式（mktemp 0600 SSH key、NUL 分隔流注入、远端一次性 env-file、一次性 docker config 目录、trap 清理、部署前打 `previous` 回滚 tag）
+- 新增 `docker-compose.yml`：后端（5022）+ 开发者门户（caddy 静态站）两个服务，接入宿主机 external 网络 `edge`，由宿主机 Caddy 反代；后端限内存 2g、堆上限约 50%
+- 新增 `console.Caddyfile`：门户站点配置，`try_files` 回退 `index.html` 支持 SPA 路由
+- 镜像构建改 buildx + GHA 层缓存，保留时间戳 tag 与 `latest`；Smoke check 覆盖 healthCheck、首页、门户与一个真实读库的公开接口
+- 删除 `scripts/deploy.sh`（旧独占机 + nginx + `docker run --network host` 形态，改造后无引用），同步 `CONTRIBUTING.md` 与 `llms.txt`
+- 服务器侧配套（不在本仓库）：Infisical prod 环境从下线前保留的生产 `.env` 恢复 24 键并分 `/`、`/db`、`/oss`、`/deployment` 四路径；MongoDB 重建 `video-2022` 库 `readWrite` 账号（8-27 全量恢复只恢复了数据没恢复账号，数据本身 50 集合 / 2,194,745 文档完好）；阿里云 DNS 两条 A 记录改指 services 机；Caddy 新增站点块并签发 Let's Encrypt 证书
+- 保留既有事实：`SPRING_PROFILES_ACTIVE=dev` 不改 prod——`application-prod.properties` 会把 OSS bucket 切到 `video-2022-prod` 并启用 jks/443，而存量 1800+ 条视频记录指向 dev bucket 对象
+- 验证：合并前用 ACR 现成镜像 + Infisical prod 配置实跑，容器 15 秒 `healthy`、内存 261MB；日志确认连上 `10.0.20.14:27017`；`https://oneclick.video/video/getPublicVideoList` 返回 `code:0` 与真实记录且 OSS 签名成功；`/`、`/healthCheck`、`/console/`、`/console/assets/*`、`/w?v=` 全 200；同机 speakup / secrets / easybook / site-monitor 四站点复测 200
+
+---
+
 ## refactor: 项目文件与文档结构重组（[PR #109](https://github.com/makewheels/video-2022/pull/109)）
 - 结构审计：新增 `docs/requirements/2026-08-project-structure-review/`（分析、实施记录）
 - 历史计划文档 `docs/plans/` 整体迁入 `docs/归档/plans/`，同步 living 文档与 `.github/skills/` 的路径指引
