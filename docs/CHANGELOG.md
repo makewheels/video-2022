@@ -6,6 +6,15 @@
 
 ---
 
+## fix: 移除观看页重复的分享按钮（[PR #115](https://github.com/makewheels/video-2022/pull/115)）
+- 现象：`/watch/<watchId>` 页面出现两个分享按钮——`LikeButtons` 内的 `🔗 分享`（复制地址栏长 URL）与紧随其后的 `ShareButton`（`分享`，弹窗调 `/share/create` 生成短链）
+- 根因：PR #89「feat: 视频分享链接」（2026-03-17）把 `ShareButton` 插到 `WatchPage.tsx` 里 `LikeButtons` 正下方，但未移除 `LikeButtons` 内部早先的复制按钮，两者并存至今
+- 处理：删除 `LikeButtons.tsx` 的 `🔗 分享` 按钮与 `handleShare`（单文件 12 行删除），保留功能更强的 `ShareButton`（短链 + `/share/stats` 点击统计）；复制长地址用浏览器地址栏即可
+- 影响面：`handleShare` 仅组件内部引用；`WatchPage.test.tsx` 用 `vi.mock` 整体替换了 `LikeButtons`；仓库无 `LikeButtons` 单测；`test/browser` E2E 无分享/clipboard 断言；Android 端 `LikeButtons.kt` 为独立实现不受影响
+- 验证：`pnpm run lint` 0 error（9 个既有 warning 均在其它文件）、`pnpm exec vitest run` 13 文件 45 测试全过、`pnpm run build`（tsc + vite）通过
+
+---
+
 ## ci: 部署链路迁到 services 机 compose + Infisical OIDC（[PR #114](https://github.com/makewheels/video-2022/pull/114)）
 - 背景：生产于 2026-08-14 下线（独占机重装、`deploy.yml` 禁用、GitHub Secrets 清零），本 PR 重建生产取密与部署通道，落点改为 services 机，域名仍是 `oneclick.video`
 - `deploy.yml`：改用 GitHub OIDC 从 Infisical 取密——应用配置与部署身份读 `video-2022-secrets` prod（递归），镜像仓库凭据读 `common-shared` dev `/deployment`；部署段沿用 speakup 已验证的安全模式（mktemp 0600 SSH key、NUL 分隔流注入、远端一次性 env-file、一次性 docker config 目录、trap 清理、部署前打 `previous` 回滚 tag）

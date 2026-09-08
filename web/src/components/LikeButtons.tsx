@@ -43,15 +43,6 @@ export default function LikeButtons({ videoId }: LikeButtonsProps) {
     }
   };
 
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast('链接已复制', 'success');
-    } catch {
-      toast('复制失败', 'error');
-    }
-  };
-
   const likeActive = status.userAction === 'LIKE';
   const dislikeActive = status.userAction === 'DISLIKE';
 
@@ -70,9 +61,6 @@ export default function LikeButtons({ videoId }: LikeButtonsProps) {
         onClick={handleDislike}
       >
         👎
-      </button>
-      <button className="btn btn-secondary" onClick={handleShare}>
-        🔗 分享
       </button>
     </div>
   );
