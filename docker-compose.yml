@@ -1,0 +1,69 @@
+services:
+  video-2022:
+    image: registry.cn-beijing.aliyuncs.com/b4/video-2022:${IMAGE_TAG:-latest}
+    container_name: video-2022
+    restart: unless-stopped
+    # 与 speakup 等服务同机共存：显式限内存，堆上限约 1G（与下线前 4G 独占机上的实际水位一致）
+    mem_limit: 2g
+    environment:
+      - JAVA_TOOL_OPTIONS=${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=50}
+      - APP_VERSION=${APP_VERSION:-dev}
+      # 生产长期运行的是 dev profile：application-prod.properties 会把 OSS bucket 切到
+      # video-2022-prod、端口改 443 并启用 jks，而库里 1800+ 条视频记录指向的是 dev bucket
+      # 的对象。改 profile 等于让存量视频全部失效，因此保持与下线前一致。
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
+      - SERVER_PORT=${SERVER_PORT:-5022}
+      - SERVER_SSL_ENABLED=${SERVER_SSL_ENABLED:-false}
+      - EXTERNAL_BASE_URL=${EXTERNAL_BASE_URL}
+      - INTERNAL_BASE_URL=${INTERNAL_BASE_URL}
+      - ADMIN_API_KEY=${ADMIN_API_KEY}
+      - DEVELOPER_JWT_SECRET=${DEVELOPER_JWT_SECRET}
+      - SPRING_MONGODB_HOST=${SPRING_MONGODB_HOST}
+      - SPRING_MONGODB_PORT=${SPRING_MONGODB_PORT:-27017}
+      - SPRING_MONGODB_DATABASE=${SPRING_MONGODB_DATABASE}
+      - SPRING_MONGODB_USERNAME=${SPRING_MONGODB_USERNAME}
+      - SPRING_MONGODB_PASSWORD=${SPRING_MONGODB_PASSWORD}
+      - MONGODB_USERNAME=${MONGODB_USERNAME}
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - ALIYUN_OSS_VIDEO_ACCESS_KEY=${ALIYUN_OSS_VIDEO_ACCESS_KEY}
+      - ALIYUN_OSS_VIDEO_ACCESS_KEY_ID=${ALIYUN_OSS_VIDEO_ACCESS_KEY_ID}
+      - ALIYUN_OSS_VIDEO_SECRET_KEY=${ALIYUN_OSS_VIDEO_SECRET_KEY}
+      - ALIYUN_OSS_DATA_ACCESS_KEY=${ALIYUN_OSS_DATA_ACCESS_KEY}
+      - ALIYUN_OSS_DATA_ACCESS_KEY_ID=${ALIYUN_OSS_DATA_ACCESS_KEY_ID}
+      - ALIYUN_OSS_DATA_SECRET_KEY=${ALIYUN_OSS_DATA_SECRET_KEY}
+      - ALIYUN_MPS_ACCESS_KEY=${ALIYUN_MPS_ACCESS_KEY}
+      - ALIYUN_MPS_ACCESS_KEY_ID=${ALIYUN_MPS_ACCESS_KEY_ID}
+      - ALIYUN_MPS_SECRET_KEY=${ALIYUN_MPS_SECRET_KEY}
+      - ALIYUN_APIGATEWAY_IP_APPCODE=${ALIYUN_APIGATEWAY_IP_APPCODE:-}
+    expose:
+      - "5022"
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:5022/healthCheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 90s
+    networks: [edge]
+
+  # 开发者门户（console/，vite base=/console/）。宿主机 Caddy 用 handle_path 剥掉 /console
+  # 前缀后反代到这里，因此静态文件按 dist 根目录布局挂载即可。
+  video-2022-console:
+    image: caddy:2-alpine
+    container_name: video-2022-console
+    restart: unless-stopped
+    volumes:
+      - ./console:/srv:ro
+      - ./console.Caddyfile:/etc/caddy/Caddyfile:ro
+    expose:
+      - "80"
+    networks: [edge]
+
+networks:
+  edge:
+    external: true
+    name: edge

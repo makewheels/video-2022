@@ -243,24 +243,26 @@ public class XxxRequest {
 | 变更 | 需确认 |
 |------|--------|
 | 新增 MongoDB 字段 | 是否需要数据迁移？ |
-| 修改 properties 配置 | 服务器 `.env` 是否需要更新？ |
-| 新增环境变量 | 是否已添加到 `.env.example` 和服务器 `.env`？ |
+| 修改 properties 配置 | Infisical `video-2022-secrets` 的 prod 环境是否需要同步？ |
+| 新增环境变量 | 是否已添加到 `.env.example`、Infisical prod 和 `docker-compose.yml`？ |
 | 新增依赖 | 是否增加 JAR 体积？是否有安全问题？ |
 | 修改接口路径 | 是否有客户端还在用旧路径？ |
-| 修改 Nginx 配置 | 是否需要更新 `scripts/deploy.sh`？ |
+| 修改反向代理行为 | 服务器 Caddy 的 `oneclick.video` 站点块是否需要同步？ |
 
 ### 6.3 部署流程
 
 ```
 push to master → CI 测试 → 构建 Docker 镜像 → 推送阿里云镜像仓库
-                         → 构建控制台 → 部署控制台静态文件
-                                      → Docker pull → 启动容器 → 健康检查
+                         → 构建控制台 → 同步部署清单 + 控制台静态文件
+                                      → 取密注入 → compose pull/up → Smoke check
 ```
 
 - Dockerfile：`Dockerfile`（多阶段构建：Node→Maven→JRE）
-- 部署脚本：`scripts/deploy.sh`（Docker pull + run）
+- 部署清单：`docker-compose.yml`（后端 + 开发者门户两个服务，接入宿主机 `edge` 网络）
+- 门户静态站配置：`console.Caddyfile`
 - 部署流水线：`.github/workflows/deploy.yml`
-- Docker 镜像：`registry.cn-beijing.aliyuncs.com/b4/video-2022:<时间戳>`
+- Docker 镜像：`registry.cn-beijing.aliyuncs.com/b4/video-2022:<时间戳>`（同时打 `latest`；服务器上上一版镜像保留为 `previous` 作为回滚点）
+- 密钥来源：Infisical —— 应用配置与部署身份在 `video-2022-secrets` 的 prod 环境，镜像仓库凭据在 `common-shared` 的 dev `/deployment`；流水线用 GitHub OIDC 换短期 token 读取，服务器上不留长期 `.env`（运行时注入，部署结束即销毁）
 - **禁止直接在服务器上操作代码，所有变更必须通过 Git + CI**
 
 ---
@@ -334,7 +336,7 @@ xcodebuild test -project VideoApp.xcodeproj -scheme VideoApp ...
 A: 查看 GitHub Actions 日志，修复问题后推送新 commit，CI 会重新运行。
 
 ### Q: 部署后服务不正常怎么办？
-A: SSH 到服务器，运行 `docker logs video-2022` 查看容器日志。检查 `scripts/deploy.sh` 的健康检查步骤。
+A: SSH 到服务器，运行 `docker logs video-2022` 查看容器日志，`docker compose -f /opt/video-2022/docker-compose.yml ps` 看服务状态。部署侧的探测点见 `deploy.yml` 的 Smoke check 步骤。
 
 ### Q: 修改了后端接口，忘了更新客户端怎么办？
 A: E2E 测试会覆盖大部分场景。但最好参照本文档第三节的影响矩阵，逐一检查。

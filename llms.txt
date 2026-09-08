@@ -28,7 +28,7 @@
 - `console/` — 开发者控制台（OAuth、API 文档、Webhook）
 - `test/` — E2E 测试（pytest + Playwright）
 - `docs/` — 项目文档（业务设计、API 规范、测试文档）
-- `scripts/` — 部署脚本
+- `scripts/` — 辅助脚本（文件长度检查）
 - `.github/workflows/` — CI/CD 流水线
 
 ## 关键文件
@@ -39,7 +39,8 @@
 - `console/src/` — 开发者控制台 React 代码
 - `.github/workflows/ci.yml` — CI 流水线（10 个 Job）
 - `.github/workflows/deploy.yml` — 自动部署流水线
-- `scripts/deploy.sh` — 服务器端部署脚本
+- `docker-compose.yml` — 服务器部署清单（后端 + 开发者门户）
+- `console.Caddyfile` — 开发者门户静态站配置
 - `CONTRIBUTING.md` — 开发流程规范
 
 ## 后端核心模块

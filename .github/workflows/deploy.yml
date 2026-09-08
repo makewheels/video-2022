@@ -10,8 +10,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  DOCKER_REGISTRY: registry.cn-beijing.aliyuncs.com
-  DOCKER_IMAGE: registry.cn-beijing.aliyuncs.com/b4/video-2022
+  ACR: registry.cn-beijing.aliyuncs.com
+  ACR_IMAGE: registry.cn-beijing.aliyuncs.com/b4/video-2022
+  SERVER_DIR: /opt/video-2022
 
 jobs:
   test:
@@ -41,18 +42,34 @@ jobs:
 
       - name: 后端测试
         working-directory: server
-        run: mvn test -pl video -Pspringboot --batch-mode --no-transfer-progress
+        run: >-
+          mvn test -pl video -Pspringboot
+          --batch-mode --no-transfer-progress
 
   build-and-push:
     name: 构建 Docker 镜像
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     outputs:
       image_tag: ${{ steps.meta.outputs.image_tag }}
 
     steps:
       - uses: actions/checkout@v5
+
+      - name: 从 common 读取镜像仓库凭据
+        uses: Infisical/secrets-action@v1.0.16
+        with:
+          method: oidc
+          identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
+          domain: ${{ vars.INFISICAL_DOMAIN }}
+          project-slug: common-shared
+          env-slug: dev
+          secret-path: /deployment
 
       - name: 生成镜像标签
         id: meta
@@ -62,25 +79,30 @@ jobs:
           echo "image_tag=${BEIJING_TIME}-${RUN_NUM}" >> "$GITHUB_OUTPUT"
           echo "镜像标签: ${BEIJING_TIME}-${RUN_NUM}"
 
-      - name: 登录阿里云容器镜像服务
+      - name: 登录镜像仓库
         run: |
-          echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | \
-            docker login --username "${{ secrets.DOCKER_REGISTRY_USERNAME }}" \
-            --password-stdin ${{ env.DOCKER_REGISTRY }}
+          printf '%s' "$ACR_AK_SECRET" | docker login \
+            --username "$ACR_AK_ID" --password-stdin "$ACR" >/dev/null
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
 
       - name: 构建并推送镜像
-        run: |
-          IMAGE_TAG="${{ steps.meta.outputs.image_tag }}"
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.ACR_IMAGE }}:latest
+            ${{ env.ACR_IMAGE }}:${{ steps.meta.outputs.image_tag }}
+          cache-from: type=gha,scope=video-2022
+          cache-to: type=gha,scope=video-2022,mode=max
+          provenance: false
 
-          docker build \
-            --tag "${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}" \
-            --tag "${{ env.DOCKER_IMAGE }}:latest" \
-            .
-
-          docker push "${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}"
-          docker push "${{ env.DOCKER_IMAGE }}:latest"
-
-          echo "✅ 镜像推送完成: ${{ env.DOCKER_IMAGE }}:${IMAGE_TAG}"
+      - name: 清理 Runner registry 登录
+        if: always()
+        run: docker logout "$ACR" >/dev/null 2>&1 || true
 
   build-console:
     name: 构建控制台
@@ -119,9 +141,35 @@ jobs:
     name: 部署到服务器
     needs: [build-and-push, build-console]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v5
+
+      - name: 从 Infisical 读取生产配置
+        uses: Infisical/secrets-action@v1.0.16
+        with:
+          method: oidc
+          identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
+          domain: ${{ vars.INFISICAL_DOMAIN }}
+          project-slug: video-2022-secrets
+          env-slug: prod
+          secret-path: /
+          recursive: true
+
+      - name: 从 common 读取镜像仓库凭据
+        uses: Infisical/secrets-action@v1.0.16
+        with:
+          method: oidc
+          identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
+          domain: ${{ vars.INFISICAL_DOMAIN }}
+          project-slug: common-shared
+          env-slug: dev
+          secret-path: /deployment
 
       - name: 下载控制台产物
         uses: actions/download-artifact@v5
@@ -129,53 +177,170 @@ jobs:
           name: console-dist
           path: console-dist/
 
-      - name: 配置 SSH
+      - name: 准备临时 SSH 文件
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.DEPLOY_SERVER_IP }} >> ~/.ssh/known_hosts 2>/dev/null
+          runner_temp_resolved=$(cd "$RUNNER_TEMP" && pwd -P)
+          ssh_tmp_dir=$(mktemp -d "$runner_temp_resolved/video-2022-ssh.XXXXXX")
+          printf 'SSH_TMP_DIR=%s\n' "$ssh_tmp_dir" >> "$GITHUB_ENV"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$ssh_tmp_dir/key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$ssh_tmp_dir/known_hosts"
+          chmod 600 "$ssh_tmp_dir/key" "$ssh_tmp_dir/known_hosts"
+
+      - name: 同步部署清单
+        run: |
+          rsync -az -e "ssh -i $SSH_TMP_DIR/key -o IdentitiesOnly=yes -o UserKnownHostsFile=$SSH_TMP_DIR/known_hosts -o StrictHostKeyChecking=yes -o ServerAliveInterval=30" \
+            docker-compose.yml console.Caddyfile \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${SERVER_DIR}/"
 
       - name: 部署控制台静态文件
         run: |
-          tar czf /tmp/console-dist.tar.gz -C console-dist .
-          scp -i ~/.ssh/deploy_key /tmp/console-dist.tar.gz \
-            root@${{ secrets.DEPLOY_SERVER_IP }}:/tmp/console-dist.tar.gz
+          set -euo pipefail
+          tar czf "$RUNNER_TEMP/console-dist.tar.gz" -C console-dist .
+          scp -i "$SSH_TMP_DIR/key" -o IdentitiesOnly=yes \
+            -o UserKnownHostsFile="$SSH_TMP_DIR/known_hosts" -o StrictHostKeyChecking=yes \
+            "$RUNNER_TEMP/console-dist.tar.gz" "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/video-2022-console.tar.gz"
+          ssh -i "$SSH_TMP_DIR/key" -o IdentitiesOnly=yes \
+            -o UserKnownHostsFile="$SSH_TMP_DIR/known_hosts" -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" "
+              set -euo pipefail
+              mkdir -p ${SERVER_DIR}/console
+              rm -rf ${SERVER_DIR}/console/*
+              tar xzf /tmp/video-2022-console.tar.gz -C ${SERVER_DIR}/console
+              rm -f /tmp/video-2022-console.tar.gz
+              echo \"控制台部署完成: \$(find ${SERVER_DIR}/console -type f | wc -l) 个文件\"
+            "
+          rm -f "$RUNNER_TEMP/console-dist.tar.gz"
 
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_SERVER_IP }} << 'EOF'
-          mkdir -p /opt/video-2022/console
-          rm -rf /opt/video-2022/console/*
-          tar xzf /tmp/console-dist.tar.gz -C /opt/video-2022/console
-          rm /tmp/console-dist.tar.gz
-          echo "✅ 控制台部署完成"
-          EOF
-
-      - name: 同步部署脚本
+      - name: 注入配置并部署
+        env:
+          APP_VERSION: ${{ github.sha }}
+          IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
         run: |
-          scp -i ~/.ssh/deploy_key scripts/deploy.sh \
-            root@${{ secrets.DEPLOY_SERVER_IP }}:/opt/video-2022/deploy.sh
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_SERVER_IP }} \
-            'chmod +x /opt/video-2022/deploy.sh'
+          emit_record() {
+            local key=$1
+            printf '%s\0%s\0' "$key" "${!key}"
+          }
+          {
+            for key in \
+              ACR_AK_ID ACR_AK_SECRET \
+              APP_VERSION IMAGE_TAG \
+              SPRING_PROFILES_ACTIVE SERVER_PORT SERVER_SSL_ENABLED \
+              EXTERNAL_BASE_URL INTERNAL_BASE_URL \
+              ADMIN_API_KEY DEVELOPER_JWT_SECRET \
+              SPRING_MONGODB_HOST SPRING_MONGODB_PORT SPRING_MONGODB_DATABASE \
+              SPRING_MONGODB_USERNAME SPRING_MONGODB_PASSWORD \
+              MONGODB_USERNAME MONGODB_PASSWORD \
+              ALIYUN_OSS_VIDEO_ACCESS_KEY ALIYUN_OSS_VIDEO_ACCESS_KEY_ID \
+              ALIYUN_OSS_VIDEO_SECRET_KEY \
+              ALIYUN_OSS_DATA_ACCESS_KEY ALIYUN_OSS_DATA_ACCESS_KEY_ID \
+              ALIYUN_OSS_DATA_SECRET_KEY \
+              ALIYUN_MPS_ACCESS_KEY ALIYUN_MPS_ACCESS_KEY_ID ALIYUN_MPS_SECRET_KEY \
+              ALIYUN_APIGATEWAY_IP_APPCODE; do
+              emit_record "$key"
+            done
+          } | ssh -i "$SSH_TMP_DIR/key" -o IdentitiesOnly=yes \
+            -o UserKnownHostsFile="$SSH_TMP_DIR/known_hosts" -o StrictHostKeyChecking=yes \
+            -o ServerAliveInterval=30 "${DEPLOY_USER}@${DEPLOY_HOST}" '
+              set -euo pipefail
+              runtime_root=$(cd "${TMPDIR:-/tmp}" && pwd -P)
+              runtime_file=$(mktemp "$runtime_root/video-2022-runtime.XXXXXX")
+              docker_config_dir=$(mktemp -d "$runtime_root/video-2022-docker-config.XXXXXX")
+              cleanup() {
+                case "$runtime_file" in
+                  "$runtime_root"/video-2022-runtime.*) [ ! -e "$runtime_file" ] || unlink "$runtime_file" ;;
+                esac
+                case "$docker_config_dir" in
+                  "$runtime_root"/video-2022-docker-config.*)
+                    [ ! -e "$docker_config_dir" ] || { [ -d "$docker_config_dir" ] && [ ! -L "$docker_config_dir" ] && rm -rf -- "$docker_config_dir"; }
+                    ;;
+                esac
+              }
+              trap cleanup EXIT HUP INT TERM
+              chmod 600 "$runtime_file"
 
-      - name: 部署 Docker 容器
+              while IFS= read -r -d "" key && IFS= read -r -d "" value; do
+                case "$key" in
+                  ACR_AK_ID) ACR_USER=$value ;;
+                  ACR_AK_SECRET) ACR_PASSWORD=$value ;;
+                  APP_VERSION|IMAGE_TAG|SPRING_*|SERVER_*|MONGODB_*|ADMIN_API_KEY|DEVELOPER_JWT_SECRET|ALIYUN_*|EXTERNAL_BASE_URL|INTERNAL_BASE_URL)
+                    if printf "%s" "$value" | LC_ALL=C grep -q "[[:cntrl:]]"; then
+                      echo "control character in runtime value: $key" >&2
+                      exit 1
+                    fi
+                    printf "%s=%s\n" "$key" "$value" >> "$runtime_file"
+                    ;;
+                  *) echo "unexpected deployment key: $key" >&2; exit 1 ;;
+                esac
+              done
+              : "${ACR_USER:?}" "${ACR_PASSWORD:?}"
+
+              printf "%s" "$ACR_PASSWORD" | docker --config "$docker_config_dir" login \
+                --username "$ACR_USER" --password-stdin registry.cn-beijing.aliyuncs.com >/dev/null
+
+              IMG=registry.cn-beijing.aliyuncs.com/b4/video-2022
+              cd /opt/video-2022
+              RUNNING=$(docker inspect video-2022 --format "{{.Image}}" 2>/dev/null || true)
+              if [ -n "$RUNNING" ]; then
+                docker tag "$RUNNING" "${IMG}:previous"
+                echo "tagged previous -> $RUNNING"
+              else
+                echo "no running video-2022 container, skip previous tag"
+              fi
+
+              docker --config "$docker_config_dir" compose --env-file "$runtime_file" pull 2>&1 | tail -3
+              docker --config "$docker_config_dir" compose --env-file "$runtime_file" up -d --wait --wait-timeout 180
+              docker image prune -f
+              echo "=== deploy done ==="
+              docker --config "$docker_config_dir" compose --env-file "$runtime_file" ps
+            '
+
+      - name: Smoke check
         run: |
-          IMAGE_TAG="${{ needs.build-and-push.outputs.image_tag }}"
-          ssh -i ~/.ssh/deploy_key \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=10 \
-            root@${{ secrets.DEPLOY_SERVER_IP }} \
-            "DOCKER_REGISTRY='${{ env.DOCKER_REGISTRY }}' \
-             DOCKER_IMAGE='${{ env.DOCKER_IMAGE }}' \
-             IMAGE_TAG='${IMAGE_TAG}' \
-             DOCKER_USERNAME='${{ secrets.DOCKER_REGISTRY_USERNAME }}' \
-             DOCKER_PASSWORD='${{ secrets.DOCKER_REGISTRY_PASSWORD }}' \
-             /opt/video-2022/deploy.sh"
+          set -euo pipefail
+          probe_file=$(mktemp "$RUNNER_TEMP/video-2022-probe.XXXXXX")
+          cleanup_probe() {
+            case "$probe_file" in
+              "$RUNNER_TEMP"/video-2022-probe.*) [ ! -e "$probe_file" ] || unlink "$probe_file" ;;
+            esac
+          }
+          trap cleanup_probe EXIT HUP INT TERM
+
+          probe() {
+            local url=$1
+            for i in 1 2 3 4 5 6; do
+              if curl -fsS -m 20 "$url" -o "$probe_file"; then
+                echo "  OK ($url, attempt $i)"
+                head -c 160 "$probe_file"; echo
+                return 0
+              fi
+              echo "  retry $i: $url"
+              sleep 5
+            done
+            echo "  FAILED: $url"
+            return 1
+          }
+
+          echo "健康检查:"
+          probe "https://${DOMAIN}/healthCheck"
+          echo "首页:"
+          probe "https://${DOMAIN}/"
+          echo "开发者门户:"
+          probe "https://${DOMAIN}/console/"
+          echo "公开视频列表（真实读库）:"
+          probe "https://${DOMAIN}/video/getPublicVideoList?skip=0&limit=1"
+
+      - name: 清理 Runner 临时文件
+        if: always()
+        run: |
+          if [ -n "${SSH_TMP_DIR:-}" ] && [ -d "${SSH_TMP_DIR:-}" ]; then
+            rm -rf "$SSH_TMP_DIR"
+          fi
 
       - name: 部署完成通知
         if: always()
         run: |
-          echo "## 部署结果" >> $GITHUB_STEP_SUMMARY
-          echo "- **提交**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **镜像**: ${{ env.DOCKER_IMAGE }}:${{ needs.build-and-push.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **时间**: $(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_STEP_SUMMARY
-          echo "- **触发者**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "## 部署结果" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **提交**: ${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **镜像**: ${{ env.ACR_IMAGE }}:${{ needs.build-and-push.outputs.image_tag }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **时间**: $(date '+%Y-%m-%d %H:%M:%S')" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **触发者**: ${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"
