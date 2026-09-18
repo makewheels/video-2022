@@ -6,6 +6,15 @@
 
 ---
 
+## fix: createCover 旧快照整文档覆盖导致视频状态回退成 TRANSCODING（[PR #116](https://github.com/makewheels/video-2022/pull/116)）
+- 现象：2026-09-18 上传的视频（watchId 2UGS25）转码完成且已能播放（12:35 有播放会话），约 20 分钟后刷新变成"视频尚未准备好，当前状态：TRANSCODING"；同批前两条视频正常
+- 根因：`CoverLauncher.createCover` 的截帧轮询同步阻塞最长 3 分钟，结尾 `mongoTemplate.save(video)` 用进入时的旧快照整文档写回——前两条截帧 1-2 秒完成，save 早于转码回调（无副作用）；这条截帧卡满 3 分钟超时，save 晚于回调，把 READY 覆盖回 TRANSCODING
+- 处理：结尾改为只对 coverId 做字段级 `updateFirst`，不再整文档覆盖；新增竞态回归测试（旧代码下红：expected READY but was CREATED）；同步更新封面业务/测试文档
+- 数据修复：生产库全量扫描"status=TRANSCODING 但 transcode 已完成"的记录仅此 1 条，status 已改回 READY；页面渲染、首尾 ts 分片、封面签名 URL 复测通过
+- 验证：`mvn test -pl video -Pspringboot` 569 通过、`mvn -q checkstyle:check` 通过
+
+---
+
 ## fix: 移除观看页重复的分享按钮（[PR #115](https://github.com/makewheels/video-2022/pull/115)）
 - 现象：`/watch/<watchId>` 页面出现两个分享按钮——`LikeButtons` 内的 `🔗 分享`（复制地址栏长 URL）与紧随其后的 `ShareButton`（`分享`，弹窗调 `/share/create` 生成短链）
 - 根因：PR #89「feat: 视频分享链接」（2026-03-17）把 `ShareButton` 插到 `WatchPage.tsx` 里 `LikeButtons` 正下方，但未移除 `LikeButtons` 内部早先的复制按钮，两者并存至今

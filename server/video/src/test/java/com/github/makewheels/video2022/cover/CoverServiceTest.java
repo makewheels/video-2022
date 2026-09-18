@@ -14,11 +14,15 @@ import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.user.bean.User;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.bean.entity.YouTube;
+import com.github.makewheels.video2022.video.constants.VideoStatus;
 import com.github.makewheels.video2022.video.constants.VideoType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 import java.util.Date;
 import java.util.List;
@@ -223,6 +227,41 @@ class CoverServiceTest extends BaseIntegrationTest {
         Cover cover = coverRepository.getByVideoId(testVideo.getId());
         assertEquals(cover.getId(), updatedVideo.getCoverId(),
                 "Video.coverId should match the created cover ID");
+    }
+
+    /**
+     * 回归测试：截帧轮询是同步阻塞的（最长 3 分钟），转码回调会在轮询期间
+     * 把 video.status 更新为 READY。createCover 结束时只能用字段级更新写
+     * coverId，不能用旧快照整文档 save，否则会把 READY 覆盖回 TRANSCODING。
+     * 线上案例：watchId 2UGS25（2026-09-18）。
+     */
+    @Test
+    void createCover_userUpload_doesNotOverwriteStatusUpdatedDuringSnapshotPolling() {
+        mockAliyunMpsForSnapshot("job-race", "Success");
+        // 模拟竞态：createCover 执行中途（提交截帧任务时），转码回调把状态改成 READY
+        when(aliyunMpsService.submitSnapshotJob(anyString(), anyString())).thenAnswer(invocation -> {
+            mongoTemplate.updateFirst(
+                    Query.query(Criteria.where("id").is(testVideo.getId())),
+                    new Update().set("status", VideoStatus.READY),
+                    Video.class);
+
+            SubmitSnapshotJobResponse submitResponse = new SubmitSnapshotJobResponse();
+            SubmitSnapshotJobResponseBody body = new SubmitSnapshotJobResponseBody();
+            SubmitSnapshotJobResponseBody.SubmitSnapshotJobResponseBodySnapshotJob snapshotJob =
+                    new SubmitSnapshotJobResponseBody.SubmitSnapshotJobResponseBodySnapshotJob();
+            snapshotJob.setId("job-race");
+            body.setSnapshotJob(snapshotJob);
+            submitResponse.setBody(body);
+            return submitResponse;
+        });
+
+        coverLauncher.createCover(testUser, testVideo);
+
+        Video updatedVideo = mongoTemplate.findById(testVideo.getId(), Video.class);
+        assertNotNull(updatedVideo);
+        assertEquals(VideoStatus.READY, updatedVideo.getStatus(),
+                "createCover 不能用旧快照把转码回调写入的 READY 覆盖成 TRANSCODING");
+        assertNotNull(updatedVideo.getCoverId(), "coverId 仍要正常写入");
     }
 
     @Test
