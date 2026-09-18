@@ -19,6 +19,9 @@ import com.github.makewheels.video2022.video.service.YoutubeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
@@ -91,9 +94,14 @@ public class CoverLauncher {
             }
         }
 
-        //更新video
+        //更新video的coverId，只做字段级更新。
+        //截帧轮询最长3分钟，期间转码回调可能已把video更新为READY，
+        //若用旧快照整文档save，会把status回退成TRANSCODING
         video.setCoverId(cover.getId());
-        mongoTemplate.save(video);
+        mongoTemplate.updateFirst(
+                Query.query(Criteria.where("id").is(videoId)),
+                new Update().set("coverId", cover.getId()),
+                Video.class);
     }
 
     /**
