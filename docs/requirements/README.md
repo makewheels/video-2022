@@ -4,6 +4,7 @@
 
 | 需求 | 状态 | 入口 |
 |---|---|---|
+| GPU 云函数自建转码 | 规划完成，择期实施（未实现、未部署） | [2026-10-gpu-cloudfunction-transcode](2026-10-gpu-cloudfunction-transcode/PLAN.md) |
 | 评测数据改为可读 JSON | 已合并（PR #108） | [2026-08-video-agent-evaluation-json](2026-08-video-agent-evaluation-json/) |
 | Video Agent 评测与 Langfuse | v1 已完成，生产闭环待接入 | [2026-08-video-agent-evaluation](2026-08-video-agent-evaluation/) |
 | 项目文件结构审计与重组 | 待人工复核（PR #109） | [2026-08-project-structure-review](2026-08-project-structure-review/) |
