@@ -28,11 +28,13 @@ def command(source: Path, directory: Path, transcode_id: str, resolution: str,
     scale = f"scale=w='max(2,trunc(iw*{ratio}/2)*2)':h='max(2,trunc(ih*{ratio}/2)*2)',setsar=1"
     bitrate = "3000k" if resolution == "720p" else "5000k"
     preset = "p4" if encoder == "h264_nvenc" else "fast"
+    keyframe_options = ["-forced-idr", "1"] if encoder == "h264_nvenc" else []
     return [
         executable, "-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-i", str(source),
         "-map", "0:v:0", "-map", "0:a:0?", "-vf", scale,
         "-c:v", encoder, "-preset", preset, "-pix_fmt", "yuv420p", "-b:v", bitrate,
         "-maxrate", bitrate, "-bufsize", "10000k", "-force_key_frames", "expr:gte(t,n_forced*5)",
+        *keyframe_options,
         "-c:a", "aac", "-b:a", "128k", "-f", "hls", "-hls_time", "5", "-hls_list_size", "0",
         "-hls_playlist_type", "vod", "-hls_segment_filename", str(directory / f"{transcode_id}-%05d.ts"),
         str(directory / f"{transcode_id}.m3u8"),

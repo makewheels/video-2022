@@ -17,12 +17,13 @@ def test_real_hls_preserves_orientation_audio_and_does_not_upscale(size, audio):
         root = Path(directory)
         source = root / "input.mp4"
         cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i",
-               f"testsrc2=size={size}:rate=24:duration=1"]
+               f"testsrc2=size={size}:rate=24:duration=6"]
         if audio:
-            cmd += ["-f", "lavfi", "-i", "sine=frequency=1000:duration=1", "-c:a", "aac"]
+            cmd += ["-f", "lavfi", "-i", "sine=frequency=1000:duration=6", "-c:a", "aac"]
         cmd += ["-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", str(source)]
         subprocess.run(cmd, check=True, capture_output=True, timeout=60)
         files = transcode(source, root / "out", "test", "720p", "libx264", timeout=60)
+        assert len(files) >= 3  # At least two segments plus playlist; exercise a segment boundary.
         # Decode all segments through the playlist, not just its metadata.
         subprocess.run(["ffmpeg", "-v", "error", "-i", str(files[-1]), "-f", "null", "-"],
                        check=True, capture_output=True, timeout=60)

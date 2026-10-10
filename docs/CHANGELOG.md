@@ -9,6 +9,7 @@
 ## feat: GPU 转码独立 Worker 原型（未接入生产）
 - 新增 Python Worker、候选 CUDA/NVENC 镜像、鉴权入口、HLS 验证与 OSS 发布流程；应用分流及 CPU 回调未修改。
 - 26 条本地测试通过，其中 3 条使用真实 FFmpeg 软件编码并解码 HLS；真实 GPU、FC、OSS 和成本实测未确认。
+- 本机 RTX A2000 使用临时 FFmpeg 7.1.1 完成 3 个 NVENC 样本；目标 FC/OSS 实测仍未确认。
 - Worker 测试与镜像构建检查接入 CI；云端调查等待恢复本机 Infisical 登录。
 - [需求与实施边界](requirements/2026-10-gpu-cloudfunction-transcode/README.md)、[验证记录](requirements/2026-10-gpu-cloudfunction-transcode/verification.md)。
 

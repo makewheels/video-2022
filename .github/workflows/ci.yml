@@ -25,8 +25,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          task_dir="$(mktemp -d)"
-          trap 'rm -rf "$task_dir"' EXIT
+          temp_root="$(realpath "${TMPDIR:-/tmp}")"
+          task_dir="$(mktemp -d "$temp_root/video-gpu-ci.XXXXXX")"
+          trap 'case "$task_dir" in "$temp_root"/video-gpu-ci.*) rm -rf "$task_dir";; *) exit 1;; esac' EXIT
           export UV_PROJECT_ENVIRONMENT="$task_dir/venv"
           export UV_CACHE_DIR="$task_dir/cache"
           export PYTHONDONTWRITEBYTECODE=1
@@ -34,8 +35,10 @@ jobs:
           uv run --locked --project transcode-worker pytest transcode-worker/tests -p no:cacheprovider
       - name: Build GPU candidate image and verify encoder is compiled
         run: |
+          set -euo pipefail
           docker build -t video-transcode-worker:prototype transcode-worker
-          docker run --rm --entrypoint ffmpeg video-transcode-worker:prototype -hide_banner -encoders 2>&1 | rg h264_nvenc
+          docker run --rm --entrypoint ffmpeg video-transcode-worker:prototype -hide_banner -encoders 2>&1 | grep h264_nvenc
+          docker run --rm --entrypoint python video-transcode-worker:prototype -c "from video_transcode_worker.server import handler; from video_transcode_worker.media import command"
           # Encoder enumeration is a build check; no GPU hardware is available on this runner.
 
   lint:

@@ -28,6 +28,7 @@ def test_command_uses_optional_audio_nvenc_and_argument_array():
     assert cmd[cmd.index("-i") + 1] == str(source)
     assert "0:a:0?" in cmd
     assert "h264_nvenc" in cmd
+    assert cmd[cmd.index("-forced-idr") + 1] == "1"
     assert "min(1," in cmd[cmd.index("-vf") + 1]
     assert cmd[-1] == str(Path("out/tc1.m3u8"))
 
