@@ -11,6 +11,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  transcode-worker-tests:
+    name: 转码 Worker 原型测试
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v8.2.0
+        with:
+          python-version: '3.12'
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Test worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_dir="$(mktemp -d)"
+          trap 'rm -rf "$task_dir"' EXIT
+          export UV_PROJECT_ENVIRONMENT="$task_dir/venv"
+          export UV_CACHE_DIR="$task_dir/cache"
+          export PYTHONDONTWRITEBYTECODE=1
+          uv run --locked --project transcode-worker ruff check transcode-worker --no-cache
+          uv run --locked --project transcode-worker pytest transcode-worker/tests -p no:cacheprovider
+      - name: Build GPU candidate image and verify encoder is compiled
+        run: |
+          docker build -t video-transcode-worker:prototype transcode-worker
+          docker run --rm --entrypoint ffmpeg video-transcode-worker:prototype -hide_banner -encoders 2>&1 | rg h264_nvenc
+          # Encoder enumeration is a build check; no GPU hardware is available on this runner.
+
   lint:
     name: 代码质量门禁
     runs-on: ubuntu-latest
@@ -471,7 +498,7 @@ jobs:
 
   build-and-test:
     name: build-and-test
-    needs: [lint, backend-tests, frontend-tests, api-e2e-tests, browser-e2e-tests, cli-tests, ai-agent-tests, android-tests, ios-tests]
+    needs: [lint, backend-tests, frontend-tests, api-e2e-tests, browser-e2e-tests, cli-tests, ai-agent-tests, android-tests, ios-tests, transcode-worker-tests]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -479,6 +506,7 @@ jobs:
         run: |
           # E2E 只在推送 master 时运行（取密范围限制），PR 上为 skipped，允许通过；其余 job 必须 success
           if [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.transcode-worker-tests.result }}" != "success" ] || \
              [ "${{ needs.backend-tests.result }}" != "success" ] || \
              [ "${{ needs.frontend-tests.result }}" != "success" ] || \
              { [ "${{ needs.api-e2e-tests.result }}" != "success" ] && [ "${{ needs.api-e2e-tests.result }}" != "skipped" ]; } || \

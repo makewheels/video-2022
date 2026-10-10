@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 MAX_LINES = 500
-SCAN_DIRS = ["ai-agent", "cli", "test", "scripts"]
+SCAN_DIRS = ["ai-agent", "cli", "test", "scripts", "transcode-worker"]
 
 # 存量基线，只减不增：列出当前已超限文件及其行数上限
 BASELINE = {

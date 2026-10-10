@@ -6,6 +6,14 @@
 
 ---
 
+## feat: GPU 转码独立 Worker 原型（未接入生产）
+- 新增 Python Worker、候选 CUDA/NVENC 镜像、鉴权入口、HLS 验证与 OSS 发布流程；应用分流及 CPU 回调未修改。
+- 26 条本地测试通过，其中 3 条使用真实 FFmpeg 软件编码并解码 HLS；真实 GPU、FC、OSS 和成本实测未确认。
+- Worker 测试与镜像构建检查接入 CI；云端调查等待恢复本机 Infisical 登录。
+- [需求与实施边界](requirements/2026-10-gpu-cloudfunction-transcode/README.md)、[验证记录](requirements/2026-10-gpu-cloudfunction-transcode/verification.md)。
+
+---
+
 ## fix: createCover 旧快照整文档覆盖导致视频状态回退成 TRANSCODING（[PR #116](https://github.com/makewheels/video-2022/pull/116)）
 - 现象：2026-09-18 上传的视频（watchId 2UGS25）转码完成且已能播放（12:35 有播放会话），约 20 分钟后刷新变成"视频尚未准备好，当前状态：TRANSCODING"；同批前两条视频正常
 - 根因：`CoverLauncher.createCover` 的截帧轮询同步阻塞最长 3 分钟，结尾 `mongoTemplate.save(video)` 用进入时的旧快照整文档写回——前两条截帧 1-2 秒完成，save 早于转码回调（无副作用）；这条截帧卡满 3 分钟超时，save 晚于回调，把 READY 覆盖回 TRANSCODING
