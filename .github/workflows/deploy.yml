@@ -262,7 +262,7 @@ jobs:
                 case "$key" in
                   ACR_AK_ID) ACR_USER=$value ;;
                   ACR_AK_SECRET) ACR_PASSWORD=$value ;;
-                  APP_VERSION|IMAGE_TAG|SPRING_*|SERVER_*|MONGODB_*|ADMIN_API_KEY|DEVELOPER_JWT_SECRET|ALIYUN_*|EXTERNAL_BASE_URL|INTERNAL_BASE_URL)
+                  APP_VERSION|IMAGE_TAG|SPRING_*|SERVER_*|MONGODB_*|ADMIN_API_KEY|DEVELOPER_JWT_SECRET|ALIYUN_*|TRANSCODE_*|EXTERNAL_BASE_URL|INTERNAL_BASE_URL)
                     if printf "%s" "$value" | LC_ALL=C grep -q "[[:cntrl:]]"; then
                       echo "control character in runtime value: $key" >&2
                       exit 1
