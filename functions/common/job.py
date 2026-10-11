@@ -58,8 +58,10 @@ def upload_all_files(oss: OssClient, local_dir: str, output_dir: str) -> list:
             continue
         key = f"{output_dir.rstrip('/')}/{name}"
         oss.upload_file(local_path, key)
+        obj_type = "playlist" if name.endswith(".m3u8") else (
+            "init" if name.endswith(".mp4") else "segment")
         objects.append({"key": key, "size": os.path.getsize(local_path),
-                        "type": "playlist" if name.endswith(".m3u8") else "segment"})
+                        "type": obj_type})
     return objects
 
 
