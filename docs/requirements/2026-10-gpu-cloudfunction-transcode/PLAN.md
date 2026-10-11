@@ -1,7 +1,7 @@
 # 自建云函数点播转码与 MPS 兜底
 
-> 状态：待整体确认的草案。未实施、未部署、未删除云资源。
-> 2026-10-07 初稿；2026-10-11 根据需求讨论更新。
+> 状态：执行中。2026-10-11 P0 只读盘点完成，进入 P1 实施；云端部署、验证与旧资源清理未执行。
+> 2026-10-07 初稿；2026-10-11 根据需求讨论更新，同日完成 P0 盘点。
 
 执行入口：[需求与阅读顺序](README.md) · [已确认需求](requirements.md) · [设计草案](../../design/cloud-transcode.md) · [验收矩阵](verification.md)
 
@@ -86,16 +86,30 @@
 
 每步完成后在 verification.md 记录证据和剩余问题；未满足进入条件不能跳到部署或删除。以下是待执行清单，不代表授权已开始实施。
 
-### P0：只读盘点和可行性门槛
+### P0：只读盘点和可行性门槛（2026-10-11 完成）
 
-- [ ] 重新检查工作树及 AGENT/CONTRIBUTING，保留用户变更。基于当前主分支开工作分支，整体方案确认前不推送 master。
-- [ ] 获取北京旧 FC 的名称/类型/版本、运行时、镜像、匿名/签名触发器、异步重试、配额、执行上限、最小/最大实例、日志与其它业务引用；不打印秘密。
-- [ ] 获取旧 CPU 函数源码和实际 ffmpeg 参数；没有源码则记录只读可获取范围，不能把 quality=keep 解释成已验证无损或保留 HDR。
-- [ ] 核实选定 FC GPU 规格实际支持的 NVENC/解码能力，镜像含正确驱动运行时与 ffmpeg 编译特性，读取当前官方文档并记录链接/日期。
-- [ ] 确认 SDR/HLG/PQ/动态 HDR 的编码、封装、播放器和 MPS 兜底路径；旧 baseline 模板不满足 HDR，必须核实新模板/参数覆盖能力。
-- [ ] 写明资源和单价估算，复用已有仓库，明确 20 元预算控制方案、并发配额与版本回滚步骤。
+- [x] 重新检查工作树及 AGENT/CONTRIBUTING，保留用户变更。分支 `feature/cloud-function-transcode`（基于 master c29fb9ea + 文档 99e2beb4），工作树干净。
+- [x] 北京区 FC 盘点（FC 3.0 API，2026-10-11）：共 14 函数。与本业务相关：
+  - `video-transcode$transcode-master`（java11，4 vCPU/4G/1800s/512M 盘）：匿名 HTTP 触发器 `transcoe-master-video-transcode-pqrshwejna.cn-beijing.fcapp.run`（生产 `CloudFunctionTranscodeService` 硬编码在用），VPC `vpc-2ze7ua7kz3yy4qohdg3kp` + NAS `113914bbf5-rsn28.cn-beijing.nas.aliyuncs.com:/` 挂 `/mnt/nas`，代码最后修改 2024-04-17，未配日志投递（logConfig 为空），无异步任务积压。
+  - `video-transcode$transcode-worker`（java11，2G/300s）：匿名触发器，master 内网 URL 写死调用；收到 `{"cmd": "..."}` 直接 `RuntimeUtil.execForStr` 执行——master 拼接命令 + 匿名触发器构成安全隐患，清理时一并消除。
+  - `video-transcode$ffprobe`（匿名触发器）：仓库代码无引用，候选清理。
+  - `video-transcode$clean`：定时触发器已禁用（enable=false），候选清理。
+  - `video-2022-prod/dev$get-oss-object-md5`（匿名触发器）：`Md5CfService` 在用，保留。
+  - 其余函数（acme-deploy、dashcam-transfer、site-monitor、proxy、e2b、serverless-devs-check）属其它业务，不动。
+  - **安全备注**：`video-transcode` 4 个函数环境变量含明文 AccessKey（2022 年创建），清单已记录但本文不落明文；清理该服务时必须同步在 RAM 吊销该 AK。
+- [x] 旧 CPU 函数源码：FC 上拉取代码包（checksum 8533010175999544614），反编译还原（包名 `com.github.makewheels.cfffmpeg`，源码不在本仓库）：
+  - master 流程：签名 URL 下载原片 → ffprobe → 判定（音频 codec≠AAC 或 [视频 codec≠H264 且需降分辨率] 才重编码，否则 `-c copy`）→ 音视频分离 → 分片（视频 8 秒 / 音频 128 秒）→ 逐片 POST worker（内网匿名 URL）转码 → concat 合并 → `-c copy` 切 HLS（hls_time=1，`{transcodeId}-%05d.ts`）→ 边转边传 outputDir → 回调 body 仅 `{jobId}` → 删任务目录。
+  - 视频重编码命令实际为 `ffmpeg -i {seg} -c:v {videoCodec} [-vf scale=-2:720] {out}`：libx264 无码率参数（默认 CRF）、**分辨率硬编码 720p（请求 1080p 也输出 720p）**、无色彩/位深/方向参数。
+  - `quality=keep` 仅表示"不改分辨率"，不能解释成无损或保留 HDR。ffmpeg 二进制来自 NAS `{nas_dir}/ffmpeg/ffmpeg`，非函数自带。
+- [x] FC GPU 规格（官方文档 2026-10-11 核查）：GPU 实例仅支持容器镜像部署；规格族 `fc.gpu.ampere.1`（A10 24G vGPU 分卡，显存 1024MB 倍数，vCPU ≤ 显存GB/2，内存 ≤ 显存GB×2048）与 `fc.gpu.tesla.1`（T4）。官方音视频实践提供含 NVENC 的 ffmpeg 基础镜像（`serverless_devs/nvidia-ffmpeg`），命令形如 `-hwaccel cuda -hwaccel_output_format cuda -c:v h264_nvenc`、GPU 缩放用 `scale_cuda/scale_npp`。计费 CU 制：1 CU 标准价 0.00011 元（至 2026-08-27 优惠价 0.000088 元），tesla 活跃 GPU 2.1 CU/(GB·s)；按 6G 显存+3 vCPU+12G 内存估算约 17.4 CU/s ≈ 0.0015 元/s。待云端实测项：账户 GPU 配额、`hevc_nvenc` 10-bit/色彩元数据/动态 HDR 保留、镜像 `-encoders` 实际特性（文档：[实例规格](https://help.aliyun.com/zh/functioncompute/instance-types-and-specifications)、[NVENC 实践](https://help.aliyun.com/zh/functioncompute/best-practices-for-audio-and-video-processing-1)、[计费](https://help.aliyun.com/zh/functioncompute/billing-overview-of-fc)，2026-10-11 读取）。
+- [x] HDR/封装/播放/兜底路径确认：
+  - 自建：ffprobe 读 `color_transfer/primaries/space`、位深、side data → HEVC Main10（NVENC `hevc_nvenc` 待实测 / CPU 端 x265 可保 10-bit）+ HLS fMP4（EXT-X-MAP）或 TS（HEVC in TS 兼容性差，倾向 fMP4）→ 播放端 web 为 video.js 8（VHS 支持 fMP4，HEVC 解码取决于浏览器）、Android media3 ExoPlayer、iOS AVPlayer，均具备 fMP4 能力，HEVC 硬解逐端实测。
+  - Dolby Vision 动态元数据：NVENC 不支持 RPU 透传编码，AV1/HEVC 软编待评估；不能保留的类型按设计要求明确失败，不静默转 SDR。
+  - MPS 兜底：现有三模板均为 H.264 baseline，不满足 HDR 保留；兜底 HDR 视频需新建 MPS 模板（不改历史模板）或明确失败，P1 设计定稿。
+  - 当前登记链路的既知缺陷（P1 修复清单）：`TranscodeLauncher` 逐档创建+提交（未先建全档）、`TranscodeCallbackService.onTranscodeFinish` 先算完成数再登记产物、`AliyunCfTranscodeImpl.callback` 不验产物直接成功、`Transcode.isFinishStatus/isSuccessStatus` 对未知 provider 默认 true、无超时恢复、旧回调仅 jobId 无法校验 attempt。
+- [x] 资源/单价/预算：账户可用余额 **6.76 元**（2026-10-11 查询），低于 20 元预算上限；按上述单价，短样本（10-30s）GPU 单任务约 0.1-0.3 元、MPS 对照单次约 0.03 元，余额可支撑 20+ 个短任务。执行原则：估算到 16 元（或余额 20%）即停新增，账单延迟不当 0 元。并发：按需、最小实例 0、上限可配置，账户 GPU 配额在首次云端实测时核实。版本回滚：镜像按 digest 部署，服务器保留 `previous` tag；函数按版本/别名回滚。
 
-进入 P1：需求不冲突，HDR 必要媒体信息有可行路径，关键未知项有明确验证计划；不可行的内容给出证据，不能自行降级。
+**进入 P1 判定**：需求不冲突；HDR 媒体信息读取、编码、fMP4 封装路径存在且 DV 动态元数据为最大未知（有明确失败路径）；GPU 配额、NVENC HDR 实测有验证计划（P3 首批）。判定通过，进入 P1。
 
 ### P1：后端任务、函数和状态实现
 
