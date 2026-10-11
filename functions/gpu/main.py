@@ -43,7 +43,24 @@ class Handler(BaseHTTPRequestHandler):
             self._respond(200, {"ok": False, "error": "internal error"})
 
     def do_GET(self):  # noqa: N802
-        self._respond(200, {"ok": True, "service": "transcode-gpu"})
+        # 诊断：NVENC 可用性核查（云端首验用；不输出任何密钥/任务数据）
+        import subprocess
+        def run(cmd):
+            try:
+                r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                return (r.stdout + r.stderr).strip()[:2000]
+            except Exception as e:  # noqa: BLE001
+                return f"ERR: {e}"
+        diag = {
+            "ok": True,
+            "service": "transcode-gpu",
+            "ffmpeg_version": run(["ffmpeg", "-version"]),
+            "nvenc_encoders": run(["bash", "-c", "ffmpeg -hide_banner -encoders 2>/dev/null | grep -i nvenc"]),
+            "nvidia_smi": run(["bash", "-c", "nvidia-smi -L 2>&1 | head -5"]),
+            "cuda_libs": run(["bash", "-c", "ldconfig -p 2>/dev/null | grep -E 'libcuda\.so|libnvidia-encode' | head -5"]),
+            "nvidia_mount": run(["bash", "-c", "ls /usr/local/nvidia 2>&1 | head -3; ls /usr/lib/x86_64-linux-gnu/libcuda* 2>&1 | head -3"]),
+        }
+        self._respond(200, diag)
 
     def _respond(self, status: int, payload: dict):
         data = json.dumps(payload).encode("utf-8")
