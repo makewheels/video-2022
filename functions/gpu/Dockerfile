@@ -10,7 +10,7 @@ RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
+COPY gpu/requirements.txt ./
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY common/ ./common/

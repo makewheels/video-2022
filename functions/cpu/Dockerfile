@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
+COPY cpu/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY common/ ./common/
