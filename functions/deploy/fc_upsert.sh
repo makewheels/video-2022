@@ -78,10 +78,13 @@ fi
 
 URL=$(aliyun fc ListTriggers --functionName "$FN_NAME" 2>/dev/null | python3 -c "
 import json,sys
-d=json.load(sys.stdin)
-for t in d.get('triggers', []):
-    ht=t.get('httpTrigger') or {}
-    if ht.get('urlInternet'): print(ht['urlInternet'])
-" | head -1)
+try:
+    d=json.load(sys.stdin)
+    for t in d.get('triggers', []):
+        ht=t.get('httpTrigger') or {}
+        if ht.get('urlInternet'): print(ht['urlInternet'])
+except Exception:
+    pass
+" | head -1 || true)
 echo "部署完成: $FN_NAME"
-echo "触发器 URL: $URL"
+echo "触发器 URL: ${URL:-<查询失败，用 FC API 复查>}"
