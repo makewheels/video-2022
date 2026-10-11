@@ -155,7 +155,7 @@
 
 1. [x] 合并 PR #119（独立 Worker 原型，CI 全绿，2026-10-11 已合并）
 2. [ ] PR #120 CI 全绿后合并；master 部署保持 legacy 默认（行为零变化）
-3. [ ] 恢复 Windows 本机 Infisical 登录（PR #119 遗留阻塞，需用户手动操作）
+3. [ ] （不阻塞 P3）PR #119 原型机器（Windows）的 Infisical 登录过期记录——主实现取密走 GitHub Actions OIDC，与本机登录无关；仅当继续用该原型机器做实测时才需恢复
 4. [ ] Infisical `video-2022-secrets` 配置 transcode-fn 路径：FC_DEPLOY_AK、函数 OSS 凭证、invoke/callback secret（P3 前置）
 5. [ ] 新建 MPS 兜底模板（720p/1080p，保留帧率/声道/色彩），回填 `ALIYUN_MPS_FALLBACK_TEMPLATE_*` 配置
 6. [ ] 跑 `deploy-functions.yml`（先 dev）：构建 CPU/GPU 镜像 → FC 创建函数（异步重试 0、SLS 日志）→ 核实账户 GPU 配额
