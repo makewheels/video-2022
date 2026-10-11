@@ -5,10 +5,10 @@ FROM python:3.11-slim-bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget ca-certificates xz-utils \
-    && wget -q https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz \
-    && tar xf ffmpeg-master-latest-linux64-gpl.tar.xz --strip-components=2 \
+    && wget -q https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz \
+    && tar xf ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz --strip-components=2 \
        -C /usr/local/bin --wildcards '*/bin/ffmpeg' '*/bin/ffprobe' \
-    && rm -f ffmpeg-master-latest-linux64-gpl.tar.xz \
+    && rm -f ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz \
     && rm -rf /var/lib/apt/lists/* \
     && ffmpeg -version | head -1
 
