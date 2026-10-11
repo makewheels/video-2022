@@ -24,9 +24,10 @@ fi
 # python 构造 payload，避免 shell 拼接转义问题
 PAYLOAD=$(INVOKE_SECRET_VALUE="$INVOKE_SECRET_VALUE" OSS_AK_ID="${ALIYUN_OSS_VIDEO_ACCESS_KEY_ID:?}" \
 OSS_SK="${ALIYUN_OSS_VIDEO_SECRET_KEY:?}" CB_SECRET="${CALLBACK_SECRET:?}" \
-GPU_BODY="$GPU_BODY" IMAGE="$IMAGE" LOG_PROJECT="video-2022-logs" LOG_STORE="transcode-fn${TARGET:+-$TARGET}" python3 - <<'PYEOF'
+GPU_BODY="$GPU_BODY" IMAGE="$IMAGE" FN_NAME="$FN_NAME" LOG_PROJECT="video-2022-logs" LOG_STORE="transcode-fn${TARGET:+-$TARGET}" python3 - <<'PYEOF'
 import json, os
 payload = {
+    "functionName": os.environ["FN_NAME"],
     "runtime": "custom-container",
     "handler": "index.handler",
     "timeout": 1800,
