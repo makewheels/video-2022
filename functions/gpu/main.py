@@ -59,6 +59,9 @@ class Handler(BaseHTTPRequestHandler):
             "nvidia_smi": run(["bash", "-c", "nvidia-smi -L 2>&1 | head -5"]),
             "cuda_libs": run(["bash", "-c", "ldconfig -p 2>/dev/null | grep -E 'libcuda\.so|libnvidia-encode' | head -5"]),
             "nvidia_mount": run(["bash", "-c", "ls /usr/local/nvidia 2>&1 | head -3; ls /usr/lib/x86_64-linux-gnu/libcuda* 2>&1 | head -3"]),
+            "dev_nodes": run(["bash", "-c", "ls -la /dev/nvidia* 2>&1 | head -6"]),
+            "nvenc_probe": run(["bash", "-c", "ffmpeg -y -f lavfi -i testsrc=duration=1:size=320x240:rate=10 -c:v h264_nvenc -f null - 2>&1 | tail -8"]),
+            "cuda_init": run(["bash", "-c", "python3 -c \"import ctypes; r=ctypes.CDLL('libcuda.so.1'); print('cuInit:', r.cuInit(0))\" 2>&1"]),
         }
         self._respond(200, diag)
 
