@@ -111,35 +111,37 @@
 
 **进入 P1 判定**：需求不冲突；HDR 媒体信息读取、编码、fMP4 封装路径存在且 DV 动态元数据为最大未知（有明确失败路径）；GPU 配额、NVENC HDR 实测有验证计划（P3 首批）。判定通过，进入 P1。
 
-### P1：后端任务、函数和状态实现
+### P1：后端任务、函数和状态实现（2026-10-11 完成，commit 36f0c7ed/a83ff3ea/beb669c3）
 
-| 文件/模块 | 修改要求 |
+| 文件/模块 | 修改要求 | 实现结果 |
 |---|---|
-| transcode/TranscodeLauncher.java | 自建 ffprobe，按显示尺寸选档；先建全档任务再提交；新旧开关及 CPU/GPU 分流，不盲用像素面积判断竖屏 |
-| video/bean/entity/MediaInfo.java | 新增真实帧率、色彩/HDR/位深/旋转/SAR/音轨信息，新增字段可空，旧记录仍可读取 |
-| transcode/factory/AliyunCfGPUTranscodeImpl.java、TranscodeFactory.java | GPU 实现 TranscodeService，注入非空且明确异常，使用统一新任务协议 |
-| transcode/cloudfunction/CloudFunctionTranscodeService.java | URL 与鉴权配置化，明确异步受理响应和 request ID；旧 CPU 路径兼容 |
-| transcode/bean/Transcode.java、TranscodeRepository.java、状态常量 | attempt、deadline、重试/兜底及真实输出信息，条件更新和正确成功判定；未知 provider 不默认成功 |
-| transcode/TranscodeController.java | 新内部回调按 task 查 provider，校验密钥/attempt，旧回调保留至旧任务排空 |
-| transcode/TranscodeCallbackService.java | 先校验产物再幂等登记，最后更新就绪；恢复中断登记；错误终态不计入成功 |
-| transcode/aliyun/AliyunMpsService.java、AliyunMpsTranscodeImpl.java | 符合媒体保留要求的有限兜底，至多一次提交；不改历史模板，不保留新 480p 生成分支 |
-| cover/、video/service/RawFileService.java | 新云封面、字段级更新及有限兜底，LOCAL/YouTube 行为不回退 |
-| watch/play/WatchService.java、transcode/M3u8Util.java | 仅发布成功档，真实 metadata；如选 fMP4，正确处理 init/map/audio、签名与权限 |
-| 文件删除及存储模块 | 仅新增格式必须的支持，init/audio 不能遗漏；不批量删除历史产物 |
+| transcode/TranscodeLauncher.java | 自建 ffprobe，按显示尺寸选档；先建全档任务再提交；新旧开关及 CPU/GPU 分流 | ✅ `transcode.pipeline=self-hosted\|legacy` 开关；PROBE 走 CPU 函数，probe 回调后按显示短边选档（ResolutionPlanner），先持久化全部档位再逐档提交 |
+| video/bean/entity/MediaInfo.java | 新增真实帧率、色彩/HDR/位深/旋转/SAR/音轨信息，新增字段可空 | ✅ 新增 displayWidth/Height、frameRate(分数)、frameRateMode、sar、rotation、pixFmt、bitDepth、color*、dynamicRange、audioTrackCount/audioTracks，全部可空 |
+| transcode/factory/AliyunCfGPUTranscodeImpl.java、TranscodeFactory.java | GPU 实现 TranscodeService，使用统一新任务协议 | ✅ GPU/CPU 共用 AbstractSelfHostedTranscodeImpl（payload 快照、attempt 生成、受理分类）；callback 入口明确抛 UnsupportedOperationException |
+| transcode/cloudfunction/CloudFunctionClient.java（替代旧 CloudFunctionTranscodeService 的调用部分） | URL 与鉴权配置化，异步受理响应和 request ID | ✅ `aliyun.cf.transcode.cpu/gpu.url` + invoke-secret 配置化；429 退避重试不耗 attempt；未配置抛异常禁用新链路；旧类保留供旧链路 |
+| transcode/bean/Transcode.java、task/FcTask*（新增） | attempt、deadline、重试/兜底及真实输出信息，条件更新；未知 provider 不默认成功 | ✅ FcTask 承载 taskId/attemptId/deadline/payload 快照/原子认领；Transcode 增 currentProvider/fallbackCount/actual*；isFinish/isSuccess 未知 provider 返回 false |
+| transcode/TranscodeController.java | 新内部回调按 task 查 provider，校验密钥/attempt，旧回调保留 | ✅ 新端点 POST /transcode/cloudFunctionCallback（X-Callback-Secret）；FcTaskCallbackService 按 taskId 查任务校验 attempt，晚到回调 200+ignored；旧端点保留 |
+| transcode/TranscodeCallbackService.java | 先校验产物再幂等登记，最后更新就绪 | ✅ validateOutput（playlist/ENDLIST/分片/init 逐项 OSS 实物校验）→ 原子 claim REGISTERING → 幂等登记（File 按 key、TsFile 按 transcodeId+tsIndex 查重）→ FINISHED → 状态统计；FAILED 不计成功；全失败 TRANSCODE_FAILED |
+| transcode/aliyun/AliyunMpsService.java、mps/MpsFallbackService.java（新增） | 符合媒体保留要求的有限兜底，至多一次；不改历史模板 | ✅ 兜底走独立模板配置（aliyun.mps.fallback-template.*，保留帧率/声道/色彩，未配置则明确失败）；HDR 源不允许兜底；fallbackCount 0→1 原子抢占 |
+| cover/、video/service/RawFileService.java | 新云封面、字段级更新及有限兜底 | ✅ CoverLauncher 按 pipeline 开关走 CPU 函数 COVER（HDR tone-map，失败明确报错）；CoverService.applyFcCoverResult 字段级更新；LOCAL/YouTube 行为未动 |
+| watch/play/WatchService.java、transcode/M3u8Util.java | 仅发布成功档，真实 metadata；fMP4 init/map/签名/权限 | ✅ 主列表过滤非成功档；RESOLUTION/CODECS/FRAME-RATE/VIDEO-RANGE 真实值（无数据不造假）；EXT-X-MAP URI 走签名 URL；init segment 以 tsIndex=-1 登记，删除级联自动覆盖 |
+| 超时恢复（新增 FcTimeoutRecoveryService） | 持久化 deadline 恢复丢回调任务 | ✅ 每分钟扫描 SUBMITTED 超时与 RETRY_WAIT 到期，原子认领后重提交（同一 payload 新 attemptId），额度耗尽走兜底/终态失败 |
 
 建议新增 functions/ 下的 CPU/GPU 源码、Dockerfile、依赖锁及部署清单，具体目录遵循仓库约定；新文件不能只放本机临时目录。Python 用 uv，Node 用 pnpm，依赖复用全局缓存/硬链接。函数运行临时文件先注册 finally 清理，路径验证属于本次系统临时目录；OSS 失败产物只清理对应 attempt，不能按 video 根目录删除。
 
-进入 P2：函数协议、状态机、数据库恢复、HDR 路径与目录策略完整，相关测试可运行。
+**进入 P2 判定**：函数协议 v1（协议/回调/manifest/错误分类）、状态机（FcTask + Transcode 双层）、数据库恢复（deadline + 原子认领）、HDR 路径（probe 识别 → HEVC Main10 → fMP4，明确失败路径）、目录策略（既有 attempt 幂等覆盖 + result.json）完整；后端 596 测试 + 函数 10 冒烟测试通过。判定通过。
 
-### P2：LOCAL、客户端与自动化
+### P2：LOCAL、客户端与自动化（2026-10-11 完成，commit e8f3e161）
 
-- [ ] cli/video_cli/local_transcode.py：档位及实际尺寸对齐，probe 信息完整，保留本机软件编码；移除无条件 SDR/音轨改写，特殊格式不能静默走收费云端。
-- [ ] cli/video_cli/commands/video.py：上传和 finish 参数传递完整，先登记所有档位再完成单档，失败清楚显示。
-- [ ] transcode/local/LocalTranscodeService.java、dto/CreateLocalTranscodeRequest.java：真实输出 metadata、兼容字段扩展、重复 finish 幂等、无云调用。
-- [ ] 原有 API 字段继续兼容，增加字段同步 web/console/Android/iOS/CLI 的使用处和文档；仅改必要媒体协议，不扩播放器产品功能。
-- [ ] 按 verification.md 的 T01–T18 完成必要测试，重点覆盖并发/重试/晚到回调，而非只验证 mock 方法调用一次。
+- [x] cli/video_cli/local_transcode.py：档位对齐短边决策表（低清单档 720p 标签原尺寸、移除 480p 兜底、不放大、偶数对齐）；probe 补显示尺寸/旋转/SAR/帧率/位深/色彩/动态范围；HDR 源本地走 libx265 Main10 + 色彩 tag 透传，不静默转 SDR；多音轨全量映射、无音轨不造静音轨、不降帧。
+- [x] cli/video_cli/commands/video.py：createTranscode 请求携带完整媒体保留字段（可选）；显示尺寸真实输出；失败经异常清楚显示。
+- [x] transcode/local/LocalTranscodeService.java、dto/CreateLocalTranscodeRequest.java：扩展字段可选兼容；重复 finish 幂等与无云调用由既有实现保持；扩展字段写入 mediaInfo。
+- [x] API 字段兼容性：新增字段全部可选，web/console/Android/iOS 无需改动即可保持现状；播放协议变化（fMP4 init、VIDEO-RANGE）由 video.js 8 / ExoPlayer / AVPlayer 原生能力承接，未扩播放器产品功能；文档同步见业务/接口文档更新。
+- [x] T01–T18 后端/CLI 可执行项完成（详见 verification.md 第 5 节）：T01–T05、T07–T15、T17 后端覆盖；T06 与 T09 部分场景、T10、T16、T18 部分/云端项按条目标注。
 
-进入 P3：本地相关测试/构建通过、无关键失败，成本估算在预算内，方案已整体确认。
+后端测试 596 项通过、CLI 138 项通过、函数冒烟 10 项通过、checkstyle 与 ruff 0 违规。
+
+**进入 P3 判定**：本地相关测试/构建通过、无关键失败；成本估算（P0：单短样本任务约 0.1-0.3 元，余额 6.76 元可支撑 20+ 任务）在预算内；方案为用户已确认文档。P3 云端执行待续（含镜像构建、函数部署、Infisical 变量贯通、C01–C09 小批验证）。
 
 ### P3：小批云验证与发布
 

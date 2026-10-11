@@ -94,4 +94,31 @@
 - 官方文档读取日期 2026-10-11：实例规格、NVENC 实践、FC 计费（链接见 PLAN）。
 - 未验证：账户 GPU 配额、hevc_nvenc 10-bit/HDR 元数据、镜像实际特性、fMP4 各端播放——均列入 P3 云端验收。
 
+## 5. T01–T18 本地/自动化执行结果（2026-10-11）
+
+后端 `mvn test` 596 项、CLI `pytest` 138 项、函数冒烟 10 项全部通过（commit beb669c3/e8f3e161）。逐项：
+
+| ID | 结果 | 证据与说明 |
+|---|---|---|
+| T01 | ✅ 后端+CLI | ResolutionPlannerTest：360/720/900/1080/2160、竖屏 1080x1920、奇数尺寸偶数对齐；无放大/裁剪/重复档/480p；cli test_output_size_short_side_rule_and_even_alignment |
+| T02 | ✅ 函数+后端 | 函数冒烟：SDR 判 SDR、PQ 10-bit 判 HDR10、10-bit 无 transfer 判 UNKNOWN（不默认 SDR）；后端 planner 对全部非 SDR 值（含 UNKNOWN/null）恒走 GPU 不允许 remux；不支持类型（DV 保留）在 P3 实测后按明确失败处理 |
+| T03 | ✅ 函数+CLI | mediaPolicy.frameRateMode=preserve、编码命令无 -r/fps filter（gpu/transcode.py 冒烟断言 frameRate="30/1" 保留）；CLI probe VFR 识别 frame_rate_mode |
+| T04 | ✅ 函数+CLI | -map 0:v:0 -map 0:a?：无音轨映射为空不造静音轨；多音轨保留由 mediaPolicy.preserveTracks=true 强制（false 直接拒绝）；CLI 无音轨测试通过 |
+| T05 | ✅ 后端 | FcTaskFlowIntegrationTest.unknownProvider_neverTreatedAsSuccess：未知 provider isFinish/isSuccess 均 false；GPU 实现 TranscodeService 可注入（工厂非空） |
+| T06 | ✅ 后端 | probeCallback_createsAllLanesBeforeAnyCompletion：probe 回调一次创建两档+两 FcTask 全部持久化后才提交；firstLaneCallback_partlyComplete：首档完成仅 PARTLY_COMPLETE |
+| T07 | ✅ 后端 | submitThrottled_goesRetryWaitWithoutConsumingAttempt：429 → RETRY_WAIT、attemptCount 不耗；网络异常同样不盲提交（CloudFunctionClient 吞异常置未受理） |
+| T08 | ✅ 后端 | callback_wrongAttemptOrUnknownTask_rejected：错 attempt 200+ignored 状态不变、未知任务 404；Controller 层错密钥 403（沿用既有 secret 校验结构，回调日志不含密钥） |
+| T09 | ✅ 后端 | 重复成功回调 TsFile 数量不变（幂等登记）；旧 attempt 晚到 200+ignored；并发登记由 REGISTERING 原子认领互斥 |
+| T10 | ⚠️ 部分 | 持久化 deadline + 原子认领已实现并有测试（retryExhausted 流程覆盖恢复链路）；FC 崩溃型丢回调的服务重启恢复依赖同一定时扫描（代码路径一致），长时间运行验证留待 P3 开发环境 |
+| T11 | ✅ 后端 | retryExhausted_mpsFallbackAtMostOnce：失败→重试→耗尽→MPS 兜底一次；再失败不重复兜底（verify times(1)）；兜底模板配置化且保留媒体要求 |
+| T12 | ✅ 后端 | firstLaneCallback（一档成功一档进行中→PARTLY_COMPLETE）+ validationMissingEndlist（单档失败→TRANSCODE_FAILED）；混合终态归 PARTLY_COMPLETE 且主列表只发成功档 |
+| T13 | ✅ 后端 | validationMissingEndlist：缺 ENDLIST → FAILED + TRANSCODE_FAILED，无脏登记（TsFile=0）；越界路径由协议 validate_request 前缀校验（函数侧）+ playlistKey 与任务一致性校验（后端） |
+| T14 | ✅ 后端 | M3u8UtilTest：CRLF/空行兼容、fMP4 EXT-X-MAP 解析、init 不混入分片列表；WatchService 签名替换对 init/分片生效 |
+| T15 | ✅ CLI | cli test_target_resolutions*/test_output_size*：两档/原尺寸/不放大；LOCAL 无云调用由既有 LocalTranscodeServiceTest 保持；重复 finish 幂等既有测试保持 |
+| T16 | ⚠️ 部分 | 封面回调幂等（状态已 READY 跳过）与字段级更新已实现；"不将 READY 改回 TRANSCODING"由封面字段级更新保证（PR #116 模式），专用并发回归测试待补 |
+| T17 | ✅ 后端+设计 | 旧链路默认保持：transcode.pipeline 默认 legacy，TranscodeLauncher.legacyTranscode 原逻辑未动；旧回调端点保留；历史 TS/480p playlist 由 getMultivariantPlaylist 兼容读取（WatchServiceTest 回归通过）；切回开关=改环境变量重启 |
+| T18 | ⚠️ 部分 | init segment 走同一 fileId 签名通道（无绕过鉴权）；跨用户访问拦截由既有 FileAccessSignatureService HMAC 测试覆盖；用户 A 请求用户 B init 的专项断言待补（fileId 为雪花 ID 不含用户信息，签名绑定 videoId） |
+
+未验证项（留 P3）：FC 真实受理/回调行为、GPU 配额、NVENC HDR 实测、fMP4 各端播放、长时间恢复运行验证、T16/T18 专项回归测试补充。
+
 交付时汇总 R01–R12、T01–T18、C01–C09 的通过/失败/未验证状态。任何核心媒体保留、鉴权、幂等、兜底或预算项目失败，不得全量切换。20 元不足以覆盖全部矩阵时停止新增云测试，如实列未验收项，不能靠配置和 mock 冒充真机/云端完成。
