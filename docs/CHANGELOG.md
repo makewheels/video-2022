@@ -6,13 +6,19 @@
 
 ---
 
-## feat: GPU 转码独立 Worker 原型（未接入生产）
-- 新增 Python Worker、候选 CUDA/NVENC 镜像、鉴权入口、HLS 验证与 OSS 发布流程；应用分流及 CPU 回调未修改。
-- 26 条本地测试通过，其中 3 条使用真实 FFmpeg 软件编码并解码 HLS；另在 RTX A2000 上使用临时 FFmpeg 7.1.1 完成 3 个 NVENC 样本，均生成两段 HLS 并完整解码。目标 FC/OSS 与成本实测仍未确认。
-- Worker 测试与镜像构建检查接入 CI；云端调查等待恢复本机 Infisical 登录。
-- [需求与实施边界](requirements/2026-10-gpu-cloudfunction-transcode/README.md)、[验证记录](requirements/2026-10-gpu-cloudfunction-transcode/verification.md)。
+## feat: 自建云函数点播转码与 MPS 兜底（第一阶段实现，默认关闭）
 
----
+需求与验收：`docs/requirements/2026-10-gpu-cloudfunction-transcode/`；设计：`docs/design/cloud-transcode.md`
+
+- 新增 `transcode.pipeline` 开关（默认 legacy，行为零变化）：self-hosted 链路 = 自建 CPU 函数 ffprobe 探测 → 显示短边选档（≥1080 两档 / 否则单档，不放大、无 480p 新档）→ 先持久化全部档位再逐档提交 CPU remux / GPU NVENC
+- 新增 FcTask 任务模型（attempt/deadline/payload 快照/原子认领）、新回调 `/transcode/cloudFunctionCallback`（attempt 校验、晚到/重复回调幂等）、超时恢复定时服务；未知 provider 不再默认成功
+- 转码完成先验产物（playlist/ENDLIST/分片逐项核 OSS）再幂等登记再置状态；全失败进入 `TRANSCODE_FAILED`；主播放列表只发布成功档并输出真实 RESOLUTION/CODECS/FRAME-RATE/VIDEO-RANGE；fMP4 EXT-X-MAP init segment 登记与签名访问支持
+- MPS 有限兜底：独立模板配置（保留帧率/声道/色彩）、SDR 源至多一次、HDR 源明确失败不静默转 SDR
+- 新增 `functions/`：CPU（PROBE/COVER/remux）与 GPU（NVENC，SDR H.264+TS / HDR HEVC Main10+fMP4）函数源码、Dockerfile、部署清单；失败转回调且 FC 平台重试置 0，重试由应用层统一控制
+- CLI 本地转码对齐：短边决策表、低清原尺寸单档、HDR 本地 libx265 Main10 不静默转 SDR、多音轨保留、probe 媒体保留字段扩展（可选兼容）
+- P0 只读盘点完成：北京 FC 旧 transcode 服务 4 函数（master 匿名触发器在生产使用、代码反编译还原 720p 硬编码/无码率参数、worker 任意命令执行隐患）+ md5 函数在用保留；账户余额 6.76 元（<20 元预算上限）已列入预算控制
+- 测试：后端 596 项、CLI 138 项、函数冒烟 10 项全部通过；checkstyle/ruff 0 违规
+- 未完成（P3+）：云端镜像构建与函数部署、Infisical/Actions 变量贯通、GPU 配额与 NVENC HDR 实测、C01–C09 云端与真机验收、旧 FC 清理（P4）
 
 ## fix: createCover 旧快照整文档覆盖导致视频状态回退成 TRANSCODING（[PR #116](https://github.com/makewheels/video-2022/pull/116)）
 - 现象：2026-09-18 上传的视频（watchId 2UGS25）转码完成且已能播放（12:35 有播放会话），约 20 分钟后刷新变成"视频尚未准备好，当前状态：TRANSCODING"；同批前两条视频正常

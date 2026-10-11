@@ -11,6 +11,7 @@ import com.github.makewheels.video2022.system.response.ErrorCode;
 import com.github.makewheels.video2022.system.response.Result;
 import com.github.makewheels.video2022.file.TsFileRepository;
 import com.github.makewheels.video2022.file.bean.TsFile;
+import com.github.makewheels.video2022.transcode.M3u8Util;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.user.UserHolder;
@@ -176,48 +177,78 @@ public class WatchService {
     }
 
     /**
-     * 根据转码对象获取m3u8内容，返回String
+     * 根据转码对象获取m3u8内容，返回String。
+     * 兼容 TS 与 fMP4：fMP4 的 #EXT-X-MAP init segment 同样走签名访问。
      */
     public String getM3u8Content(Context context, String transcodeId, String resolution) {
         Transcode transcode = transcodeRepository.getById(transcodeId);
         //找到transcode对应的tsFiles
         List<TsFile> tsFiles = tsFileRepository.getByIds(transcode.getTsFileIds());
-        Map<String, TsFile> fileMap = tsFiles.stream().collect(
-                Collectors.toMap(TsFile::getFilename, Function.identity()));
+        Map<String, TsFile> fileMap = new java.util.HashMap<>();
+        for (TsFile tsFile : tsFiles) {
+            fileMap.put(tsFile.getFilename(), tsFile);
+        }
 
         String m3u8Content = transcode.getM3u8Content();
 
         //拆解m3u8Content
-        List<String> lines = Arrays.asList(m3u8Content.split("\n"));
+        List<String> lines = new java.util.ArrayList<>(Arrays.asList(m3u8Content.split("\n")));
         for (int i = 0; i < lines.size(); i++) {
-            String filename = lines.get(i);
-            if (StringUtils.startsWith(filename, "#")) continue;
-            TsFile tsFile = fileMap.get(filename);
-            String timestamp = String.valueOf(System.currentTimeMillis());
-            String nonce = IdUtil.nanoId();
-            String signature = fileAccessSignatureService.generateSignature(
-                    context.getVideoId(),
-                    context.getClientId(),
-                    context.getSessionId(),
-                    transcode.getResolution(),
-                    tsFile.getId(),
-                    timestamp,
-                    nonce
-            );
-            String url = environmentService.getInternalBaseUrl() + "/file/access?"
-                    + "resolution=" + transcode.getResolution()
-                    + "&tsIndex=" + fileMap.get(filename).getTsIndex()
-                    + "&fileType=" + tsFile.getFileType()
-                    + "&videoId=" + context.getVideoId()
-                    + "&clientId=" + context.getClientId()
-                    + "&sessionId=" + context.getSessionId()
-                    + "&fileId=" + tsFile.getId()
-                    + "&timestamp=" + timestamp
-                    + "&nonce=" + nonce
-                    + "&sign=" + signature;
-            lines.set(i, url);
+            String line = lines.get(i);
+            if (StringUtils.startsWith(line, "#")) {
+                // fMP4 init segment：替换 EXT-X-MAP 的 URI
+                if (StringUtils.startsWith(line, "#EXT-X-MAP:")) {
+                    String initUri = M3u8Util.getInitSegmentUri(m3u8Content);
+                    TsFile initFile = initUri == null ? null : fileMap.get(initUri);
+                    if (initFile != null) {
+                        lines.set(i, replaceLineWithSignedUrl(line, initUri, context, transcode, initFile));
+                    }
+                }
+                continue;
+            }
+            TsFile tsFile = fileMap.get(line);
+            if (tsFile == null) continue;
+            lines.set(i, buildSignedAccessUrl(context, transcode, tsFile));
         }
         return StringUtils.join(lines, "\n");
+    }
+
+    /**
+     * 把 EXT-X-MAP 行中的 URI 值替换为签名 URL，保留其余属性
+     */
+    private String replaceLineWithSignedUrl(String line, String initUri, Context context,
+                                            Transcode transcode, TsFile initFile) {
+        String signed = buildSignedAccessUrl(context, transcode, initFile);
+        String uriToken = "URI=\"" + initUri + "\"";
+        return line.replace(uriToken, "URI=\"" + signed + "\"");
+    }
+
+    /**
+     * 构建带签名的分片访问 URL（TS 与 fMP4 init/分片共用）
+     */
+    private String buildSignedAccessUrl(Context context, Transcode transcode, TsFile tsFile) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String nonce = IdUtil.nanoId();
+        String signature = fileAccessSignatureService.generateSignature(
+                context.getVideoId(),
+                context.getClientId(),
+                context.getSessionId(),
+                transcode.getResolution(),
+                tsFile.getId(),
+                timestamp,
+                nonce
+        );
+        return environmentService.getInternalBaseUrl() + "/file/access?"
+                + "resolution=" + transcode.getResolution()
+                + "&tsIndex=" + tsFile.getTsIndex()
+                + "&fileType=" + tsFile.getFileType()
+                + "&videoId=" + context.getVideoId()
+                + "&clientId=" + context.getClientId()
+                + "&sessionId=" + context.getSessionId()
+                + "&fileId=" + tsFile.getId()
+                + "&timestamp=" + timestamp
+                + "&nonce=" + nonce
+                + "&sign=" + signature;
     }
 
     /**
@@ -251,13 +282,38 @@ public class WatchService {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("#EXTM3U\n");
         for (Transcode transcode : transcodeList) {
+            // 主播放列表只发布登记成功且产物完整的档位，失败/进行中档位不出现
+            if (!transcode.isSuccessStatus()
+                    || transcode.getTsFileIds() == null
+                    || transcode.getTsFileIds().isEmpty()) {
+                continue;
+            }
             String m3u8Url = getM3u8Url(videoId, clientId, sessionId, transcode.getId(),
                     transcode.getResolution());
 
             stringBuilder.append("#EXT-X-STREAM-INF:")
                     .append("BANDWIDTH=").append(transcode.getMaxBitrate())
-                    .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate())
-                    .append("\n")
+                    .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate());
+            // 真实输出属性：有数据才写，不造假值
+            Integer w = transcode.getActualWidth() != null
+                    ? transcode.getActualWidth() : transcode.getWidth();
+            Integer h = transcode.getActualHeight() != null
+                    ? transcode.getActualHeight() : transcode.getHeight();
+            if (w != null && h != null) {
+                stringBuilder.append(",RESOLUTION=").append(w).append("x").append(h);
+            }
+            if (StringUtils.isNotBlank(transcode.getActualCodecs())) {
+                stringBuilder.append(",CODECS=\"").append(transcode.getActualCodecs()).append("\"");
+            }
+            if (StringUtils.isNotBlank(transcode.getActualFrameRate())) {
+                stringBuilder.append(",FRAME-RATE=").append(transcode.getActualFrameRate());
+            }
+            if (StringUtils.isNotBlank(transcode.getActualDynamicRange())
+                    && !"SDR".equals(transcode.getActualDynamicRange())) {
+                stringBuilder.append(",VIDEO-RANGE=").append(
+                        "HLG".equals(transcode.getActualDynamicRange()) ? "HLG" : "PQ");
+            }
+            stringBuilder.append("\n")
                     .append(m3u8Url)
                     .append("\n");
         }

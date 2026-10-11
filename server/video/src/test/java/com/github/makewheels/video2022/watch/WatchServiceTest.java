@@ -305,6 +305,9 @@ class WatchServiceTest extends BaseIntegrationTest {
         t1.setResolution("480p");
         t1.setMaxBitrate(500000);
         t1.setAverageBitrate(400000);
+        t1.setProvider("ALIYUN_MPS_TRANSCODE");
+        t1.setStatus("TranscodeSuccess");
+        t1.setTsFileIds(List.of(new ObjectId().toHexString()));
         mongoTemplate.save(t1);
 
         Transcode t2 = new Transcode();
@@ -313,6 +316,9 @@ class WatchServiceTest extends BaseIntegrationTest {
         t2.setResolution("720p");
         t2.setMaxBitrate(1500000);
         t2.setAverageBitrate(1200000);
+        t2.setProvider("ALIYUN_MPS_TRANSCODE");
+        t2.setStatus("TranscodeSuccess");
+        t2.setTsFileIds(List.of(new ObjectId().toHexString()));
         mongoTemplate.save(t2);
 
         Video video = createAndSaveVideo(videoId, VideoStatus.READY);
@@ -345,6 +351,9 @@ class WatchServiceTest extends BaseIntegrationTest {
         t1.setResolution("1080p");
         t1.setMaxBitrate(3000000);
         t1.setAverageBitrate(2500000);
+        t1.setProvider("ALIYUN_MPS_TRANSCODE");
+        t1.setStatus("TranscodeSuccess");
+        t1.setTsFileIds(List.of(new ObjectId().toHexString()));
         mongoTemplate.save(t1);
 
         Video video = createAndSaveVideo(videoId, VideoStatus.READY);

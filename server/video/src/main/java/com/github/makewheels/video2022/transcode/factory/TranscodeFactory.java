@@ -38,6 +38,8 @@ public class TranscodeFactory {
                 return transcodeServiceMap.get(getClassName(AliyunCfTranscodeImpl.class));
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION_GPU:
                 return transcodeServiceMap.get(getClassName(AliyunCfGPUTranscodeImpl.class));
+            case TranscodeProvider.ALIYUN_CLOUD_FUNCTION_CPU:
+                return transcodeServiceMap.get(getClassName(AliyunCfCpuTranscodeImpl.class));
         }
         throw new RuntimeException("未找到实现类，provider = " + provider);
     }

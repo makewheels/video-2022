@@ -50,6 +50,10 @@ public class FileRepository {
     /**
      * 根据md5查文件
      */
+    public File getByKey(String key) {
+        return mongoTemplate.findOne(Query.query(Criteria.where("key").is(key)), File.class);
+    }
+
     public File getByMd5(String md5) {
         Query query = Query.query(Criteria.where("md5").is(md5)
                 // 只要未删除的

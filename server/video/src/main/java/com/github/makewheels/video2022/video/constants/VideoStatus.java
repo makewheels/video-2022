@@ -8,6 +8,8 @@ public class VideoStatus {
     public static final String TRANSCODING_PARTLY_COMPLETE = "TRANSCODING_PARTLY_COMPLETE";
     public static final String PROCESSING_AFTER_TRANSCODE_COMPLETE = "PROCESSING_AFTER_TRANSCODE_COMPLETE";
     public static final String READY = "READY";
+    /** 全部档位转码失败（终态，不进入部分完成） */
+    public static final String TRANSCODE_FAILED = "TRANSCODE_FAILED";
 
     /**
      * 是就绪状态

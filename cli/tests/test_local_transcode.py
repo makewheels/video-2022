@@ -13,19 +13,30 @@ def test_target_resolutions_720p_source():
     assert lt.target_resolutions(1280, 720) == ["720p"]
 
 
-def test_target_resolutions_small_source_falls_back_to_480p():
-    assert lt.target_resolutions(640, 360) == ["480p"]
+def test_target_resolutions_small_source_single_720p_lane_no_480p():
+    # 新规则：低清单档 720p 标签原尺寸，不再生成 480p
+    assert lt.target_resolutions(640, 360) == ["720p"]
 
 
-def test_output_height_never_upscales_and_is_even():
-    # 720p target on a 1080p source -> 720
-    assert lt.output_height("720p", 1080) == 720
-    # 1080p target on a 1080p source -> 1080
-    assert lt.output_height("1080p", 1080) == 1080
-    # 1080p target on a 900p source -> capped to source, even
-    assert lt.output_height("1080p", 900) == 900
-    # odd source height is rounded down to even
-    assert lt.output_height("1080p", 721) == 720
+def test_target_resolutions_portrait():
+    # 1080x1920 竖屏：短边 1080 → 两档
+    assert lt.target_resolutions(1080, 1920) == ["720p", "1080p"]
+
+
+def test_output_size_short_side_rule_and_even_alignment():
+    # 720p target on a 1080p source -> short side 720
+    assert lt.output_size(1920, 1080, "720p") == (1280, 720)
+    # 1080p target on a 1080p source -> no scale
+    assert lt.output_size(1920, 1080, "1080p") == (1920, 1080)
+    # 1080p target on a 900p source -> never upscale
+    assert lt.output_size(1600, 900, "1080p") == (1600, 900)
+    # portrait: 720p lane -> 720x1280
+    assert lt.output_size(1080, 1920, "720p") == (720, 1280)
+    # odd dimensions are even-aligned
+    w, h = lt.output_size(1281, 721, "720p")
+    assert w % 2 == 0 and h % 2 == 0
+    # sub-720p source keeps size under 720p label (no upscale)
+    assert lt.output_size(640, 360, "720p") == (640, 360)
 
 
 def test_probe_parses_ffprobe_json():
