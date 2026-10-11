@@ -30,7 +30,7 @@ payload = {
     "runtime": "custom-container",
     "handler": "index.handler",
     "timeout": 1800,
-    "diskSize": 4096,
+    "diskSize": 10240,
     "instanceConcurrency": 1,
     "customContainerConfig": {"image": os.environ["IMAGE"], "command": [], "args": [], "webServer": True},
     "cpu": None, "memorySize": None, "gpuConfig": None,
