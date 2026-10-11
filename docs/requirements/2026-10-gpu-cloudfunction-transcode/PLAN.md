@@ -151,6 +151,20 @@
 
 **进入 P3 判定**：本地相关测试/构建通过、无关键失败；成本估算（P0：单短样本任务约 0.1-0.3 元，余额 6.76 元可支撑 20+ 任务）在预算内；方案为用户已确认文档。P3 云端执行待续（含镜像构建、函数部署、Infisical 变量贯通、C01–C09 小批验证）。
 
+### TODO 汇总（2026-10-11，按依赖排序）
+
+1. [x] 合并 PR #119（独立 Worker 原型，CI 全绿，2026-10-11 已合并）
+2. [ ] PR #120 CI 全绿后合并；master 部署保持 legacy 默认（行为零变化）
+3. [ ] 恢复 Windows 本机 Infisical 登录（PR #119 遗留阻塞，需用户手动操作）
+4. [ ] Infisical `video-2022-secrets` 配置 transcode-fn 路径：FC_DEPLOY_AK、函数 OSS 凭证、invoke/callback secret（P3 前置）
+5. [ ] 新建 MPS 兜底模板（720p/1080p，保留帧率/声道/色彩），回填 `ALIYUN_MPS_FALLBACK_TEMPLATE_*` 配置
+6. [ ] 跑 `deploy-functions.yml`（先 dev）：构建 CPU/GPU 镜像 → FC 创建函数（异步重试 0、SLS 日志）→ 核实账户 GPU 配额
+7. [ ] 开发环境 `transcode.pipeline=self-hosted` 全链路验证（probe→选档→转码→回调→登记→播放）
+8. [ ] 预算内小批云端验证（≤16 元停新增，余额 6.76 元）：C01–C09 + GPU NVENC HDR 实测 + fMP4 真机播放（T 系列未完成项一并覆盖）
+9. [ ] 生产小范围启用 → 观察逐步扩大（P3 收尾）
+10. [ ] 旧 FC 清理（P4）：`video-transcode` 4 函数删除 + RAM 明文 AK 吊销 + NAS/VPC 资源核查；保留 md5 函数与 MPS 兜底
+11. [ ] T16/T18 专项回归测试补充（封面并发、跨用户 init segment 访问）
+
 ### P3：小批云验证与发布
 
 - [ ] Actions 构建和部署带版本镜像/函数，开发环境先测；不得直接操作服务器或用控制台绕过发布流水线。
