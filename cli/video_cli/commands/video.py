@@ -330,10 +330,12 @@ def upload_local(ctx, filepath, title, description, visibility, no_cover):  # no
 
     try:
         info = lt.probe(filepath)
-        resolutions = lt.target_resolutions(info["width"], info["height"])
+        resolutions = lt.target_resolutions(info["display_width"], info["display_height"])
         click.echo(
-            f"Probed: {info['width']}x{info['height']}, {info['duration_ms']/1000:.0f}s, "
-            f"{info['video_codec']}/{info['audio_codec']}, ~{info['bitrate_kbps']}kbps; "
+            f"Probed: {info['width']}x{info['height']} (display {info['display_width']}"
+            f"x{info['display_height']}, rot {info['rotation']}), "
+            f"{info['duration_ms']/1000:.0f}s, {info['video_codec']}/{info['audio_codec']}, "
+            f"~{info['bitrate_kbps']}kbps, {info['dynamic_range']}, {info['frame_rate']}fps; "
             f"renditions: {', '.join(resolutions)}",
             err=True,
         )
@@ -400,10 +402,24 @@ def upload_local(ctx, filepath, title, description, visibility, no_cover):  # no
                         "resolution": resolution,
                         "width": info["width"],
                         "height": info["height"],
+                        "displayWidth": info["display_width"],
+                        "displayHeight": info["display_height"],
                         "durationMs": info["duration_ms"],
                         "videoCodec": info["video_codec"],
                         "audioCodec": info["audio_codec"],
                         "bitrate": info["bitrate_kbps"],
+                        "frameRate": info["frame_rate"],
+                        "frameRateMode": info["frame_rate_mode"],
+                        "sar": info["sar"],
+                        "rotation": info["rotation"],
+                        "pixFmt": info["pix_fmt"],
+                        "bitDepth": info["bit_depth"],
+                        "colorPrimaries": info["color_primaries"],
+                        "colorTransfer": info["color_transfer"],
+                        "colorSpace": info["color_space"],
+                        "colorRange": info["color_range"],
+                        "dynamicRange": info["dynamic_range"],
+                        "audioTrackCount": info["audio_track_count"],
                     },
                     base_url=base_url,
                     token=token,
@@ -411,9 +427,10 @@ def upload_local(ctx, filepath, title, description, visibility, no_cover):  # no
                 transcode_id = reg["transcodeId"]
                 out_dir = os.path.join(workdir, transcode_id)
                 os.makedirs(out_dir, exist_ok=True)
-                height = lt.output_height(resolution, info["height"])
-                click.echo(f"Transcoding {resolution} ({height}p) locally...", err=True)
-                lt.transcode_hls(filepath, out_dir, transcode_id, height, info["has_audio"])
+                out_size = lt.output_size(
+                    info["display_width"], info["display_height"], resolution)
+                click.echo(f"Transcoding {resolution} ({out_size[0]}x{out_size[1]}) locally...", err=True)
+                lt.transcode_hls(filepath, out_dir, transcode_id, out_size, info)
                 lt.upload_dir(reg["uploadCredentials"], out_dir, reg["outputDir"])
                 post(
                     f"/transcode/local/finishTranscode?transcodeId={transcode_id}",

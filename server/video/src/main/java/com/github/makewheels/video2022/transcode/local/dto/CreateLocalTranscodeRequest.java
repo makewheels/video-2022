@@ -42,4 +42,23 @@ public class CreateLocalTranscodeRequest {
      * 源片整体码率，单位 kbps（与 MPS 口径一致）
      */
     private Integer bitrate;
+
+    // ↓↓↓ 媒体保留扩展字段（可选，缺省不写）。
+    // 旋转后的显示尺寸（决定档位与是否缩放）
+    private Integer displayWidth;
+    private Integer displayHeight;
+    /** 帧率（数值）与模式 CFR/VFR */
+    private Double frameRate;
+    private String frameRateMode;
+    private String sar;
+    private Integer rotation;
+    private String pixFmt;
+    private Integer bitDepth;
+    private String colorPrimaries;
+    private String colorTransfer;
+    private String colorSpace;
+    private String colorRange;
+    /** SDR / HDR10 / HLG / PQ / DOLBY_VISION / UNKNOWN；缺省按 SDR 记录 */
+    private String dynamicRange;
+    private Integer audioTrackCount;
 }

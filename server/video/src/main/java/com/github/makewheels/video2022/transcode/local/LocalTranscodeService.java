@@ -154,5 +154,22 @@ public class LocalTranscodeService {
         mediaInfo.setVideoCodec(request.getVideoCodec());
         mediaInfo.setAudioCodec(request.getAudioCodec());
         mediaInfo.setBitrate(request.getBitrate());
+        // 媒体保留扩展字段（客户端可选提供）
+        mediaInfo.setDisplayWidth(request.getDisplayWidth());
+        mediaInfo.setDisplayHeight(request.getDisplayHeight());
+        if (request.getFrameRate() != null) {
+            mediaInfo.setFrameRate(String.valueOf(request.getFrameRate()));
+        }
+        mediaInfo.setFrameRateMode(request.getFrameRateMode());
+        mediaInfo.setSar(request.getSar());
+        mediaInfo.setRotation(request.getRotation());
+        mediaInfo.setPixFmt(request.getPixFmt());
+        mediaInfo.setBitDepth(request.getBitDepth());
+        mediaInfo.setColorPrimaries(request.getColorPrimaries());
+        mediaInfo.setColorTransfer(request.getColorTransfer());
+        mediaInfo.setColorSpace(request.getColorSpace());
+        mediaInfo.setColorRange(request.getColorRange());
+        mediaInfo.setDynamicRange(request.getDynamicRange());
+        mediaInfo.setAudioTrackCount(request.getAudioTrackCount());
     }
 }
