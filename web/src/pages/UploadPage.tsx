@@ -20,6 +20,7 @@ const STATUS_LABELS: Record<string, string> = {
   TRANSCODING: '转码中',
   TRANSCODING_PARTLY_COMPLETE: '转码中（部分完成）',
   PROCESSING_AFTER_TRANSCODE_COMPLETE: '转码后处理中',
+  TRANSCODE_FAILED: '❌ 转码失败',
   READY: '✅ 处理完成',
 };
 

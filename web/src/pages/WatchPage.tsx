@@ -62,7 +62,11 @@ async function loadWatchData(
     });
     const info = watchRes.data.data as WatchInfo;
 
-    if (info.videoStatus !== 'READY') {
+    if (info.videoStatus === 'TRANSCODE_FAILED') {
+      setError('视频转码失败，请稍后重试或联系上传者');
+      return;
+    }
+    if (info.videoStatus !== 'READY' && info.videoStatus !== 'TRANSCODING_PARTLY_COMPLETE') {
       setError('视频尚未准备好，当前状态：' + info.videoStatus);
       return;
     }
