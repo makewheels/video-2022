@@ -1,17 +1,21 @@
-# GPU 函数镜像：基于官方 NVIDIA ffmpeg 构建（含 NVENC 编码器）。
-# FC 平台注入 NVIDIA 驱动；镜像只带 CUDA 用户态运行时与 ffmpeg。
-# P3 云端首验时用 `ffmpeg -encoders | grep nvenc` 确认 hevc_nvenc/h264_nvenc 实际可用。
-FROM registry.cn-shanghai.aliyuncs.com/serverless_devs/nvidia-ffmpeg:latest
+# GPU 函数镜像：python slim + BtbN 静态 ffmpeg（GPL 构建，自带 h264_nvenc/hevc_nvenc）。
+# FC 平台向 GPU 实例容器注入 NVIDIA 内核驱动；镜像只带 ffmpeg 与 python 运行时。
+# P3 云端首验：`ffmpeg -encoders | grep nvenc` 确认 NVENC 实际可用。
+FROM python:3.11-slim-bookworm
 
-# 该镜像基于 debian/ubuntu + nvidia ffmpeg；补 python 运行时
-RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
-    python3 python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget ca-certificates xz-utils \
+    && wget -q https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz \
+    && tar xf ffmpeg-master-latest-linux64-gpl.tar.xz --strip-components=2 \
+       -C /usr/local/bin --wildcards '*/bin/ffmpeg' '*/bin/ffprobe' \
+    && rm -f ffmpeg-master-latest-linux64-gpl.tar.xz \
+    && rm -rf /var/lib/apt/lists/* \
+    && ffmpeg -version | head -1
 
 WORKDIR /usr/src/app
 
 COPY gpu/requirements.txt ./
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY common/ ./common/
 COPY gpu/ ./gpu/
