@@ -105,6 +105,8 @@ jobs:
   fc-deploy:
     name: 部署 FC 函数
     needs: [ build-and-push ]
+    # skip_build 时 build job 被 skip，不算失败，部署照常跑（用 latest 镜像）
+    if: ${{ !cancelled() && needs.build-and-push.result != 'failure' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
