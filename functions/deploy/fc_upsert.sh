@@ -16,7 +16,7 @@ TARGET=$4
 
 INVOKE_SECRET_VALUE="${ALIYUN_CF_TRANSCODE_INVOKE_SECRET:-${CALLBACK_SECRET:?CALLBACK_SECRET 未配置}}"
 
-GPU_BODY='"gpuConfig": {"gpuMemorySize": 6144},"cpu": 3,"memorySize": 12288,'
+GPU_BODY='"gpuConfig": {"gpuType": "fc.gpu.tesla.1", "gpuMemorySize": 16384},"cpu": 8,"memorySize": 32768,'
 if [ "$GPU_MODE" != "gpu" ]; then
   GPU_BODY='"cpu": 2,"memorySize": 4096,'
 fi
@@ -72,7 +72,7 @@ else
     "triggerName": "defaultTrigger",
     "triggerType": "http",
     "qualifier": "LATEST",
-    "triggerConfig": {"authType": "anonymous", "methods": ["POST", "GET"]}
+    "triggerConfig": "{\"authType\":\"anonymous\",\"methods\":[\"POST\",\"GET\"]}"
   }' >/dev/null && echo "trigger created"
 fi
 

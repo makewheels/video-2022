@@ -1,0 +1,80 @@
+# 自建转码函数的 Serverless Devs 部署配置（deploy-functions.yml 的 fc-deploy job 备用/本机初始化用）。
+# GPU 规格：fc.gpu.tesla.1 最小 16384MB 显存（ampere.1 整卡 24G 成本高，T4 半卡实测单价 ~0.24 元/分钟）。
+edition: 3.0.0
+name: video-2022-fn
+access: vc-main
+
+resources:
+  cpu-fn:
+    component: fc3
+    props:
+      region: cn-beijing
+      functionName: video-2022-prod-transcode-cpu
+      runtime: custom-container
+      handler: index.handler
+      timeout: 1800
+      diskSize: 10240
+      instanceConcurrency: 1
+      cpu: 2
+      memorySize: 4096
+      customContainerConfig:
+        image: registry.cn-beijing.aliyuncs.com/b4/video-2022-func-cpu:latest
+        webServer: true
+      environmentVariables:
+        TZ: Asia/Shanghai
+        OSS_ACCESS_KEY_ID: ${env.OSS_ACCESS_KEY_ID}
+        OSS_SECRET_KEY: ${env.OSS_SECRET_KEY}
+        CALLBACK_SECRET: ${env.CALLBACK_SECRET}
+        INVOKE_SECRET: ${env.CALLBACK_SECRET}
+      asyncInvokeConfig:
+        maxAsyncRetryAttempts: 0
+      logConfig:
+        project: video-2022-logs
+        logstore: transcode-fn
+        enableRequestMetrics: true
+        enableInstanceMetrics: true
+      internetAccess: true
+      triggers:
+        - triggerName: defaultTrigger
+          triggerType: http
+          triggerConfig:
+            authType: anonymous
+            methods: [POST, GET]
+  gpu-fn:
+    component: fc3
+    props:
+      region: cn-beijing
+      functionName: video-2022-prod-transcode-gpu
+      runtime: custom-container
+      handler: index.handler
+      timeout: 1800
+      diskSize: 10240
+      instanceConcurrency: 1
+      cpu: 8
+      memorySize: 32768
+      gpuConfig:
+        gpuType: fc.gpu.tesla.1
+        gpuMemorySize: 16384
+      customContainerConfig:
+        image: registry.cn-beijing.aliyuncs.com/b4/video-2022-func-gpu:latest
+        webServer: true
+      environmentVariables:
+        TZ: Asia/Shanghai
+        OSS_ACCESS_KEY_ID: ${env.OSS_ACCESS_KEY_ID}
+        OSS_SECRET_KEY: ${env.OSS_SECRET_KEY}
+        CALLBACK_SECRET: ${env.CALLBACK_SECRET}
+        INVOKE_SECRET: ${env.CALLBACK_SECRET}
+      asyncInvokeConfig:
+        maxAsyncRetryAttempts: 0
+      logConfig:
+        project: video-2022-logs
+        logstore: transcode-fn
+        enableRequestMetrics: true
+        enableInstanceMetrics: true
+      internetAccess: true
+      triggers:
+        - triggerName: defaultTrigger
+          triggerType: http
+          triggerConfig:
+            authType: anonymous
+            methods: [POST, GET]
