@@ -1,13 +1,14 @@
 # 自建云函数点播处理需求
 
-状态：执行中。2026-10-11 P0 只读盘点完成（见 PLAN），P1 实施开始；云端部署、验证与旧资源清理未执行。
+状态：执行中。2026-10-10 独立 Worker 原型完成（PR #119，未接入生产）；2026-10-11 P0 只读盘点完成，P1/P2 后端与函数实现完成（PR #120）；云端部署、GPU 实测与旧资源清理未执行。
 
 ## 阅读与执行顺序
 
 1. [requirements.md](requirements.md)：用户已确认的范围及禁止改变的行为。
 2. [PLAN.md](PLAN.md)：现状、执行步骤、文件清单及阶段进入条件。
 3. [当前设计草案](../../design/cloud-transcode.md)：媒体策略、协议、状态机、部署和清理规则。
-4. [verification.md](verification.md)：测试矩阵、真实验收证据及结果记录模板。
+4. [Worker 设计](../../design/gpu-transcode-worker.md)：独立对照实现（transcode-worker/，PR #119 原型）的设计。
+5. [verification.md](verification.md)：测试矩阵、真实验收证据及结果记录模板（含 Worker 原型验证记录）。
 
 先阅读仓库 AGENT.md、README.md、CONTRIBUTING.md，再阅读本目录。执行前重新核查工作树、分支、源码及云资源，不能把这次只读查询结果当成永远有效的配置。
 
@@ -20,6 +21,7 @@
 | MPS 模板查询 | 2026-10-11 已只读查询，参数见 PLAN |
 | 旧 FC 资源、代码及调用盘点 | 2026-10-11 完成（FC 3.0 API + 代码反编译，证据见 PLAN P0） |
 | HDR 编码/封装/元数据/兜底验证 | 路径确认（PLAN P0）；云端实测未执行 |
+| 独立 Worker 原型（transcode-worker/） | 已完成（PR #119，26 条测试 + RTX A2000 NVENC 样本） |
 | 自动化、GPU 云端及真机播放验收 | 未执行 |
 | 部署、生产切换、旧资源删除 | 未执行 |
 

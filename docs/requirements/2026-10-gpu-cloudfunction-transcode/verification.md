@@ -122,3 +122,13 @@
 未验证项（留 P3）：FC 真实受理/回调行为、GPU 配额、NVENC HDR 实测、fMP4 各端播放、长时间恢复运行验证、T16/T18 专项回归测试补充。
 
 交付时汇总 R01–R12、T01–T18、C01–C09 的通过/失败/未验证状态。任何核心媒体保留、鉴权、幂等、兜底或预算项目失败，不得全量切换。20 元不足以覆盖全部矩阵时停止新增云测试，如实列未验收项，不能靠配置和 mock 冒充真机/云端完成。
+
+## 6. 独立 Worker 原型验证记录（PR #119，2026-10-10 合并）
+
+以下为 `transcode-worker/`（独立对照实现）的验证记录，由 PR #119 带入：
+
+- `uv run --locked --project transcode-worker pytest transcode-worker/tests -p no:cacheprovider -v`：26 通过，无 skipped。包含 3 条真实 FFmpeg 转码与整份 HLS 解码：横屏有音轨、竖屏无音轨、小尺寸不放大，均核对 H.264/AAC 与尺寸。
+- Python 环境、依赖缓存及生成媒体使用任务专属系统临时目录并自动清理；`git diff --check`、文件长度门禁通过。
+- CI（run 38039407654）：Worker 26 条 Linux 测试、GPU 候选镜像构建、NVENC 编码器枚举、容器 Python 导入均通过；原有后端/前端/CLI/AI Agent/Android/iOS/质量门禁/构建通过；API 与浏览器 E2E 按 PR 规则 skipped。
+- 本机 RTX A2000 Laptop GPU 实际 NVENC：系统 FFmpeg 要求 API 13.1、驱动仅支持 13.0，改用系统临时目录中固定版本 FFmpeg 7.1.1；横屏有音轨、竖屏无音轨、小尺寸不放大 3 个样本硬编码并完整解码通过，forced-idr 保证分片边界；临时二进制和媒体已清理。
+- 未确认项：媒体验证主要用 libx264（NVENC 由本机实测补足）；FC、OSS 及费用/画质对比未跑，本机结果不能代替目标 FC 规格验证；原型单进程锁不提供跨实例幂等、STS 未自动续期——生产接入以 functions/ 主实现为准（含 FcTask 跨实例幂等）。
