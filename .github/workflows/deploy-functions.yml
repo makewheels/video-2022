@@ -143,7 +143,7 @@ jobs:
         if: github.event.inputs.functions != 'gpu'
         env:
           IMAGE: ${{ env.ACR }}/b4/video-2022-func-cpu:${{ needs.build-and-push.outputs.image_tag || 'latest' }}
-          FN: video-2022-${{ github.event.inputs.target }}\$transcode-cpu
+          FN: video-2022-${{ github.event.inputs.target }}-transcode-cpu
         run: |
           bash functions/deploy/fc_upsert.sh \
             "$FN" "$IMAGE" "" "${{ github.event.inputs.target }}"
@@ -152,7 +152,7 @@ jobs:
         if: github.event.inputs.functions != 'cpu'
         env:
           IMAGE: ${{ env.ACR }}/b4/video-2022-func-gpu:${{ needs.build-and-push.outputs.image_tag || 'latest' }}
-          FN: video-2022-${{ github.event.inputs.target }}\$transcode-gpu
+          FN: video-2022-${{ github.event.inputs.target }}-transcode-gpu
         run: |
           bash functions/deploy/fc_upsert.sh \
             "$FN" "$IMAGE" "gpu" "${{ github.event.inputs.target }}"
