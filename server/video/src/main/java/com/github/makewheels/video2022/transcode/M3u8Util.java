@@ -8,11 +8,13 @@ import java.util.stream.Collectors;
 
 public class M3u8Util {
     /**
-     * 获取文件名列表
+     * 获取文件名列表（跳过注释行与空行）
      */
     public static List<String> getFilenames(String m3u8Content) {
         return Arrays.stream(m3u8Content.split("\n"))
-                .filter(e -> !e.startsWith("#")).collect(Collectors.toList());
+                .map(String::trim)
+                .filter(e -> !e.isEmpty() && !e.startsWith("#"))
+                .collect(Collectors.toList());
     }
 
     /**

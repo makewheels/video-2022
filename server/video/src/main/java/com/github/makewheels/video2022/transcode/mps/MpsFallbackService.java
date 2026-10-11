@@ -107,9 +107,10 @@ public class MpsFallbackService {
             return false;
         }
 
+        // 注意：整文档 save 前必须带上刚抢占的 fallbackCount，否则会覆盖回 0 导致重复兜底
+        transcode.setFallbackCount(1);
         transcode.setJobId(jobId);
         transcode.setCurrentProvider(TranscodeProvider.ALIYUN_MPS);
-        transcode.setM3u8Key(transcode.getM3u8Key());
         mongoTemplate.save(transcode);
 
         // FcTask 转 FALLBACK_PENDING 终态记录（兜底结果走 MPS 轮询/回调链路）

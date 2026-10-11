@@ -8,6 +8,10 @@ import com.github.makewheels.video2022.transcode.contants.TranscodeStatus;
 import com.github.makewheels.video2022.transcode.mps.MpsFallbackService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +37,9 @@ public class FcTimeoutRecoveryService {
     private TranscodeCallbackService transcodeCallbackService;
     @Resource
     private MpsFallbackService mpsFallbackService;
+    @Resource
+    private MongoTemplate mongoTemplate;
+    @Resource
 
     @Value("${transcode.recovery.enabled:true}")
     private boolean recoveryEnabled;
@@ -55,6 +62,14 @@ public class FcTimeoutRecoveryService {
     }
 
     private void recoverOne(FcTask task, Date now) {
+        // RETRY_WAIT 到期：失败回调已计次并生成新 attemptId，直接原子置回提交态后重提交
+        if (FcTaskStatus.RETRY_WAIT.equals(task.getStatus())) {
+            boolean grabbed = mongoClaimNoInc(task);
+            if (!grabbed) return;
+            resubmit(task, task.getAttemptId(), task.getAttemptCount());
+            return;
+        }
+
         int attemptCount = task.getAttemptCount() == null ? 1 : task.getAttemptCount();
         int nextAttempt = attemptCount + 1;
         String newAttemptId = task.getAttemptId() + "-a" + nextAttempt;
@@ -80,6 +95,18 @@ public class FcTimeoutRecoveryService {
         fcTaskRepository.finish(task.getId(), newAttemptId,
                 FcTaskStatus.FAILED, new Date(), "自建执行超时且无可兜底路径");
         transcodeCallbackService.onFcTaskFailed(task, "自建执行超时");
+    }
+
+    /**
+     * RETRY_WAIT 到期认领：条件更新为 CREATED 占位（重提交成功后 submit() 置 SUBMITTED），不增计数
+     */
+    private boolean mongoClaimNoInc(FcTask task) {
+        Query query = Query.query(Criteria.where("id").is(task.getId())
+                .and("status").is(FcTaskStatus.RETRY_WAIT)
+                .and("attemptId").is(task.getAttemptId()));
+        return mongoTemplate.updateFirst(query,
+                new Update().set("status", FcTaskStatus.CREATED), FcTask.class)
+                .getModifiedCount() == 1;
     }
 
     /**

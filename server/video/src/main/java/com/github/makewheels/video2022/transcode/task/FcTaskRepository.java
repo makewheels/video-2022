@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class FcTaskRepository {
@@ -69,11 +70,11 @@ public class FcTaskRepository {
     }
 
     /**
-     * 查询超时未完成的任务
+     * 查询超时未完成的任务：SUBMITTED（执行超时）与 RETRY_WAIT（失败退避到期）。
      */
-    public java.util.List<FcTask> findTimeoutUnfinished(Date now) {
+    public List<FcTask> findTimeoutUnfinished(Date now) {
         Query query = Query.query(Criteria.where("deadline").lt(now)
-                .and("status").in(FcTaskStatus.SUBMITTED));
+                .and("status").in(FcTaskStatus.SUBMITTED, FcTaskStatus.RETRY_WAIT));
         return mongoTemplate.find(query, FcTask.class);
     }
 }
