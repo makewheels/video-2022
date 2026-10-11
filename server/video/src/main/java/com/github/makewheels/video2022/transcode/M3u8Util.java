@@ -41,4 +41,27 @@ public class M3u8Util {
         }
         return map;
     }
+
+    /**
+     * 获取 fMP4 的 init segment URI（#EXT-X-MAP:URI="init.mp4"），TS playlist 返回 null。
+     * 兼容带引号与属性顺序差异，CRLF 由调用方先归一。
+     */
+    public static String getInitSegmentUri(String m3u8Content) {
+        for (String line : m3u8Content.split("\n")) {
+            String trimmed = line.trim();
+            if (!trimmed.startsWith("#EXT-X-MAP:")) continue;
+            int idx = trimmed.indexOf("URI=");
+            if (idx < 0) continue;
+            String rest = trimmed.substring(idx + 4).trim();
+            if (rest.length() >= 2 && rest.charAt(0) == '"' && rest.charAt(rest.length() - 1) == '"') {
+                rest = rest.substring(1, rest.length() - 1);
+            } else {
+                // 无引号时到逗号或行尾
+                int comma = rest.indexOf(',');
+                if (comma >= 0) rest = rest.substring(0, comma);
+            }
+            return rest.isEmpty() ? null : rest;
+        }
+        return null;
+    }
 }

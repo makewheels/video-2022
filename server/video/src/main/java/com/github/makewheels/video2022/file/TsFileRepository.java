@@ -22,6 +22,15 @@ public class TsFileRepository {
         return mongoTemplate.find(Query.query(Criteria.where("id").in(ids)), TsFile.class);
     }
 
+    public List<TsFile> getByTranscodeId(String transcodeId) {
+        return mongoTemplate.find(Query.query(Criteria.where("transcodeId").is(transcodeId)), TsFile.class);
+    }
+
+    public TsFile getByTranscodeIdAndIndex(String transcodeId, int index) {
+        return mongoTemplate.findOne(Query.query(Criteria.where("transcodeId").is(transcodeId)
+                .and("tsIndex").is(index)), TsFile.class);
+    }
+
     public String getKeyById(String id) {
         Query query = Query.query(Criteria.where("id").is(id));
         query.fields().include("key");

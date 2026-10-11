@@ -24,6 +24,11 @@ public class AliyunMpsService {
     @Value("${aliyun.mps.secretKey}")
     private String accessKeySecret;
 
+    @Value("${aliyun.mps.fallback-template.720p:}")
+    private String fallbackTemplate720p;
+    @Value("${aliyun.mps.fallback-template.1080p:}")
+    private String fallbackTemplate1080p;
+
     private Client client;
 
     private Client getClient() {
@@ -97,6 +102,30 @@ public class AliyunMpsService {
         }
         log.info("阿里云转码任务提交任务响应: " + JSON.toJSONString(response));
         return response;
+    }
+
+    /**
+     * 创建转码任务（兜底专用模板：保留帧率/声道/色彩，配置注入，缺配置返回 null）
+     */
+    public String submitFallbackTranscodeJob(String sourceKey, String targetKey, String resolution) {
+        String templateId;
+        switch (resolution) {
+            case Resolution.R_720P:
+                templateId = fallbackTemplate720p;
+                break;
+            case Resolution.R_1080P:
+                templateId = fallbackTemplate1080p;
+                break;
+            default:
+                return null;
+        }
+        if (templateId == null || templateId.isBlank()) {
+            log.warn("兜底模板未配置，拒绝提交 MPS 兜底任务, resolution = {}", resolution);
+            return null;
+        }
+        SubmitJobsResponse response = runSubmitTranscodeJob(sourceKey, targetKey, templateId);
+        if (response == null || response.getBody() == null) return null;
+        return response.getBody().getJobResultList().getJobResult().get(0).getJob().getJobId();
     }
 
     /**

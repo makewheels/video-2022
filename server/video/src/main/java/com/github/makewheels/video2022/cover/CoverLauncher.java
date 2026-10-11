@@ -37,6 +37,8 @@ public class CoverLauncher {
     private EnvironmentService environmentService;
     @Value("${aliyun.oss.video.accessBaseUrl}")
     private String aliyunOssAccessBaseUrl;
+    @Value("${aliyun.oss.video.bucket}")
+    private String bucket;
 
     @Resource
     private MongoTemplate mongoTemplate;
@@ -51,12 +53,23 @@ public class CoverLauncher {
     private CoverCallbackService coverCallbackService;
     @Resource
     private IdService idService;
+    @Resource
+    private com.github.makewheels.video2022.transcode.task.FcTaskSubmitter fcTaskSubmitter;
+    @Resource
+    private com.github.makewheels.video2022.transcode.task.FcTaskRepository fcTaskRepository;
+    @Resource
+    private com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionClient cloudFunctionClient;
+    @Resource
+    private com.github.makewheels.video2022.transcode.TranscodeLauncher transcodeLauncher;
+
+    @Value("${aliyun.oss.video.internal-endpoint}")
+    private String internalEndpoint;
 
     /**
      * 发起截帧任务
      * 如果是youtube搬运视频，向海外服务器发起请求
      * 如果用户自己上传的视频：
-     * 如果文件在阿里云对象存储，用云函数
+     * 如果文件在阿里云对象存储，自建链路走 CPU 函数截帧，legacy 走 MPS
      */
     public void createCover(User user, Video video) {
         String userId = user.getId();
@@ -90,7 +103,11 @@ public class CoverLauncher {
             //如果是用户自己上传
         } else if (videoType.equals(VideoType.USER_UPLOAD)) {
             if (videoProvider.equals(ObjectStorageProvider.ALIYUN_OSS)) {
-                handleAliyunMpsCover(user, video, cover, file);
+                if (transcodeLauncher.isSelfHostedEnabled()) {
+                    handleFcCover(user, video, cover, file);
+                } else {
+                    handleAliyunMpsCover(user, video, cover, file);
+                }
             }
         }
 
@@ -140,6 +157,42 @@ public class CoverLauncher {
         String businessUploadFinishCallbackUrl = environmentService.getCallbackUrl(path);
         log.info("发起youtube搬运封面请求：downloadUrl = {}", downloadUrl);
         youtubeService.transferFile(user, file, downloadUrl, businessUploadFinishCallbackUrl);
+    }
+
+    /**
+     * 生成封面：自建 CPU 函数截帧（COVER 任务），回调走 /transcode/cloudFunctionCallback
+     */
+    private void handleFcCover(User user, Video video, Cover cover, File file) {
+        String videoId = video.getId();
+        cover.setProvider(CoverProvider.ALIYUN_CLOUD_FUNCTION);
+        cover.setExtension("jpg");
+        String targetKey = OssPathUtil.getCoverKey(video, cover, file);
+        cover.setKey(targetKey);
+        cover.setAccessUrl(aliyunOssAccessBaseUrl + targetKey);
+        mongoTemplate.save(cover);
+        file.setKey(targetKey);
+        mongoTemplate.save(file);
+
+        String rawFileKey = fileService.getKeyByFileId(video.getRawFileId());
+        var task = fcTaskSubmitter.createTask("COVER", videoId, cover.getId());
+        task.setProvider(com.github.makewheels.video2022.transcode.contants.TranscodeProvider
+                .ALIYUN_CLOUD_FUNCTION_CPU);
+        task.setAttemptId(cn.hutool.core.util.IdUtil.nanoId(16));
+        task.setAttemptCount(1);
+        task.setDeadline(new Date(System.currentTimeMillis() + 300_000L));
+        fcTaskRepository.save(task);
+        cover.setJobId(task.getId());
+        mongoTemplate.save(cover);
+
+        JSONObject payload = cloudFunctionClient.buildPayload(task, null, rawFileKey,
+                cn.hutool.core.io.FileUtil.getParent(targetKey, 1),
+                environmentService.getCallbackUrl("/transcode/cloudFunctionCallback"));
+        payload.put("imageKey", targetKey);
+        payload.put("imageFormat", "jpg");
+        payload.put("atSeconds", 0);
+        log.info("提交自建封面任务：videoId = {}, coverId = {}, taskId = {}", videoId, cover.getId(),
+                task.getId());
+        fcTaskSubmitter.submit(task, payload);
     }
 
     /**

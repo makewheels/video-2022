@@ -7,6 +7,7 @@ import com.github.makewheels.video2022.transcode.factory.TranscodeFactory;
 import com.github.makewheels.video2022.transcode.factory.TranscodeService;
 import com.github.makewheels.video2022.transcode.local.LocalTranscodeService;
 import com.github.makewheels.video2022.transcode.local.dto.CreateLocalTranscodeRequest;
+import com.github.makewheels.video2022.transcode.task.FcTaskCallbackService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -28,12 +29,16 @@ public class TranscodeController {
     private TranscodeFactory transcodeFactory;
     @Resource
     private LocalTranscodeService localTranscodeService;
+    @Resource
+    private FcTaskCallbackService fcTaskCallbackService;
 
     @Value("${callback.secret}")
     private String callbackSecret;
+    @Value("${aliyun.cf.transcode.callback-secret:}")
+    private String fcCallbackSecret;
 
     /**
-     * 阿里云 云函数转码完成回调
+     * 阿里云 云函数转码完成回调（旧链路，仅处理既有旧任务）
      */
     @PostMapping("aliyunCloudFunctionTranscodeCallback")
     public ResponseEntity<Result<Void>> aliyunCloudFunctionTranscodeCallback(
@@ -48,6 +53,30 @@ public class TranscodeController {
                 = transcodeFactory.getService(TranscodeProvider.ALIYUN_CLOUD_FUNCTION);
         transcodeService.callback(jobId);
         return ResponseEntity.ok(Result.ok());
+    }
+
+    /**
+     * 自建云函数回调（协议 v1）：PROBE / TRANSCODE / COVER 统一入口。
+     * 校验回调密钥与任务身份，按 task 派发，不信任 body 中的 provider。
+     */
+    @PostMapping("cloudFunctionCallback")
+    public ResponseEntity<Result<Void>> cloudFunctionCallback(
+            @RequestHeader(value = "X-Callback-Secret", required = false) String secret,
+            @RequestBody JSONObject body) {
+        if (fcCallbackSecret == null || fcCallbackSecret.isBlank()
+                || !fcCallbackSecret.equals(secret)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        log.info("收到自建云函数回调：taskId = {}, attemptId = {}, status = {}",
+                body.getString("taskId"), body.getString("attemptId"), body.getString("status"));
+        int code = fcTaskCallbackService.handleCallback(body);
+        HttpStatus status = switch (code) {
+            case 200 -> HttpStatus.OK;
+            case 400 -> HttpStatus.BAD_REQUEST;
+            case 404 -> HttpStatus.NOT_FOUND;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
+        return ResponseEntity.status(status).body(Result.ok());
     }
 
     /**
