@@ -134,7 +134,7 @@ jobs:
       - name: 配置 aliyun 凭据（FC 部署专用子账号）
         run: |
           aliyun configure set --profile default \
-            --mode AccessKey --access-key-id "$FC_DEPLOY_AK_ID" \
+            --mode AK --access-key-id "$FC_DEPLOY_AK_ID" \
             --access-key-secret "$FC_DEPLOY_AK_SECRET" --region $REGION
 
       - name: 部署 CPU 函数
