@@ -1,15 +1,15 @@
 name: 函数部署
 
 # 自建 CPU/GPU 转码函数的镜像构建与 FC 部署。
-# 显式触发，不随 master push 自动执行；首次执行前先完成 GPU 配额核实与预算确认
-# （见 docs/requirements/2026-10-gpu-cloudfunction-transcode/PLAN.md P3）。
+# 构建可随时手动触发；FC 部署需要 Infisical 中已配置 FC_DEPLOY_AK_*。
+# 见 docs/requirements/2026-10-gpu-cloudfunction-transcode/PLAN.md P3。
 on:
   workflow_dispatch:
     inputs:
       target:
-        description: 部署目标
+        description: 部署目标环境（Infisical env-slug）
         required: true
-        default: dev
+        default: prod
         type: choice
         options: [ dev, prod ]
       functions:
@@ -18,19 +18,26 @@ on:
         default: both
         type: choice
         options: [ cpu, gpu, both ]
+      skip_build:
+        description: 跳过镜像构建（复用上一 tag）
+        required: false
+        default: false
+        type: boolean
 
 env:
   ACR: registry.cn-beijing.aliyuncs.com
   REGION: cn-beijing
-  FC_ACCOUNT: "1618784280874658"
 
 jobs:
-  build-and-deploy:
-    name: 构建并部署函数
+  build-and-push:
+    name: 构建函数镜像
+    if: ${{ !github.event.inputs.skip_build || github.event.inputs.skip_build == 'false' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
 
     steps:
       - uses: actions/checkout@v5
@@ -46,7 +53,67 @@ jobs:
           env-slug: dev
           secret-path: /deployment
 
-      - name: 读取函数运行配置
+      - name: 生成镜像标签
+        id: meta
+        run: |
+          BEIJING_TIME=$(TZ='Asia/Shanghai' date '+%Y%m%d-%H%M%S')
+          RUN_NUM=$(printf '%04d' ${{ github.run_number }})
+          echo "image_tag=${BEIJING_TIME}-${RUN_NUM}" >> "$GITHUB_OUTPUT"
+
+      - name: 登录镜像仓库
+        run: |
+          printf '%s' "$ACR_AK_SECRET" | docker login \
+            --username "$ACR_AK_ID" --password-stdin "$ACR" >/dev/null
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: 构建并推送 CPU 镜像
+        if: github.event.inputs.functions != 'gpu'
+        uses: docker/build-push-action@v7
+        with:
+          context: functions
+          file: functions/cpu/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.ACR }}/b4/video-2022-func-cpu:latest
+            ${{ env.ACR }}/b4/video-2022-func-cpu:${{ steps.meta.outputs.image_tag }}
+          cache-from: type=gha,scope=func-cpu
+          cache-to: type=gha,scope=func-cpu,mode=max
+          provenance: false
+
+      - name: 构建并推送 GPU 镜像
+        if: github.event.inputs.functions != 'cpu'
+        uses: docker/build-push-action@v7
+        with:
+          context: functions
+          file: functions/gpu/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.ACR }}/b4/video-2022-func-gpu:latest
+            ${{ env.ACR }}/b4/video-2022-func-gpu:${{ steps.meta.outputs.image_tag }}
+          cache-from: type=gha,scope=func-gpu
+          cache-to: type=gha,scope=func-gpu,mode=max
+          provenance: false
+
+      - name: 清理 Runner registry 登录
+        if: always()
+        run: docker logout "$ACR" >/dev/null 2>&1 || true
+
+  fc-deploy:
+    name: 部署 FC 函数
+    needs: [ build-and-push ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 读取函数运行配置与部署身份
         uses: Infisical/secrets-action@v1.0.16
         with:
           method: oidc
@@ -55,7 +122,8 @@ jobs:
           domain: ${{ vars.INFISICAL_DOMAIN }}
           project-slug: video-2022-secrets
           env-slug: ${{ github.event.inputs.target }}
-          secret-path: /transcode-fn
+          secret-path: /
+          recursive: true
 
       - name: 安装 aliyun CLI
         run: |
@@ -63,38 +131,8 @@ jobs:
           tar xzf cli.tgz
           sudo install aliyun /usr/local/bin/aliyun
 
-      - name: 生成镜像标签
-        id: meta
+      - name: 配置 aliyun 凭据（FC 部署专用子账号）
         run: |
-          BEIJING_TIME=$(TZ='Asia/Shanghai' date '+%Y%m%d-%H%M%S')
-          RUN_NUM=$(printf '%04d' ${{ github.run_number }})
-          echo "image_tag=${BEIJING_TIME}-${RUN_NUM}" >> "$GITHUB_OUTPUT"
-
-      - name: 构建并推送 CPU 镜像
-        if: github.event.inputs.functions != 'gpu'
-        run: |
-          printf '%s' "$ACR_AK_SECRET" | docker login \
-            --username "$ACR_AK_ID" --password-stdin "$ACR" >/dev/null
-          IMAGE=$ACR/b4/video-2022-func-cpu
-          docker buildx build --platform linux/amd64 \
-            -f functions/cpu/Dockerfile functions \
-            -t $IMAGE:latest -t $IMAGE:${{ steps.meta.outputs.image_tag }} --push .
-          docker logout "$ACR" >/dev/null 2>&1 || true
-
-      - name: 构建并推送 GPU 镜像
-        if: github.event.inputs.functions != 'cpu'
-        run: |
-          printf '%s' "$ACR_AK_SECRET" | docker login \
-            --username "$ACR_AK_ID" --password-stdin "$ACR" >/dev/null
-          IMAGE=$ACR/b4/video-2022-func-gpu
-          docker buildx build --platform linux/amd64 \
-            -f functions/gpu/Dockerfile functions \
-            -t $IMAGE:latest -t $IMAGE:${{ steps.meta.outputs.image_tag }} --push .
-          docker logout "$ACR" >/dev/null 2>&1 || true
-
-      - name: 配置 aliyun 凭据
-        run: |
-          # FC 部署身份走专用 AK（Infisical /transcode-fn 注入，最小权限）
           aliyun configure set --profile default \
             --mode AccessKey --access-key-id "$FC_DEPLOY_AK_ID" \
             --access-key-secret "$FC_DEPLOY_AK_SECRET" --region $REGION
@@ -102,7 +140,7 @@ jobs:
       - name: 部署 CPU 函数
         if: github.event.inputs.functions != 'gpu'
         env:
-          IMAGE: ${{ env.ACR }}/b4/video-2022-func-cpu:${{ steps.meta.outputs.image_tag }}
+          IMAGE: ${{ env.ACR }}/b4/video-2022-func-cpu:${{ needs.build-and-push.outputs.image_tag || 'latest' }}
           FN: video-2022-${{ github.event.inputs.target }}\$transcode-cpu
         run: |
           bash functions/deploy/fc_upsert.sh \
@@ -111,7 +149,7 @@ jobs:
       - name: 部署 GPU 函数
         if: github.event.inputs.functions != 'cpu'
         env:
-          IMAGE: ${{ env.ACR }}/b4/video-2022-func-gpu:${{ steps.meta.outputs.image_tag }}
+          IMAGE: ${{ env.ACR }}/b4/video-2022-func-gpu:${{ needs.build-and-push.outputs.image_tag || 'latest' }}
           FN: video-2022-${{ github.event.inputs.target }}\$transcode-gpu
         run: |
           bash functions/deploy/fc_upsert.sh \
@@ -121,6 +159,6 @@ jobs:
         run: |
           {
             echo "### 函数部署（${{ github.event.inputs.target }}）"
-            echo "- CPU/GPU 镜像 tag: \`${{ steps.meta.outputs.image_tag }}\`"
-            echo "- 函数更新为容器镜像 digest 部署，回滚改回上一 tag 重新执行本 workflow"
+            echo "- 镜像 tag: \`${{ needs.build-and-push.outputs.image_tag }}\`"
+            echo "- 回滚：用上一 tag 重新执行本 workflow（skip_build=true 需先手动改 IMAGE tag）"
           } >> "$GITHUB_STEP_SUMMARY"
