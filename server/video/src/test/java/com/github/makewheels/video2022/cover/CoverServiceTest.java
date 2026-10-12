@@ -442,4 +442,30 @@ class CoverServiceTest extends BaseIntegrationTest {
         assertNotNull(updatedVideo.getCoverId(),
                 "Video.coverId should be set after YouTube cover creation");
     }
+    @Test
+    void fcCover_retryPathAndDuplicate_doNotRegressReadyVideo() {
+        testVideo.setStatus(VideoStatus.READY);
+        mongoTemplate.save(testVideo);
+        File file = new File();
+        file.setId("fc_cover_file");
+        file.setVideoId(testVideo.getId());
+        file.setKey("videos/old-cover.jpg");
+        mongoTemplate.save(file);
+        Cover cover = new Cover();
+        cover.setId("fc_cover");
+        cover.setFileId(file.getId());
+        cover.setVideoId(testVideo.getId());
+        cover.setKey(file.getKey());
+        cover.setAccessUrl("https://example/" + file.getKey());
+        mongoTemplate.save(cover);
+        JSONObject manifest = new JSONObject();
+        manifest.put("imageKey", "videos/new-attempt/cover.jpg");
+        coverService.applyFcCoverResult(cover, manifest);
+        coverService.applyFcCoverResult(cover, manifest);
+        assertEquals(VideoStatus.READY, mongoTemplate.findById(testVideo.getId(), Video.class).getStatus());
+        assertEquals(CoverStatus.READY, coverRepository.getById(cover.getId()).getStatus());
+        assertEquals(manifest.getString("imageKey"), mongoTemplate.findById(file.getId(), File.class).getKey());
+        assertEquals(manifest.getString("imageKey"), coverRepository.getById(cover.getId()).getKey());
+    }
+
 }

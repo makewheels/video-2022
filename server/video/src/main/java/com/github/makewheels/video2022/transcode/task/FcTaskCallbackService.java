@@ -67,7 +67,7 @@ public class FcTaskCallbackService {
                     taskId, attemptId, task.getAttemptId());
             return 200;
         }
-        if (FcTaskStatus.isFinal(task.getStatus()) && "SUCCEEDED".equals(status)) {
+        if (FcTaskStatus.isFinal(task.getStatus()) || FcTaskStatus.FALLBACK_PENDING.equals(task.getStatus())) {
             log.info("重复成功回调忽略 taskId = {}, status = {}", taskId, task.getStatus());
             return 200;
         }
@@ -76,78 +76,69 @@ public class FcTaskCallbackService {
             return handleSucceeded(task, body);
         }
         if ("FAILED".equals(status)) {
-            return handleFailed(task, body.getString("errorMessage"));
+            if (!FcTaskStatus.SUBMITTED.equals(task.getStatus())) return 200;
+            return handleFailed(task, body.getString("errorMessage"),
+                    !Boolean.FALSE.equals(body.getBoolean("retryable")));
         }
         log.warn("未知回调 status = {} taskId = {}", status, taskId);
         return 400;
     }
 
     private int handleSucceeded(FcTask task, JSONObject body) {
-        String manifestKey = body.getString("outputManifestKey");
-        if (manifestKey == null) {
-            log.warn("成功回调缺少 outputManifestKey taskId = {}", task.getId());
-            return handleFailed(task, "成功回调缺少 outputManifestKey");
-        }
-        JSONObject manifest = downloadManifest(manifestKey);
-        if (manifest == null) {
-            return handleFailed(task, "产物 manifest 读取失败: " + manifestKey);
-        }
-
-        boolean finished = fcTaskRepository.finish(task.getId(), task.getAttemptId(),
-                FcTaskStatus.SUCCEEDED, new Date(), null);
-        if (!finished) {
-            log.info("成功回调认领失败（并发或已终态），忽略 taskId = {}", task.getId());
-            return 200;
-        }
-
-        switch (task.getOperation()) {
-            case "PROBE" -> {
-                Video video = videoRepository.getById(task.getVideoId());
-                if (video == null) {
-                    log.error("PROBE 回调找不到视频 taskId = {}, videoId = {}", task.getId(), task.getVideoId());
-                    return 200;
-                }
-                transcodeLauncher.onProbeFinished(video, manifest);
+        String key = body.getString("outputManifestKey");
+        JSONObject payload = task.getPayloadSnapshot();
+        String expected = payload == null ? null : payload.getString("outputDir") + "/result.json";
+        if (key == null || !key.equals(expected)) return 400;
+        if (!fcTaskRepository.beginCompletion(task, key)) return 200;
+        task.setStatus(FcTaskStatus.PROCESSING);
+        try {
+            JSONObject manifest = downloadManifest(key);
+            if (!validManifest(task, manifest)) {
+                throw new IllegalStateException("manifest 身份与当前任务不符");
             }
-            case "TRANSCODE" -> transcodeCallbackService.onSelfHostedTranscodeFinish(task, manifest);
-            case "COVER" -> transcodeCallbackService.onFcCoverFinished(task, manifest);
-            default -> log.error("未知 operation = {} taskId = {}", task.getOperation(), task.getId());
+            switch (task.getOperation()) {
+                case "PROBE" -> {
+                    Video video = videoRepository.getById(task.getVideoId());
+                    if (video == null) throw new IllegalStateException("视频不存在");
+                    transcodeLauncher.onProbeFinished(video, manifest);
+                }
+                case "TRANSCODE" -> transcodeCallbackService.onSelfHostedTranscodeFinish(task, manifest);
+                case "COVER" -> transcodeCallbackService.onFcCoverFinished(task, manifest);
+                default -> throw new IllegalArgumentException("未知 operation");
+            }
+            fcTaskRepository.finish(task.getId(), task.getAttemptId(),
+                    FcTaskStatus.SUCCEEDED, new Date(), null);
+        } catch (TranscodeCallbackService.RegistrationException e) {
+            // 保存的 manifest 和 PROCESSING 租约允许重启后补齐登记；不重新付费编码。
+            log.warn("产物登记待恢复 taskId = {}", task.getId());
+            return 200;
+        } catch (Exception e) {
+            return handleFailed(task, "产物处理失败: " + e.getMessage(), true);
         }
         return 200;
     }
 
-    /**
-     * 失败回调：还有重试额度 → 退避后重提交；耗尽 → TRANSCODE 尝试 MPS 兜底，否则终态失败。
-     */
-    private int handleFailed(FcTask task, String errorMessage) {
-        log.warn("云函数任务失败 taskId = {}, attemptCount = {}/{}, error = {}",
-                task.getId(), task.getAttemptCount(), task.getMaxAttempts(), errorMessage);
+    private boolean validManifest(FcTask task, JSONObject manifest) {
+        return manifest != null && manifest.getIntValue("schemaVersion") == 1
+                && task.getId().equals(manifest.getString("taskId"))
+                && task.getAttemptId().equals(manifest.getString("attemptId"))
+                && task.getOperation().equals(manifest.getString("operation"));
+    }
+
+    private int handleFailed(FcTask task, String errorMessage, boolean retryable) {
         int nextAttempt = (task.getAttemptCount() == null ? 1 : task.getAttemptCount()) + 1;
         String newAttemptId = nextAttemptId(task.getAttemptId());
-        Date backoffDeadline = new Date(
-                System.currentTimeMillis() + retryBackoffMs + retryBackoff(retryJitterMs));
-        boolean claimed = fcTaskRepository.claim(task.getId(), FcTaskStatus.SUBMITTED,
-                task.getAttemptId(), new FcTaskRepository.ClaimUpdate(
-                        newAttemptId, FcTaskStatus.RETRY_WAIT, backoffDeadline,
-                        truncate(errorMessage)));
-        if (!claimed) {
-            log.info("失败回调认领失败（并发或已流转），忽略 taskId = {}", task.getId());
-            return 200;
-        }
-
-        if (nextAttempt <= task.getMaxAttempts()) {
-            // 退避后重提交由恢复流程执行（RETRY_WAIT + 到期 deadline）
-            log.info("任务将重试 taskId = {}, 下一轮 attempt = {}", task.getId(), nextAttempt);
-            return 200;
-        }
-
-        // 自建额度耗尽
+        Date deadline = new Date(System.currentTimeMillis() + retryBackoffMs + retryBackoff(retryJitterMs));
+        if (!fcTaskRepository.claim(task.getId(), task.getStatus(), task.getAttemptId(),
+                new FcTaskRepository.ClaimUpdate(newAttemptId, FcTaskStatus.RETRY_WAIT,
+                        deadline, truncate(errorMessage)))) return 200;
+        task.setAttemptId(newAttemptId);
+        task.setAttemptCount(nextAttempt);
+        task.setStatus(FcTaskStatus.RETRY_WAIT);
+        if (retryable && nextAttempt <= task.getMaxAttempts()) return 200;
         if ("TRANSCODE".equals(task.getOperation())
-                && mpsFallbackService.canFallback(task.getVideoId(), task.getRefId())) {
-            log.info("自建重试耗尽，转 MPS 兜底 taskId = {}", task.getId());
-            boolean submitted = mpsFallbackService.fallback(task);
-            if (submitted) return 200;
-        }
+                && mpsFallbackService.canFallback(task.getVideoId(), task.getRefId())
+                && mpsFallbackService.fallback(task)) return 200;
         fcTaskRepository.finish(task.getId(), newAttemptId,
                 FcTaskStatus.FAILED, new Date(), truncate(errorMessage));
         transcodeCallbackService.onFcTaskFailed(task, truncate(errorMessage));

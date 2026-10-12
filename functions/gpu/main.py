@@ -11,8 +11,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, "/usr/src/app")
 
-from common import job, protocol  # noqa: E402
-from gpu import transcode  # noqa: E402
+from common import job, protocol
+from gpu import transcode
 
 INVOKE_SECRET = os.environ.get("INVOKE_SECRET", "")
 
@@ -22,13 +22,14 @@ HANDLERS = {
 
 
 class Handler(BaseHTTPRequestHandler):
-    def do_POST(self):  # noqa: N802
+    def do_POST(self):
         try:
             length = int(self.headers.get("Content-Length", 0))
+            if length <= 0 or length > 65536:
+                raise protocol.ProtocolError("请求体大小非法")
             raw = self.rfile.read(length)
             body = json.loads(raw)
-            os.environ["_REQUEST_INVOKE_SECRET"] = self.headers.get("X-Invoke-Secret", "")
-            protocol.validate_request(body, INVOKE_SECRET)
+            protocol.validate_request(body, INVOKE_SECRET, self.headers.get("X-Invoke-Secret", ""))
 
             handler = HANDLERS.get(body["operation"])
             if handler is None:
@@ -42,28 +43,8 @@ class Handler(BaseHTTPRequestHandler):
             print(f"[server] 请求处理异常: {e}")
             self._respond(200, {"ok": False, "error": "internal error"})
 
-    def do_GET(self):  # noqa: N802
-        # 诊断：NVENC 可用性核查（云端首验用；不输出任何密钥/任务数据）
-        import subprocess
-        def run(cmd):
-            try:
-                r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-                return (r.stdout + r.stderr).strip()[:2000]
-            except Exception as e:  # noqa: BLE001
-                return f"ERR: {e}"
-        diag = {
-            "ok": True,
-            "service": "transcode-gpu",
-            "ffmpeg_version": run(["ffmpeg", "-version"]),
-            "nvenc_encoders": run(["bash", "-c", "ffmpeg -hide_banner -encoders 2>/dev/null | grep -i nvenc"]),
-            "nvidia_smi": run(["bash", "-c", "nvidia-smi -L 2>&1 | head -5"]),
-            "cuda_libs": run(["bash", "-c", "ldconfig -p 2>/dev/null | grep -E 'libcuda\.so|libnvidia-encode' | head -5"]),
-            "nvidia_mount": run(["bash", "-c", "ls /usr/local/nvidia 2>&1 | head -3; ls /usr/lib/x86_64-linux-gnu/libcuda* 2>&1 | head -3"]),
-            "dev_nodes": run(["bash", "-c", "ls -la /dev/nvidia* 2>&1 | head -6"]),
-            "nvenc_probe": run(["bash", "-c", "ffmpeg -y -f lavfi -i testsrc=duration=1:size=320x240:rate=10 -c:v h264_nvenc -f null - 2>&1 | tail -8"]),
-            "cuda_init": run(["bash", "-c", "python3 -c \"import ctypes; r=ctypes.CDLL('libcuda.so.1'); print('cuInit:', r.cuInit(0))\" 2>&1"]),
-        }
-        self._respond(200, diag)
+    def do_GET(self):
+        self._respond(200, {"ok": True, "service": "transcode-gpu"})
 
     def _respond(self, status: int, payload: dict):
         data = json.dumps(payload).encode("utf-8")
@@ -73,7 +54,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
-    def log_message(self, fmt, *args):  # noqa: A003
+    def log_message(self, fmt, *args):
         print(f"[server] {self.address_string()} {fmt % args}")
 
 

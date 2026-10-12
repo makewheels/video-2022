@@ -5,6 +5,7 @@ import re
 import subprocess
 
 from common import media
+from gpu.hdr_metadata import preserve_static_hdr, static_metadata_equal
 
 
 def _color_args(policy: dict, is_hdr: bool) -> list:
@@ -19,35 +20,20 @@ def _color_args(policy: dict, is_hdr: bool) -> list:
         value = policy.get(key)
         if value and value != "unknown":
             args += [flag, value]
-    # HDR 必须显式 bt2020 primaries（ffprobe 缺失时兜底），避免输出退化为 bt709 标签
-    if is_hdr and not policy.get("colorPrimaries"):
-        args += ["-color_primaries", "bt2020"]
     return args
-
-
-def _hdr_bsf_args(policy: dict) -> list:
-    """HDR10 静态元数据（maxCLL/maxFALL）尽量透传；不可用则跳过。"""
-    side_data = policy.get("hdrSideData") or {}
-    content_light = side_data.get("Content light level metadata") or {}
-    params = []
-    if content_light.get("max_content") is not None:
-        params.append(f"max_cll={content_light['max_content']}")
-    if content_light.get("max_average") is not None:
-        params.append(f"max_fall={content_light['max_average']}")
-    if not params:
-        return []
-    return ["-bsf:v", "hevc_metadata=" + ":".join(params)]
 
 
 def _video_encoder_args(policy: dict, is_hdr: bool) -> list:
     """NVENC 编码器参数。本地测试通过 monkeypatch 本函数替换为软件编码器。"""
     args = ["-c:v", policy["videoEncoder"]]
-    if is_hdr:
+    if policy["videoEncoder"] == "hevc_nvenc":
         # HEVC Main10；fMP4 时打 hvc1 tag 兼容苹果生态
         args += ["-profile:v", "main10", "-pix_fmt", "p010le"]
         if policy.get("segmentType") == "fmp4":
             args += ["-tag:v", "hvc1"]
-    args += ["-preset", "p4"]
+    else:
+        args += ["-pix_fmt", "yuv420p"]
+    args += ["-preset", "p4", "-rc", "vbr", "-forced-idr", "1"]
     return args
 
 
@@ -87,18 +73,23 @@ def handle_transcode(input_path: str, work_dir: str, oss, body: dict) -> dict:
     bufsize = policy["bufferBits"]
     segment_seconds = int(policy.get("segmentSeconds", 6))
 
+    source_info = media.build_media_info(input_path)
+    if source_info.get("bitDepth", 8) > 10:
+        raise media.UnsupportedMediaError("当前 GPU 不支持保留超过 10-bit 的原片")
+    if source_info["dynamicRange"] in ("DOLBY_VISION", "HDR10_PLUS", "UNKNOWN"):
+        raise media.UnsupportedMediaError("当前 GPU 无法验证保留该格式的动态 HDR 元数据")
     source_video = media.probe_stream(input_path, "video")
     if source_video is None:
         raise RuntimeError("没有视频流")
 
     cmd = ["ffmpeg", "-y", "-i", input_path]
     # 视频链：CPU 解码 → 缩放（比例已由服务端算好，无裁剪/拉伸）→ NVENC 编码
-    if (out_width, out_height) != (int(source_video["width"]), int(source_video["height"])):
-        cmd += ["-vf", f"scale={out_width}:{out_height}"]
+    cmd += ["-vf", f"scale={out_width}:{out_height},setsar=1",
+            "-fps_mode", "passthrough", "-force_key_frames", f"expr:gte(t,n_forced*{segment_seconds})"]
     cmd += _video_encoder_args(policy, is_hdr)
     cmd += ["-b:v", str(target), "-maxrate", str(maxrate), "-bufsize", str(bufsize)]
     # 帧率 preserve：不设置 -r / fps filter；方向由输入 display matrix 自带
-    cmd += _color_args(policy, is_hdr) + _hdr_bsf_args(policy)
+    cmd += _color_args(policy, is_hdr)
 
     # 音频：encode 转 AAC，保留全部音轨/声道/语言 metadata；无音轨时映射为空不造静音轨
     audio_policy = policy.get("audioPolicy") or {}
@@ -109,19 +100,27 @@ def handle_transcode(input_path: str, work_dir: str, oss, body: dict) -> dict:
     else:
         cmd += ["-map", "0:v:0", "-map", "0:a?", "-c:a", "copy"]
 
-    cmd += ["-hls_time", str(segment_seconds), "-hls_playlist_type", "vod",
-            "-hls_list_size", "0"]
-    if segment_type == "fmp4":
-        cmd += ["-hls_segment_type", "fmp4"]
-    cmd += ["-hls_segment_filename", os.path.join(hls_dir, segment_pattern),
-            "-f", "hls", os.path.join(hls_dir, playlist_name)]
+    encoded = os.path.join(work_dir, "encoded.mp4")
+    cmd += ["-f", "mp4", encoded]
 
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=3600)
     if result.returncode != 0:
         raise RuntimeError(f"NVENC 编码失败: {result.stderr[-800:]}")
 
+    encoded = preserve_static_hdr(encoded, os.path.join(work_dir, "encoded-hdr.mp4"),
+                                  source_info.get("hdrSideData") or {})
+    package = ["ffmpeg", "-y", "-i", encoded, "-map", "0:v:0", "-map", "0:a?", "-c", "copy",
+               "-hls_time", str(segment_seconds), "-hls_playlist_type", "vod", "-hls_list_size", "0"]
+    if segment_type == "fmp4":
+        package += ["-tag:v", "hvc1", "-hls_segment_type", "fmp4"]
+    package += ["-hls_segment_filename", os.path.join(hls_dir, segment_pattern),
+                "-f", "hls", os.path.join(hls_dir, playlist_name)]
+    result = subprocess.run(package, capture_output=True, text=True, check=False, timeout=3600)
+    if result.returncode != 0:
+        raise RuntimeError("HLS 封装失败: " + result.stderr[-500:])
+
     from common.job import upload_all_files
-    objects = upload_all_files(oss, hls_dir, body["outputDir"])
+    objects = []
 
     # 输出实测信息：ffprobe 输出 playlist（实际封装后的流）
     playlist_path = os.path.join(hls_dir, playlist_name)
@@ -130,6 +129,17 @@ def handle_transcode(input_path: str, work_dir: str, oss, body: dict) -> dict:
     fmt = media.run_ffprobe(playlist_path).get("format", {})
     duration_ms = int(float(fmt.get("duration") or 0) * 1000)
 
+    output_info = media.build_media_info(playlist_path)
+    if output_info["dynamicRange"] != source_info["dynamicRange"]:
+        raise media.UnsupportedMediaError("输出动态范围与原片不同")
+    for field in ("colorPrimaries", "colorTransfer", "colorSpace", "colorRange"):
+        if source_info.get(field) and source_info[field] != output_info.get(field):
+            raise media.UnsupportedMediaError("输出色彩信息未保留: " + field)
+    if output_info["audioTrackCount"] != source_info["audioTrackCount"]:
+        raise media.UnsupportedMediaError("输出音轨数量不符")
+    if not static_metadata_equal(source_info.get("hdrSideData"), output_info.get("hdrSideData")):
+        raise media.UnsupportedMediaError("输出 HDR 静态元数据未完整保留")
+    objects = upload_all_files(oss, hls_dir, body["outputDir"])
     # 实际平均/峰值码率：分片大小与 EXTINF 时长逐片计算
     segment_objects = [o for o in objects if o["type"] == "segment"]
     extinf_seconds = _parse_extinf_seconds(playlist_path)
@@ -138,39 +148,28 @@ def handle_transcode(input_path: str, work_dir: str, oss, body: dict) -> dict:
     for obj, seconds in zip(segment_objects, extinf_seconds):
         if seconds > 0:
             max_bitrate = max(max_bitrate, int(obj["size"] * 8 / seconds))
-    average_bitrate = int(total_size * 8 / (duration_ms / 1000)) if duration_ms else out_bitrate
+    average_bitrate = int(total_size * 8 / (duration_ms / 1000)) if duration_ms else 0
 
     return {
         "playlistKey": playlist_key,
         "objects": objects,
-        "width": out_width,
-        "height": out_height,
+        "width": output_info["displayWidth"],
+        "height": output_info["displayHeight"],
         "durationMs": duration_ms,
         "codec": out_video.get("codec_name") if out_video else policy["videoCodec"],
         "profile": out_video.get("profile"),
         "pixelFormat": out_video.get("pix_fmt"),
         "bitDepth": 10 if out_video and "10" in (out_video.get("pix_fmt") or "") else 8,
-        "colorPrimaries": policy.get("colorPrimaries"),
-        "colorTransfer": policy.get("colorTransfer"),
-        "colorSpace": policy.get("colorSpace"),
-        "colorRange": policy.get("colorRange"),
-        "dynamicRange": policy.get("dynamicRange"),
+        "colorPrimaries": output_info.get("colorPrimaries"),
+        "colorTransfer": output_info.get("colorTransfer"),
+        "colorSpace": output_info.get("colorSpace"),
+        "colorRange": output_info.get("colorRange"),
+        "dynamicRange": output_info.get("dynamicRange"),
         "frameRate": out_video.get("avg_frame_rate") if out_video else None,
         "frameRateMode": media.build_media_info(input_path).get("frameRateMode", "CFR"),
         "hlsCodecs": media.build_hls_codecs(out_video, out_audio),
-        "audioTracks": _audio_tracks(out_audio),
+        "audioTracks": output_info["audioTracks"],
         "averageBitrateBps": average_bitrate,
         "maxBitrateBps": max_bitrate or maxrate,
         "mode": "nvenc",
     }
-
-
-def _audio_tracks(audio_stream: dict) -> dict:
-    if audio_stream is None:
-        return {"tracks": []}
-    return {"tracks": [{
-        "index": audio_stream.get("index"),
-        "codec": audio_stream.get("codec_name"),
-        "channels": audio_stream.get("channels"),
-        "language": (audio_stream.get("tags") or {}).get("language"),
-    }]}

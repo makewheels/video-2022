@@ -49,6 +49,7 @@ public class CloudFunctionClient {
         HttpRequest post = HttpUtil.createPost(url);
         post.header("X-Fc-Invocation-Type", "Async");
         post.header("X-Invoke-Secret", invokeSecret);
+        post.timeout(30_000);
         post.body(payload.toJSONString());
         log.info("提交自建云函数任务 provider = {}, taskId = {}, attemptId = {}",
                 provider, taskId, payload.getString("attemptId"));

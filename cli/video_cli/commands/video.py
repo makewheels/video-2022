@@ -330,6 +330,7 @@ def upload_local(ctx, filepath, title, description, visibility, no_cover):  # no
 
     try:
         info = lt.probe(filepath)
+        lt.require_supported_media(info)
         resolutions = lt.target_resolutions(info["display_width"], info["display_height"])
         click.echo(
             f"Probed: {info['width']}x{info['height']} (display {info['display_width']}"
@@ -408,7 +409,8 @@ def upload_local(ctx, filepath, title, description, visibility, no_cover):  # no
                         "videoCodec": info["video_codec"],
                         "audioCodec": info["audio_codec"],
                         "bitrate": info["bitrate_kbps"],
-                        "frameRate": info["frame_rate"],
+                        "frameRate": lt._parse_fraction(info["frame_rate"]),
+                        "frameRateFraction": info["frame_rate"],
                         "frameRateMode": info["frame_rate_mode"],
                         "sar": info["sar"],
                         "rotation": info["rotation"],

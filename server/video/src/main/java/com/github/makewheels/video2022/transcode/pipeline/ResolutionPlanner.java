@@ -91,6 +91,7 @@ public class ResolutionPlanner {
         String pixFmt = media.getString("pixFmt");
         String dynamicRange = media.getString("dynamicRange");
 
+        if (requiresDisplayConversion(media)) return true;
         if (videoCodec == null || !"h264".equals(videoCodec)) return true;
         if (hasAudio && (audioCodec == null || !"aac".equals(audioCodec))) return true;
         if (bitrateBps > maxDirectBitrateBps) return true;
@@ -106,6 +107,14 @@ public class ResolutionPlanner {
         return false;
     }
 
+    private boolean requiresDisplayConversion(JSONObject media) {
+        if (media.getIntValue("rotation") != 0) return true;
+        String sar = media.getString("sar");
+        if (sar != null && !"1:1".equals(sar)) return true;
+        if (media.getIntValue("bitDepth") > 8) return true;
+        return false;
+    }
+
     /**
      * 构建 mediaPolicy（协议 v1）。
      * SDR 输出 H.264 + TS；非 SDR 输出 HEVC Main10 + fMP4。帧率一律 preserve。
@@ -115,20 +124,23 @@ public class ResolutionPlanner {
                 media.getIntValue("displayWidth"), media.getIntValue("displayHeight"), resolution);
         String dynamicRange = media.getString("dynamicRange");
         boolean hdr = dynamicRange == null || !"SDR".equals(dynamicRange);
+        boolean hevc = hdr || media.getIntValue("bitDepth") > 8;
 
         JSONObject policy = new JSONObject();
         policy.put("outputWidth", size[0]);
         policy.put("outputHeight", size[1]);
         policy.put("dynamicRange", hdr ? dynamicRange : "SDR");
-        policy.put("videoCodec", hdr ? "hevc" : "h264");
-        policy.put("videoEncoder", hdr ? "hevc_nvenc" : "h264_nvenc");
+        policy.put("videoCodec", hevc ? "hevc" : "h264");
+        policy.put("videoEncoder", hevc ? "hevc_nvenc" : "h264_nvenc");
         policy.put("frameRateMode", "preserve");
-        policy.put("segmentType", hdr ? "fmp4" : "ts");
+        policy.put("segmentType", hevc ? "fmp4" : "ts");
         policy.put("segmentSeconds", 6);
 
         // 目标码率以现有 MPS 基准为起点（720p 4 Mbps / 1080p 12 Mbps），
         // VBR：maxrate = 1.5×，bufsize = 2×maxrate，实测后可调
         long target = resolution.equals("1080p") ? 12_000_000L : 4_000_000L;
+        long sourceBitrate = media.getLongValue("bitrateBps");
+        if (sourceBitrate > 0) target = Math.min(target, sourceBitrate);
         policy.put("targetBitrateBps", target);
         policy.put("maxBitrateBps", target / 2 * 3);
         policy.put("bufferBits", target * 3);

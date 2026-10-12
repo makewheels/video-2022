@@ -110,7 +110,7 @@ cd web && npm run dev  # 端口 5173，自动代理 API 到 5022
 - **MongoDB** - 主数据库（存储视频、用户、文件、转码等所有业务数据）
 - **Redis** - 缓存（IP 地理位置查询缓存、验证码存储）
 - **阿里云 OSS** - 视频文件存储（video bucket）+ 日志/库存存储（data bucket）
-- **阿里云 MPS** - 视频转码服务（480p/720p/1080p HLS）
+- **阿里云 MPS** - 视频转码兜底服务（新任务 720p/1080p，历史 480p 可读）
 - **阿里云函数计算** - GPU 云函数转码、MD5 计算
 - **阿里云 API 网关** - IP 地理位置查询
 - **Kotlin + Jetpack Compose** - Android 客户端
@@ -159,12 +159,9 @@ cd web && npm run dev  # 端口 5173，自动代理 API 到 5022
 
 位置：`video/src/main/java/.../transcode/`
 
-三种转码实现，按优先级选择：
-1. `AliyunCfGPUTranscodeImpl` - GPU 云函数 (最快)
-2. `AliyunMpsTranscodeImpl` - 阿里云 MPS
-3. `AliyunCfTranscodeImpl` - 普通云函数
+新上传由 `transcode.pipeline=self-hosted` 使用自建 CPU/GPU 函数：CPU 探测、封面及合规 H.264 重封装，GPU NVENC 负责缩放或重编码，有限失败后允许符合媒体策略的 MPS 兜底一次。CLI LOCAL 继续在本机处理。
 
-输出格式：HLS（.m3u8 + .ts 分片），支持 480p / 720p / 1080p 三种分辨率。
+新任务只生成适用的 720p/1080p；低于 720p 保持实际尺寸单档。SDR 使用 TS，HEVC/10-bit 使用 fMP4，init 与分片均登记并签名。历史 TS/480p 继续读取，已删除旧函数不再接受新任务。媒体支持、验收和发布证据见 [转码验收记录](docs/requirements/2026-10-gpu-cloudfunction-transcode/verification.md)。
 
 ---
 

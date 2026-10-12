@@ -8,6 +8,6 @@ public class CloudFunctionTranscodeStatus {
      * 是不是，已结束的状态
      */
     public static boolean isFinishedStatus(String jobStatus) {
-        return true;
+        return "FINISHED".equals(jobStatus);
     }
 }

@@ -49,6 +49,8 @@ public class CreateLocalTranscodeRequest {
     private Integer displayHeight;
     /** 帧率（数值）与模式 CFR/VFR */
     private Double frameRate;
+    /** 精确帧率分数；新客户端优先填写，旧数值字段继续兼容。 */
+    private String frameRateFraction;
     private String frameRateMode;
     private String sar;
     private Integer rotation;

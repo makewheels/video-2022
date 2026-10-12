@@ -1,5 +1,4 @@
 """PROBE：ffprobe 探测，返回完整媒体信息 manifest。"""
-import os
 
 from common import media
 from common.protocol import SCHEMA_VERSION

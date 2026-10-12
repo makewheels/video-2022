@@ -43,4 +43,15 @@ class FileAccessSignatureServiceTest extends BaseIntegrationTest {
 
         assertFalse(fileAccessSignatureService.isTimestampValid(expiredTimestamp));
     }
+
+    @Test
+    void initSegmentSignature_cannotBeReusedForAnotherVideoOrFile() {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String signature = fileAccessSignatureService.generateSignature(
+                "private_video_a", "client_a", "session_a", "720p", "init_a", timestamp, "nonce");
+        assertFalse(fileAccessSignatureService.isSignatureValid(
+                "private_video_b", "client_a", "session_a", "720p", "init_b", timestamp, "nonce", signature));
+        assertFalse(fileAccessSignatureService.isSignatureValid(
+                "private_video_a", "client_a", "session_a", "720p", "init_b", timestamp, "nonce", signature));
+    }
 }

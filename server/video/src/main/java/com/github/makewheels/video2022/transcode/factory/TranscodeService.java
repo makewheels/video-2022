@@ -11,5 +11,9 @@ import org.springframework.stereotype.Service;
 public interface TranscodeService {
     void transcode(Video video, Transcode transcode);
 
+    default com.github.makewheels.video2022.transcode.task.FcTask prepare(Video video, Transcode transcode) {
+        throw new UnsupportedOperationException("该 provider 不使用自建函数任务");
+    }
+
     void callback(String jobId);
 }

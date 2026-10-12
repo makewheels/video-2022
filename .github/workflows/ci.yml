@@ -35,6 +35,10 @@ jobs:
           export PYTHONDONTWRITEBYTECODE=1
           uv run --locked --project transcode-worker ruff check transcode-worker --no-cache
           uv run --locked --project transcode-worker pytest transcode-worker/tests -p no:cacheprovider
+      - name: Test CPU and GPU functions
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: uv run --isolated --managed-python --python 3.12 --no-project --with pytest --with oss2==2.18.4 --with av==16.0.1 pytest functions/tests -p no:cacheprovider
       - name: Build GPU candidate image and verify encoder is compiled
         run: |
           set -euo pipefail
@@ -216,7 +220,7 @@ jobs:
   api-e2e-tests:
     name: API E2E 测试
     needs: build-e2e-artifacts
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -240,12 +244,12 @@ jobs:
         uses: Infisical/secrets-action@v1.0.16
         with:
           method: oidc
-          identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
+          identity-id: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && vars.INFISICAL_TRANSCODE_CI_IDENTITY_ID || '322a3702-73a7-4bbe-8f55-ebd6376e15d4' }}
           oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
           domain: ${{ vars.INFISICAL_DOMAIN }}
-          project-slug: video-2022-secrets
+          project-slug: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && 'video-2022-transcode-ci' || 'video-2022-secrets' }}
           env-slug: dev
-          secret-path: /ci
+          secret-path: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && '/' || '/ci' }}
           recursive: false
 
       - name: Set up JDK 21
@@ -282,7 +286,7 @@ jobs:
   browser-e2e-tests:
     name: 浏览器 E2E 测试
     needs: build-e2e-artifacts
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -306,12 +310,12 @@ jobs:
         uses: Infisical/secrets-action@v1.0.16
         with:
           method: oidc
-          identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
+          identity-id: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && vars.INFISICAL_TRANSCODE_CI_IDENTITY_ID || '322a3702-73a7-4bbe-8f55-ebd6376e15d4' }}
           oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
           domain: ${{ vars.INFISICAL_DOMAIN }}
-          project-slug: video-2022-secrets
+          project-slug: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && 'video-2022-transcode-ci' || 'video-2022-secrets' }}
           env-slug: dev
-          secret-path: /ci
+          secret-path: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && '/' || '/ci' }}
           recursive: false
 
       - name: Set up JDK 21
@@ -405,7 +409,9 @@ jobs:
 
       - name: Run CLI tests
         working-directory: cli
-        run: uv run --extra test pytest tests/ -v --tb=short
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          uv run --extra test pytest tests/ -v --tb=short
 
   ai-agent-tests:
     name: AI Agent 测试
@@ -509,7 +515,7 @@ jobs:
     steps:
       - name: Check results
         run: |
-          # E2E 只在推送 master 时运行（取密范围限制），PR 上为 skipped，允许通过；其余 job 必须 success
+          # E2E 在 master push 或仓库成员手动触发时运行；普通 PR 不取密，允许 skipped；其余 job 必须 success
           if [ "${{ needs.lint.result }}" != "success" ] || \
              [ "${{ needs.transcode-worker-tests.result }}" != "success" ] || \
              [ "${{ needs.backend-tests.result }}" != "success" ] || \

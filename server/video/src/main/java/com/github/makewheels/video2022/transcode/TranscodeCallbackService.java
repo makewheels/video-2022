@@ -62,6 +62,8 @@ public class TranscodeCallbackService {
     @Resource
     private FileService fileService;
     @Resource
+    private OutputValidator outputValidator;
+    @Resource
     private VideoReadyService videoReadyService;
     @Resource
     private WebhookEventPublisher webhookEventPublisher;
@@ -101,6 +103,30 @@ public class TranscodeCallbackService {
         }
     }
 
+    public void onLocalTranscodeFinish(Transcode transcode) {
+        JSONObject manifest = new JSONObject();
+        manifest.put("playlistKey", transcode.getM3u8Key());
+        String folder = FilenameUtils.getPath(transcode.getM3u8Key());
+        String localMetadata = readObjectString(folder + "result.json");
+        if (localMetadata != null) {
+            JSONObject output = JSONObject.parseObject(localMetadata);
+            if (output.getIntValue("schemaVersion") != 1
+                    || !transcode.getId().equals(output.getString("transcodeId"))
+                    || !FilenameUtils.getName(transcode.getM3u8Key()).equals(output.getString("playlistFilename"))
+                    || !transcode.getActualWidth().equals(output.getInteger("width"))
+                    || !transcode.getActualHeight().equals(output.getInteger("height"))) {
+                throw new IllegalStateException("本地输出媒体参数与任务不符");
+            }
+            applyActualOutput(transcode, output);
+        }
+        String error = validateOutput(transcode, manifest);
+        if (error != null) throw new IllegalStateException(error);
+        Video video = videoRepository.getById(transcode.getVideoId());
+        saveM3u8File(video, transcode);
+        saveS3Files(video, transcode);
+        finishTranscode(transcode, video);
+    }
+
     /**
      * 自建链路转码成功回调：先校验产物（OSS 实物与 manifest 交叉验证），再幂等登记。
      */
@@ -108,22 +134,19 @@ public class TranscodeCallbackService {
         String transcodeId = task.getRefId();
         Transcode transcode = transcodeRepository.getById(transcodeId);
         if (transcode == null) {
-            log.error("TRANSCODE 回调找不到 transcodeId = {}", transcodeId);
-            return;
+            throw new IllegalStateException("转码记录不存在");
         }
+        if (transcode.isSuccessStatus()) return;
         Video video = videoRepository.getById(transcode.getVideoId());
         if (video == null) {
-            log.error("TRANSCODE 回调找不到视频 videoId = {}", transcode.getVideoId());
-            return;
+            throw new IllegalStateException("视频不存在");
         }
 
         // 1. 产物校验：不通过则按失败处理（转 RETRY_WAIT，由恢复流程重试/兜底）
         String validationError = validateOutput(transcode, manifest);
         if (validationError != null) {
             log.warn("产物校验失败 transcodeId = {}: {}", transcodeId, validationError);
-            markTranscodeFailed(transcode, validationError);
-            updateVideoStatus(video);
-            return;
+            throw new IllegalStateException(validationError);
         }
 
         // 2. 原子认领登记权：重复/并发回调只有一次真正登记
@@ -132,12 +155,17 @@ public class TranscodeCallbackService {
             log.info("登记权已被认领或已终态，忽略重复回调 transcodeId = {}", transcodeId);
             return;
         }
+        transcode.setStatus(TranscodeStatus.REGISTERING);
 
         // 3. 写入真实输出信息 + 幂等登记
-        applyActualOutput(transcode, manifest);
-        saveM3u8File(video, transcode);
-        saveS3Files(video, transcode);
-        finishTranscode(transcode, video);
+        try {
+            applyActualOutput(transcode, manifest);
+            saveM3u8File(video, transcode);
+            saveS3Files(video, transcode);
+            finishTranscode(transcode, video);
+        } catch (Exception e) {
+            throw new RegistrationException(e);
+        }
     }
 
     /**
@@ -146,16 +174,13 @@ public class TranscodeCallbackService {
     public void onFcCoverFinished(FcTask task, JSONObject manifest) {
         String coverId = task.getRefId();
         var cover = coverRepository.getById(coverId);
-        if (cover == null) {
-            log.warn("COVER 回调找不到 coverId = {}", coverId);
-            return;
-        }
+        if (cover == null) throw new IllegalStateException("封面记录不存在");
         // 重复回调幂等：已 READY 直接忽略
-        if ("Success".equals(cover.getStatus())) return;
+        if (com.github.makewheels.video2022.cover.CoverStatus.READY.equals(cover.getStatus())) return;
         String imageKey = manifest.getString("imageKey");
-        if (imageKey == null || !ossObjectExists(imageKey)) {
-            log.warn("COVER 产物缺失 coverId = {}, imageKey = {}", coverId, imageKey);
-            return;
+        if (imageKey == null || !imageKey.equals(task.getPayloadSnapshot().getString("imageKey"))
+                || !ossObjectExists(imageKey)) {
+            throw new IllegalStateException("封面产物缺失或路径错误");
         }
         coverService.applyFcCoverResult(cover, manifest);
     }
@@ -164,6 +189,10 @@ public class TranscodeCallbackService {
      * 任务最终失败：transcode 置 FAILED，不参与成功统计
      */
     public void onFcTaskFailed(FcTask task, String errorMessage) {
+        if ("PROBE".equals(task.getOperation())) {
+            videoRepository.updateStatus(task.getVideoId(), VideoStatus.TRANSCODE_FAILED);
+            return;
+        }
         if (!"TRANSCODE".equals(task.getOperation())) return;
         Transcode transcode = transcodeRepository.getById(task.getRefId());
         if (transcode == null) return;
@@ -176,36 +205,8 @@ public class TranscodeCallbackService {
      * 产物校验：playlist 存在、含 ENDLIST、引用分片在 OSS 全部存在且非空。
      * 返回 null 表示通过，否则返回错误摘要。
      */
-    private String validateOutput(Transcode transcode, JSONObject manifest) {
-        String playlistKey = manifest.getString("playlistKey");
-        if (playlistKey == null || !playlistKey.equals(transcode.getM3u8Key())) {
-            return "manifest playlistKey 与任务不符: " + playlistKey;
-        }
-        String m3u8Content = readObjectString(playlistKey);
-        if (m3u8Content == null || m3u8Content.isBlank()) {
-            return "playlist 不存在或为空: " + playlistKey;
-        }
-        if (!m3u8Content.contains("#EXT-X-ENDLIST")) {
-            return "playlist 缺少 ENDLIST";
-        }
-        // 分片实物校验
-        List<String> segmentNames = M3u8Util.getFilenames(m3u8Content);
-        if (segmentNames.isEmpty()) {
-            return "playlist 无分片";
-        }
-        String folder = FilenameUtils.getPath(playlistKey);
-        for (String name : segmentNames) {
-            String key = folder + name;
-            if (!ossObjectExists(key)) {
-                return "分片缺失: " + name;
-            }
-        }
-        // init segment（fMP4）
-        String initUri = M3u8Util.getInitSegmentUri(m3u8Content);
-        if (initUri != null && !ossObjectExists(folder + initUri)) {
-            return "init segment 缺失: " + initUri;
-        }
-        return null;
+    public String validateOutput(Transcode transcode, JSONObject manifest) {
+        return outputValidator.validate(transcode, manifest);
     }
 
     /**
@@ -213,11 +214,15 @@ public class TranscodeCallbackService {
      */
     private boolean claimRegistering(String transcodeId) {
         Query query = Query.query(Criteria.where("id").is(transcodeId)
-                .and("status").nin(TranscodeStatus.REGISTERING, TranscodeStatus.FINISHED,
+                .and("status").nin(TranscodeStatus.FINISHED,
                         TranscodeStatus.FAILED));
         return mongoTemplate.updateFirst(query,
                 new Update().set("status", TranscodeStatus.REGISTERING), Transcode.class)
-                .getModifiedCount() == 1;
+                .getMatchedCount() == 1;
+    }
+
+    public static class RegistrationException extends RuntimeException {
+        public RegistrationException(Exception cause) { super(cause); }
     }
 
     private void applyActualOutput(Transcode transcode, JSONObject manifest) {
@@ -225,11 +230,18 @@ public class TranscodeCallbackService {
         transcode.setActualHeight(manifest.getInteger("height"));
         transcode.setActualFrameRate(manifest.getString("frameRate"));
         transcode.setActualDynamicRange(manifest.getString("dynamicRange"));
-        transcode.setActualCodecs(manifest.getString("hlsCodecs"));
+        String codecs = manifest.getString("hlsCodecs");
+        if (codecs != null && !codecs.matches("[A-Za-z0-9.,]+")) {
+            throw new IllegalStateException("播放 codec 参数格式非法");
+        }
+        transcode.setActualCodecs(codecs);
     }
 
     private void finishTranscode(Transcode transcode, Video video) {
-        transcode.setStatus(TranscodeStatus.FINISHED);
+        transcode.setStatus(com.github.makewheels.video2022.transcode.contants.TranscodeProvider
+                .ALIYUN_MPS.equals(transcode.getActiveProvider())
+                ? com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus.TranscodeSuccess
+                : TranscodeStatus.FINISHED);
         transcode.setFinishTime(new Date());
         mongoTemplate.save(transcode);
 
@@ -257,8 +269,9 @@ public class TranscodeCallbackService {
      * 更新视频转码状态：按成功（已登记）/失败统计。
      * 全部成功 → READY；全部失败 → TRANSCODE_FAILED；混合终态或进行中 → 部分完成/转码中。
      */
-    private void updateVideoStatus(Video video) {
+    public void updateVideoStatus(Video video) {
         List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
+        if (transcodeList.isEmpty()) return;
         long successCount = transcodeList.stream().filter(Transcode::isSuccessStatus).count();
         long failedCount = transcodeList.stream()
                 .filter(t -> TranscodeStatus.FAILED.equals(t.getStatus())).count();
@@ -368,9 +381,7 @@ public class TranscodeCallbackService {
         if (existed != null) return null;
 
         if (summary == null) {
-            log.warn("分片在 OSS 列举中缺失，跳过登记 transcodeId = {}, tsIndex = {}",
-                    transcode.getId(), index);
-            return null;
+            throw new IllegalStateException("OSS 分片登记不完整，index=" + index);
         }
 
         TsFile tsFile = new TsFile();
@@ -417,7 +428,7 @@ public class TranscodeCallbackService {
         if (!segments.isEmpty() && video.getMediaInfo() != null
                 && video.getMediaInfo().getDuration() != null) {
             long totalSize = segments.stream().mapToLong(TsFile::getSize).sum();
-            BigDecimal duration = new BigDecimal(video.getMediaInfo().getDuration() / 1000);
+            BigDecimal duration = BigDecimal.valueOf(video.getMediaInfo().getDuration(), 3);
             transcode.setAverageBitrate(calculateBitrate(totalSize, duration));
             //计算最高码率
             Integer maxBitrate = segments.stream()

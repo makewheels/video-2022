@@ -46,6 +46,8 @@ class LocalTranscodeServiceTest extends BaseIntegrationTest {
 
     @Autowired
     private LocalTranscodeService localTranscodeService;
+    @Autowired
+    private com.github.makewheels.video2022.video.service.RawFileService rawFileService;
 
     // Isolate from downstream side-effects (Ding notifications, storage class changes)
     @MockitoBean
@@ -123,6 +125,8 @@ class LocalTranscodeServiceTest extends BaseIntegrationTest {
         when(metadata.getObjectStorageClass()).thenReturn(StorageClass.Standard);
         when(metadata.getLastModified()).thenReturn(new Date());
         OSSObject ossObject = mock(OSSObject.class);
+        when(ossObject.getObjectContent()).thenAnswer(invocation -> new java.io.ByteArrayInputStream(
+                m3u8Content(transcodeId).getBytes(java.nio.charset.StandardCharsets.UTF_8)));
         when(ossObject.getKey()).thenReturn(m3u8Key);
         when(ossObject.getObjectMetadata()).thenReturn(metadata);
         when(ossVideoService.getObject(m3u8Key)).thenReturn(ossObject);
@@ -139,6 +143,13 @@ class LocalTranscodeServiceTest extends BaseIntegrationTest {
             summary.setStorageClass("Standard");
             summary.setLastModified(new Date());
             summaries.add(summary);
+            OSSObject segment = mock(OSSObject.class);
+            ObjectMetadata segmentMetadata = new ObjectMetadata();
+            segmentMetadata.setContentLength(summary.getSize());
+            when(segment.getObjectMetadata()).thenReturn(segmentMetadata);
+            when(segment.getObjectContent()).thenAnswer(invocation ->
+                    new java.io.ByteArrayInputStream(new byte[]{1}));
+            when(ossVideoService.getObject(summary.getKey())).thenReturn(segment);
         }
         when(ossVideoService.listAllObjects(folder)).thenReturn(summaries);
     }
@@ -193,7 +204,10 @@ class LocalTranscodeServiceTest extends BaseIntegrationTest {
     void fullFlow_singleRendition_videoReady_withoutAnyCloudTranscode() {
         Video video = createLocalVideo();
 
-        JSONObject response = localTranscodeService.createTranscode(request(video.getId(), Resolution.R_1080P));
+        CreateLocalTranscodeRequest source = request(video.getId(), Resolution.R_720P);
+        source.setWidth(1280);
+        source.setHeight(720);
+        JSONObject response = localTranscodeService.createTranscode(source);
         String transcodeId = response.getString("transcodeId");
         String m3u8Key = response.getString("m3u8Key");
 
@@ -248,4 +262,13 @@ class LocalTranscodeServiceTest extends BaseIntegrationTest {
         verify(videoReadyService).onVideoReady(video.getId());
         verifyNoInteractions(aliyunMpsService);
     }
+    @Test
+    void rawLocalUploadFinish_doesNotInvokeCloudMd5OrMediaProcessing() {
+        Video video = createLocalVideo();
+        rawFileService.onRawFileUploadFinish(video.getId());
+        verifyNoInteractions(md5CfService, aliyunMpsService, cloudFunctionTranscodeService);
+        assertEquals(VideoStatus.PREPARE_TRANSCODING,
+                mongoTemplate.findById(video.getId(), Video.class).getStatus());
+    }
+
 }

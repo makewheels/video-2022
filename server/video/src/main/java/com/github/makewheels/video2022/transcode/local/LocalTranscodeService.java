@@ -79,22 +79,38 @@ public class LocalTranscodeService {
             video.setStatus(VideoStatus.TRANSCODING);
         }
 
-        // 新建 Transcode 对象
-        Transcode transcode = new Transcode();
-        transcode.setId(idService.getTranscodeId());
-        transcode.setUserId(video.getUploaderId());
-        transcode.setVideoId(videoId);
-        transcode.setProvider(TranscodeProvider.LOCAL);
-        transcode.setStatus(VideoStatus.TRANSCODING);
-        transcode.setResolution(request.getResolution());
-        transcode.setSourceKey(fileService.getKeyByFileId(video.getRawFileId()));
-        transcode.setM3u8Key(OssPathUtil.getM3u8Key(video, transcode));
-        mongoTemplate.save(transcode);
-
-        // 追加到 video.transcodeIds
+        int width = request.getDisplayWidth() == null ? request.getWidth() : request.getDisplayWidth();
+        int height = request.getDisplayHeight() == null ? request.getHeight() : request.getDisplayHeight();
+        var planner = new com.github.makewheels.video2022.transcode.pipeline.ResolutionPlanner();
+        List<String> resolutions = planner.planResolutions(Math.min(width, height));
+        if (!resolutions.contains(request.getResolution())) {
+            throw new VideoException(ErrorCode.VIDEO_CREATE_ARG_ILLEGAL, "源片不适用该档位");
+        }
         List<String> transcodeIds = video.getTranscodeIds();
         if (transcodeIds == null) transcodeIds = new ArrayList<>();
-        transcodeIds.add(transcode.getId());
+        Transcode transcode = null;
+        // 一次建立全部适用档位，旧客户端逐档调用也不会提前 READY。
+        for (String resolution : resolutions) {
+            String id = "tr_local_" + videoId + "_" + resolution;
+            Transcode lane = transcodeRepository.getById(id);
+            if (lane == null) {
+                lane = new Transcode();
+                lane.setId(id);
+                lane.setUserId(video.getUploaderId());
+                lane.setVideoId(videoId);
+                lane.setProvider(TranscodeProvider.LOCAL);
+                lane.setStatus(VideoStatus.TRANSCODING);
+                lane.setResolution(resolution);
+                lane.setSourceKey(fileService.getKeyByFileId(video.getRawFileId()));
+                lane.setM3u8Key(OssPathUtil.getM3u8Key(video, lane));
+                int[] actual = planner.computeOutputSize(width, height, resolution);
+                lane.setActualWidth(actual[0]);
+                lane.setActualHeight(actual[1]);
+                mongoTemplate.save(lane);
+            }
+            if (!transcodeIds.contains(id)) transcodeIds.add(id);
+            if (resolution.equals(request.getResolution())) transcode = lane;
+        }
         video.setTranscodeIds(transcodeIds);
         mongoTemplate.save(video);
 
@@ -130,13 +146,11 @@ public class LocalTranscodeService {
         }
         checkService.checkVideoBelongsToUser(transcode.getVideoId(), UserHolder.getUserId());
 
-        transcode.setStatus(TranscodeStatus.FINISHED);
-        transcode.setFinishTime(new Date());
-        mongoTemplate.save(transcode);
+        if (transcode.isSuccessStatus()) return;
 
         log.info("本地转码产物回传完成，开始登记，transcodeId = {}, videoId = {}",
                 transcodeId, transcode.getVideoId());
-        transcodeCallbackService.onTranscodeFinish(transcode);
+        transcodeCallbackService.onLocalTranscodeFinish(transcode);
     }
 
     private void loadMediaInfoIfAbsent(Video video, CreateLocalTranscodeRequest request) {
@@ -157,7 +171,9 @@ public class LocalTranscodeService {
         // 媒体保留扩展字段（客户端可选提供）
         mediaInfo.setDisplayWidth(request.getDisplayWidth());
         mediaInfo.setDisplayHeight(request.getDisplayHeight());
-        if (request.getFrameRate() != null) {
+        if (request.getFrameRateFraction() != null) {
+            mediaInfo.setFrameRate(request.getFrameRateFraction());
+        } else if (request.getFrameRate() != null) {
             mediaInfo.setFrameRate(String.valueOf(request.getFrameRate()));
         }
         mediaInfo.setFrameRateMode(request.getFrameRateMode());

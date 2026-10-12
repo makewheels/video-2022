@@ -10,6 +10,7 @@ public class FcTaskStatus {
     public static final String CREATED = "CREATED";
     /** 已提交到函数（受理响应已确认） */
     public static final String SUBMITTED = "SUBMITTED";
+    public static final String PROCESSING = "PROCESSING";
     public static final String RETRY_WAIT = "RETRY_WAIT";
     public static final String FALLBACK_PENDING = "FALLBACK_PENDING";
     public static final String SUCCEEDED = "SUCCEEDED";

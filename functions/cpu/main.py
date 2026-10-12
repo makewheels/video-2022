@@ -10,8 +10,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, "/usr/src/app")
 
-from common import job, protocol  # noqa: E402
-from cpu import cover, probe, remux  # noqa: E402
+from common import job, protocol
+from cpu import cover, probe, remux
 
 INVOKE_SECRET = os.environ.get("INVOKE_SECRET", "")
 
@@ -23,13 +23,14 @@ HANDLERS = {
 
 
 class Handler(BaseHTTPRequestHandler):
-    def do_POST(self):  # noqa: N802
+    def do_POST(self):
         try:
             length = int(self.headers.get("Content-Length", 0))
+            if length <= 0 or length > 65536:
+                raise protocol.ProtocolError("请求体大小非法")
             raw = self.rfile.read(length)
             body = json.loads(raw)
-            os.environ["_REQUEST_INVOKE_SECRET"] = self.headers.get("X-Invoke-Secret", "")
-            protocol.validate_request(body, INVOKE_SECRET)
+            protocol.validate_request(body, INVOKE_SECRET, self.headers.get("X-Invoke-Secret", ""))
 
             handler = HANDLERS.get(body["operation"])
             if handler is None:
@@ -43,7 +44,7 @@ class Handler(BaseHTTPRequestHandler):
             print(f"[server] 请求处理异常: {e}")
             self._respond(200, {"ok": False, "error": "internal error"})
 
-    def do_GET(self):  # noqa: N802
+    def do_GET(self):
         self._respond(200, {"ok": True, "service": "transcode-cpu"})
 
     def _respond(self, status: int, payload: dict):
@@ -54,7 +55,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
-    def log_message(self, fmt, *args):  # noqa: A003
+    def log_message(self, fmt, *args):
         print(f"[server] {self.address_string()} {fmt % args}")
 
 

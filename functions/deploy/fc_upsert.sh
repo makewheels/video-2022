@@ -24,7 +24,7 @@ fi
 # python 构造 payload，避免 shell 拼接转义问题
 PAYLOAD=$(INVOKE_SECRET_VALUE="$INVOKE_SECRET_VALUE" OSS_AK_ID="${ALIYUN_OSS_VIDEO_ACCESS_KEY_ID:?}" \
 OSS_SK="${ALIYUN_OSS_VIDEO_SECRET_KEY:?}" CB_SECRET="${CALLBACK_SECRET:?}" \
-GPU_BODY="$GPU_BODY" IMAGE="$IMAGE" FN_NAME="$FN_NAME" LOG_PROJECT="video-2022-logs" LOG_STORE="transcode-fn${TARGET:+-$TARGET}" python3 - <<'PYEOF'
+GPU_BODY="$GPU_BODY" IMAGE="$IMAGE" FN_NAME="$FN_NAME" LOG_PROJECT="video-2022-logs" LOG_STORE="transcode-fn${TARGET:+-$TARGET}" uv run --no-project python - <<'PYEOF'
 import json, os
 payload = {
     "functionName": os.environ["FN_NAME"],
@@ -41,8 +41,8 @@ payload = {
         "OSS_SECRET_KEY": os.environ["OSS_SK"],
         "CALLBACK_SECRET": os.environ["CB_SECRET"],
         "INVOKE_SECRET": os.environ["INVOKE_SECRET_VALUE"],
+        "CALLBACK_ALLOWED_HOST": os.environ.get("TRANSCODE_CALLBACK_HOST", "oneclick.video"),
     },
-    "asyncInvokeConfig": {"maxAsyncRetryAttempts": 0},
     "logConfig": {
         "project": os.environ["LOG_PROJECT"], "logstore": "transcode-fn",
         "enableRequestMetrics": True, "enableInstanceMetrics": True,
@@ -59,7 +59,7 @@ print(json.dumps(payload, ensure_ascii=False))
 PYEOF
 )
 
-urlenc() { python3 -c 'import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1], safe=""))' "$1"; }
+urlenc() { uv run --no-project python -c 'import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1], safe=""))' "$1"; }
 
 # aliyun CLI 路径不支持 $ 字符，GetFunction 用 API 名形式探测
 if aliyun fc GetFunction --functionName "$FN_NAME" >/dev/null 2>&1; then
@@ -76,7 +76,32 @@ else
   }' >/dev/null && echo "trigger created"
 fi
 
-URL=$(aliyun fc ListTriggers --functionName "$FN_NAME" 2>/dev/null | python3 -c "
+# 函数级并发上限是配额，不是预留实例；GPU 仍为最小实例 0 的按需计费。
+CONCURRENCY="${TRANSCODE_CPU_MAX_CONCURRENCY:-2}"
+if [ "$GPU_MODE" = "gpu" ]; then CONCURRENCY="${TRANSCODE_GPU_MAX_CONCURRENCY:-2}"; fi
+case "$CONCURRENCY" in ''|*[!0-9]*|0) echo '并发上限必须为正整数' >&2; exit 1;; esac
+aliyun fc PutConcurrencyConfig --functionName "$FN_NAME" \
+  --body "{\"reservedConcurrency\":$CONCURRENCY}" >/dev/null
+aliyun fc PutAsyncInvokeConfig --functionName "$FN_NAME" \
+  --body '{"maxAsyncRetryAttempts":0,"maxAsyncEventAgeInSeconds":120,"asyncTask":true}' >/dev/null
+
+# 不用创建/更新命令的退出码冒充配置生效；读取并逐项核对。
+FN_NAME="$FN_NAME" IMAGE="$IMAGE" CONCURRENCY="$CONCURRENCY" uv run --no-project python - <<'PYVERIFY'
+import json, os, subprocess
+
+def read(api):
+    result = subprocess.run(["aliyun", "fc", api, "--functionName", os.environ["FN_NAME"]],
+                            capture_output=True, text=True, check=True)
+    return json.loads(result.stdout[result.stdout.index("{"):])
+
+fn = read("GetFunction")
+assert fn["customContainerConfig"]["image"] == os.environ["IMAGE"], "部署镜像未生效"
+assert read("GetConcurrencyConfig")["reservedConcurrency"] == int(os.environ["CONCURRENCY"])
+assert read("GetAsyncInvokeConfig")["maxAsyncRetryAttempts"] == 0
+print("配置核对通过，镜像:", fn["customContainerConfig"].get("resolvedImageUri"))
+PYVERIFY
+
+URL=$(aliyun fc ListTriggers --functionName "$FN_NAME" 2>/dev/null | uv run --no-project python -c "
 import json,sys
 try:
     d=json.load(sys.stdin)

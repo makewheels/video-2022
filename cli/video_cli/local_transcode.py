@@ -9,13 +9,15 @@ display short side decides lanes; never upscale; no 480p lane.
 """
 import json
 import os
+import re
 import shutil
 import subprocess
+from fractions import Fraction
 
 # Resolution label -> output short side (pixels). Mirrors server ResolutionPlanner.
 RESOLUTION_SHORT_SIDES = {"720p": 720, "1080p": 1080}
 
-HDR_DYNAMIC_RANGES = ("HDR10", "HLG", "PQ", "DOLBY_VISION", "UNKNOWN")
+HDR_DYNAMIC_RANGES = ("HDR10", "HLG", "PQ", "DOLBY_VISION", "HDR10_PLUS", "UNKNOWN")
 
 TRANSFER_MAP = {"smpte2084": "PQ", "arib-std-b67": "HLG"}
 
@@ -30,6 +32,7 @@ def ensure_tools():
 def _parse_fraction(value, default=None):
     if not value or value == "0/0":
         return default
+    value = str(value)
     if "/" in value:
         num, den = value.split("/", 1)
         try:
@@ -51,6 +54,8 @@ def _detect_dynamic_range(video):
     pix_fmt = video.get("pix_fmt")
     if is_dovi:
         return "DOLBY_VISION"
+    if any("2094-40" in t or "HDR10+" in t for t in side_data_types):
+        return "HDR10_PLUS"
     if transfer == "PQ":
         return "HDR10"
     if transfer == "HLG":
@@ -85,8 +90,6 @@ def probe(filepath):
         if side.get("side_data_type") == "Display Matrix":
             rotation = ((int(float(side.get("rotation", 0))) % 360) + 360) % 360
     display_width, display_height = width, height
-    if rotation in (90, 270):
-        display_width, display_height = height, width
     sar = video.get("sample_aspect_ratio") or "1:1"
     try:
         sar_num, sar_den = (int(x) for x in sar.split(":"))
@@ -95,9 +98,20 @@ def probe(filepath):
     except ValueError:
         pass
 
+    if rotation in (90, 270):
+        display_width, display_height = display_height, display_width
+
     duration = float(fmt.get("duration") or video.get("duration") or 0)
     bit_rate = fmt.get("bit_rate") or video.get("bit_rate")
 
+    # 读取首帧 SEI，静态/动态 HDR 不能仅凭容器标签判定。
+    frame_result = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0",
+                                   "-read_intervals", "%+#1", "-show_frames", "-of", "json", filepath],
+                                  capture_output=True, text=True, check=True)
+    side_data = list(video.get("side_data_list") or [])
+    for frame in json.loads(frame_result.stdout).get("frames", []):
+        side_data.extend(frame.get("side_data_list") or [])
+    video["side_data_list"] = side_data
     dynamic_range = _detect_dynamic_range(video)
 
     pix_fmt = video.get("pix_fmt")
@@ -118,17 +132,20 @@ def probe(filepath):
         "bitrate_kbps": int(int(bit_rate) / 1000) if bit_rate else None,
         "has_audio": bool(audio_streams),
         "audio_track_count": len(audio_streams),
-        "frame_rate": _parse_fraction(avg_fps),
+        "frame_rate": avg_fps or r_fps,
         "frame_rate_mode": frame_rate_mode,
         "sar": sar,
         "rotation": rotation,
         "pix_fmt": pix_fmt,
-        "bit_depth": 10 if (pix_fmt and "10" in pix_fmt) else 8,
+        "bit_depth": int(re.search(r"p(9|10|12|14|16)(?:le|be)", pix_fmt).group(1))
+        if pix_fmt and re.search(r"p(9|10|12|14|16)(?:le|be)", pix_fmt) else 8,
         "color_primaries": video.get("color_primaries"),
         "color_transfer": color_transfer,
         "color_space": video.get("color_space"),
         "color_range": video.get("color_range"),
         "dynamic_range": dynamic_range,
+        "hdr_side_data": list({s["side_data_type"]: s for s in side_data if s.get("side_data_type") in
+                               ("Mastering display metadata", "Content light level metadata")}.values()),
     }
 
 
@@ -163,6 +180,48 @@ def output_size(display_width, display_height, resolution):
     return w - (w % 2), h - (h % 2)
 
 
+def require_supported_media(info):
+    if info.get("bit_depth", 8) > 10:
+        raise RuntimeError("本地编码尚未验证保留超过 10-bit 的原片，已停止")
+    if info.get("dynamic_range") in ("DOLBY_VISION", "HDR10_PLUS", "UNKNOWN"):
+        raise RuntimeError("本地尚未验证保留此 HDR 元数据，已停止；不会转为 SDR 或调用云转码")
+
+
+def _static_hdr_params(info):
+    side_data = {x["side_data_type"]: x for x in info.get("hdr_side_data") or []}
+    params = []
+    mastering = side_data.get("Mastering display metadata")
+    if mastering:
+        coordinates = []
+        for label, color in (("G", "green"), ("B", "blue"), ("R", "red"), ("WP", "white_point")):
+            values = [int(Fraction(mastering[color + "_" + axis]) * 50000) for axis in ("x", "y")]
+            coordinates.append(f"{label}({values[0]},{values[1]})")
+        peak = int(Fraction(mastering["max_luminance"]) * 10000)
+        minimum = int(Fraction(mastering["min_luminance"]) * 10000)
+        params.append("master-display=" + "".join(coordinates) + f"L({peak},{minimum})")
+    light = side_data.get("Content light level metadata")
+    if light:
+        params.append(f"max-cll={light['max_content']},{light['max_average']}")
+    return ":".join(params)
+
+
+def _validate_output(info, output):
+    measured = probe(output)
+    if measured["dynamic_range"] != info.get("dynamic_range", "SDR"):
+        raise RuntimeError("本地输出动态范围与原片不符，停止上传")
+    if measured["audio_track_count"] != info.get("audio_track_count", 0):
+        raise RuntimeError("本地输出音轨数量与原片不符，停止上传")
+    original = {x["side_data_type"]: x for x in info.get("hdr_side_data") or []}
+    actual = {x["side_data_type"]: x for x in measured.get("hdr_side_data") or []}
+    for kind, fields in original.items():
+        for key, value in fields.items():
+            if key == "side_data_type":
+                continue
+            if key not in actual.get(kind, {}) or Fraction(str(value)) != Fraction(str(actual[kind][key])):
+                raise RuntimeError("本地 HDR 静态元数据未完整保留，停止上传")
+    return measured
+
+
 def transcode_hls(input_path, out_dir, transcode_id, out_size, info=None):
     """Produce {transcode_id}.m3u8 + segments inside out_dir.
 
@@ -176,31 +235,41 @@ def transcode_hls(input_path, out_dir, transcode_id, out_size, info=None):
     """
     m3u8_name = f"{transcode_id}.m3u8"
     seg_name = f"{transcode_id}-%05d.ts"
-    info = info or {}
+    info = info or probe(input_path)
 
     out_width, out_height = out_size
     cmd = ["ffmpeg", "-y", "-i", input_path]
-    if (out_width, out_height) != (info.get("display_width"), info.get("display_height")):
-        cmd += ["-vf", f"scale={out_width}:{out_height}"]
+    cmd += ["-vf", f"scale={out_width}:{out_height},setsar=1",
+            "-fps_mode", "passthrough", "-force_key_frames", "expr:gte(t,n_forced*6)"]
 
     dynamic_range = info.get("dynamic_range", "SDR")
+    require_supported_media(info)
     is_hdr = dynamic_range in HDR_DYNAMIC_RANGES
-    if is_hdr:
+    if is_hdr or info.get("bit_depth", 8) > 8:
         # HDR 原片本地同样不静默转 SDR：用 libx265 Main10 保留 10-bit 与色彩 tag；
         # 本机缺能力必须清楚报错，不自动改用收费云端
         cmd += ["-c:v", "libx265", "-profile:v", "main10", "-pix_fmt", "yuv420p10le",
                 "-preset", "veryfast", "-crf", "26"]
+        static_params = _static_hdr_params(info)
+        if static_params:
+            cmd += ["-x265-params", static_params]
         for value, flag in ((info.get("color_primaries"), "-color_primaries"),
                             (info.get("color_transfer"), "-color_trc"),
                             (info.get("color_space"), "-colorspace")):
             if value and value != "unknown":
                 cmd += [flag, value]
-        if not info.get("color_primaries"):
-            cmd += ["-color_primaries", "bt2020"]
     else:
         cmd += ["-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
                 "-pix_fmt", "yuv420p"]
 
+    for field, flag in (("color_primaries", "-color_primaries"), ("color_transfer", "-color_trc"),
+                        ("color_space", "-colorspace"), ("color_range", "-color_range")):
+        if info.get(field) and info[field] != "unknown":
+            cmd += [flag, info[field]]
+    if is_hdr or info.get("bit_depth", 8) > 8:
+        seg_name = f"{transcode_id}-%05d.m4s"
+        cmd += ["-tag:v", "hvc1", "-hls_segment_type", "fmp4",
+                "-hls_fmp4_init_filename", f"{transcode_id}-init.mp4"]
     # 全部音轨映射（多音轨/语言/声道保留）；无音轨时映射为空，不造静音轨
     cmd += ["-map", "0:v:0", "-map", "0:a?"]
     if info.get("has_audio"):
@@ -208,12 +277,26 @@ def transcode_hls(input_path, out_dir, transcode_id, out_size, info=None):
     else:
         cmd += ["-c:a", "copy"]
 
+    master_name = f"{transcode_id}-master.m3u8"
     cmd += ["-hls_time", "6", "-hls_playlist_type", "vod", "-hls_list_size", "0",
+            "-master_pl_name", master_name,
             "-hls_segment_filename", seg_name, "-f", "hls", m3u8_name]
     result = subprocess.run(cmd, cwd=out_dir, capture_output=True, text=True)
     if result.returncode != 0:
         raise RuntimeError(
             f"local transcode failed for {m3u8_name}: {result.stderr[-500:]}")
+    measured = _validate_output(info, os.path.join(out_dir, m3u8_name))
+    master_path = os.path.join(out_dir, master_name)
+    from .hls_codecs import from_master_or_init
+    codecs = from_master_or_init(master_path, os.path.join(out_dir, f"{transcode_id}-init.mp4"))
+    manifest = {
+        "schemaVersion": 1, "transcodeId": transcode_id, "playlistFilename": m3u8_name,
+        "width": measured["display_width"], "height": measured["display_height"],
+        "frameRate": measured["frame_rate"], "dynamicRange": measured["dynamic_range"],
+        "hlsCodecs": codecs,
+    }
+    with open(os.path.join(out_dir, "result.json"), "w", encoding="utf-8") as result_file:
+        json.dump(manifest, result_file)
     return m3u8_name
 
 
@@ -232,7 +315,7 @@ def extract_cover(input_path, out_path, at_seconds):
         tm_cmd = cmd + ["-vf", tm, "-q:v", "2", out_path]
         if subprocess.run(tm_cmd, capture_output=True).returncode == 0 and os.path.exists(out_path):
             return
-        print("Warning: HDR cover tone-map unavailable; output keeps source transfer tags")
+        raise RuntimeError("HDR 封面色调映射失败，未上传失真的封面")
     cmd += ["-q:v", "2", out_path]
     subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -251,7 +334,7 @@ def upload_dir(credentials, local_dir, oss_prefix):
     """Upload every file in local_dir to oss_prefix/<filename>."""
     bucket = _bucket(credentials)
     prefix = oss_prefix.rstrip("/")
-    for name in sorted(os.listdir(local_dir)):
+    for name in sorted(os.listdir(local_dir), key=lambda n: (n.endswith(".m3u8"), n)):
         local_path = os.path.join(local_dir, name)
         if os.path.isfile(local_path):
             bucket.put_object_from_file(prefix + "/" + name, local_path)
