@@ -106,6 +106,19 @@ public class TranscodeCallbackService {
     public void onLocalTranscodeFinish(Transcode transcode) {
         JSONObject manifest = new JSONObject();
         manifest.put("playlistKey", transcode.getM3u8Key());
+        String folder = FilenameUtils.getPath(transcode.getM3u8Key());
+        String localMetadata = readObjectString(folder + "result.json");
+        if (localMetadata != null) {
+            JSONObject output = JSONObject.parseObject(localMetadata);
+            if (output.getIntValue("schemaVersion") != 1
+                    || !transcode.getId().equals(output.getString("transcodeId"))
+                    || !FilenameUtils.getName(transcode.getM3u8Key()).equals(output.getString("playlistFilename"))
+                    || !transcode.getActualWidth().equals(output.getInteger("width"))
+                    || !transcode.getActualHeight().equals(output.getInteger("height"))) {
+                throw new IllegalStateException("本地输出媒体参数与任务不符");
+            }
+            applyActualOutput(transcode, output);
+        }
         String error = validateOutput(transcode, manifest);
         if (error != null) throw new IllegalStateException(error);
         Video video = videoRepository.getById(transcode.getVideoId());
@@ -217,7 +230,11 @@ public class TranscodeCallbackService {
         transcode.setActualHeight(manifest.getInteger("height"));
         transcode.setActualFrameRate(manifest.getString("frameRate"));
         transcode.setActualDynamicRange(manifest.getString("dynamicRange"));
-        transcode.setActualCodecs(manifest.getString("hlsCodecs"));
+        String codecs = manifest.getString("hlsCodecs");
+        if (codecs != null && !codecs.matches("[A-Za-z0-9.,]+")) {
+            throw new IllegalStateException("播放 codec 参数格式非法");
+        }
+        transcode.setActualCodecs(codecs);
     }
 
     private void finishTranscode(Transcode transcode, Video video) {

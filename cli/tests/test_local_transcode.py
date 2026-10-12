@@ -98,5 +98,8 @@ def test_local_static_hdr_preserves_metadata_and_uses_fmp4(tmp_path):
     assert measured["frame_rate"] == info["frame_rate"] == "30/1"
     assert measured["audio_track_count"] == 0
     assert measured["hdr_side_data"] == info["hdr_side_data"]
+    manifest = json.loads((output / "result.json").read_text())
+    assert manifest["hlsCodecs"].startswith("hvc1.")
+    assert manifest["dynamicRange"] == "HDR10"
     subprocess.run(["ffmpeg", "-v", "error", "-i", str(output / playlist), "-f", "null", "-"],
                    capture_output=True, check=True)

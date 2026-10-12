@@ -31,6 +31,8 @@ def _video_encoder_args(policy: dict, is_hdr: bool) -> list:
         args += ["-profile:v", "main10", "-pix_fmt", "p010le"]
         if policy.get("segmentType") == "fmp4":
             args += ["-tag:v", "hvc1"]
+    else:
+        args += ["-pix_fmt", "yuv420p"]
     args += ["-preset", "p4", "-rc", "vbr", "-forced-idr", "1"]
     return args
 

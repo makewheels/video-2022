@@ -244,12 +244,12 @@ jobs:
         uses: Infisical/secrets-action@v1.0.16
         with:
           method: oidc
-          identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
+          identity-id: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && vars.INFISICAL_TRANSCODE_CI_IDENTITY_ID || '322a3702-73a7-4bbe-8f55-ebd6376e15d4' }}
           oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
           domain: ${{ vars.INFISICAL_DOMAIN }}
-          project-slug: video-2022-secrets
+          project-slug: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && 'video-2022-transcode-ci' || 'video-2022-secrets' }}
           env-slug: dev
-          secret-path: /ci
+          secret-path: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && '/' || '/ci' }}
           recursive: false
 
       - name: Set up JDK 21
@@ -310,12 +310,12 @@ jobs:
         uses: Infisical/secrets-action@v1.0.16
         with:
           method: oidc
-          identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
+          identity-id: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && vars.INFISICAL_TRANSCODE_CI_IDENTITY_ID || '322a3702-73a7-4bbe-8f55-ebd6376e15d4' }}
           oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
           domain: ${{ vars.INFISICAL_DOMAIN }}
-          project-slug: video-2022-secrets
+          project-slug: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && 'video-2022-transcode-ci' || 'video-2022-secrets' }}
           env-slug: dev
-          secret-path: /ci
+          secret-path: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && '/' || '/ci' }}
           recursive: false
 
       - name: Set up JDK 21

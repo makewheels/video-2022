@@ -479,4 +479,36 @@ class WatchServiceTest extends BaseIntegrationTest {
                 () -> watchService.getMultivariantPlaylist(context));
     }
 
+    @Test
+    void linkedVideo_playlistUsesOnlyExplicitlySharedLane() {
+        Video origin = createAndSaveVideo("v_link_origin", VideoStatus.READY);
+        Video alias = createAndSaveVideo("v_link_alias", VideoStatus.READY);
+        alias.getLink().setHasLink(true);
+        alias.getLink().setLinkVideoId(origin.getId());
+        alias.setTranscodeIds(List.of("tr_link_shared"));
+        mongoTemplate.save(alias);
+        TsFile init = new TsFile();
+        init.setId("f_link_init");
+        init.setVideoId(origin.getId());
+        init.setTranscodeId("tr_link_shared");
+        init.setFilename("init.mp4");
+        init.setFileType("init");
+        mongoTemplate.save(init);
+        Transcode lane = new Transcode();
+        lane.setId("tr_link_shared");
+        lane.setVideoId(origin.getId());
+        lane.setResolution("720p");
+        lane.setM3u8Content("#EXTM3U\n#EXT-X-MAP:URI=\"init.mp4\"\n#EXT-X-ENDLIST");
+        lane.setTsFileIds(List.of(init.getId()));
+        mongoTemplate.save(lane);
+        Context context = buildContext(alias.getId(), "client", "session");
+        String playlist = watchService.getM3u8Content(context, lane.getId(), "720p");
+        assertTrue(playlist.contains("fileId=" + init.getId()));
+        assertTrue(playlist.contains("videoId=" + alias.getId()));
+        alias.setTranscodeIds(List.of());
+        mongoTemplate.save(alias);
+        assertThrows(com.github.makewheels.video2022.springboot.exception.VideoException.class,
+                () -> watchService.getM3u8Content(context, lane.getId(), "720p"));
+    }
+
 }

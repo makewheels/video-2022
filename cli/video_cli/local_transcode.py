@@ -277,13 +277,27 @@ def transcode_hls(input_path, out_dir, transcode_id, out_size, info=None):
     else:
         cmd += ["-c:a", "copy"]
 
+    master_name = f"{transcode_id}-master.m3u8"
     cmd += ["-hls_time", "6", "-hls_playlist_type", "vod", "-hls_list_size", "0",
+            "-master_pl_name", master_name,
             "-hls_segment_filename", seg_name, "-f", "hls", m3u8_name]
     result = subprocess.run(cmd, cwd=out_dir, capture_output=True, text=True)
     if result.returncode != 0:
         raise RuntimeError(
             f"local transcode failed for {m3u8_name}: {result.stderr[-500:]}")
-    _validate_output(info, os.path.join(out_dir, m3u8_name))
+    measured = _validate_output(info, os.path.join(out_dir, m3u8_name))
+    master_path = os.path.join(out_dir, master_name)
+    with open(master_path, encoding="utf-8") as master:
+        match = re.search(r'CODECS="([^"]+)"', master.read())
+    os.unlink(master_path)
+    manifest = {
+        "schemaVersion": 1, "transcodeId": transcode_id, "playlistFilename": m3u8_name,
+        "width": measured["display_width"], "height": measured["display_height"],
+        "frameRate": measured["frame_rate"], "dynamicRange": measured["dynamic_range"],
+        "hlsCodecs": match.group(1) if match else None,
+    }
+    with open(os.path.join(out_dir, "result.json"), "w", encoding="utf-8") as result_file:
+        json.dump(manifest, result_file)
     return m3u8_name
 
 

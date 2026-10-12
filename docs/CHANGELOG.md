@@ -5,6 +5,7 @@
 - MPS 一次兜底接入持久化轮询，失败不扫描产物；明确尺寸与音轨声道，校验输出尺寸和帧率。
 - HDR10 静态 SEI 补全并复核，LOCAL libx265 静态元数据与 fMP4 对齐；动态 HDR/未知能力明确失败。
 - LOCAL 跳过云 MD5，先建立全部适用档位并幂等复用，登记完成才置成功；修正分数帧率及 HLS 十进制 FRAME-RATE。
+- LOCAL 登记读取验证后的实际输出属性，HEVC/fMP4 的真实 CODECS、帧率与 VIDEO-RANGE 贯通主列表。
 - 私密 master/子列表和 transcode/video/init 归属校验，短期 HLS 播放授权；封面重试路径与 READY 幂等。
 - 按 watchId 解析实际 videoId 后签名，缺少 client/session 时生成播放上下文，确保仅传 watchId 的各端也能使用授权地址。
 - 函数并发上限、异步重试零与部署后配置核对；Actions 指定已验证镜像标签回滚；删除无引用的手动部署清单。

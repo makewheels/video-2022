@@ -190,12 +190,13 @@ public class WatchService {
      */
     public String getM3u8Content(Context context, String transcodeId, String resolution) {
         Transcode transcode = transcodeRepository.getById(transcodeId);
-        if (transcode == null || !context.getVideoId().equals(transcode.getVideoId())
+        Video video = videoRepository.getById(context.getVideoId());
+        if (transcode == null || !belongsToVideo(video, transcode)
                 || !resolution.equals(transcode.getResolution())) {
             throw new com.github.makewheels.video2022.springboot.exception.VideoException(
                     ErrorCode.FILE_ACCESS_SIGNATURE_INVALID, "播放任务不属于当前视频或档位");
         }
-        playbackAuthorization.authorize(videoRepository.getById(context.getVideoId()), context);
+        playbackAuthorization.authorize(video, context);
         //找到transcode对应的tsFiles
         List<TsFile> tsFiles = tsFileRepository.getByIds(transcode.getTsFileIds());
         Map<String, TsFile> fileMap = new java.util.HashMap<>();
@@ -241,7 +242,7 @@ public class WatchService {
      * 构建带签名的分片访问 URL（TS 与 fMP4 init/分片共用）
      */
     private String buildSignedAccessUrl(Context context, Transcode transcode, TsFile tsFile) {
-        if (!context.getVideoId().equals(tsFile.getVideoId())
+        if (!transcode.getVideoId().equals(tsFile.getVideoId())
                 || !transcode.getId().equals(tsFile.getTranscodeId())) {
             throw new com.github.makewheels.video2022.springboot.exception.VideoException(
                     ErrorCode.FILE_ACCESS_SIGNATURE_INVALID, "播放分片不属于当前视频");
@@ -305,6 +306,7 @@ public class WatchService {
         for (Transcode transcode : transcodeList) {
             // 主播放列表只发布登记成功且产物完整的档位，失败/进行中档位不出现
             if (!transcode.isSuccessStatus()
+                    || !belongsToVideo(video, transcode)
                     || transcode.getTsFileIds() == null
                     || transcode.getTsFileIds().isEmpty()) {
                 continue;
@@ -321,6 +323,13 @@ public class WatchService {
                     .append("\n");
         }
         return stringBuilder.toString();
+    }
+    private boolean belongsToVideo(Video video, Transcode transcode) {
+        if (video == null) return false;
+        if (video.getId().equals(transcode.getVideoId())) return true;
+        return video.getLink() != null && Boolean.TRUE.equals(video.getLink().getHasLink())
+                && transcode.getVideoId().equals(video.getLink().getLinkVideoId())
+                && video.getTranscodeIds() != null && video.getTranscodeIds().contains(transcode.getId());
     }
     private void appendMediaAttributes(StringBuilder stringBuilder, Transcode transcode) {
         // 真实输出属性：有数据才写，不造假值
