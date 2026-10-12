@@ -1,11 +1,11 @@
 """协议 v1 公共库：请求校验、回调、manifest 构建。CPU/GPU 函数共用。"""
+import hmac
 import json
 import os
-import hmac
 from pathlib import PurePosixPath
-from urllib.parse import urlparse
 from urllib import request as urlrequest
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 
 SCHEMA_VERSION = 1
 

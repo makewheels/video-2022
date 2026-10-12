@@ -3,6 +3,7 @@ import json
 import re
 import subprocess
 
+
 class UnsupportedMediaError(RuntimeError):
     """确定无法保留媒体，禁止重复收费尝试。"""
 
@@ -16,7 +17,7 @@ TRANSFER_MAP = {
 
 def run_ffprobe(input_path: str) -> dict:
     cmd = ["ffprobe", "-v", "error", "-show_format", "-show_streams", "-show_data", "-of", "json", input_path]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=600)
     if result.returncode != 0:
         raise RuntimeError(f"ffprobe 失败: {result.stderr[-500:]}")
     return json.loads(result.stdout)
@@ -103,7 +104,7 @@ def build_media_info(input_path: str) -> dict:
     # HEVC 静态/HDR10+ SEI 常出现在解码帧上，不能只看容器 stream tags。
     frame = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0",
                             "-read_intervals", "%+#1", "-show_frames", "-of", "json", input_path],
-                           capture_output=True, text=True, timeout=600)
+                           capture_output=True, text=True, check=False, timeout=600)
     if frame.returncode != 0:
         raise RuntimeError("首帧媒体元数据探测失败")
     frames = json.loads(frame.stdout).get("frames", [])

@@ -5,9 +5,9 @@ import sys
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from common import media, protocol  # noqa: E402
-from common.job import upload_all_files  # noqa: E402
-from gpu import transcode  # noqa: E402
+from common import media, protocol
+from common.job import upload_all_files
+from gpu import transcode
 
 
 def request():

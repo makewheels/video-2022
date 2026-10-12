@@ -29,7 +29,7 @@ def handle_remux(input_path: str, work_dir: str, oss, body: dict) -> dict:
             "-hls_list_size", "0", "-hls_segment_filename",
             os.path.join(hls_dir, segment_pattern), "-f", "hls",
             os.path.join(hls_dir, playlist_name)]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=3600)
     if result.returncode != 0:
         raise RuntimeError(f"remux 失败: {result.stderr[-500:]}")
 

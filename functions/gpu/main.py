@@ -11,8 +11,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, "/usr/src/app")
 
-from common import job, protocol  # noqa: E402
-from gpu import transcode  # noqa: E402
+from common import job, protocol
+from gpu import transcode
 
 INVOKE_SECRET = os.environ.get("INVOKE_SECRET", "")
 
@@ -22,7 +22,7 @@ HANDLERS = {
 
 
 class Handler(BaseHTTPRequestHandler):
-    def do_POST(self):  # noqa: N802
+    def do_POST(self):
         try:
             length = int(self.headers.get("Content-Length", 0))
             if length <= 0 or length > 65536:
@@ -43,7 +43,7 @@ class Handler(BaseHTTPRequestHandler):
             print(f"[server] 请求处理异常: {e}")
             self._respond(200, {"ok": False, "error": "internal error"})
 
-    def do_GET(self):  # noqa: N802
+    def do_GET(self):
         self._respond(200, {"ok": True, "service": "transcode-gpu"})
 
     def _respond(self, status: int, payload: dict):
@@ -54,7 +54,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
-    def log_message(self, fmt, *args):  # noqa: A003
+    def log_message(self, fmt, *args):
         print(f"[server] {self.address_string()} {fmt % args}")
 
 

@@ -1,6 +1,6 @@
 """给已编码 HEVC 补入源片 HDR10 静态 SEI，重封装时保留包时间戳及所有音轨。"""
-from fractions import Fraction
 import struct
+from fractions import Fraction
 
 
 def _scaled(value, scale):

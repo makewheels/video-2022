@@ -103,7 +103,7 @@ def handle_transcode(input_path: str, work_dir: str, oss, body: dict) -> dict:
     encoded = os.path.join(work_dir, "encoded.mp4")
     cmd += ["-f", "mp4", encoded]
 
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=3600)
     if result.returncode != 0:
         raise RuntimeError(f"NVENC 编码失败: {result.stderr[-800:]}")
 
@@ -115,7 +115,7 @@ def handle_transcode(input_path: str, work_dir: str, oss, body: dict) -> dict:
         package += ["-tag:v", "hvc1", "-hls_segment_type", "fmp4"]
     package += ["-hls_segment_filename", os.path.join(hls_dir, segment_pattern),
                 "-f", "hls", os.path.join(hls_dir, playlist_name)]
-    result = subprocess.run(package, capture_output=True, text=True, timeout=3600)
+    result = subprocess.run(package, capture_output=True, text=True, check=False, timeout=3600)
     if result.returncode != 0:
         raise RuntimeError("HLS 封装失败: " + result.stderr[-500:])
 

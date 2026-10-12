@@ -4,10 +4,14 @@ import os
 import shutil
 import tempfile
 
-from common.oss_client import OssClient
 from common.media import UnsupportedMediaError
-from common.protocol import (SCHEMA_VERSION, build_failure_payload,
-                             build_success_manifest, send_callback)
+from common.oss_client import OssClient
+from common.protocol import (
+    SCHEMA_VERSION,
+    build_failure_payload,
+    build_success_manifest,
+    send_callback,
+)
 
 CALLBACK_SECRET_ENV = "CALLBACK_SECRET"
 

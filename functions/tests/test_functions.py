@@ -3,19 +3,18 @@
 覆盖：PROBE（SDR/HDR 识别）、COVER（含 HDR tone-map）、remux、NVENC 编码路径
 （本地无 GPU，encoder 参数桩替换为 libx264/libx265 验证命令构建与 HLS 产物）。
 """
-import json
 import os
 import subprocess
+import sys
 from types import SimpleNamespace
 
 import pytest
 
-import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from common import media  # noqa: E402
-from cpu import cover, probe, remux  # noqa: E402
-from gpu import transcode as gpu_transcode  # noqa: E402
+from common import media
+from cpu import cover, probe, remux
+from gpu import transcode as gpu_transcode
 
 FFMPEG = "ffmpeg"
 
@@ -267,9 +266,9 @@ def test_gpu_static_hdr_metadata_survives_packaging(tmp_path, stub_encoder):
     subprocess.run([
         FFMPEG, "-y", "-f", "lavfi", "-i", "testsrc2=duration=2:size=320x240:rate=30",
         "-c:v", "libx265", "-pix_fmt", "yuv420p10le", "-x265-params",
-        "colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:"
+        ("colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:"
         "master-display=G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,1):"
-        "max-cll=1000,400", str(source),
+        "max-cll=1000,400"), str(source),
     ], capture_output=True, check=True)
     policy = {
         "outputWidth": 320, "outputHeight": 240,

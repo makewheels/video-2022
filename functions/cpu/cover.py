@@ -4,7 +4,6 @@ import subprocess
 
 from common import media
 
-
 HDR_ZSCALE_FILTER = (
     "zscale=t=linear:npl=100,format=gbrpf32le,"
     "zscale=p=bt709,tonemap=tonemap=hable:desat=0,"
@@ -23,7 +22,7 @@ def _extract_frame(input_path: str, out_path: str, at_seconds: float,
     if hdr_filter:
         cmd += ["-vf", hdr_filter]
     cmd += ["-q:v", "2", out_path]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=600)
     return result.returncode == 0 and os.path.exists(out_path)
 
 
