@@ -38,7 +38,7 @@ jobs:
       - name: Test CPU and GPU functions
         env:
           PYTHONDONTWRITEBYTECODE: '1'
-        run: uv run --no-project --with pytest --with oss2 --with av==16.0.1 pytest functions/tests -p no:cacheprovider
+        run: uv run --isolated --managed-python --python 3.12 --no-project --with pytest --with oss2==2.18.4 --with av==16.0.1 pytest functions/tests -p no:cacheprovider
       - name: Build GPU candidate image and verify encoder is compiled
         run: |
           set -euo pipefail
@@ -220,7 +220,7 @@ jobs:
   api-e2e-tests:
     name: API E2E 测试
     needs: build-e2e-artifacts
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -286,7 +286,7 @@ jobs:
   browser-e2e-tests:
     name: 浏览器 E2E 测试
     needs: build-e2e-artifacts
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -515,7 +515,7 @@ jobs:
     steps:
       - name: Check results
         run: |
-          # E2E 只在推送 master 时运行（取密范围限制），PR 上为 skipped，允许通过；其余 job 必须 success
+          # E2E 在 master push 或仓库成员手动触发时运行；普通 PR 不取密，允许 skipped；其余 job 必须 success
           if [ "${{ needs.lint.result }}" != "success" ] || \
              [ "${{ needs.transcode-worker-tests.result }}" != "success" ] || \
              [ "${{ needs.backend-tests.result }}" != "success" ] || \

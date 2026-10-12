@@ -203,6 +203,17 @@ def _hevc_codec_string(video_stream: dict) -> str:
     return f"hvc1.{space}{profile}.{compatibility:X}.{tier}{ptl[11]}" + ("." + suffix if suffix else "")
 
 
+def _aac_codec_string(stream: dict) -> str:
+    data = _extradata(stream)
+    if data:
+        object_type = data[0] >> 3
+        if object_type == 31 and len(data) > 1:
+            object_type = 32 + ((data[0] & 7) << 3) + (data[1] >> 5)
+    else:
+        object_type = {"LC": 2, "HE-AAC": 5, "HE-AACv2": 29, "LD": 23, "ELD": 39}.get(stream.get("profile"))
+    return f"mp4a.40.{object_type}" if object_type else None
+
+
 def build_hls_codecs(video_stream: dict, audio_stream: dict) -> str:
     """HLS CODECS 属性值。无音轨时只给视频 codec，不造假音频。"""
     if video_stream is None:
@@ -217,8 +228,11 @@ def build_hls_codecs(video_stream: dict, audio_stream: dict) -> str:
         parts = []
     if not parts or parts[0] is None:
         return None
-    if audio_stream is not None and audio_stream.get("codec_name") == "aac":
-        parts.append("mp4a.40.2")
+    if audio_stream is not None:
+        audio_codec = _aac_codec_string(audio_stream) if audio_stream.get("codec_name") == "aac" else None
+        if audio_codec is None:
+            return None
+        parts.append(audio_codec)
     return ",".join(parts) if parts else None
 
 

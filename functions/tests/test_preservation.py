@@ -82,3 +82,9 @@ def test_playlist_is_published_last(tmp_path):
     objects = upload_all_files(Oss(), str(tmp_path), "output")
     assert uploaded[-1] == "output/a.m3u8"
     assert next(x for x in objects if x["key"].endswith("init.mp4"))["type"] == "init"
+
+
+def test_aac_codec_follows_audio_specific_config():
+    assert media._aac_codec_string({"extradata": "\n00000000: 2b92 08  ..."}) == "mp4a.40.5"
+    assert media._aac_codec_string({"profile": "HE-AACv2"}) == "mp4a.40.29"
+    assert media._aac_codec_string({}) is None
