@@ -462,9 +462,10 @@ class WatchServiceTest extends BaseIntegrationTest {
         Video video = createAndSaveVideo("v_private_signed", VideoStatus.READY);
         video.setVisibility("PRIVATE");
         mongoTemplate.save(video);
-        Context context = buildContext(video.getId(), "client", "session");
+        Context context = buildContext(null, "client", "session");
         String url = watchService.getWatchInfo(context, video.getWatch().getWatchId())
                 .getData().getMultivariantPlaylistUrl();
+        assertEquals(video.getId(), context.getVideoId());
         var params = UriComponentsBuilder.fromUriString(url).build().getQueryParams();
         MockHttpServletRequest request = new MockHttpServletRequest();
         for (String key : List.of("playbackTime", "playbackNonce", "playbackSign")) {

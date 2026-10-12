@@ -160,6 +160,9 @@ public class WatchService {
         }
 
         String videoId = video.getId();
+        context.setVideoId(videoId);
+        if (StringUtils.isBlank(context.getClientId())) context.setClientId(IdUtil.nanoId());
+        if (StringUtils.isBlank(context.getSessionId())) context.setSessionId(IdUtil.nanoId());
         WatchInfoVO watchInfoVO = new WatchInfoVO();
         watchInfoVO.setVideoId(videoId);
         //通过videoId查找封面

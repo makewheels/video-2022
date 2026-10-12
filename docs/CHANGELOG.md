@@ -6,6 +6,7 @@
 - HDR10 静态 SEI 补全并复核，LOCAL libx265 静态元数据与 fMP4 对齐；动态 HDR/未知能力明确失败。
 - LOCAL 跳过云 MD5，先建立全部适用档位并幂等复用，登记完成才置成功；修正分数帧率及 HLS 十进制 FRAME-RATE。
 - 私密 master/子列表和 transcode/video/init 归属校验，短期 HLS 播放授权；封面重试路径与 READY 幂等。
+- 按 watchId 解析实际 videoId 后签名，缺少 client/session 时生成播放上下文，确保仅传 watchId 的各端也能使用授权地址。
 - 函数并发上限、异步重试零与部署后配置核对；Actions 指定已验证镜像标签回滚；删除无引用的手动部署清单。
 - CI 函数测试固定运行依赖并使用独立的托管 Python，避免 Ubuntu 系统旧 OpenSSL 包干扰；手动 CI 可完整运行 API/浏览器 E2E，PR 不取密。
 - 本地后端 608 项、CLI 139 项、函数 21 项通过；完整云端与真机门槛仍以验收记录为准。
