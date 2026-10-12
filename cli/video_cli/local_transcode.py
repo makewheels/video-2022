@@ -287,14 +287,13 @@ def transcode_hls(input_path, out_dir, transcode_id, out_size, info=None):
             f"local transcode failed for {m3u8_name}: {result.stderr[-500:]}")
     measured = _validate_output(info, os.path.join(out_dir, m3u8_name))
     master_path = os.path.join(out_dir, master_name)
-    with open(master_path, encoding="utf-8") as master:
-        match = re.search(r'CODECS="([^"]+)"', master.read())
-    os.unlink(master_path)
+    from .hls_codecs import from_master_or_init
+    codecs = from_master_or_init(master_path, os.path.join(out_dir, f"{transcode_id}-init.mp4"))
     manifest = {
         "schemaVersion": 1, "transcodeId": transcode_id, "playlistFilename": m3u8_name,
         "width": measured["display_width"], "height": measured["display_height"],
         "frameRate": measured["frame_rate"], "dynamicRange": measured["dynamic_range"],
-        "hlsCodecs": match.group(1) if match else None,
+        "hlsCodecs": codecs,
     }
     with open(os.path.join(out_dir, "result.json"), "w", encoding="utf-8") as result_file:
         json.dump(manifest, result_file)

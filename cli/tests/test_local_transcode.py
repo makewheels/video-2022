@@ -101,5 +101,7 @@ def test_local_static_hdr_preserves_metadata_and_uses_fmp4(tmp_path):
     manifest = json.loads((output / "result.json").read_text())
     assert manifest["hlsCodecs"].startswith("hvc1.")
     assert manifest["dynamicRange"] == "HDR10"
+    from video_cli.hls_codecs import from_init
+    assert from_init(str(output / "local_hdr-init.mp4")).startswith("hvc1.")
     subprocess.run(["ffmpeg", "-v", "error", "-i", str(output / playlist), "-f", "null", "-"],
                    capture_output=True, check=True)
