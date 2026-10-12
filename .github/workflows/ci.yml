@@ -35,6 +35,10 @@ jobs:
           export PYTHONDONTWRITEBYTECODE=1
           uv run --locked --project transcode-worker ruff check transcode-worker --no-cache
           uv run --locked --project transcode-worker pytest transcode-worker/tests -p no:cacheprovider
+      - name: Test CPU and GPU functions
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: uv run --no-project --with pytest --with oss2 --with av==16.0.1 pytest functions/tests -p no:cacheprovider
       - name: Build GPU candidate image and verify encoder is compiled
         run: |
           set -euo pipefail
@@ -405,7 +409,9 @@ jobs:
 
       - name: Run CLI tests
         working-directory: cli
-        run: uv run --extra test pytest tests/ -v --tb=short
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          uv run --extra test pytest tests/ -v --tb=short
 
   ai-agent-tests:
     name: AI Agent 测试

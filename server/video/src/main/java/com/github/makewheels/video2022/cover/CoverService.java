@@ -56,21 +56,25 @@ public class CoverService {
      * 自建函数封面回调：幂等更新 Cover 与 File（字段级更新，不整文档覆盖视频状态）
      */
     public void applyFcCoverResult(Cover cover, JSONObject manifest) {
+        if (CoverStatus.READY.equals(cover.getStatus())) return;
         String imageKey = manifest.getString("imageKey");
 
+        File file = fileRepository.getById(cover.getFileId());
+        if (file == null) throw new IllegalStateException("封面文件记录不存在");
+        String oldKey = cover.getKey();
+        cover.setKey(imageKey);
+        if (cover.getAccessUrl() != null && oldKey != null) {
+            cover.setAccessUrl(cover.getAccessUrl().replace(oldKey, imageKey));
+        }
+        file.setObjectInfo(fileService.getObject(imageKey));
+        file.setKey(imageKey);
+        file.setFileStatus(FileStatus.READY);
+        mongoTemplate.save(file);
+        fileService.changeObjectAcl(file.getId(), CannedAccessControlList.PublicRead.toString());
         cover.setStatus(CoverStatus.READY);
         cover.setFinishTime(new Date());
         cover.setResult(manifest);
         mongoTemplate.save(cover);
-
-        File file = fileRepository.getById(cover.getFileId());
-        if (file != null) {
-            file.setAcl(CannedAccessControlList.PublicRead.toString());
-            fileService.changeObjectAcl(file.getId(), CannedAccessControlList.PublicRead.toString());
-            file.setObjectInfo(fileService.getObject(imageKey));
-            file.setFileStatus(FileStatus.READY);
-            mongoTemplate.save(file);
-        }
         log.info("自建封面登记完成 coverId = {}, imageKey = {}", cover.getId(), imageKey);
     }
 }

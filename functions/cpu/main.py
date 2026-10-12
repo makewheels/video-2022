@@ -26,10 +26,11 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):  # noqa: N802
         try:
             length = int(self.headers.get("Content-Length", 0))
+            if length <= 0 or length > 65536:
+                raise protocol.ProtocolError("请求体大小非法")
             raw = self.rfile.read(length)
             body = json.loads(raw)
-            os.environ["_REQUEST_INVOKE_SECRET"] = self.headers.get("X-Invoke-Secret", "")
-            protocol.validate_request(body, INVOKE_SECRET)
+            protocol.validate_request(body, INVOKE_SECRET, self.headers.get("X-Invoke-Secret", ""))
 
             handler = HANDLERS.get(body["operation"])
             if handler is None:

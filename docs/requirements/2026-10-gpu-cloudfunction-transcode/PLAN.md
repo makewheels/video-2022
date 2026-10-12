@@ -1,6 +1,6 @@
 # 自建云函数点播转码与 MPS 兜底
 
-> 状态：执行中。2026-10-10 独立 Worker 原型完成（PR #119，未接入生产）；2026-10-11 P0 只读盘点完成，P1/P2 实现完成（PR #120）；云端部署、GPU 实测与旧资源清理未执行。
+> 状态：执行中。P0–P2 完成；P3 原部署已进行，但完整验收尚有缺口；P4 旧函数与专用 RAM 账号已删除，保留恢复代码和仍使用的资源。2026-10-12 续验修复及证据见 verification.md。
 > 2026-10-07 初稿；2026-10-10 完善计划并启动原型；2026-10-11 根据需求讨论更新并完成 P0 盘点。
 
 执行入口：[需求与阅读顺序](README.md) · [已确认需求](requirements.md) · [设计草案](../../design/cloud-transcode.md) · [验收矩阵](verification.md)
@@ -92,7 +92,7 @@
 
 ## 逐项执行清单与阶段进入条件
 
-每步完成后在 verification.md 记录证据和剩余问题；未满足进入条件不能跳到部署或删除。以下是待执行清单，不代表授权已开始实施。
+每步完成后在 verification.md 记录证据和剩余问题；未满足进入条件不能跳到部署或删除。用户已授权持续实施、发布、验证及按依赖证据清理；未验收项不预填通过。
 
 ### P0：只读盘点和可行性门槛（2026-10-11 完成）
 
@@ -154,15 +154,15 @@
 ### TODO 汇总（2026-10-11，按依赖排序）
 
 1. [x] 合并 PR #119（独立 Worker 原型，CI 全绿，2026-10-11 已合并）
-2. [ ] PR #120 CI 全绿后合并；master 部署保持 legacy 默认（行为零变化）
+2. [x] PR #120 已合并；后续 #121–#134 修正部署，生产已切换 self-hosted
 3. [ ] （不阻塞 P3）PR #119 原型机器（Windows）的 Infisical 登录过期记录——主实现取密走 GitHub Actions OIDC，与本机登录无关；仅当继续用该原型机器做实测时才需恢复
-4. [ ] Infisical `video-2022-secrets` 配置 transcode-fn 路径：FC_DEPLOY_AK、函数 OSS 凭证、invoke/callback secret（P3 前置）
-5. [ ] 新建 MPS 兜底模板（720p/1080p，保留帧率/声道/色彩），回填 `ALIYUN_MPS_FALLBACK_TEMPLATE_*` 配置
-6. [ ] 跑 `deploy-functions.yml`（先 dev）：构建 CPU/GPU 镜像 → FC 创建函数（异步重试 0、SLS 日志）→ 核实账户 GPU 配额
+4. [x] Infisical `video-2022-secrets` 配置 transcode-fn 路径：FC_DEPLOY_AK、函数 OSS 凭证、invoke/callback secret（P3 前置）
+5. [x] 新建 MPS 兜底模板（720p/1080p，保留帧率/声道/色彩），回填 `ALIYUN_MPS_FALLBACK_TEMPLATE_*` 配置
+6. [x] 已在 prod 跑函数部署并真实调用 CPU/T4；首次上线未先完成 dev 验收，作为流程偏差记录，不能补记通过
 7. [ ] 开发环境 `transcode.pipeline=self-hosted` 全链路验证（probe→选档→转码→回调→登记→播放）
 8. [ ] 预算内小批云端验证（≤16 元停新增，余额 6.76 元）：C01–C09 + GPU NVENC HDR 实测 + fMP4 真机播放（T 系列未完成项一并覆盖）
 9. [ ] 生产小范围启用 → 观察逐步扩大（P3 收尾）
-10. [ ] 旧 FC 清理（P4）：`video-transcode` 4 函数删除 + RAM 明文 AK 吊销 + NAS/VPC 资源核查；保留 md5 函数与 MPS 兜底
+10. [x] `video-transcode` 4 函数删除，旧 AK 已删除；2026-10-12 旧 RAM 账号删除。md5 与 MPS 保留，NAS/VPC 继续核查，不扩大删除
 11. [ ] T16/T18 专项回归测试补充（封面并发、跨用户 init segment 访问）
 
 ### P3：小批云验证与发布

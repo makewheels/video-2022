@@ -23,6 +23,32 @@ public class FcTaskRepository {
         mongoTemplate.save(task);
     }
 
+    public void createIfAbsent(FcTask task) {
+        Update update = new Update().setOnInsert("operation", task.getOperation())
+                .setOnInsert("videoId", task.getVideoId()).setOnInsert("refId", task.getRefId())
+                .setOnInsert("provider", task.getProvider()).setOnInsert("attemptId", task.getAttemptId())
+                .setOnInsert("attemptCount", task.getAttemptCount()).setOnInsert("maxAttempts", task.getMaxAttempts())
+                .setOnInsert("status", FcTaskStatus.CREATED).setOnInsert("deadline", task.getDeadline())
+                .setOnInsert("createTime", task.getCreateTime())
+                .setOnInsert("payloadSnapshot", task.getPayloadSnapshot())
+                .setOnInsert("outputBaseDir", task.getOutputBaseDir())
+                .setOnInsert("executionTimeoutMs", task.getExecutionTimeoutMs());
+        mongoTemplate.upsert(Query.query(Criteria.where("id").is(task.getId())), update, FcTask.class);
+    }
+
+    public boolean updateCurrent(FcTask task, String status, Update update) {
+        Query query = Query.query(Criteria.where("id").is(task.getId())
+                .and("attemptId").is(task.getAttemptId()).and("status").is(status));
+        return mongoTemplate.updateFirst(query, update, FcTask.class).getModifiedCount() == 1;
+    }
+
+    public boolean beginCompletion(FcTask task, String manifestKey) {
+        return updateCurrent(task, FcTaskStatus.SUBMITTED,
+                new Update().set("status", FcTaskStatus.PROCESSING)
+                        .set("resultManifestKey", manifestKey)
+                        .set("deadline", new Date(System.currentTimeMillis() + 300_000L)));
+    }
+
     /**
      * 原子认领：只有当任务仍处于 expectStatus 且 attemptId 匹配时才认领成功。
      * 用于超时恢复与回调的互斥，晚到的旧 attempt 拿不到登记权。
@@ -74,7 +100,8 @@ public class FcTaskRepository {
      */
     public List<FcTask> findTimeoutUnfinished(Date now) {
         Query query = Query.query(Criteria.where("deadline").lt(now)
-                .and("status").in(FcTaskStatus.SUBMITTED, FcTaskStatus.RETRY_WAIT));
+                .and("status").in(FcTaskStatus.SUBMITTED, FcTaskStatus.RETRY_WAIT,
+                        FcTaskStatus.PROCESSING, FcTaskStatus.CREATED));
         return mongoTemplate.find(query, FcTask.class);
     }
 }

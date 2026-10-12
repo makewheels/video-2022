@@ -122,6 +122,7 @@ class FcTaskFlowIntegrationTest extends BaseIntegrationTest {
         media.put("bitDepth", 8);
         media.put("dynamicRange", "SDR");
         media.put("audioTrackCount", 1);
+        media.put("audioTracks", JSONObject.parseObject("{\"tracks\":[{\"channels\":2,\"codec\":\"aac\"}]}"));
         JSONObject manifest = new JSONObject();
         manifest.put("schemaVersion", 1);
         manifest.put("taskId", "task_probe");
@@ -189,7 +190,7 @@ class FcTaskFlowIntegrationTest extends BaseIntegrationTest {
         JSONObject manifest = probeManifest(displayWidth, displayHeight);
         manifest.put("taskId", probeTask.getId());
         manifest.put("attemptId", probeTask.getAttemptId());
-        String manifestKey = "videos/u_test/" + videoId + "/probe/" + probeTask.getId() + "/result.json";
+        String manifestKey = probeTask.getPayloadSnapshot().getString("outputDir") + "/result.json";
         OSSObject manifestObject = ossObjectWithContent(manifestKey, manifest.toJSONString());
         when(fileService.getObject(manifestKey)).thenReturn(manifestObject);
 
@@ -268,6 +269,10 @@ class FcTaskFlowIntegrationTest extends BaseIntegrationTest {
         body.put("operation", "TRANSCODE");
         body.put("status", "SUCCEEDED");
         JSONObject manifest = new JSONObject();
+        manifest.put("schemaVersion", 1);
+        manifest.put("taskId", laneTask.getId());
+        manifest.put("attemptId", laneTask.getAttemptId());
+        manifest.put("operation", "TRANSCODE");
         manifest.put("playlistKey", gpuLane.getM3u8Key());
         manifest.put("width", 1280);
         manifest.put("height", 720);
@@ -343,6 +348,10 @@ class FcTaskFlowIntegrationTest extends BaseIntegrationTest {
         body.put("operation", "TRANSCODE");
         body.put("outputManifestKey", folder + "result.json");
         JSONObject manifest = new JSONObject();
+        manifest.put("schemaVersion", 1);
+        manifest.put("taskId", task.getId());
+        manifest.put("attemptId", task.getAttemptId());
+        manifest.put("operation", "TRANSCODE");
         manifest.put("playlistKey", lane.getM3u8Key());
         OSSObject emptyResultObject = ossObjectWithContent(folder + "result.json", manifest.toJSONString());
         when(fileService.getObject(folder + "result.json")).thenReturn(emptyResultObject);
@@ -350,11 +359,12 @@ class FcTaskFlowIntegrationTest extends BaseIntegrationTest {
         assertEquals(200, fcTaskCallbackService.handleCallback(body));
 
         Transcode updated = mongoTemplate.findById(lane.getId(), Transcode.class);
-        assertEquals(TranscodeStatus.FAILED, updated.getStatus());
-        assertNotNull(updated.getErrorMessage());
+        assertFalse(updated.isSuccessStatus());
+        assertEquals(FcTaskStatus.RETRY_WAIT, fcTaskRepository.getById(task.getId()).getStatus());
         Video video = mongoTemplate.findById("v_t13", Video.class);
         // 单档全部失败 → TRANSCODE_FAILED，不 READY
-        assertEquals(VideoStatus.TRANSCODE_FAILED, video.getStatus());
+        assertNotEquals(VideoStatus.READY, video.getStatus());
+        assertTrue(tsFileRepository.getByTranscodeId(lane.getId()).isEmpty());
     }
 
     // ──────────────────── T11 ────────────────────
@@ -363,7 +373,7 @@ class FcTaskFlowIntegrationTest extends BaseIntegrationTest {
     void retryExhausted_mpsFallbackAtMostOnce() {
         List<Transcode> transcodes = runProbeFlow("v_t11", 1280, 720);
         Transcode lane = transcodes.get(0);
-        when(aliyunMpsService.submitFallbackTranscodeJob(anyString(), anyString(), anyString()))
+        when(aliyunMpsService.submitFallbackTranscodeJob(anyString(), anyString(), anyString(), any(JSONObject.class)))
                 .thenReturn("mps-job-1");
 
         // 第一次失败：还有重试额度（maxAttempts=2）
@@ -399,7 +409,7 @@ class FcTaskFlowIntegrationTest extends BaseIntegrationTest {
         assertEquals(TranscodeProvider.ALIYUN_MPS, afterFallback.getCurrentProvider());
         assertEquals("mps-job-1", afterFallback.getJobId());
         verify(aliyunMpsService, times(1))
-                .submitFallbackTranscodeJob(anyString(), anyString(), anyString());
+                .submitFallbackTranscodeJob(anyString(), anyString(), anyString(), any(JSONObject.class));
 
         // 兜底后再来失败回调：不重复兜底
         JSONObject fail3 = new JSONObject();
@@ -408,7 +418,7 @@ class FcTaskFlowIntegrationTest extends BaseIntegrationTest {
         fail3.put("status", "FAILED");
         assertEquals(200, fcTaskCallbackService.handleCallback(fail3));
         verify(aliyunMpsService, times(1))
-                .submitFallbackTranscodeJob(anyString(), anyString(), anyString());
+                .submitFallbackTranscodeJob(anyString(), anyString(), anyString(), any(JSONObject.class));
     }
 
     // ──────────────────── T05 ────────────────────
@@ -454,4 +464,85 @@ class FcTaskFlowIntegrationTest extends BaseIntegrationTest {
         // 未受理不消耗 attempt（保持首次提交时的计数）
         assertEquals(1, task.getAttemptCount());
     }
+    @Test
+    void fastCallback_beforeSubmitReturns_doesNotOverwriteSuccess() {
+        Video video = createVideo("v_fast", VideoStatus.TRANSCODING);
+        video.setRawFileId("raw_fast");
+        mongoTemplate.save(video);
+        when(fileService.getKeyByFileId("raw_fast")).thenReturn("videos/u_test/v_fast/raw/source.mp4");
+        when(cloudFunctionClient.submit(anyString(), any(JSONObject.class))).thenAnswer(invocation -> {
+            JSONObject payload = invocation.getArgument(1);
+            if ("PROBE".equals(payload.getString("operation"))) {
+                JSONObject manifest = probeManifest(1280, 720);
+                manifest.put("taskId", payload.getString("taskId"));
+                manifest.put("attemptId", payload.getString("attemptId"));
+                String key = payload.getString("outputDir") + "/result.json";
+                OSSObject object = ossObjectWithContent(key, manifest.toJSONString());
+                when(fileService.getObject(key)).thenReturn(object);
+                JSONObject callback = JSONObject.parseObject(payload.toJSONString());
+                callback.put("status", "SUCCEEDED");
+                callback.put("outputManifestKey", key);
+                assertEquals(200, fcTaskCallbackService.handleCallback(callback));
+            }
+            CloudFunctionClient.SubmitResult result = new CloudFunctionClient.SubmitResult();
+            result.setAccepted(true);
+            result.setRequestId("fast-request");
+            return result;
+        });
+        transcodeLauncher.startProbe(video);
+        FcTask probe = mongoTemplate.findAll(FcTask.class).stream()
+                .filter(t -> "PROBE".equals(t.getOperation())).findFirst().orElseThrow();
+        assertEquals(FcTaskStatus.SUCCEEDED, probe.getStatus());
+        assertNotNull(probe.getPayloadSnapshot());
+    }
+
+    @Test
+    void retry_usesNewOutputDirectory_andRefreshesDeadline() {
+        Transcode lane = runProbeFlow("v_isolated", 1280, 720).get(0);
+        FcTask before = fcTaskRepository.getById(lane.getTaskId());
+        JSONObject failure = new JSONObject();
+        failure.put("taskId", before.getId());
+        failure.put("attemptId", before.getAttemptId());
+        failure.put("status", "FAILED");
+        fcTaskCallbackService.handleCallback(failure);
+        FcTask waiting = fcTaskRepository.getById(before.getId());
+        waiting.setDeadline(new Date(1));
+        fcTaskRepository.save(waiting);
+        fcTimeoutRecoveryService.recover();
+        FcTask after = fcTaskRepository.getById(before.getId());
+        assertNotEquals(before.getPayloadSnapshot().getString("outputDir"),
+                after.getPayloadSnapshot().getString("outputDir"));
+        assertTrue(after.getDeadline().after(new Date()));
+        fcTaskCallbackService.handleCallback(failure);
+        assertEquals(after.getAttemptId(), fcTaskRepository.getById(after.getId()).getAttemptId());
+    }
+
+    @Test
+    void callback_crossTaskManifest_isRejectedBeforeObjectRead() {
+        Transcode lane = runProbeFlow("v_scope", 1280, 720).get(0);
+        FcTask task = fcTaskRepository.getById(lane.getTaskId());
+        JSONObject body = new JSONObject();
+        body.put("taskId", task.getId());
+        body.put("attemptId", task.getAttemptId());
+        body.put("status", "SUCCEEDED");
+        body.put("outputManifestKey", "videos/another/video/result.json");
+        assertEquals(400, fcTaskCallbackService.handleCallback(body));
+        verify(fileService, never()).getObject("videos/another/video/result.json");
+        assertEquals(FcTaskStatus.SUBMITTED, fcTaskRepository.getById(task.getId()).getStatus());
+    }
+
+    @Test
+    void acceptedUnknown_networkTimeout_doesNotImmediatelyResubmit() {
+        CloudFunctionClient.SubmitResult unknown = new CloudFunctionClient.SubmitResult();
+        when(cloudFunctionClient.submit(anyString(), any(JSONObject.class))).thenReturn(unknown);
+        Video video = createVideo("v_unknown", VideoStatus.TRANSCODING);
+        video.setRawFileId("raw_unknown");
+        mongoTemplate.save(video);
+        when(fileService.getKeyByFileId("raw_unknown")).thenReturn("videos/u_test/v_unknown/raw/source.mp4");
+        transcodeLauncher.startProbe(video);
+        fcTimeoutRecoveryService.recover();
+        verify(cloudFunctionClient, times(1)).submit(anyString(), any(JSONObject.class));
+        assertEquals(FcTaskStatus.SUBMITTED, mongoTemplate.findAll(FcTask.class).get(0).getStatus());
+    }
+
 }

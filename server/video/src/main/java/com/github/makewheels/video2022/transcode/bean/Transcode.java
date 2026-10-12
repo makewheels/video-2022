@@ -124,7 +124,7 @@ public class Transcode {
             case TranscodeProvider.ALIYUN_MPS:
                 return StringUtils.equals(status, AliyunTranscodeStatus.TranscodeSuccess);
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION:
-                return true;
+                return CloudFunctionTranscodeStatus.isFinishedStatus(status);
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION_GPU:
             case TranscodeProvider.ALIYUN_CLOUD_FUNCTION_CPU:
             case TranscodeProvider.LOCAL:

@@ -221,6 +221,7 @@ class WatchServiceTest extends BaseIntegrationTest {
     @Test
     void getM3u8Content_replacesFilenamesWithUrls() {
         String videoId = "v_m3u8_001";
+        createAndSaveVideo(videoId, VideoStatus.READY);
         String transcodeId = new ObjectId().toHexString();
 
         // Create TsFiles
@@ -431,4 +432,50 @@ class WatchServiceTest extends BaseIntegrationTest {
         assertEquals(0, result.getCode());
         assertNotNull(result.getData());
     }
+    @Test
+    void getM3u8Content_crossVideoInitAccess_isRejected() {
+        Video video = createAndSaveVideo("v_private_hls", VideoStatus.READY);
+        video.setVisibility("PRIVATE");
+        mongoTemplate.save(video);
+        Transcode lane = new Transcode();
+        lane.setId("tr_private_hls");
+        lane.setVideoId(video.getId());
+        lane.setResolution("720p");
+        lane.setM3u8Content("#EXTM3U\n#EXT-X-MAP:URI=\"init.mp4\"\n#EXT-X-ENDLIST");
+        lane.setTsFileIds(List.of());
+        mongoTemplate.save(lane);
+        Context wrongVideo = buildContext("v_other", "client", "session");
+        assertThrows(com.github.makewheels.video2022.springboot.exception.VideoException.class,
+                () -> watchService.getM3u8Content(wrongVideo, lane.getId(), "720p"));
+        User other = new User();
+        other.setId("u_other");
+        UserHolder.set(other);
+        Context privateContext = buildContext(video.getId(), "client", "session");
+        assertThrows(com.github.makewheels.video2022.springboot.exception.VideoException.class,
+                () -> watchService.getM3u8Content(privateContext, lane.getId(), "720p"));
+        assertThrows(com.github.makewheels.video2022.springboot.exception.VideoException.class,
+                () -> watchService.getMultivariantPlaylist(privateContext));
+    }
+
+    @Test
+    void privatePlaylist_signedAuthorization_allowsOwnerPlaybackWithoutLoginHeader() {
+        Video video = createAndSaveVideo("v_private_signed", VideoStatus.READY);
+        video.setVisibility("PRIVATE");
+        mongoTemplate.save(video);
+        Context context = buildContext(video.getId(), "client", "session");
+        String url = watchService.getWatchInfo(context, video.getWatch().getWatchId())
+                .getData().getMultivariantPlaylistUrl();
+        var params = UriComponentsBuilder.fromUriString(url).build().getQueryParams();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        for (String key : List.of("playbackTime", "playbackNonce", "playbackSign")) {
+            request.addParameter(key, params.getFirst(key));
+        }
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+        UserHolder.remove();
+        assertTrue(watchService.getMultivariantPlaylist(context).startsWith("#EXTM3U"));
+        request.setParameter("playbackSign", "wrong");
+        assertThrows(com.github.makewheels.video2022.springboot.exception.VideoException.class,
+                () -> watchService.getMultivariantPlaylist(context));
+    }
+
 }

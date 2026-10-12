@@ -72,6 +72,11 @@ public class AliyunMpsService {
      * 提交转码任务
      */
     private SubmitJobsResponse runSubmitTranscodeJob(String from, String to, String templateId) {
+        return runSubmitTranscodeJob(from, to, templateId, null);
+    }
+
+    private SubmitJobsResponse runSubmitTranscodeJob(String from, String to, String templateId,
+                                                    JSONObject overrides) {
         //阿里云转码的output特殊，
         //如果你给它 /6253dede8706fe314a47a54d
         //它会输出 /6253dede8706fe314a47a54d.m3u8 和 6253dede8706fe314a47a54d-00001.ts
@@ -83,6 +88,7 @@ public class AliyunMpsService {
         output.put("OutputObject", URLUtil.encode(to));
         output.put("TemplateId", templateId);
         output.put("OutputLocation", "oss-cn-beijing");
+        if (overrides != null) output.putAll(overrides);
         JSONArray outputs = new JSONArray();
         outputs.add(output);
         SubmitJobsRequest request = new SubmitJobsRequest();
@@ -107,7 +113,8 @@ public class AliyunMpsService {
     /**
      * 创建转码任务（兜底专用模板：保留帧率/声道/色彩，配置注入，缺配置返回 null）
      */
-    public String submitFallbackTranscodeJob(String sourceKey, String targetKey, String resolution) {
+    public String submitFallbackTranscodeJob(String sourceKey, String targetKey, String resolution,
+                                              JSONObject overrides) {
         String templateId;
         switch (resolution) {
             case Resolution.R_720P:
@@ -123,7 +130,7 @@ public class AliyunMpsService {
             log.warn("兜底模板未配置，拒绝提交 MPS 兜底任务, resolution = {}", resolution);
             return null;
         }
-        SubmitJobsResponse response = runSubmitTranscodeJob(sourceKey, targetKey, templateId);
+        SubmitJobsResponse response = runSubmitTranscodeJob(sourceKey, targetKey, templateId, overrides);
         if (response == null || response.getBody() == null) return null;
         return response.getBody().getJobResultList().getJobResult().get(0).getJob().getJobId();
     }

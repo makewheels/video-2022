@@ -18,6 +18,10 @@ on:
         default: both
         type: choice
         options: [ cpu, gpu, both ]
+      image_tag:
+        description: 复用或回滚的已有镜像标签（skip_build 时必填，禁止 latest）
+        required: false
+        type: string
       skip_build:
         description: 跳过镜像构建（复用上一 tag）
         required: false
@@ -105,7 +109,7 @@ jobs:
   fc-deploy:
     name: 部署 FC 函数
     needs: [ build-and-push ]
-    # skip_build 时 build job 被 skip，不算失败，部署照常跑（用 latest 镜像）
+    # skip_build 时 build job 被 skip，不算失败，部署照常跑（必须指定已有版本标签）
     if: ${{ !cancelled() && needs.build-and-push.result != 'failure' }}
     runs-on: ubuntu-latest
     permissions:
@@ -127,6 +131,18 @@ jobs:
           secret-path: /
           recursive: true
 
+      - uses: astral-sh/setup-uv@v8.2.0
+        with:
+          python-version: '3.12'
+      - name: 校验复用镜像版本
+        env:
+          REUSE_TAG: ${{ inputs.image_tag }}
+          SKIP_BUILD: ${{ inputs.skip_build }}
+        run: |
+          if [ "$SKIP_BUILD" = true ]; then
+            [[ "$REUSE_TAG" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]+$ ]] && [ "$REUSE_TAG" != latest ]
+          fi
+
       - name: 安装 aliyun CLI
         run: |
           curl -sSL https://aliyuncli.alicdn.com/aliyun-cli-linux-latest-amd64.tgz -o cli.tgz
@@ -142,7 +158,7 @@ jobs:
       - name: 部署 CPU 函数
         if: github.event.inputs.functions != 'gpu'
         env:
-          IMAGE: ${{ env.ACR }}/b4/video-2022-func-cpu:${{ needs.build-and-push.outputs.image_tag || 'latest' }}
+          IMAGE: ${{ env.ACR }}/b4/video-2022-func-cpu:${{ needs.build-and-push.outputs.image_tag || inputs.image_tag }}
           FN: video-2022-${{ github.event.inputs.target }}-transcode-cpu
         run: |
           bash functions/deploy/fc_upsert.sh \
@@ -151,7 +167,7 @@ jobs:
       - name: 部署 GPU 函数
         if: github.event.inputs.functions != 'cpu'
         env:
-          IMAGE: ${{ env.ACR }}/b4/video-2022-func-gpu:${{ needs.build-and-push.outputs.image_tag || 'latest' }}
+          IMAGE: ${{ env.ACR }}/b4/video-2022-func-gpu:${{ needs.build-and-push.outputs.image_tag || inputs.image_tag }}
           FN: video-2022-${{ github.event.inputs.target }}-transcode-gpu
         run: |
           bash functions/deploy/fc_upsert.sh \
@@ -162,5 +178,5 @@ jobs:
           {
             echo "### 函数部署（${{ github.event.inputs.target }}）"
             echo "- 镜像 tag: \`${{ needs.build-and-push.outputs.image_tag }}\`"
-            echo "- 回滚：用上一 tag 重新执行本 workflow（skip_build=true 需先手动改 IMAGE tag）"
+            echo "- 回滚：使用 skip_build=true 与 image_tag 指定上一已验证标签执行本 workflow"
           } >> "$GITHUB_STEP_SUMMARY"

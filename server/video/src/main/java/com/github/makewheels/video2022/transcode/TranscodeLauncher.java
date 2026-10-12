@@ -114,6 +114,7 @@ public class TranscodeLauncher {
         String sourceKey = fileService.getKeyByFileId(video.getRawFileId());
 
         FcTask task = fcTaskSubmitter.createTask("PROBE", videoId, null);
+        if (task.getPayloadSnapshot() != null) return;
         task.setProvider(TranscodeProvider.ALIYUN_CLOUD_FUNCTION_CPU);
         task.setAttemptId(IdUtil.nanoId(16));
         task.setAttemptCount(1);
@@ -123,7 +124,6 @@ public class TranscodeLauncher {
         JSONObject payload = cloudFunctionClient.buildPayload(task, null, sourceKey, outputDir,
                 environmentService.getCallbackUrl("/transcode/cloudFunctionCallback"));
 
-        fcTaskRepository.save(task);
         fcTaskSubmitter.submit(task, payload);
         log.info("已提交 PROBE 任务，videoId = {}, taskId = {}", videoId, task.getId());
     }
@@ -138,7 +138,10 @@ public class TranscodeLauncher {
         Assert.notNull(media, "probe manifest 缺少 mediaInfo");
 
         applyProbeResult(video, media);
-        mongoTemplate.save(video);
+        mongoTemplate.updateFirst(org.springframework.data.mongodb.core.query.Query.query(
+                org.springframework.data.mongodb.core.query.Criteria.where("id").is(videoId)),
+                new org.springframework.data.mongodb.core.query.Update().set("mediaInfo", video.getMediaInfo()),
+                Video.class);
 
         int displayShortSide = Math.min(media.getIntValue("displayWidth"),
                 media.getIntValue("displayHeight"));
@@ -158,19 +161,28 @@ public class TranscodeLauncher {
             transcodes.add(createTranscodeRecord(video, resolution));
         }
 
-        // 第二步：逐档提交（provider 决策 + 协议构建在各 TranscodeService 实现里）
+        // 全部函数任务与 payload 先持久化；任何一档提交前都已有全量恢复身份。
+        List<FcTask> tasks = new ArrayList<>();
         for (Transcode transcode : transcodes) {
             String provider = resolutionPlanner.decideProvider(media, transcode.getResolution());
             transcode.setProvider(provider);
             mongoTemplate.save(transcode);
             TranscodeService transcodeService = transcodeFactory.getService(provider);
-            transcodeService.transcode(video, transcode);
+            tasks.add(transcodeService.prepare(video, transcode));
+        }
+        for (FcTask task : tasks) {
+            if (FcTaskStatus.CREATED.equals(task.getStatus())) {
+                fcTaskSubmitter.submit(task, task.getPayloadSnapshot());
+            }
         }
     }
 
     private Transcode createTranscodeRecord(Video video, String targetResolution) {
-        Transcode transcode = new Transcode();
-        transcode.setId(idService.getTranscodeId());
+        String id = "tr_fc_" + video.getId() + "_" + targetResolution;
+        Transcode transcode = mongoTemplate.findById(id, Transcode.class);
+        if (transcode != null) return transcode;
+        transcode = new Transcode();
+        transcode.setId(id);
         transcode.setUserId(video.getUploaderId());
         transcode.setVideoId(video.getId());
         transcode.setResolution(targetResolution);
@@ -183,7 +195,10 @@ public class TranscodeLauncher {
         if (transcodeIds == null) transcodeIds = new ArrayList<>();
         transcodeIds.add(transcode.getId());
         video.setTranscodeIds(transcodeIds);
-        mongoTemplate.save(video);
+        mongoTemplate.updateFirst(org.springframework.data.mongodb.core.query.Query.query(
+                org.springframework.data.mongodb.core.query.Criteria.where("id").is(video.getId())),
+                new org.springframework.data.mongodb.core.query.Update().addToSet("transcodeIds", transcode.getId()),
+                Video.class);
         return transcode;
     }
 
@@ -243,32 +258,8 @@ public class TranscodeLauncher {
      * 决定用谁转码
      */
     private String getTranscodeProvider(Video video, String targetResolution) {
-        String videoId = video.getId();
-        MediaInfo mediaInfo = video.getMediaInfo();
-
-        //默认用阿里云MPS
-        String transcodeProvider = TranscodeProvider.ALIYUN_MPS;
-        if (!mediaInfo.getVideoCodec().equals(VideoCodec.H264)) {
-            //如果不是h264，用阿里云
-            log.info("决定用谁转码：源视频不是h264，用阿里云MPS转码, videoId = " + videoId);
-
-        } else if (isResolutionOverThanTarget(mediaInfo.getWidth(), mediaInfo.getHeight(), targetResolution)) {
-            //源视分辨率和目标分辨率不一致，用阿里云
-            log.info("决定用谁转码：分辨率OverThanTarget，用阿里云MPS转码, videoId = " + videoId);
-
-        } else if (mediaInfo.getBitrate() > 13000) {
-            //如果源片码率太高，用阿里云压缩码率
-            log.info("决定用谁转码：码率超标，用阿里云MPS转码, videoId = " + videoId);
-
-        } else {
-            //其它情况用阿里云 云函数
-            //本地环境都用阿里云mps转码，不用回调。生产环境才用云函数
-            if (environmentService.isProductionEnv()) {
-                transcodeProvider = TranscodeProvider.ALIYUN_CLOUD_FUNCTION;
-            }
-        }
-        log.info("最终决定用谁转码：transcodeProvider = {}, videoId = {}", transcodeProvider, videoId);
-        return transcodeProvider;
+        // 旧 FC 已退役。legacy 回滚只走仍保留的 MPS，历史回调读取不变。
+        return TranscodeProvider.ALIYUN_MPS;
     }
 
     /**

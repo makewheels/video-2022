@@ -5,6 +5,7 @@ import shutil
 import tempfile
 
 from common.oss_client import OssClient
+from common.media import UnsupportedMediaError
 from common.protocol import (SCHEMA_VERSION, build_failure_payload,
                              build_success_manifest, send_callback)
 
@@ -28,7 +29,8 @@ def run_task(body: dict, handler) -> int:
         oss = OssClient(body["bucket"], body["endpoint"])
         oss.download(body["inputKey"], input_path)
 
-        manifest = handler(input_path, work_dir, oss, body)
+        result = handler(input_path, work_dir, oss, body)
+        manifest = {**result, **build_success_manifest(task_id, attempt_id, operation)}
 
         manifest_key = f"{body['outputDir'].rstrip('/')}/result.json"
         oss.upload_text(json.dumps(manifest, ensure_ascii=False), manifest_key)
@@ -40,19 +42,22 @@ def run_task(body: dict, handler) -> int:
         return 200
     except Exception as e:  # noqa: BLE001 顶层兜底，错误经回调传达
         print(f"[job] 任务失败 taskId = {task_id}: {e}")
-        send_callback(body["callbackUrl"],
-                      build_failure_payload(task_id, attempt_id, operation, str(e)),
-                      callback_secret)
+        failure = build_failure_payload(task_id, attempt_id, operation, str(e))
+        failure["retryable"] = not isinstance(e, UnsupportedMediaError)
+        send_callback(body["callbackUrl"], failure, callback_secret)
         return 200
     finally:
-        shutil.rmtree(work_dir, ignore_errors=True)
+        root = os.path.realpath(tempfile.gettempdir())
+        resolved = os.path.realpath(work_dir)
+        if os.path.commonpath([root, resolved]) == root and os.path.basename(resolved).startswith("vc-"):
+            shutil.rmtree(resolved)
         print(f"[job] 临时目录已清理 taskId = {task_id}")
 
 
 def upload_all_files(oss: OssClient, local_dir: str, output_dir: str) -> list:
     """上传目录下全部文件到 outputDir（key = outputDir/文件名），返回 objects 清单。"""
     objects = []
-    for name in sorted(os.listdir(local_dir)):
+    for name in sorted(os.listdir(local_dir), key=lambda n: (n.endswith(".m3u8"), n)):
         local_path = os.path.join(local_dir, name)
         if not os.path.isfile(local_path):
             continue

@@ -43,6 +43,8 @@ public class WatchService {
     @Resource
     private IpService ipService;
     @Resource
+    private PlaybackAuthorization playbackAuthorization;
+    @Resource
     private MongoTemplate mongoTemplate;
 
     @Resource
@@ -126,14 +128,17 @@ public class WatchService {
     /**
      * 返回的这个url，能获取m3u8内容
      */
-    private String getM3u8Url(String videoId, String clientId, String sessionId, String transcodeId,
-                              String resolution) {
-        return environmentService.getInternalBaseUrl() + "/watchController/getM3u8Content.m3u8?"
+    private String getM3u8Url(Context context, String transcodeId, String resolution) {
+        String videoId = context.getVideoId();
+        String clientId = context.getClientId();
+        String sessionId = context.getSessionId();
+        return playbackAuthorization.signUrl(environmentService.getInternalBaseUrl()
+                + "/watchController/getM3u8Content.m3u8?"
                 + "resolution=" + resolution
                 + "&videoId=" + videoId
                 + "&clientId=" + clientId
                 + "&sessionId=" + sessionId
-                + "&transcodeId=" + transcodeId;
+                + "&transcodeId=" + transcodeId, context);
     }
 
     /**
@@ -164,9 +169,9 @@ public class WatchService {
         watchInfoVO.setVideoStatus(video.getStatus());
 
         //自适应m3u8地址
-        watchInfoVO.setMultivariantPlaylistUrl(environmentService.getInternalBaseUrl()
+        watchInfoVO.setMultivariantPlaylistUrl(playbackAuthorization.signUrl(environmentService.getInternalBaseUrl()
                 + "/watchController/getMultivariantPlaylist.m3u8?videoId=" + videoId
-                + "&clientId=" + context.getClientId() + "&sessionId=" + context.getSessionId());
+                + "&clientId=" + context.getClientId() + "&sessionId=" + context.getSessionId(), context));
 
         //视频播放进度
         Progress progress = progressService.getProgress(
@@ -182,6 +187,12 @@ public class WatchService {
      */
     public String getM3u8Content(Context context, String transcodeId, String resolution) {
         Transcode transcode = transcodeRepository.getById(transcodeId);
+        if (transcode == null || !context.getVideoId().equals(transcode.getVideoId())
+                || !resolution.equals(transcode.getResolution())) {
+            throw new com.github.makewheels.video2022.springboot.exception.VideoException(
+                    ErrorCode.FILE_ACCESS_SIGNATURE_INVALID, "播放任务不属于当前视频或档位");
+        }
+        playbackAuthorization.authorize(videoRepository.getById(context.getVideoId()), context);
         //找到transcode对应的tsFiles
         List<TsFile> tsFiles = tsFileRepository.getByIds(transcode.getTsFileIds());
         Map<String, TsFile> fileMap = new java.util.HashMap<>();
@@ -194,7 +205,7 @@ public class WatchService {
         //拆解m3u8Content
         List<String> lines = new java.util.ArrayList<>(Arrays.asList(m3u8Content.split("\n")));
         for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
+            String line = lines.get(i).trim();
             if (StringUtils.startsWith(line, "#")) {
                 // fMP4 init segment：替换 EXT-X-MAP 的 URI
                 if (StringUtils.startsWith(line, "#EXT-X-MAP:")) {
@@ -227,6 +238,11 @@ public class WatchService {
      * 构建带签名的分片访问 URL（TS 与 fMP4 init/分片共用）
      */
     private String buildSignedAccessUrl(Context context, Transcode transcode, TsFile tsFile) {
+        if (!context.getVideoId().equals(tsFile.getVideoId())
+                || !transcode.getId().equals(tsFile.getTranscodeId())) {
+            throw new com.github.makewheels.video2022.springboot.exception.VideoException(
+                    ErrorCode.FILE_ACCESS_SIGNATURE_INVALID, "播放分片不属于当前视频");
+        }
         String timestamp = String.valueOf(System.currentTimeMillis());
         String nonce = IdUtil.nanoId();
         String signature = fileAccessSignatureService.generateSignature(
@@ -278,7 +294,9 @@ public class WatchService {
             log.warn("getMultivariantPlaylist: 视频不存在, videoId = {}", videoId);
             return "";
         }
-        List<Transcode> transcodeList = transcodeRepository.getByIds(video.getTranscodeIds());
+        playbackAuthorization.authorize(video, context);
+        List<Transcode> transcodeList = video.getTranscodeIds() == null ? List.of()
+                : transcodeRepository.getByIds(video.getTranscodeIds());
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("#EXTM3U\n");
         for (Transcode transcode : transcodeList) {
@@ -288,35 +306,47 @@ public class WatchService {
                     || transcode.getTsFileIds().isEmpty()) {
                 continue;
             }
-            String m3u8Url = getM3u8Url(videoId, clientId, sessionId, transcode.getId(),
+            String m3u8Url = getM3u8Url(context, transcode.getId(),
                     transcode.getResolution());
 
             stringBuilder.append("#EXT-X-STREAM-INF:")
                     .append("BANDWIDTH=").append(transcode.getMaxBitrate())
                     .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate());
-            // 真实输出属性：有数据才写，不造假值
-            Integer w = transcode.getActualWidth() != null
-                    ? transcode.getActualWidth() : transcode.getWidth();
-            Integer h = transcode.getActualHeight() != null
-                    ? transcode.getActualHeight() : transcode.getHeight();
-            if (w != null && h != null) {
-                stringBuilder.append(",RESOLUTION=").append(w).append("x").append(h);
-            }
-            if (StringUtils.isNotBlank(transcode.getActualCodecs())) {
-                stringBuilder.append(",CODECS=\"").append(transcode.getActualCodecs()).append("\"");
-            }
-            if (StringUtils.isNotBlank(transcode.getActualFrameRate())) {
-                stringBuilder.append(",FRAME-RATE=").append(transcode.getActualFrameRate());
-            }
-            if (StringUtils.isNotBlank(transcode.getActualDynamicRange())
-                    && !"SDR".equals(transcode.getActualDynamicRange())) {
-                stringBuilder.append(",VIDEO-RANGE=").append(
-                        "HLG".equals(transcode.getActualDynamicRange()) ? "HLG" : "PQ");
-            }
+            appendMediaAttributes(stringBuilder, transcode);
             stringBuilder.append("\n")
                     .append(m3u8Url)
                     .append("\n");
         }
         return stringBuilder.toString();
     }
+    private void appendMediaAttributes(StringBuilder stringBuilder, Transcode transcode) {
+        // 真实输出属性：有数据才写，不造假值
+        Integer w = transcode.getActualWidth() != null
+                ? transcode.getActualWidth() : transcode.getWidth();
+        Integer h = transcode.getActualHeight() != null
+                ? transcode.getActualHeight() : transcode.getHeight();
+        if (w != null && h != null) {
+            stringBuilder.append(",RESOLUTION=").append(w).append("x").append(h);
+        }
+        if (StringUtils.isNotBlank(transcode.getActualCodecs())) {
+            stringBuilder.append(",CODECS=\"").append(transcode.getActualCodecs()).append("\"");
+        }
+        if (StringUtils.isNotBlank(transcode.getActualFrameRate())) {
+            stringBuilder.append(",FRAME-RATE=").append(decimalFrameRate(transcode.getActualFrameRate()));
+        }
+        if (StringUtils.isNotBlank(transcode.getActualDynamicRange())
+                && !"SDR".equals(transcode.getActualDynamicRange())) {
+            stringBuilder.append(",VIDEO-RANGE=").append(
+                "HLG".equals(transcode.getActualDynamicRange()) ? "HLG" : "PQ");
+        }
+    }
+
+    private String decimalFrameRate(String frameRate) {
+        String[] parts = frameRate.split("/");
+        java.math.BigDecimal numerator = new java.math.BigDecimal(parts[0]);
+        java.math.BigDecimal denominator = parts.length > 1 ? new java.math.BigDecimal(parts[1])
+                : java.math.BigDecimal.ONE;
+        return numerator.divide(denominator, 3, java.math.RoundingMode.HALF_UP).toPlainString();
+    }
+
 }

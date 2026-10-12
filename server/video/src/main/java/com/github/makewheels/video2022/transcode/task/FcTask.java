@@ -55,6 +55,10 @@ public class FcTask {
 
     /** 提交时的协议 payload 快照（重试与超时恢复重提交用；不含秘密） */
     private JSONObject payloadSnapshot;
+    private String outputBaseDir;
+    private String resultManifestKey;
+    private Long executionTimeoutMs;
+    private Integer submitFailures;
 
     @Indexed
     private Date createTime;

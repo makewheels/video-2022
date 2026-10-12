@@ -1,6 +1,11 @@
 """ffprobe 解析与媒体信息 manifest 构建。CPU 函数（PROBE）与 GPU 函数共用。"""
 import json
+import re
 import subprocess
+
+class UnsupportedMediaError(RuntimeError):
+    """确定无法保留媒体，禁止重复收费尝试。"""
+
 
 # 已知的 HDR 传递函数映射；未知组合一律按 UNKNOWN 处理（调用方不得默认 SDR）
 TRANSFER_MAP = {
@@ -10,7 +15,7 @@ TRANSFER_MAP = {
 
 
 def run_ffprobe(input_path: str) -> dict:
-    cmd = ["ffprobe", "-v", "error", "-show_format", "-show_streams", "-of", "json", input_path]
+    cmd = ["ffprobe", "-v", "error", "-show_format", "-show_streams", "-show_data", "-of", "json", input_path]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
     if result.returncode != 0:
         raise RuntimeError(f"ffprobe 失败: {result.stderr[-500:]}")
@@ -39,16 +44,21 @@ def _detect_dynamic_range(video_stream: dict, color_transfer: str) -> tuple:
     side_data_list = video_stream.get("side_data_list", []) or []
     hdr_side_data = {}
     is_dovi = False
+    is_hdr10plus = False
     for side in side_data_list:
         t = side.get("side_data_type", "")
         if "DOVI" in t or "dovi" in t:
             is_dovi = True
+        if "2094-40" in t or "HDR10+" in t:
+            is_hdr10plus = True
         if t in ("Mastering display metadata", "Content light level metadata"):
             hdr_side_data[t] = side
 
     transfer = TRANSFER_MAP.get(color_transfer)
     if is_dovi:
         return "DOLBY_VISION", hdr_side_data
+    if is_hdr10plus:
+        return "HDR10_PLUS", hdr_side_data
     if transfer == "PQ":
         return "HDR10", hdr_side_data
     if transfer == "HLG":
@@ -73,11 +83,11 @@ def build_media_info(input_path: str) -> dict:
     height = int(video["height"])
     rotation = _rotation_of(video_stream=video)
     disp_w, disp_h = width, height
-    if rotation in (90, 270):
-        disp_w, disp_h = height, width
     sar_num, sar_den = _sar_num_den(video)
     if sar_num > 0 and sar_den > 0 and (sar_num, sar_den) != (1, 1):
         disp_w = round(disp_w * sar_num / sar_den)
+    if rotation in (90, 270):
+        disp_w, disp_h = disp_h, disp_w
 
     duration_ms = int(float(fmt.get("duration") or video.get("duration") or 0) * 1000)
     bit_rate = fmt.get("bit_rate") or video.get("bit_rate")
@@ -88,8 +98,20 @@ def build_media_info(input_path: str) -> dict:
     color_space = video.get("color_space") or None
     color_range = video.get("color_range") or None
     pix_fmt = video.get("pix_fmt")
-    bit_depth = 10 if (pix_fmt and "10" in pix_fmt) else (8 if pix_fmt else None)
-    dynamic_range, hdr_side_data = _detect_dynamic_range(video, color_transfer or "")
+    depth = re.search(r"p(9|10|12|14|16)(?:le|be)", pix_fmt or "")
+    bit_depth = int(depth.group(1)) if depth else (8 if pix_fmt else None)
+    # HEVC 静态/HDR10+ SEI 常出现在解码帧上，不能只看容器 stream tags。
+    frame = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0",
+                            "-read_intervals", "%+#1", "-show_frames", "-of", "json", input_path],
+                           capture_output=True, text=True, timeout=600)
+    if frame.returncode != 0:
+        raise RuntimeError("首帧媒体元数据探测失败")
+    frames = json.loads(frame.stdout).get("frames", [])
+    classified = dict(video)
+    classified["side_data_list"] = list(video.get("side_data_list") or [])
+    for item in frames:
+        classified["side_data_list"].extend(item.get("side_data_list") or [])
+    dynamic_range, hdr_side_data = _detect_dynamic_range(classified, color_transfer or "")
 
     frame_rate = video.get("avg_frame_rate") or video.get("r_frame_rate")
     frame_rate_mode = "CFR"
@@ -135,34 +157,50 @@ def build_media_info(input_path: str) -> dict:
     }
 
 
+def _extradata(stream: dict) -> bytes:
+    parts = []
+    for line in (stream.get("extradata") or "").splitlines():
+        if ":" not in line:
+            continue
+        field = line.split(":", 1)[1].strip().split("  ", 1)[0]
+        try:
+            parts.append(bytes.fromhex(field))
+        except ValueError:
+            return b""
+    return b"".join(parts)
+
+
+def _nal_units(data: bytes) -> list:
+    return [part for part in re.split(b"\\x00\\x00(?:\\x00)?\\x01", data) if part]
+
+
 def _avc_codec_string(video_stream: dict) -> str:
-    profile_name = (video_stream.get("profile") or "").lower()
-    if "baseline" in profile_name:
-        profile_idc = "42"
-    elif "main" in profile_name and "10" in profile_name:
-        profile_idc = "2d"  # Main10 (High10) H.264 少见，仅兜底
-    elif "main" in profile_name:
-        profile_idc = "4d"
-    else:
-        profile_idc = "64"  # High 及未知按 High
-    constraint = "00"
-    try:
-        level = int(video_stream.get("level") or 41)
-        level_hex = f"{level:02x}"
-    except (TypeError, ValueError):
-        level_hex = "29"
-    return f"avc1.{profile_idc}{constraint}{level_hex}"
+    data = _extradata(video_stream)
+    if data[:1] == b"\x01" and len(data) >= 4:
+        return "avc1." + data[1:4].hex()
+    sps = next((n for n in _nal_units(data) if n[0] & 31 == 7), None)
+    return "avc1." + sps[1:4].hex() if sps and len(sps) >= 4 else None
 
 
 def _hevc_codec_string(video_stream: dict) -> str:
-    profile_name = (video_stream.get("profile") or "").lower()
-    profile_idc = 2 if "main 10" in profile_name or "main10" in profile_name else 1
-    try:
-        level = int(video_stream.get("level") or 93)
-        level_token = f"L{level}"
-    except (TypeError, ValueError):
-        level_token = "L93"
-    return f"hvc1.1.6.{level_token}.B0"
+    data = _extradata(video_stream)
+    if data[:1] == b"\x01" and len(data) >= 13:
+        ptl = data[1:13]
+    else:
+        sps = next((n for n in _nal_units(data) if (n[0] >> 1) & 63 == 33), None)
+        if not sps:
+            return None
+        rbsp = sps.replace(b"\x00\x00\x03", b"\x00\x00")
+        ptl = rbsp[3:15]
+    if len(ptl) != 12:
+        return None
+    space = ["", "A", "B", "C"][ptl[0] >> 6]
+    profile = ptl[0] & 31
+    compatibility = int(f"{int.from_bytes(ptl[1:5], 'big'):032b}"[::-1], 2)
+    tier = "H" if ptl[0] & 32 else "L"
+    constraints = ptl[5:11].rstrip(b"\x00")
+    suffix = ".".join(f"{x:02X}" for x in constraints)
+    return f"hvc1.{space}{profile}.{compatibility:X}.{tier}{ptl[11]}" + ("." + suffix if suffix else "")
 
 
 def build_hls_codecs(video_stream: dict, audio_stream: dict) -> str:
@@ -177,6 +215,8 @@ def build_hls_codecs(video_stream: dict, audio_stream: dict) -> str:
     else:
         # 非受支持编码不编造 codec 值，返回 None 让主播放列表省略 CODECS
         parts = []
+    if not parts or parts[0] is None:
+        return None
     if audio_stream is not None and audio_stream.get("codec_name") == "aac":
         parts.append("mp4a.40.2")
     return ",".join(parts) if parts else None

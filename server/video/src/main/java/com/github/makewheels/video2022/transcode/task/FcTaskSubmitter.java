@@ -1,80 +1,102 @@
 package com.github.makewheels.video2022.transcode.task;
 
-import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.thread.ThreadUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionClient;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Service;
 import java.util.Date;
 
-/**
- * 自建函数任务提交：生成任务与 attempt、异步提交、处理受理响应。
- * <p>
- * 提交失败（429 / 5xx / 网络异常）不计 attempt：置 RETRY_WAIT 并设短 deadline，
- * 由恢复流程以同一 attemptId 重新提交（同 attemptId 下函数重复执行幂等覆盖同目录）。
- */
+/** 发送前保存完整任务；响应只条件更新，快速回调不会被旧快照覆盖。 */
 @Service
 @Slf4j
 public class FcTaskSubmitter {
-    @Resource
-    private CloudFunctionClient cloudFunctionClient;
-    @Resource
-    private FcTaskRepository fcTaskRepository;
+    @Resource private CloudFunctionClient cloudFunctionClient;
+    @Resource private FcTaskRepository fcTaskRepository;
+    @Resource private MongoTemplate mongoTemplate;
+    @Resource @Lazy private FcTaskCallbackService callbackService;
 
-    @Value("${transcode.submit.retry-delays-ms:2000,5000,10000}")
-    private String retryDelaysMs;
-
-    /**
-     * 创建任务记录（未提交）。调用方补齐 payload 业务字段后调 {@link #submit(FcTask, JSONObject)}。
-     */
     public FcTask createTask(String operation, String videoId, String refId) {
+        String id = "fc-" + operation + "-" + (refId == null ? videoId : refId);
+        FcTask existing = fcTaskRepository.getById(id);
+        if (existing != null) return existing;
         FcTask task = new FcTask();
-        task.setId("fc-" + IdUtil.getSnowflakeNextIdStr());
+        task.setId(id);
         task.setOperation(operation);
         task.setVideoId(videoId);
         task.setRefId(refId);
-        fcTaskRepository.save(task);
         return task;
     }
 
-    /**
-     * 提交任务。带退避重试（仅限 429），全部失败置 RETRY_WAIT（不耗 attempt）。
-     * 提交前把 payload 存入任务快照，供失败重试与超时恢复重提交。
-     *
-     * @return true = 已受理；false = 暂未受理（走恢复流程）
-     */
     public boolean submit(FcTask task, JSONObject payload) {
-        task.setPayloadSnapshot(payload);
-        String[] delays = retryDelaysMs.split(",");
-        CloudFunctionClient.SubmitResult result = null;
-        for (int i = 0; i <= delays.length; i++) {
-            if (i > 0) {
-                ThreadUtil.sleep(Long.parseLong(delays[i - 1].trim()));
-                log.info("云函数提交退避重试 taskId = {}, 第 {} 次", task.getId(), i);
-            }
-            result = cloudFunctionClient.submit(task.getProvider(), payload);
-            if (result.isAccepted() || !result.isThrottled()) break;
+        FcTask current = fcTaskRepository.getById(task.getId());
+        if (isBlocked(current)) return false;
+        long now = System.currentTimeMillis();
+        if (task.getExecutionTimeoutMs() == null) {
+            task.setExecutionTimeoutMs(Math.max(300_000L,
+                    task.getDeadline() == null ? 300_000L : task.getDeadline().getTime() - now));
         }
-
-        Date now = new Date();
+        if (task.getOutputBaseDir() == null) task.setOutputBaseDir(payload.getString("outputDir"));
+        String outputDir = task.getOutputBaseDir() + "/attempts/" + task.getAttemptId();
+        payload.put("attemptId", task.getAttemptId());
+        payload.put("outputDir", outputDir);
+        for (String key : new String[]{"playlistKey", "imageKey"}) {
+            String old = payload.getString(key);
+            if (old != null) payload.put(key, outputDir + old.substring(old.lastIndexOf('/')));
+        }
+        task.setPayloadSnapshot(payload);
+        task.setDeadline(new Date(now + task.getExecutionTimeoutMs()));
+        fcTaskRepository.createIfAbsent(task);
+        boolean claimed = fcTaskRepository.updateCurrent(task, FcTaskStatus.CREATED,
+                new Update().set("status", FcTaskStatus.SUBMITTED).set("payloadSnapshot", payload)
+                        .set("deadline", task.getDeadline()).set("outputBaseDir", task.getOutputBaseDir())
+                        .set("executionTimeoutMs", task.getExecutionTimeoutMs()));
+        if (!claimed) return false;
+        task.setStatus(FcTaskStatus.SUBMITTED);
+        if ("TRANSCODE".equals(task.getOperation())) {
+            mongoTemplate.updateFirst(Query.query(Criteria.where("id").is(task.getRefId())),
+                    new Update().set("m3u8Key", payload.getString("playlistKey")), Transcode.class);
+        }
+        CloudFunctionClient.SubmitResult result = cloudFunctionClient.submit(task.getProvider(), payload);
         if (result.isAccepted()) {
-            task.setStatus(FcTaskStatus.SUBMITTED);
-            task.setFcRequestId(result.getRequestId());
-            fcTaskRepository.save(task);
-            log.info("云函数任务受理 taskId = {}, attemptId = {}, fcRequestId = {}",
-                    task.getId(), task.getAttemptId(), result.getRequestId());
+            fcTaskRepository.updateCurrent(task, FcTaskStatus.SUBMITTED,
+                    new Update().set("fcRequestId", result.getRequestId()));
             return true;
         }
-        // 未受理：RETRY_WAIT + 短 deadline，恢复流程重新提交（同一 attemptId）
-        task.setStatus(FcTaskStatus.RETRY_WAIT);
-        task.setDeadline(new Date(now.getTime() + 60_000L));
-        fcTaskRepository.save(task);
-        log.warn("云函数任务未受理 taskId = {}, httpStatus = {}, 置 RETRY_WAIT",
-                task.getId(), result.getHttpStatus());
+        if (result.isThrottled()) {
+            int failures = (task.getSubmitFailures() == null ? 0 : task.getSubmitFailures()) + 1;
+            if (failures < 30) {
+                fcTaskRepository.updateCurrent(task, FcTaskStatus.SUBMITTED,
+                        new Update().set("status", FcTaskStatus.RETRY_WAIT)
+                                .set("submitFailures", failures)
+                                .set("deadline", new Date(now + 60_000L)));
+                return false;
+            }
+        } else if (result.getHttpStatus() == 0 || result.getHttpStatus() >= 500) {
+            // 受理不确定：保留执行截止时间等回调，禁止立即重发收费任务。
+            log.warn("FC 受理不确定，等待回调或执行截止 taskId = {}", task.getId());
+            return false;
+        }
+        JSONObject failure = new JSONObject();
+        failure.put("taskId", task.getId());
+        failure.put("attemptId", task.getAttemptId());
+        failure.put("status", "FAILED");
+        failure.put("retryable", false);
+        failure.put("errorMessage", "FC 拒绝提交或排队超时，HTTP " + result.getHttpStatus());
+        callbackService.handleCallback(failure);
         return false;
     }
+    private boolean isBlocked(FcTask current) {
+        return current != null && (FcTaskStatus.isFinal(current.getStatus())
+                || FcTaskStatus.SUBMITTED.equals(current.getStatus())
+                || FcTaskStatus.PROCESSING.equals(current.getStatus())
+                || FcTaskStatus.FALLBACK_PENDING.equals(current.getStatus()));
+    }
+
 }

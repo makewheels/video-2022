@@ -2,6 +2,9 @@ import json
 from unittest.mock import patch, MagicMock
 
 from video_cli import local_transcode as lt
+import shutil
+import subprocess
+import pytest
 
 
 def test_target_resolutions_1080p_source():
@@ -71,3 +74,29 @@ def test_probe_handles_no_audio_stream():
         info = lt.probe("silent.mp4")
     assert info["audio_codec"] is None
     assert info["has_audio"] is False
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="需要真实 FFmpeg")
+def test_local_static_hdr_preserves_metadata_and_uses_fmp4(tmp_path):
+    source = tmp_path / "source.mp4"
+    subprocess.run([
+        "ffmpeg", "-y", "-f", "lavfi", "-i", "testsrc2=duration=2:size=320x240:rate=30",
+        "-c:v", "libx265", "-pix_fmt", "yuv420p10le", "-x265-params",
+        "colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:"
+        "master-display=G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,1):"
+        "max-cll=1000,400", str(source),
+    ], capture_output=True, check=True)
+    info = lt.probe(str(source))
+    output = tmp_path / "output"
+    output.mkdir()
+    playlist = lt.transcode_hls(str(source), str(output), "local_hdr", (320, 240), info)
+    content = (output / playlist).read_text()
+    assert "#EXT-X-MAP" in content
+    assert "#EXT-X-ENDLIST" in content
+    measured = lt.probe(str(output / playlist))
+    assert measured["bit_depth"] == 10
+    assert measured["frame_rate"] == info["frame_rate"] == "30/1"
+    assert measured["audio_track_count"] == 0
+    assert measured["hdr_side_data"] == info["hdr_side_data"]
+    subprocess.run(["ffmpeg", "-v", "error", "-i", str(output / playlist), "-f", "null", "-"],
+                   capture_output=True, check=True)

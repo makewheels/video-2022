@@ -55,12 +55,20 @@ public class RawFileService {
      */
     public void onRawFileUploadFinish(String videoId) {
         Video newVideo = videoRepository.getById(videoId);
+        if (VideoStatus.READY.equals(newVideo.getStatus())
+                || VideoStatus.TRANSCODING.equals(newVideo.getStatus())
+                || VideoStatus.TRANSCODING_PARTLY_COMPLETE.equals(newVideo.getStatus())) return;
         File newFile = fileRepository.getById(newVideo.getRawFileId());
         log.info("用户原始文件上传完成，进入开始处理总入口, videoId = {}, newFileId = {} ",
                 videoId, newFile.getId());
 
         // 更新视频为 [准备转码] 状态
         updateVideoStatus(newVideo, VideoStatus.PREPARE_TRANSCODING);
+
+        if (TranscodeMode.isLocal(newVideo.getTranscodeMode())) {
+            log.info("本地转码模式，等待客户端登记，不调用云 MD5、探测、转码或截帧，videoId = {}", videoId);
+            return;
+        }
 
         // 同步调用阿里云云函数，获取文件md5
         String md5 = fileService.getMd5(newFile);
@@ -80,10 +88,6 @@ public class RawFileService {
             updateVideoStatus(newVideo, VideoStatus.READY);
             // 视频就绪回调
             videoReadyService.onVideoReady(newVideo.getId());
-        } else if (TranscodeMode.isLocal(newVideo.getTranscodeMode())) {
-            // 本地转码模式：服务端不发起任何云转码/截帧（零 MPS），
-            // 由客户端用本机 FFmpeg 转好后，通过 /transcode/local/* 与 /cover/local/* 回传登记
-            log.info("本地转码模式，跳过服务端云转码与截帧，等待客户端回传，videoId = {}", videoId);
         } else {
             // 如果是新文件，发起转码
             launchTranscode(newVideo);

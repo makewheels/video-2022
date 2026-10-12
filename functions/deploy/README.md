@@ -1,47 +1,24 @@
-# 自建函数部署清单（P3 执行）
+# 自建函数部署与回滚
 
-代码在 `functions/cpu` 与 `functions/gpu`。部署统一走 GitHub Actions（新增 workflow 或并入 deploy.yml），禁止控制台手工部署。本文件列出 FC 函数配置要求，实施时以实际 workflow 为准。
+部署入口为 `.github/workflows/deploy-functions.yml`，仅通过 GitHub Actions 构建、发布和回滚。已删除无引用的本机初始化清单，配置以 `fc_upsert.sh` 为唯一来源。
 
-## 函数规格
-
-| 项 | CPU 函数 | GPU 函数 |
+| 配置 | CPU | GPU |
 |---|---|---|
-| 名称建议 | `video-2022-{env}-transcode-cpu` | `video-2022-{env}-transcode-gpu` |
-| 运行时 | custom-container（Debian + 系统 ffmpeg） | custom-container（nvidia-ffmpeg 基础镜像） |
-| GPU | 无 | `fc.gpu.ampere.1`，显存 6144MB（1024 倍数），vCPU 3（≤ 显存GB/2），内存 12G（≤ 显存GB×2048） |
-| CPU 版规格 | 2 vCPU / 4G | — |
-| 执行超时 | 1800s 内按 deadline 配置 | 同左，上限 1800s |
-| 临时盘 | ≥ 4G（原片 + 产物），不够调 diskSize | ≥ 4G |
-| 最小实例 | 0（无预留/常驻） | 0（无预留/常驻） |
-| 并发 | instanceConcurrency 1，账户级并发上限走配额，超出由后端排队 | 同左 |
-| 触发器 | HTTP，authType anonymous；请求校验 X-Invoke-Secret | 同左 |
-| 异步重试 | maxAsyncRetryAttempts = 0（应用层统一重试，防叠乘） | 同左 |
-| 日志 | SLS logConfig 指向专用 logstore（旧函数未配日志的教训） | 同左 |
-| 网络 | 不绑 VPC；OSS 走同地域内网 endpoint | 同左 |
+| 名称 | video-2022-{env}-transcode-cpu | video-2022-{env}-transcode-gpu |
+| 运行时 | custom-container | custom-container，FFmpeg 7.1.5 固定构建 |
+| 规格 | 2 vCPU / 4 GB | fc.gpu.tesla.1，16 GB GPU / 8 vCPU / 32 GB 内存 |
+| 临时盘 / 超时 | 10 GB / 1800 秒 | 10 GB / 1800 秒 |
+| 单实例并发 | 1 | 1 |
+| 函数并发上限 | TRANSCODE_CPU_MAX_CONCURRENCY，初值 2 | TRANSCODE_GPU_MAX_CONCURRENCY，初值 2 |
+| 预留实例 | 无 | 无 |
+| 异步重试 | 0，应用负责有限重试 | 0，应用负责有限重试 |
 
-## 环境变量（Infisical 注入，不进 Git/镜像/日志）
+函数级 reservedConcurrency 是并发配额，与收费预留实例不同。部署通过 PutConcurrencyConfig/PutAsyncInvokeConfig 显式配置，再 Get API 交叉核对，不靠创建命令退出码判断生效。SLS 使用 video-2022-logs / transcode-fn。
 
-| 变量 | 说明 |
-|---|---|
-| `OSS_ACCESS_KEY_ID` / `OSS_SECRET_KEY` | 最小权限子账号：仅视频 bucket 对 `videos/` 前缀读写 |
-| `CALLBACK_SECRET` | 回调后端的 X-Callback-Secret（与后端 `aliyun.cf.transcode.callback-secret` 一致） |
-| `INVOKE_SECRET` | 后端调用的 X-Invoke-Secret（与后端 `aliyun.cf.transcode.invoke-secret` 一致） |
+Infisical `video-2022-secrets` 对应环境递归读取 `/` 和 `/oss`：FC_DEPLOY_AK_ID/SECRET、ALIYUN_OSS_VIDEO_ACCESS_KEY_ID/SECRET_KEY、CALLBACK_SECRET、ALIYUN_CF_TRANSCODE_INVOKE_SECRET、TRANSCODE_CALLBACK_HOST 和两项并发上限。密钥只在 Runner/FC 运行环境，镜像与 Git 不保存。
 
-## 后端配套配置
+后端 callback-secret 与函数 CALLBACK_SECRET 必须一致；CPU/GPU INVOKE_SECRET 与后端 invoke-secret 一致。回调仅允许配置主机的 HTTPS `/transcode/cloudFunctionCallback`；输入/输出限定当前视频目录。后台总开关与媒体、重试、恢复配置贯通 Infisical → deploy.yml 白名单 → compose → properties。
 
-- `aliyun.cf.transcode.cpu.url` / `gpu.url`：函数 HTTP 触发器 URL（配置化，不硬编码）
-- `aliyun.cf.transcode.invoke-secret` / `callback-secret`
-- `transcode.pipeline=self-hosted`：新链路总开关
-- `aliyun.mps.fallback-template.720p` / `.1080p`：兜底模板 ID（新建，保留帧率/声道/色彩，不使用历史 baseline 单声道模板；未配置则兜底直接明确失败）
+首次构建使用带日期的镜像标签；函数 GetFunction 记录 resolvedImageUri digest。回滚运行同一 workflow，设置 skip_build=true 与 image_tag=上一已验证标签；禁止复用 latest。CPU/GPU 可分别选择。服务器部署和回滚同样使用现有 Actions，禁止手工修改线上服务。
 
-## 版本与回滚
-
-- 镜像按 digest 部署，同时打时间戳 tag 与 latest；回滚改回上一 digest
-- 函数配置变更走 workflow（版本化）；保留旧版本号便于别名回切
-- 上线顺序：部署函数 → 后端灰度开关 → 开发环境全链路验证 → 小范围生产
-
-## 预算控制（首轮 ≤ 20 元，当前余额 6.76 元）
-
-- 单任务短样本估算 0.1-0.3 元；估算到 16 元（或余额 20%）停止新增，预留 4 元给在途
-- 每批任务记录 verification.md；账单延迟不当 0 元
-- GPU 冷启动 ~10-30s，短样本为主，合并档位验证以减少任务数
+首轮累计预算最多 20 元。2026-10-12 已查询上一轮新 CPU/GPU 账单约 3.39 元，账户余额 2.72 元（仍有出账延迟）。本轮计划新增收费验证不超过 1 元，预留剩余余额给在途及其它已有业务；各批次实际值以 verification.md 为准。不创建企业镜像仓库、常驻或预留 GPU。

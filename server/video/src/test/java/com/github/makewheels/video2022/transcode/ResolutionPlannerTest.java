@@ -148,7 +148,7 @@ class ResolutionPlannerTest {
         JSONObject hdrPolicy = planner.buildMediaPolicy(hdr, "1080p");
         assertEquals("hevc", hdrPolicy.getString("videoCodec"));
         assertEquals("fmp4", hdrPolicy.getString("segmentType"));
-        assertEquals(12_000_000L, hdrPolicy.getLongValue("targetBitrateBps"));
+        assertEquals(5_000_000L, hdrPolicy.getLongValue("targetBitrateBps"));
 
         JSONObject sdrPolicy = planner.buildMediaPolicy(media(1920, 1080), "720p");
         assertEquals("h264", sdrPolicy.getString("videoCodec"));

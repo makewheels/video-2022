@@ -9,6 +9,7 @@ import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.transcode.cloudfunction.CloudFunctionClient;
 import com.github.makewheels.video2022.transcode.pipeline.ResolutionPlanner;
 import com.github.makewheels.video2022.transcode.task.FcTask;
+import com.github.makewheels.video2022.transcode.task.FcTaskStatus;
 import com.github.makewheels.video2022.transcode.task.FcTaskRepository;
 import com.github.makewheels.video2022.transcode.task.FcTaskSubmitter;
 import com.github.makewheels.video2022.utils.OssPathUtil;
@@ -53,6 +54,12 @@ public abstract class AbstractSelfHostedTranscodeImpl implements TranscodeServic
 
     @Override
     public void transcode(Video video, Transcode transcode) {
+        FcTask task = prepare(video, transcode);
+        if (FcTaskStatus.CREATED.equals(task.getStatus())) fcTaskSubmitter.submit(task, task.getPayloadSnapshot());
+    }
+
+    @Override
+    public FcTask prepare(Video video, Transcode transcode) {
         String videoId = video.getId();
         JSONObject media = video.getMediaInfo() == null
                 || video.getMediaInfo().getResponse() == null
@@ -63,6 +70,7 @@ public abstract class AbstractSelfHostedTranscodeImpl implements TranscodeServic
         }
 
         FcTask task = fcTaskSubmitter.createTask("TRANSCODE", videoId, transcode.getId());
+        if (task.getPayloadSnapshot() != null) return task;
         task.setProvider(provider());
         task.setAttemptId(IdUtil.nanoId(16));
         task.setAttemptCount(1);
@@ -71,8 +79,6 @@ public abstract class AbstractSelfHostedTranscodeImpl implements TranscodeServic
         long deadlineSec = deadlineBaseSeconds + durationSec * deadlineDurationMultiplier;
         deadlineSec = Math.min(Math.max(deadlineSec, 300), 1740);
         task.setDeadline(new Date(System.currentTimeMillis() + deadlineSec * 1000));
-        fcTaskRepository.save(task);
-
         transcode.setTaskId(task.getId());
         transcode.setCurrentProvider(provider());
         mongoTemplate.save(transcode);
@@ -88,7 +94,9 @@ public abstract class AbstractSelfHostedTranscodeImpl implements TranscodeServic
 
         log.info("提交自建转码任务：videoId = {}, transcodeId = {}, provider = {}, taskId = {}",
                 videoId, transcode.getId(), provider(), task.getId());
-        fcTaskSubmitter.submit(task, payload);
+        task.setPayloadSnapshot(payload);
+        fcTaskRepository.save(task);
+        return task;
     }
 
     /**

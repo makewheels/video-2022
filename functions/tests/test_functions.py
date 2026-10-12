@@ -260,3 +260,34 @@ def test_gpu_rejects_preserve_tracks_false(sdr_sample, tmp_path, stub_encoder):
     with pytest.raises(RuntimeError, match="preserveTracks"):
         gpu_transcode.handle_transcode(sdr_sample, str(tmp_path), FakeOss(str(tmp_path)),
                                        _gpu_body(tmp_path, policy))
+
+
+def test_gpu_static_hdr_metadata_survives_packaging(tmp_path, stub_encoder):
+    source = tmp_path / "source-static.mp4"
+    subprocess.run([
+        FFMPEG, "-y", "-f", "lavfi", "-i", "testsrc2=duration=2:size=320x240:rate=30",
+        "-c:v", "libx265", "-pix_fmt", "yuv420p10le", "-x265-params",
+        "colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:"
+        "master-display=G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,1):"
+        "max-cll=1000,400", str(source),
+    ], capture_output=True, check=True)
+    policy = {
+        "outputWidth": 320, "outputHeight": 240,
+        "dynamicRange": "HDR10", "videoCodec": "hevc", "videoEncoder": "hevc_nvenc",
+        "segmentType": "fmp4", "segmentSeconds": 1, "targetBitrateBps": 500000,
+        "maxBitrateBps": 750000, "bufferBits": 1500000, "reencode": True,
+        "colorPrimaries": "bt2020", "colorTransfer": "smpte2084", "colorSpace": "bt2020nc",
+        "audioPolicy": {"mode": "copy", "preserveTracks": True},
+    }
+    manifest = gpu_transcode.handle_transcode(str(source), str(tmp_path), FakeOss(str(tmp_path)),
+                                             _gpu_body(tmp_path, policy))
+    output = tmp_path / "hls" / os.path.basename(manifest["playlistKey"])
+    from gpu.hdr_metadata import static_metadata_equal
+    before = media.build_media_info(str(source))
+    after = media.build_media_info(str(output))
+    assert len(before["hdrSideData"]) == 2
+    assert static_metadata_equal(before["hdrSideData"], after["hdrSideData"])
+    assert before["frameRate"] == after["frameRate"] == "30/1"
+    assert abs(before["durationMs"] - after["durationMs"]) <= 34
+    subprocess.run([FFMPEG, "-v", "error", "-i", str(output), "-f", "null", "-"],
+                   capture_output=True, check=True)

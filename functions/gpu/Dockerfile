@@ -12,10 +12,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && ffmpeg -version | head -1
 
+COPY --from=ghcr.io/astral-sh/uv:0.9.26 /uv /uvx /bin/
 WORKDIR /usr/src/app
 
 COPY gpu/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/uv uv pip install --system -r requirements.txt
 
 COPY common/ ./common/
 COPY gpu/ ./gpu/

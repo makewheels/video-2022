@@ -40,6 +40,8 @@ public class FcTimeoutRecoveryService {
     @Resource
     private MongoTemplate mongoTemplate;
     @Resource
+    @org.springframework.context.annotation.Lazy
+    private FcTaskCallbackService callbackService;
 
     @Value("${transcode.recovery.enabled:true}")
     private boolean recoveryEnabled;
@@ -62,39 +64,30 @@ public class FcTimeoutRecoveryService {
     }
 
     private void recoverOne(FcTask task, Date now) {
-        // RETRY_WAIT 到期：失败回调已计次并生成新 attemptId，直接原子置回提交态后重提交
-        if (FcTaskStatus.RETRY_WAIT.equals(task.getStatus())) {
-            boolean grabbed = mongoClaimNoInc(task);
-            if (!grabbed) return;
+        if (FcTaskStatus.PROCESSING.equals(task.getStatus())) {
+            if (!fcTaskRepository.updateCurrent(task, FcTaskStatus.PROCESSING,
+                    new Update().set("status", FcTaskStatus.SUBMITTED))) return;
+            JSONObject callback = new JSONObject();
+            callback.put("taskId", task.getId());
+            callback.put("attemptId", task.getAttemptId());
+            callback.put("status", "SUCCEEDED");
+            callback.put("outputManifestKey", task.getResultManifestKey());
+            callbackService.handleCallback(callback);
+            return;
+        }
+        if (FcTaskStatus.RETRY_WAIT.equals(task.getStatus()) || FcTaskStatus.CREATED.equals(task.getStatus())) {
+            if (!fcTaskRepository.updateCurrent(task, task.getStatus(),
+                    new Update().set("status", FcTaskStatus.CREATED)
+                            .set("deadline", new Date(now.getTime() + 300_000L)))) return;
             resubmit(task, task.getAttemptId(), task.getAttemptCount());
             return;
         }
-
-        int attemptCount = task.getAttemptCount() == null ? 1 : task.getAttemptCount();
-        int nextAttempt = attemptCount + 1;
-        String newAttemptId = task.getAttemptId() + "-a" + nextAttempt;
-
-        // 原子认领：SUBMITTED 超时 → RETRY_WAIT，attemptCount+1（这一轮执行未等到结果，计一次消耗）
-        boolean claimed = fcTaskRepository.claim(task.getId(), FcTaskStatus.SUBMITTED,
-                task.getAttemptId(), new FcTaskRepository.ClaimUpdate(
-                        newAttemptId, FcTaskStatus.RETRY_WAIT,
-                        new Date(now.getTime() + 300_000L), "执行超时"));
-        if (!claimed) return;
-
-        if (attemptCount < task.getMaxAttempts()) {
-            resubmit(task, newAttemptId, nextAttempt);
-            return;
-        }
-
-        // 额度耗尽：TRANSCODE 尝试 MPS 兜底，否则终态失败
-        if ("TRANSCODE".equals(task.getOperation())
-                && mpsFallbackService.canFallback(task.getVideoId(), task.getRefId())) {
-            log.info("恢复流程：自建额度耗尽，转 MPS 兜底 taskId = {}", task.getId());
-            if (mpsFallbackService.fallback(task)) return;
-        }
-        fcTaskRepository.finish(task.getId(), newAttemptId,
-                FcTaskStatus.FAILED, new Date(), "自建执行超时且无可兜底路径");
-        transcodeCallbackService.onFcTaskFailed(task, "自建执行超时");
+        JSONObject failure = new JSONObject();
+        failure.put("taskId", task.getId());
+        failure.put("attemptId", task.getAttemptId());
+        failure.put("status", "FAILED");
+        failure.put("errorMessage", "自建执行超时");
+        callbackService.handleCallback(failure);
     }
 
     /**
