@@ -146,10 +146,10 @@
 
 ### 本地检查与边界
 
-- 最终本地后端 608 项通过，0 失败/错误/跳过；覆盖任务恢复、全部档位任务先持久化、LOCAL 上传云 MD5 为零、播放授权及 MPS 兜底。
-- 函数 21 项通过，含真实软件编码替代 NVENC 后的 HEVC 静态 SEI 补全、fMP4、首帧 mastering/content-light 交叉比较和完整解码。此结果证明封装/元数据处理，不代替 FC NVENC 或 HDR 真机。
-- CLI 139 项与函数 21 项合计 160 项通过，包含真实 LOCAL HDR10 fMP4 静态元数据和完整解码。
-- 私密播放/跨视频 init/封面/精确帧率/MPS 专项 42 项通过；608 项全量回归包含后续 LOCAL 与任务准备改动。GitHub 必需 CI 待验证。
+- 最终本地后端 609 项通过，0 失败/错误/跳过；覆盖任务恢复、全部档位任务先持久化、LOCAL 上传云 MD5 为零、播放授权及 MPS 兜底。
+- 函数 22 项通过，含真实软件编码替代 NVENC 后的 HEVC 静态 SEI 补全、fMP4、首帧 mastering/content-light 交叉比较和完整解码。此结果证明封装/元数据处理，不代替 FC NVENC 或 HDR 真机。
+- CLI 139 项与函数 22 项合计 161 项通过，包含真实 LOCAL HDR10 fMP4 静态元数据和完整解码。
+- 私密播放/跨视频 init/封面/精确帧率/MPS 专项 42 项通过；609 项全量回归包含后续 LOCAL 与任务准备改动。GitHub 必需 CI 待验证。
 - Dolby Vision、HDR10+ 和未知类型明确拒绝；>10-bit 无验证能力时明确失败。原首帧探测并不能证明所有动态类型全片均支持。
 
 ### 费用与新增批次上限
@@ -173,3 +173,25 @@
 | C09 | 历史播放与原片待线上复核；实际回滚未验 |
 
 完整云端与真机门槛仍未全部满足，不能声称所有需求完整完成。
+
+
+## 8. 2026-10-13 发布及真实微样本验收（执行中）
+
+- 修复 PR #135 已合并，服务端 commit `5bae26717f640d288c5ea6e9448dfe8d115d6205`；来源 commit `6326ba4664a6336182cde7e3c9dade5bc3f8aab1`。
+- [完整手动 CI](https://github.com/makewheels/video-2022/actions/runs/38276087873) 和 [PR 必需 CI](https://github.com/makewheels/video-2022/actions/runs/38276022780) 均通过。手动 CI 的 API、浏览器 E2E 实际运行通过，无跳过。
+- [后端发布](https://github.com/makewheels/video-2022/actions/runs/38278246731) 成功，Docker 运行环境 APP_VERSION 回读匹配上述 merge commit。
+- [函数发布](https://github.com/makewheels/video-2022/actions/runs/38278017623) 成功；镜像标签 `20261013-002459-0017`，CPU digest `sha256:3abc777473042a1fc23f52cd2d34075366c581229ce6b961b6a63c2c4846a2d4`，GPU digest `sha256:0e0b983910e29929e0b8244c97a937a684252664d7e7cfc5de1ef208a7048434`。
+- FC 回读：CPU 2 vCPU/4GB，GPU T4 16GB/8 vCPU/32GB；两函数并发上限 2、预留实例 0、平台重试 0。Beijing 实际 GPU 按需配额 3 卡、总配额 10 卡。
+- 首次构建成功但发布失败：受限临时密钥项目中的非敏感值 `2` 被 GitHub 当秘密屏蔽，导致跨 job 镜像标签 output 被丢弃。旧镜像未被替换；移除临时项目冗余并发默认值并显式指定已有标签重发成功。主生产身份仍只信任 master；临时 CI/函数身份分别只信任转码分支的对应工作流，使用仅含所需配置的独立项目。
+- 4 个自建新上传微样本全部 READY，A 为 1080p/60 fps/双音轨 SDR，B 为静态 HDR10，C 为 59.94 fps HLG 竖屏，D 为旋转 90 度 SDR。它们是自生成的 2–4 秒功能微样本；不能代替 10–30 秒实际运动素材的主观画质或 HDR 真机亮度验收。
+
+| 样本 | videoId / watchId | 原片 SHA-256 |
+|---|---|---|
+| A | `v_2982302700001035` / `2VW6AM` | `1938c74110db774fad78b93541caf9f2f9edfaab0927e6cacc00cd2482fdead7` |
+| B | `v_2982302800001192` / `2VW78J` | `dfbbdc90397b56d851eee319b1569b7755f0487832eb1c65f8374185ec6f4105` |
+| C | `v_2982302800003862` / `2VW7UX` | `9c9811b0940897c8fb43aaa4f5ce56986f75e573abee2a321c22f73e0adcd9d0` |
+| D | `v_2982302800005174` / `2VW8KG` | `25acf89abf45c0df04dc22154d5f98c3be57aa098b789c5cae6b1d04ded3fe2e` |
+
+- A 两档实际 NVENC：1280×720 / 1920×1080，均 60/1 fps、240 帧、4 秒、SDR 8-bit BT.709 limited；AAC 单声道 eng + 双声道 fra 完整保留，整份 HLS 解码通过。分别 2,529,710 / 7,566,419 字节，源片 11,640,799 字节；将原片缩放到对应档位并对齐 PTS 后 SSIM 为 0.996007 / 0.996407。数值只适用于此合成微样本。
+- A 私密主播放列表：短签名 URL 返回两档完整列表；去掉授权字段则被拒绝。真实封面 HTTP 404 暴露 Cover 任务漏初始 CREATED 状态，原子提交未认领，需后续修复。新回归直接调用自建 CoverLauncher，检查实际 submit 和持久化 payload/attempt；封面专项 18 项通过。
+- B/C/D 产物逐项比对、实际浏览器及 LOCAL 现场验收继续执行，尚不标通过。云端阶段未验证的内容仍按第 7 节矩阵记录。

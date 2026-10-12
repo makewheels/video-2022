@@ -180,7 +180,7 @@ public class CoverLauncher {
         task.setAttemptId(cn.hutool.core.util.IdUtil.nanoId(16));
         task.setAttemptCount(1);
         task.setDeadline(new Date(System.currentTimeMillis() + 300_000L));
-        fcTaskRepository.save(task);
+        task.setExecutionTimeoutMs(300_000L);
         cover.setJobId(task.getId());
         mongoTemplate.save(cover);
 
@@ -190,6 +190,10 @@ public class CoverLauncher {
         payload.put("imageKey", targetKey);
         payload.put("imageFormat", "jpg");
         payload.put("atSeconds", 0);
+        task.setStatus(com.github.makewheels.video2022.transcode.task.FcTaskStatus.CREATED);
+        task.setPayloadSnapshot(payload);
+        task.setOutputBaseDir(payload.getString("outputDir"));
+        fcTaskRepository.createIfAbsent(task);
         log.info("提交自建封面任务：videoId = {}, coverId = {}, taskId = {}", videoId, cover.getId(),
                 task.getId());
         fcTaskSubmitter.submit(task, payload);
