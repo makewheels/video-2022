@@ -185,7 +185,7 @@ public class CoverLauncher {
         mongoTemplate.save(cover);
 
         JSONObject payload = cloudFunctionClient.buildPayload(task, null, rawFileKey,
-                cn.hutool.core.io.FileUtil.getParent(targetKey, 1),
+                targetKey.substring(0, targetKey.lastIndexOf('/')),
                 environmentService.getCallbackUrl("/transcode/cloudFunctionCallback"));
         payload.put("imageKey", targetKey);
         payload.put("imageFormat", "jpg");

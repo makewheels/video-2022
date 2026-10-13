@@ -193,5 +193,13 @@
 | D | `v_2982302800005174` / `2VW8KG` | `25acf89abf45c0df04dc22154d5f98c3be57aa098b789c5cae6b1d04ded3fe2e` |
 
 - A 两档实际 NVENC：1280×720 / 1920×1080，均 60/1 fps、240 帧、4 秒、SDR 8-bit BT.709 limited；AAC 单声道 eng + 双声道 fra 完整保留，整份 HLS 解码通过。分别 2,529,710 / 7,566,419 字节，源片 11,640,799 字节；将原片缩放到对应档位并对齐 PTS 后 SSIM 为 0.996007 / 0.996407。数值只适用于此合成微样本。
-- A 私密主播放列表：短签名 URL 返回两档完整列表；去掉授权字段则被拒绝。真实封面 HTTP 404 暴露 Cover 任务漏初始 CREATED 状态，原子提交未认领，需后续修复。新回归直接调用自建 CoverLauncher，检查实际 submit 和持久化 payload/attempt；封面专项 18 项通过。
-- B/C/D 产物逐项比对、实际浏览器及 LOCAL 现场验收继续执行，尚不标通过。云端阶段未验证的内容仍按第 7 节矩阵记录。
+- A 私密主播放列表：短签名 URL 返回两档完整列表；去掉授权字段则被拒绝。真实封面 HTTP 404 暴露 OSS key 使用本地 FileUtil.getParent，被转换成 `/app/nested:...` 绝对路径；FC 异步受理后由请求校验拒绝，最终超时失败，需后续修复。新回归直接调用自建 CoverLauncher，检查实际 submit、持久化 payload/attempt 及输出路径保持 `videos/` 对象 key；另补终态失败不生成未执行第三轮的计数断言。
+- B 实测 480×270、25/1 fps、50 帧、2 秒、10-bit HDR10 BT.2020/PQ limited；mastering display 与 max-cll/max-fall 逐字段相同，AAC 单声道 eng 保留；产物 198,051 字节。
+- C 实测 240×320、60000/1001 fps、120 帧、2.001 秒、10-bit HLG BT.2020 limited，无音轨；产物 89,032 字节。
+- D 从带 rotation=90 的 320×240 原片转为 240×320、rotation=0、25/1 fps、75 帧、3 秒、无音轨；产物 159,218 字节。B/C/D 整份 HLS 解码与源/输出字段比对均通过；私密主播放签名校验通过，封面仍待修复。
+- 新 A 在本机实际 Chrome 无头模式播放：readyState=4，视频 1280×720、duration=4.017028 秒、currentTime>0.5 秒、video.error=null，seek 到 75% 通过。此证明桌面播放，不代替 iOS/Android/HDR 屏幕验收。
+- LOCAL 实际 CLI 上传 `v_2982323700001281` / `2VW8XL`：READY，两档 provider=LOCAL_TRANSCODE，无链接复用，FC 任务数 0、raw md5=null；创建时间 2026-10-12 16:55:49.209 UTC，封面完成 16:55:56.851 UTC。MPS ListJob 在对应时间段返回 0 任务；FC 指标交叉核查继续执行。
+- 2026-10-13 最新余额 2.68 元；新 GPU 首批 5 次转码均首次成功，SLS 执行 duration 合计约 23.95 秒，最终收费仍以延迟账单为准。
+- 未连接 Android 设备，devicectl 在本机不可用；iOS/Android 真机与 HDR 高光亮度未验。故障一次 MPS 兜底、实际通道回滚及封面恢复继续验收，云端阶段未验证内容仍不标通过。
+
+- 最新本地后端全量 610 项通过（0 失败/错误/跳过），新增相对 OSS key 与终态尝试计数断言。真实四个封面任务原因为 `/app/nested:...` 路径，被异步函数请求校验拒绝；原失败记录保留，针对仅本轮 4 个样本创建独立 `-repair` COVER 请求交由既有持久化恢复队列处理，结果待回读。

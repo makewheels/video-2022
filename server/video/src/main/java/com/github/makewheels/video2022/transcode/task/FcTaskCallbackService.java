@@ -12,6 +12,7 @@ import com.github.makewheels.video2022.video.bean.entity.Video;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.data.mongodb.core.query.Update;
 
 import jakarta.annotation.Resource;
 import java.nio.charset.StandardCharsets;
@@ -127,19 +128,26 @@ public class FcTaskCallbackService {
 
     private int handleFailed(FcTask task, String errorMessage, boolean retryable) {
         int nextAttempt = (task.getAttemptCount() == null ? 1 : task.getAttemptCount()) + 1;
-        String newAttemptId = nextAttemptId(task.getAttemptId());
-        Date deadline = new Date(System.currentTimeMillis() + retryBackoffMs + retryBackoff(retryJitterMs));
-        if (!fcTaskRepository.claim(task.getId(), task.getStatus(), task.getAttemptId(),
-                new FcTaskRepository.ClaimUpdate(newAttemptId, FcTaskStatus.RETRY_WAIT,
-                        deadline, truncate(errorMessage)))) return 200;
-        task.setAttemptId(newAttemptId);
-        task.setAttemptCount(nextAttempt);
-        task.setStatus(FcTaskStatus.RETRY_WAIT);
-        if (retryable && nextAttempt <= task.getMaxAttempts()) return 200;
+        if (retryable && nextAttempt <= task.getMaxAttempts()) {
+            String newAttemptId = nextAttemptId(task.getAttemptId());
+            Date deadline = new Date(System.currentTimeMillis() + retryBackoffMs + retryBackoff(retryJitterMs));
+            if (!fcTaskRepository.claim(task.getId(), task.getStatus(), task.getAttemptId(),
+                    new FcTaskRepository.ClaimUpdate(newAttemptId, FcTaskStatus.RETRY_WAIT,
+                            deadline, truncate(errorMessage)))) return 200;
+            task.setAttemptId(newAttemptId);
+            task.setAttemptCount(nextAttempt);
+            task.setStatus(FcTaskStatus.RETRY_WAIT);
+            return 200;
+        }
+        // 不再执行下一次自建调用：保留最后实际尝试的身份和计数，认领后只能兜底或结束。
+        if (!fcTaskRepository.updateCurrent(task, task.getStatus(),
+                new Update().set("status", FcTaskStatus.FALLBACK_PENDING)
+                        .set("errorMessage", truncate(errorMessage)))) return 200;
+        task.setStatus(FcTaskStatus.FALLBACK_PENDING);
         if ("TRANSCODE".equals(task.getOperation())
                 && mpsFallbackService.canFallback(task.getVideoId(), task.getRefId())
                 && mpsFallbackService.fallback(task)) return 200;
-        fcTaskRepository.finish(task.getId(), newAttemptId,
+        fcTaskRepository.finish(task.getId(), task.getAttemptId(),
                 FcTaskStatus.FAILED, new Date(), truncate(errorMessage));
         transcodeCallbackService.onFcTaskFailed(task, truncate(errorMessage));
         return 200;

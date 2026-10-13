@@ -56,6 +56,8 @@ class CoverTaskSubmissionTest extends BaseIntegrationTest {
                 assertEquals(FcTaskStatus.SUBMITTED, stored.getStatus());
                 assertEquals(stored.getAttemptId(), payload.getString("attemptId"));
                 assertEquals(payload, stored.getPayloadSnapshot());
+                assertTrue(payload.getString("outputDir").startsWith("videos/"));
+                assertFalse(payload.getString("outputDir").contains(":"));
                 assertTrue(payload.getString("imageKey").startsWith(
                         stored.getOutputBaseDir() + "/attempts/" + stored.getAttemptId() + "/"));
                 CloudFunctionClient.SubmitResult receipt = new CloudFunctionClient.SubmitResult();

@@ -148,7 +148,7 @@ public class MpsFallbackService {
                 new Update().set("currentProvider", TranscodeProvider.ALIYUN_MPS)
                         .set("status", "Submitted").set("m3u8Key", key)
                         .set("fallbackDeadline", deadline), Transcode.class);
-        fcTaskRepository.updateCurrent(task, FcTaskStatus.RETRY_WAIT,
+        fcTaskRepository.updateCurrent(task, task.getStatus(),
                 new Update().set("status", FcTaskStatus.FALLBACK_PENDING).set("deadline", deadline));
         String jobId;
         try {
