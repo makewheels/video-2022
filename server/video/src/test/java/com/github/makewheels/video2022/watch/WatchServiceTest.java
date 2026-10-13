@@ -511,4 +511,68 @@ class WatchServiceTest extends BaseIntegrationTest {
                 () -> watchService.getM3u8Content(context, lane.getId(), "720p"));
     }
 
+
+    private Video createMuxedFallback(String videoId, String language) {
+        Video video = createAndSaveVideo(videoId, VideoStatus.READY);
+        video.getMediaInfo().setAudioTrackCount(1);
+        JSONObject track = new JSONObject();
+        track.put("language", language);
+        track.put("channels", 1);
+        JSONObject audio = new JSONObject();
+        audio.put("tracks", List.of(track));
+        video.getMediaInfo().setAudioTracks(audio);
+        Transcode lane = new Transcode();
+        lane.setId("tr_audio_" + videoId);
+        lane.setVideoId(videoId);
+        lane.setProvider("ALIYUN_CLOUD_FUNCTION_TRANSCODE_CPU");
+        lane.setCurrentProvider("ALIYUN_MPS_TRANSCODE");
+        lane.setFallbackCount(1);
+        lane.setResolution("720p");
+        lane.setStatus("TranscodeSuccess");
+        lane.setTsFileIds(List.of("ts_audio"));
+        lane.setMaxBitrate(4000000);
+        lane.setAverageBitrate(3900000);
+        mongoTemplate.save(lane);
+        video.setTranscodeIds(List.of(lane.getId()));
+        mongoTemplate.save(video);
+        return video;
+    }
+
+    @Test void singleMuxedFallback_declaresLanguageWithoutExternalAudioUri() {
+        Video video = createMuxedFallback("v_audio", "eng");
+        String playlist = watchService.getMultivariantPlaylist(buildContext(video.getId(), "client", "session"));
+        String declaration = playlist.lines().filter(l -> l.startsWith("#EXT-X-MEDIA:")).findFirst().orElseThrow();
+        assertTrue(declaration.contains("LANGUAGE=\"eng\""));
+        assertTrue(declaration.contains("CHANNELS=\"1\""));
+        assertFalse(declaration.contains("URI="));
+        assertTrue(playlist.contains("AUDIO=\"audio-tr_audio_v_audio\""));
+    }
+
+    @Test void muxedFallback_unknownLanguageIsNotInvented() {
+        Video video = createMuxedFallback("v_audio_und", "und");
+        String playlist = watchService.getMultivariantPlaylist(buildContext(video.getId(), "client", "session"));
+        assertFalse(playlist.contains("#EXT-X-MEDIA:"));
+    }
+
+    @Test void muxedFallback_metadataCannotInjectPlaylistAttributes() {
+        Video video = createMuxedFallback("v_audio_inject", "eng\",URI=\"https://untrusted.invalid/evil");
+        String playlist = watchService.getMultivariantPlaylist(buildContext(video.getId(), "client", "session"));
+        assertFalse(playlist.contains("#EXT-X-MEDIA:"));
+        assertFalse(playlist.contains("untrusted.invalid"));
+    }
+
+    @Test void muxedFallback_linkedVideoUsesOriginAudioLanguage() {
+        Video source = createMuxedFallback("v_audio_origin", "eng");
+        Video alias = createAndSaveVideo("v_audio_alias", VideoStatus.READY);
+        alias.getLink().setHasLink(true);
+        alias.getLink().setLinkVideoId(source.getId());
+        alias.setTranscodeIds(source.getTranscodeIds());
+        alias.getMediaInfo().setAudioTrackCount(1);
+        alias.getMediaInfo().setAudioTracks(JSONObject.parseObject("{\"tracks\":[{\"language\":\"fra\",\"channels\":1}]}"));
+        mongoTemplate.save(alias);
+        String playlist = watchService.getMultivariantPlaylist(buildContext(alias.getId(), "client", "session"));
+        assertTrue(playlist.contains("LANGUAGE=\"eng\""));
+        assertFalse(playlist.contains("LANGUAGE=\"fra\""));
+    }
+
 }
