@@ -50,12 +50,12 @@ jobs:
         uses: Infisical/secrets-action@v1.0.16
         with:
           method: oidc
-          identity-id: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && vars.INFISICAL_TRANSCODE_FUNCTIONS_IDENTITY_ID || '322a3702-73a7-4bbe-8f55-ebd6376e15d4' }}
+          identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
           oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
           domain: ${{ vars.INFISICAL_DOMAIN }}
-          project-slug: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && 'video-2022-transcode-functions' || 'common-shared' }}
-          env-slug: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && 'prod' || 'dev' }}
-          secret-path: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && '/' || '/deployment' }}
+          project-slug: common-shared
+          env-slug: dev
+          secret-path: /deployment
 
       - name: 生成镜像标签
         id: meta
@@ -123,10 +123,10 @@ jobs:
         uses: Infisical/secrets-action@v1.0.16
         with:
           method: oidc
-          identity-id: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && vars.INFISICAL_TRANSCODE_FUNCTIONS_IDENTITY_ID || '322a3702-73a7-4bbe-8f55-ebd6376e15d4' }}
+          identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
           oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
           domain: ${{ vars.INFISICAL_DOMAIN }}
-          project-slug: ${{ github.ref == 'refs/heads/feature/cloud-function-transcode' && 'video-2022-transcode-functions' || 'video-2022-secrets' }}
+          project-slug: video-2022-secrets
           env-slug: ${{ github.event.inputs.target }}
           secret-path: /
           recursive: true

@@ -155,5 +155,6 @@ class MpsFallbackRecoveryTest extends BaseIntegrationTest {
         assertEquals("1", overrides.getValue().getJSONObject("Audio").getString("Channels"));
         assertEquals("1280", overrides.getValue().getJSONObject("Video").getString("Width"));
         assertFalse(overrides.getValue().getJSONObject("Video").containsKey("Fps"));
+        assertFalse(overrides.getValue().getJSONObject("Video").containsKey("Gop"));
     }
 }

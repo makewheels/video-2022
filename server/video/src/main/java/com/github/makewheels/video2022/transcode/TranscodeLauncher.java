@@ -24,10 +24,14 @@ import com.github.makewheels.video2022.utils.OssPathUtil;
 import com.github.makewheels.video2022.video.bean.entity.MediaInfo;
 import com.github.makewheels.video2022.video.bean.entity.Video;
 import com.github.makewheels.video2022.video.constants.VideoCodec;
+import com.github.makewheels.video2022.video.constants.VideoStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -39,7 +43,7 @@ import java.util.List;
 /**
  * 发起转码。
  * <p>
- * transcode.pipeline = legacy：原有链路（MPS 探测 + 旧选档决策），行为不变。
+ * transcode.pipeline = legacy：原有链路（MPS 探测 + 旧选档决策）；无适用档位明确失败。
  * transcode.pipeline = self-hosted：自建链路——CPU 函数 ffprobe 探测，探测回调后按显示短边
  * 选档，先持久化全部档位任务再逐档提交 CPU（remux）/ GPU（重编码）函数。
  */
@@ -371,8 +375,14 @@ public class TranscodeLauncher {
         //发起转码
         Integer width = video.getMediaInfo().getWidth();
         Integer height = video.getMediaInfo().getHeight();
+        if ((long) width * height <= 854L * 480) {
+            log.warn("旧通道没有适用档位，结束为失败：videoId = {}", video.getId());
+            mongoTemplate.updateFirst(Query.query(Criteria.where("id").is(video.getId())),
+                    new Update().set("status", VideoStatus.TRANSCODE_FAILED), Video.class);
+            return;
+        }
         //720p
-        if (width * height > 854 * 480) {
+        if ((long) width * height > 854L * 480) {
             transcodeSingleResolution(user, video, Resolution.R_720P);
         }
         //1080p

@@ -203,3 +203,18 @@
 - 未连接 Android 设备，devicectl 在本机不可用；iOS/Android 真机与 HDR 高光亮度未验。故障一次 MPS 兜底、实际通道回滚及封面恢复继续验收，云端阶段未验证内容仍不标通过。
 
 - 最新本地后端全量 610 项通过（0 失败/错误/跳过），新增相对 OSS key 与终态尝试计数断言。真实四个封面任务原因为 `/app/nested:...` 路径，被异步函数请求校验拒绝；原失败记录保留，针对仅本轮 4 个样本创建独立 `-repair` COVER 请求交由既有持久化恢复队列处理，结果待回读。
+
+
+## 9. 2026-10-13 傍晚续验
+
+- PR #136 已合并，服务端版本 `e7d08b230d9176c28959a9f1da40879a855dea78`；[CI](https://github.com/makewheels/video-2022/actions/runs/38382627376) 通过。自动部署因镜像代理获取 Caddy referrers 返回 502 失败；后续 [旧通道发布](https://github.com/makewheels/video-2022/actions/runs/38384861689) 和 [恢复自建通道](https://github.com/makewheels/video-2022/actions/runs/38386043936) 均成功。Docker APP_VERSION 与 TRANSCODE_PIPELINE=self-hosted 已回读。
+- 四个样片的独立 COVER 修复任务 SUCCEEDED；A 修复任务 attemptCount=1，封面返回 200；原路径错误的失败记录保留。LOCAL 封面也返回 200。
+- C07 实际观察补齐：LOCAL 上传对应 2026-10-12 16:55:49–16:55:58 UTC 的服务日志包含该 videoId，MD5/FC/MPS 提交日志均为 0；同期 SLS 自建函数日志与调用指标为 0，MPS ListJob 返回 0。不是仅由数据库零任务推断。
+- C09 新任务回滚成功：`v_2983937900001076` / `2VYC63`，1280×720/25fps/4秒/单声道合成样片，READY、provider=ALIYUN_MPS_TRANSCODE、jobId=`8a1fb88eada644cab89fe0f34b708310`、FC 任务 0，主列表和封面 200。另一个 854×480 样片 `v_2983924200001761` 暴露旧通道无适用档位，不能把它记为通过；新增明确失败回归防永久 TRANSCODING。
+- C08 实际两轮故障回调注入：`v_2983946900001731` / `2VYD73`，1280×720/60000:1001fps/10秒/无音轨，SHA-256 `5fbc33ab6549592f18801eb6f49abb6416420db2e21e06cb6c1ad2a58df99365`。只对该私密合成样片注入失败；真实两次 FC 提交及两次 FAILED 回调后 attemptCount=2，fallbackCount=1，重复最后失败返回 200 且不再提交。新封面无需数据修复即 SUCCEEDED、attemptCount=1。
+- 上述 C08 MPS 返回 `InvalidParameter.NumberFormatInvalid`，因此任务明确 FAILED；本次不能记作兜底成功。定位为 `Video.Gop="6s"` 覆盖值，移除后需新样片端到端复验；原失败任务不重置兜底名额。
+- 两个临时验收项目/身份与 GitHub 变量已删除。原生产 OIDC 身份信任范围未扩大；工作流临时分支条件正在移除。
+- 2026-10-13 傍晚延迟 DAILY 账单：GPU 1.06249 元、CPU 0.011 元，共 1.07349 元；超过本轮初估 1 元 0.07349 元，仍低于原 20 元总预算。加上 10-11 的已知新函数日账单为 4.46622 元，不能当作含 OSS/MPS 的精确测试总额。余额 1.28 元；仅补小型 CPU/MPS 关键复验，不再新增 GPU 样片。ListInstances GPU 为 0。
+- 仍未验证：iOS/Android/HDR 真机、真实 Dolby Vision 保留（现明确拒绝）、10–30秒实际运动素材主观画质、完整历史 TS/480p 与在途旧回调矩阵、真实进程重启与限流故障矩阵。不得宣称全部验收完成。
+
+- 本次 `mvn test -pl video -Pspringboot` 独立系统临时构建：Surefire XML 汇总 532 项，0 失败/错误/跳过。与历史记录的全套 610 数量口径不同，不把两者混用；最终以本 PR 全套 CI 为准。

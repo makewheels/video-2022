@@ -180,3 +180,7 @@ ffprobe -v error -select_streams v:0 -show_frames -of json INPUT
 FFmpeg 使用参数数组启动，检查 return code，保留脱敏错误末尾，执行超时可终止整个子进程组并清理。构造命令时按探测结果选择 codec/pixel format/color metadata/audio mapping，不给出无条件套用全部格式的万能命令。GPU 镜像验证 `ffmpeg -encoders`/`-filters` 只能证明编译支持；必须用实际 GPU 编码样本证明运行支持。
 
 HDR HLS 选型、动态元数据保留、各端读取、MPS 兜底属于同一门槛。任何一项不满足都记录为该格式未支持，不能把“输出文件标了 BT.2020”或“能打开”当作完整 HDR 验收。
+
+### MPS 请求与旧通道失败边界（2026-10-13）
+
+兜底 Video 覆盖只发送尺寸、码率、Codec/Profile 与 LongShortMode；不发送字符串时间形式的 Gop。真实 MPS 返回 `InvalidParameter.NumberFormatInvalid`，现移除 `6s` 覆盖，沿用专用模板的 GOP。旧通道没有低于等于 854×480 像素面积的档位，明确结束为 TRANSCODE_FAILED，避免永久 TRANSCODING；自建通道原尺寸单档策略不受影响。
