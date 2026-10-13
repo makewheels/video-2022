@@ -184,3 +184,7 @@ HDR HLS 选型、动态元数据保留、各端读取、MPS 兜底属于同一�
 ### MPS 请求与旧通道失败边界（2026-10-13）
 
 兜底 Video 覆盖只发送尺寸、码率、Codec/Profile 与 LongShortMode；不发送字符串时间形式的 Gop。真实 MPS 返回 `InvalidParameter.NumberFormatInvalid`，现移除 `6s` 覆盖，沿用专用模板的 GOP。旧通道没有低于等于 854×480 像素面积的档位，明确结束为 TRANSCODE_FAILED，避免永久 TRANSCODING；自建通道原尺寸单档策略不受影响。
+
+2026-10-13 发布密钥回读发现 CALLBACK_SECRET 未进入服务端部署白名单。现补齐发送与接收白名单，旧转码及 YouTube 封面回调在配置密钥为空白时拒绝请求；CallbackAuthenticationTest 验证空配置、错误请求头均不派发，正确密钥保留旧任务处理。
+
+MPS 汇总 Properties.Fps 会截断 59.94006 为 59。兜底验证与 HLS 元数据优先使用 Streams.VideoStreamList.VideoStream[0] 的精确 fps/avgFPS，仅旧响应缺少流字段时读取汇总；不因摘要取整误判降帧。实际 MPS 任务 `7cde8a57fe364d09a1d383d2d8ce07a0` 已成功，自建任务保持 FALLBACK_PENDING，待修复后的持久化扫描登记，不重新提交或重置兜底计数。

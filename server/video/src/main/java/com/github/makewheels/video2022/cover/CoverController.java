@@ -37,7 +37,7 @@ public class CoverController {
     public ResponseEntity<Result<Void>> youtubeUploadFinishCallback(
             @RequestHeader(value = "X-Callback-Secret", required = false) String secret,
             @RequestParam String coverId) {
-        if (callbackSecret == null || !callbackSecret.equals(secret)) {
+        if (callbackSecret == null || callbackSecret.isBlank() || !callbackSecret.equals(secret)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         log.debug("收到youtube封面完成回调：coverId = {}", coverId);

@@ -81,8 +81,15 @@ jobs:
 
       - name: 登录镜像仓库
         run: |
-          printf '%s' "$ACR_AK_SECRET" | docker login \
-            --username "$ACR_AK_ID" --password-stdin "$ACR" >/dev/null
+          for attempt in 1 2 3; do
+            if printf '%s' "$ACR_AK_SECRET" | docker login \
+              --username "$ACR_AK_ID" --password-stdin "$ACR" >/dev/null; then
+              break
+            fi
+            if [ "$attempt" = 3 ]; then exit 1; fi
+            echo "镜像仓库登录暂时失败，重试 $attempt/3"
+            sleep 5
+          done
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -226,7 +233,7 @@ jobs:
               APP_VERSION IMAGE_TAG \
               SPRING_PROFILES_ACTIVE SERVER_PORT SERVER_SSL_ENABLED \
               EXTERNAL_BASE_URL INTERNAL_BASE_URL \
-              ADMIN_API_KEY DEVELOPER_JWT_SECRET \
+              ADMIN_API_KEY DEVELOPER_JWT_SECRET CALLBACK_SECRET \
               SPRING_MONGODB_HOST SPRING_MONGODB_PORT SPRING_MONGODB_DATABASE \
               SPRING_MONGODB_USERNAME SPRING_MONGODB_PASSWORD \
               MONGODB_USERNAME MONGODB_PASSWORD \
@@ -268,7 +275,7 @@ jobs:
                 case "$key" in
                   ACR_AK_ID) ACR_USER=$value ;;
                   ACR_AK_SECRET) ACR_PASSWORD=$value ;;
-                  APP_VERSION|IMAGE_TAG|SPRING_*|SERVER_*|MONGODB_*|ADMIN_API_KEY|DEVELOPER_JWT_SECRET|ALIYUN_*|TRANSCODE_*|EXTERNAL_BASE_URL|INTERNAL_BASE_URL)
+                  APP_VERSION|IMAGE_TAG|SPRING_*|SERVER_*|MONGODB_*|ADMIN_API_KEY|DEVELOPER_JWT_SECRET|CALLBACK_SECRET|ALIYUN_*|TRANSCODE_*|EXTERNAL_BASE_URL|INTERNAL_BASE_URL)
                     if printf "%s" "$value" | LC_ALL=C grep -q "[[:cntrl:]]"; then
                       echo "control character in runtime value: $key" >&2
                       exit 1
@@ -293,7 +300,14 @@ jobs:
                 echo "no running video-2022 container, skip previous tag"
               fi
 
-              docker --config "$docker_config_dir" compose --env-file "$runtime_file" pull 2>&1 | tail -3
+              for attempt in 1 2 3; do
+                if docker --config "$docker_config_dir" compose --env-file "$runtime_file" pull 2>&1 | tail -3; then
+                  break
+                fi
+                if [ "$attempt" = 3 ]; then exit 1; fi
+                echo "镜像拉取暂时失败，重试 $attempt/3"
+                sleep 5
+              done
               docker --config "$docker_config_dir" compose --env-file "$runtime_file" up -d --wait --wait-timeout 180
               docker image prune -f
               echo "=== deploy done ==="

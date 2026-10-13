@@ -7,6 +7,7 @@ import com.github.makewheels.video2022.transcode.aliyun.AliyunTranscodeStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.context.annotation.Lazy;
 import java.util.Date;
+import java.util.List;
 import com.github.makewheels.video2022.transcode.aliyun.AliyunMpsService;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
 import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
@@ -234,10 +235,15 @@ public class MpsFallbackService {
                 JSONObject raw = JSONObject.parseObject(com.alibaba.fastjson.JSON.toJSONString(job));
                 JSONObject output = raw.getJSONObject("output");
                 JSONObject properties = output == null ? null : output.getJSONObject("properties");
-                validateMedia(task, properties);
+                try {
+                    validateMedia(task, properties);
+                } catch (IllegalStateException | NumberFormatException e) {
+                    fail(task, e.getMessage());
+                    return;
+                }
                 manifest.put("width", properties.getInteger("width"));
                 manifest.put("height", properties.getInteger("height"));
-                manifest.put("frameRate", properties.getString("fps"));
+                manifest.put("frameRate", actualFrameRate(properties));
                 callbackService.onSelfHostedTranscodeFinish(task, manifest);
                 fcTaskRepository.finish(task.getId(), task.getAttemptId(), FcTaskStatus.SUCCEEDED, new Date(), null);
             } else if (AliyunTranscodeStatus.isFinishStatus(job.getState())) {
@@ -261,10 +267,28 @@ public class MpsFallbackService {
         String[] fraction = sourceFps.split("/");
         double rate = Double.parseDouble(fraction[0]) / (fraction.length > 1
                 ? Double.parseDouble(fraction[1]) : 1);
-        Double actual = properties.getDouble("fps");
-        if (actual == null || Math.abs(actual - rate) > 0.001) {
+        String actualFps = actualFrameRate(properties);
+        String[] actualFraction = actualFps == null ? new String[0] : actualFps.split("/");
+        double actual = actualFraction.length == 0 ? Double.NaN
+                : Double.parseDouble(actualFraction[0]) / (actualFraction.length > 1
+                        ? Double.parseDouble(actualFraction[1]) : 1);
+        if (!Double.isFinite(actual) || Math.abs(actual - rate) > 0.001) {
             throw new IllegalStateException("MPS 输出帧率不符合原片");
         }
+    }
+
+    private String actualFrameRate(JSONObject properties) {
+        JSONObject streams = properties.getJSONObject("streams");
+        JSONObject list = streams == null ? null : streams.getJSONObject("videoStreamList");
+        var videos = list == null ? null : list.getJSONArray("videoStream");
+        if (videos != null && !videos.isEmpty()) {
+            JSONObject video = videos.getJSONObject(0);
+            for (String field : List.of("fps", "avgFPS", "avgFps")) {
+                String value = video.getString(field);
+                if (value != null && !value.isBlank()) return value;
+            }
+        }
+        return properties.getString("fps");
     }
 
     private void fail(FcTask task, String error) {

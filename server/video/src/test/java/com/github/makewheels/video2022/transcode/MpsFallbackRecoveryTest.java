@@ -157,4 +157,35 @@ class MpsFallbackRecoveryTest extends BaseIntegrationTest {
         assertFalse(overrides.getValue().getJSONObject("Video").containsKey("Fps"));
         assertFalse(overrides.getValue().getJSONObject("Video").containsKey("Gop"));
     }
+
+    @Test void roundedMpsSummary_usesPreciseStreamFrameRate() {
+        FcTask task = createFallback();
+        Video video = mongoTemplate.findById("v_mps", Video.class);
+        video.getMediaInfo().setFrameRate("60000/1001");
+        mongoTemplate.save(video);
+        JSONObject properties = JSONObject.parseObject("{\"width\":1280,\"height\":720,\"fps\":59,"
+                + "\"streams\":{\"videoStreamList\":{\"videoStream\":[{\"fps\":\"59.94006\"}]}}}");
+        assertDoesNotThrow(() -> org.springframework.test.util.ReflectionTestUtils
+                .invokeMethod(fallbackService, "validateMedia", task, properties));
+        assertEquals("59.94006", org.springframework.test.util.ReflectionTestUtils
+                .invokeMethod(fallbackService, "actualFrameRate", properties));
+        properties.getJSONObject("streams").getJSONObject("videoStreamList")
+                .getJSONArray("videoStream").getJSONObject(0).put("fps", "30");
+        assertThrows(IllegalStateException.class, () -> org.springframework.test.util.ReflectionTestUtils
+                .invokeMethod(fallbackService, "validateMedia", task, properties));
+    }
+
+
+    @Test void actualLowerFrameRate_failsWithoutScanningOutput() {
+        FcTask task = createFallback();
+        Video video = mongoTemplate.findById("v_mps", Video.class);
+        video.getMediaInfo().setFrameRate("60000/1001");
+        mongoTemplate.save(video);
+        jobState("TranscodeSuccess");
+        fallbackService.pollFallbacks();
+        assertEquals(FcTaskStatus.FAILED, taskRepository.getById(task.getId()).getStatus());
+        assertEquals(VideoStatus.TRANSCODE_FAILED, mongoTemplate.findById("v_mps", Video.class).getStatus());
+        verifyNoInteractions(fileService);
+    }
+
 }
