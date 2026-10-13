@@ -218,3 +218,19 @@
 - 仍未验证：iOS/Android/HDR 真机、真实 Dolby Vision 保留（现明确拒绝）、10–30秒实际运动素材主观画质、完整历史 TS/480p 与在途旧回调矩阵、真实进程重启与限流故障矩阵。不得宣称全部验收完成。
 
 - 本次 `mvn test -pl video -Pspringboot` 独立系统临时构建：Surefire XML 汇总 532 项，0 失败/错误/跳过。与历史记录的全套 610 数量口径不同，不把两者混用；最终以本 PR 全套 CI 为准。
+
+
+## 10. 发布收尾与精确帧率复核（2026-10-13）
+
+- PR #137 已合并，[CI](https://github.com/makewheels/video-2022/actions/runs/38387925980) 全部必需项目通过；后端全套 611 项，包含 video 模块 532 项和 youtube 模块 79 项。历史 610 对应新增无档位边界测试之前的全套口径。
+- 服务器版本 `428eaea2584f576d6191b363a87c9f1a4f5df885`。[发布](https://github.com/makewheels/video-2022/actions/runs/38388793186) 因 ACR TLS handshake timeout 两次失败，第三次执行成功；通过 Actions 发布，未手动替换服务器程序。
+- 调用与回调密钥已轮换，临时 0600 文件用完清理。[函数配置发布](https://github.com/makewheels/video-2022/actions/runs/38387965085)、[服务端同步](https://github.com/makewheels/video-2022/actions/runs/38387975785) 成功；CPU/GPU 的 INVOKE_SECRET/CALLBACK_SECRET 与当前密钥库一致，服务端的两项 ALIYUN_CF_TRANSCODE_* 密钥一致。旧回调的 CALLBACK_SECRET 未进入部署白名单，正在补齐并拒绝空白密钥；正确旧任务派发保持。
+- 桌面真实 Chrome：历史 `2VU1CS`、LOCAL `2VW8XL`、回滚 MPS `2VYC63` 都 readyState=4、currentTime>0.5、无 video.error，seek 到 75% 通过。HDR10 `2VW78J` 与 HLG `2VW7UX` 也真实解码播放，无错误；这是无头桌面解码，不代表 HDR 屏幕亮度或移动端兼容。
+- 四张封面实际下载并视觉核查：SDR 1920×1080、HDR10 480×270、HLG 240×320、旋转后 240×320。HDR 封面经过 SDR tone-map；旋转图只旋转一次，未拉伸。原片/LOCAL/回滚样片的原始文件下载地址实际返回 206，读取 64 字节 MP4 头成功；不仅检查数据库/URL 存在。
+- 初期两条 GPU 请求在同一秒结束，耗时 5353.28/5773.87ms，运行于两个独立实例，执行时间窗重叠；之后三条沿用这两个实例完成。证明实际并行，主动 429/饱和队列故障仍未完整验收。
+- 新 C08 样片 `v_2983987700001264` / `2VYDXJ`，SHA-256 `dd1b806c1e15eeedb589e6a927e80ee271126e57f97f9283a01e9721c74ba371`。只向该私密合成样片注入两次失败回调；自建实际尝试数 2、兜底名额 1，重复最终回调不重提。MPS 唯一 jobId=`7cde8a57fe364d09a1d383d2d8ce07a0`，已实际 TranscodeSuccess，创建/完成 11:25:41/11:25:45 UTC。
+- MPS 已生成完整产物：1280×720、60000/1001fps、600 帧、10.01 秒、8-bit BT.709 limited、无音轨，与源片一致；整份 HLS 解码通过。源/产物 13,266,594 / 4,835,924 字节；同尺寸、PTS 对齐后 SSIM All=0.969612。仅适用于此合成运动样片，不做跨样本 GPU/MPS 优劣结论。
+- MPS 汇总 Properties.Fps=59，但视频流 Fps/AvgFPS=59.94006。旧验证误判降帧，任务仍 FALLBACK_PENDING；新验证优先流级精确值，真正降到 30fps 则立即失败。后端发布后应恢复登记同一已成功任务，不重置尝试、重新提交 MPS 或重复付费编码；最终 READY/浏览器结果待回读。
+- 新本地 video 模块全量 541 项，0 失败/错误/跳过，包含 7 条回调认证及 2 条精确帧率回归。真实工作流登录步骤故障模拟：前两次失败第三次成功正常继续，持续失败三次后停止；全部 shell run 段 bash -n 通过。
+- 最新账户余额 21.23 元；原任务 20 元总上限不变，不因余额增加扩大预算。没有新的 GPU 编码请求；本轮只新增小型 CPU/MPS 故障验证。
+- 仍未验证：有语言标签音轨的真实 MPS 兜底、iOS/Android/HDR 真机、实际运动素材主观画质、完整历史 480p 与在途旧回调、主动限流/崩溃矩阵。4 条历史 480p 记录中未找到本验收用户的 READY 样片，不绕过权限取片；未完成项不得写为通过。

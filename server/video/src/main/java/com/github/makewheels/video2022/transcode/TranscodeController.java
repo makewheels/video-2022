@@ -44,7 +44,7 @@ public class TranscodeController {
     public ResponseEntity<Result<Void>> aliyunCloudFunctionTranscodeCallback(
             @RequestHeader(value = "X-Callback-Secret", required = false) String secret,
             @RequestBody JSONObject body) {
-        if (callbackSecret == null || !callbackSecret.equals(secret)) {
+        if (callbackSecret == null || callbackSecret.isBlank() || !callbackSecret.equals(secret)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         log.info("收到阿里云 云函数转码回调：" + body.toJSONString());
