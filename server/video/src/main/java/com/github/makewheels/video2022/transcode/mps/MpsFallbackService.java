@@ -177,7 +177,6 @@ public class MpsFallbackService {
         video.put("Height", policy.getString("outputHeight"));
         video.put("LongShortMode", "false");
         video.put("Bitrate", String.valueOf(Math.max(10, policy.getLongValue("targetBitrateBps") / 1000)));
-        video.put("Gop", "6s");
         // Fps 不设置，MPS 取输入值；>60fps/VFR 源已在 eligibility 中拒绝。
         MediaInfo media = videoRepository.getById(task.getVideoId()).getMediaInfo();
         JSONObject audio = new JSONObject();
