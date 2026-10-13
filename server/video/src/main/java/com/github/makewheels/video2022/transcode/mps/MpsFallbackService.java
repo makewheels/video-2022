@@ -120,7 +120,10 @@ public class MpsFallbackService {
             return false;
         }
         Integer channels = audio.getJSONArray("tracks").getJSONObject(0).getInteger("channels");
-        return java.util.Set.of(1, 2, 4, 5, 6, 8).contains(channels == null ? 0 : channels);
+        String language = audio.getJSONArray("tracks").getJSONObject(0).getString("language");
+        return java.util.Set.of(1, 2, 4, 5, 6, 8).contains(channels == null ? 0 : channels)
+                && (language == null || language.isBlank() || "und".equalsIgnoreCase(language)
+                || language.matches("[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*"));
     }
 
     /**
@@ -263,6 +266,7 @@ public class MpsFallbackService {
                 || !expected.getInteger("outputHeight").equals(properties.getInteger("height"))) {
             throw new IllegalStateException("MPS 输出缺少媒体参数或尺寸不符合任务");
         }
+        validateAudio(task, properties);
         String sourceFps = videoRepository.getById(task.getVideoId()).getMediaInfo().getFrameRate();
         String[] fraction = sourceFps.split("/");
         double rate = Double.parseDouble(fraction[0]) / (fraction.length > 1
@@ -274,6 +278,24 @@ public class MpsFallbackService {
                         ? Double.parseDouble(actualFraction[1]) : 1);
         if (!Double.isFinite(actual) || Math.abs(actual - rate) > 0.001) {
             throw new IllegalStateException("MPS 输出帧率不符合原片");
+        }
+    }
+
+    private void validateAudio(FcTask task, JSONObject properties) {
+        MediaInfo media = videoRepository.getById(task.getVideoId()).getMediaInfo();
+        JSONObject streams = properties.getJSONObject("streams");
+        JSONObject list = streams == null ? null : streams.getJSONObject("audioStreamList");
+        var audio = list == null ? null : list.getJSONArray("audioStream");
+        if (audio == null || !Integer.valueOf(audio.size()).equals(media.getAudioTrackCount())) {
+            throw new IllegalStateException("MPS 输出音轨数无法确认或与原片不同");
+        }
+        if (!audio.isEmpty()) {
+            Integer expected = media.getAudioTracks().getJSONArray("tracks")
+                    .getJSONObject(0).getInteger("channels");
+            if (!expected.equals(audio.getJSONObject(0).getInteger("channels"))
+                    || !"aac".equalsIgnoreCase(audio.getJSONObject(0).getString("codecName"))) {
+                throw new IllegalStateException("MPS 输出声道或音频编码不符合任务");
+            }
         }
     }
 

@@ -14,6 +14,7 @@ import com.github.makewheels.video2022.file.bean.TsFile;
 import com.github.makewheels.video2022.transcode.M3u8Util;
 import com.github.makewheels.video2022.transcode.TranscodeRepository;
 import com.github.makewheels.video2022.transcode.bean.Transcode;
+import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
 import com.github.makewheels.video2022.user.UserHolder;
 import com.github.makewheels.video2022.utils.IpService;
 import com.github.makewheels.video2022.video.VideoRepository;
@@ -314,16 +315,41 @@ public class WatchService {
             String m3u8Url = getM3u8Url(context, transcode.getId(),
                     transcode.getResolution());
 
+            String audioGroup = appendMuxedAudioDeclaration(stringBuilder, transcode);
             stringBuilder.append("#EXT-X-STREAM-INF:")
                     .append("BANDWIDTH=").append(transcode.getMaxBitrate())
                     .append(",AVERAGE-BANDWIDTH=").append(transcode.getAverageBitrate());
             appendMediaAttributes(stringBuilder, transcode);
+            if (audioGroup != null) stringBuilder.append(",AUDIO=\"").append(audioGroup).append("\"");
             stringBuilder.append("\n")
                     .append(m3u8Url)
                     .append("\n");
         }
         return stringBuilder.toString();
     }
+    private String appendMuxedAudioDeclaration(StringBuilder playlist, Transcode transcode) {
+        if (!TranscodeProvider.ALIYUN_MPS.equals(transcode.getActiveProvider())
+                || !Integer.valueOf(1).equals(transcode.getFallbackCount())) return null;
+        Video source = videoRepository.getById(transcode.getVideoId());
+        var media = source == null ? null : source.getMediaInfo();
+        if (media == null || !Integer.valueOf(1).equals(media.getAudioTrackCount())
+                || media.getAudioTracks() == null) return null;
+        var tracks = media.getAudioTracks().getJSONArray("tracks");
+        if (tracks == null || tracks.size() != 1) return null;
+        JSONObject track = tracks.getJSONObject(0);
+        String language = track.getString("language");
+        if (language == null || "und".equalsIgnoreCase(language)
+                || !language.matches("[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*")) return null;
+        Integer channels = track.getInteger("channels");
+        if (channels == null || channels <= 0) return null;
+        String group = "audio-" + transcode.getId();
+        playlist.append("#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"").append(group)
+                .append("\",NAME=\"").append(language).append("\",LANGUAGE=\"").append(language)
+                .append("\",DEFAULT=YES,AUTOSELECT=YES,CHANNELS=\"").append(channels).append("\"\n");
+        // RFC 8216: AUDIO 不带 URI，表示音轨与 variant 中的视频复用。
+        return group;
+    }
+
     private boolean belongsToVideo(Video video, Transcode transcode) {
         if (video == null) return false;
         if (video.getId().equals(transcode.getVideoId())) return true;

@@ -89,7 +89,7 @@ class MpsFallbackRecoveryTest extends BaseIntegrationTest {
     private void jobState(String state) {
         String json = "{\"body\":{\"jobList\":{\"job\":[{\"jobId\":\"mps_job\",\"state\":\""
                 + state + "\",\"output\":{\"properties\":{\"width\":\"1280\",\"height\":\"720\","
-                + "\"fps\":\"30\"}}}]}}}";
+                + "\"fps\":\"30\",\"streams\":{\"audioStreamList\":{\"audioStream\":[{\"codecName\":\"aac\",\"channels\":1}]}}}}}]}}}";
         when(aliyunMpsService.queryTranscodeJob("mps_job"))
                 .thenReturn(JSONObject.parseObject(json, QueryJobListResponse.class));
     }
@@ -164,7 +164,8 @@ class MpsFallbackRecoveryTest extends BaseIntegrationTest {
         video.getMediaInfo().setFrameRate("60000/1001");
         mongoTemplate.save(video);
         JSONObject properties = JSONObject.parseObject("{\"width\":1280,\"height\":720,\"fps\":59,"
-                + "\"streams\":{\"videoStreamList\":{\"videoStream\":[{\"fps\":\"59.94006\"}]}}}");
+                + "\"streams\":{\"audioStreamList\":{\"audioStream\":[{\"codecName\":\"aac\",\"channels\":1}]},"
+                + "\"videoStreamList\":{\"videoStream\":[{\"fps\":\"59.94006\"}]}}}");
         assertDoesNotThrow(() -> org.springframework.test.util.ReflectionTestUtils
                 .invokeMethod(fallbackService, "validateMedia", task, properties));
         assertEquals("59.94006", org.springframework.test.util.ReflectionTestUtils
@@ -186,6 +187,15 @@ class MpsFallbackRecoveryTest extends BaseIntegrationTest {
         assertEquals(FcTaskStatus.FAILED, taskRepository.getById(task.getId()).getStatus());
         assertEquals(VideoStatus.TRANSCODE_FAILED, mongoTemplate.findById("v_mps", Video.class).getStatus());
         verifyNoInteractions(fileService);
+    }
+
+
+    @Test void changedAudioChannels_rejectedBeforeRegistration() {
+        FcTask task = createFallback();
+        JSONObject properties = JSONObject.parseObject("{\"width\":1280,\"height\":720,\"fps\":30,"
+                + "\"streams\":{\"audioStreamList\":{\"audioStream\":[{\"codecName\":\"aac\",\"channels\":2}]}}}");
+        assertThrows(IllegalStateException.class, () -> org.springframework.test.util.ReflectionTestUtils
+                .invokeMethod(fallbackService, "validateMedia", task, properties));
     }
 
 }

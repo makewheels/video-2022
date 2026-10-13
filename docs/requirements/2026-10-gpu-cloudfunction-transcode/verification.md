@@ -234,3 +234,15 @@
 - 新本地 video 模块全量 541 项，0 失败/错误/跳过，包含 7 条回调认证及 2 条精确帧率回归。真实工作流登录步骤故障模拟：前两次失败第三次成功正常继续，持续失败三次后停止；全部 shell run 段 bash -n 通过。
 - 最新账户余额 21.23 元；原任务 20 元总上限不变，不因余额增加扩大预算。没有新的 GPU 编码请求；本轮只新增小型 CPU/MPS 故障验证。
 - 仍未验证：有语言标签音轨的真实 MPS 兜底、iOS/Android/HDR 真机、实际运动素材主观画质、完整历史 480p 与在途旧回调、主动限流/崩溃矩阵。4 条历史 480p 记录中未找到本验收用户的 READY 样片，不绕过权限取片；未完成项不得写为通过。
+
+
+## 11. 持久化恢复与单音轨语言修复（2026-10-13）
+
+- PR #138 的 [CI](https://github.com/makewheels/video-2022/actions/runs/38391429351) 必需项目全部通过，后端全套 620 项；[服务器发布](https://github.com/makewheels/video-2022/actions/runs/38392553506) 成功。当前代码 `21872105e41559151f6c16e2d98048f5f069e2ea`，仍为 self-hosted，生产沿用历史 dev profile/dev bucket，不切换存量数据路径。
+- 原 59.94fps 兜底样片 `v_2983987700001264` 在服务更新重启后自动变为 READY，FC 任务 SUCCEEDED、attemptCount=2、fallbackCount=1、MPS jobId 仍 `7cde8a57fe364d09a1d383d2d8ce07a0`，actualFrameRate=59.94006。没有重置数据库状态、重发 MPS 或再次编码。这证明真实成功产物跨进程重启后的持久化登记恢复；不把它当成全部崩溃/竞态矩阵通过。
+- 线上自建/旧转码/YouTube 封面三个回调的错误密钥均返回 403。现代调用/回调密钥回读一致；旧 CALLBACK_SECRET 已进入部署输入，但 Compose 未映射到容器，补齐 Compose 后再回读，不能只凭 Actions 成功声称所有密钥已生效。
+- 单声道语言样片 `v_2984007200001314` / `2VYEMP`，SHA-256 `3cbb1ac0707e8f339392eb41645f6e1a97aac3ab725b2b3c5ce3e4bb43a77e82`：1280×720、25fps、250帧、10秒、BT.709 limited、AAC 单声道 48kHz eng。两次自建失败回调后，仅一次 MPS，jobId=`03decffadd394997abae09d38a0bd960`，READY、FC SUCCEEDED/count2、fallbackCount1，新 COVER 首次成功。
+- MPS 产物尺寸/帧率/帧数/色彩/单声道/采样率匹配，源/产物 6,895,839 / 4,865,440 字节，完整 HLS 解码通过；AAC 帧计数 469→471，属新增编码 priming/tail，继续以实际 PTS/时长核对同步。TS 的 eng 标签确实丢失，原有验收不能据 READY 宣称语言保留。
+- 真实已生成 MPS 产物加无 URI 的 HLS muxed AUDIO 声明，本地 ffprobe 主列表得到 language=eng/comment=English，无重新编码或改动 TS 字节。采用相同的标准声明在正式主列表保留已验证单音轨的语言/声道；MPS 实际 AAC 轨数、声道先核查，未知语言不猜，链接读取原视频，属性注入拒绝。线上主列表/浏览器确认待发布后执行。
+- 本地 video 模块全量 546 项，失败/错误/跳过均为 0，新增真实输出声道不符拒绝、主列表语言声明、未知语言、属性注入及链接源归属回归；最终必需 CI 待本 PR 执行。
+- 当前没有真实原片，继续使用自生成样片完成功能/编码基准；实际素材主观画质、iOS/Android/HDR 真机显示仍未验证，不以自生成画面代替。公开且 READY 的历史 480p 样片未找到，不绕过私密授权。

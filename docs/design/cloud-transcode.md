@@ -188,3 +188,9 @@ HDR HLS 选型、动态元数据保留、各端读取、MPS 兜底属于同一�
 2026-10-13 发布密钥回读发现 CALLBACK_SECRET 未进入服务端部署白名单。现补齐发送与接收白名单，旧转码及 YouTube 封面回调在配置密钥为空白时拒绝请求；CallbackAuthenticationTest 验证空配置、错误请求头均不派发，正确密钥保留旧任务处理。
 
 MPS 汇总 Properties.Fps 会截断 59.94006 为 59。兜底验证与 HLS 元数据优先使用 Streams.VideoStreamList.VideoStream[0] 的精确 fps/avgFPS，仅旧响应缺少流字段时读取汇总；不因摘要取整误判降帧。实际 MPS 任务 `7cde8a57fe364d09a1d383d2d8ce07a0` 已成功，自建任务保持 FALLBACK_PENDING，待修复后的持久化扫描登记，不重新提交或重置兜底计数。
+
+### 单音轨 MPS 的语言声明
+
+真实 MPS 转码保留 AAC 单声道/采样率，却丢失 TS 语言标签。HLS 主列表使用 RFC 8216 §4.3.4.1 的 muxed AUDIO 声明（不设置 URI），从已验证一对一的原始单音轨保留 LANGUAGE/CHANNELS；variant 关联该 AUDIO group。本地真实 MPS 产物加此声明后 ffprobe 主列表恢复 language=eng，未修改编码字节。仅对有一次兜底且源明确单音轨的结果声明；音轨数、AAC codec 和声道数先按 MPS 实际流检查，未知语言不猜，语言属性拒绝不合法字符，链接视频读取实际源视频的轨道。依据：[RFC 8216](https://www.rfc-editor.org/rfc/rfc8216#section-4.3.4.1)。
+
+CALLBACK_SECRET 的取密、部署输入和 Compose 容器环境必须全部映射；前两项已补，实际 Docker 回读仍缺少此值，最终补齐 Compose 映射并以容器回读验证，不以 Actions 成功推断密钥可用。
