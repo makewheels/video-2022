@@ -146,10 +146,10 @@
 
 ### 本地检查与边界
 
-- 最终本地后端 608 项通过，0 失败/错误/跳过；覆盖任务恢复、全部档位任务先持久化、LOCAL 上传云 MD5 为零、播放授权及 MPS 兜底。
-- 函数 21 项通过，含真实软件编码替代 NVENC 后的 HEVC 静态 SEI 补全、fMP4、首帧 mastering/content-light 交叉比较和完整解码。此结果证明封装/元数据处理，不代替 FC NVENC 或 HDR 真机。
-- CLI 139 项与函数 21 项合计 160 项通过，包含真实 LOCAL HDR10 fMP4 静态元数据和完整解码。
-- 私密播放/跨视频 init/封面/精确帧率/MPS 专项 42 项通过；608 项全量回归包含后续 LOCAL 与任务准备改动。GitHub 必需 CI 待验证。
+- 最终本地后端 609 项通过，0 失败/错误/跳过；覆盖任务恢复、全部档位任务先持久化、LOCAL 上传云 MD5 为零、播放授权及 MPS 兜底。
+- 函数 22 项通过，含真实软件编码替代 NVENC 后的 HEVC 静态 SEI 补全、fMP4、首帧 mastering/content-light 交叉比较和完整解码。此结果证明封装/元数据处理，不代替 FC NVENC 或 HDR 真机。
+- CLI 139 项与函数 22 项合计 161 项通过，包含真实 LOCAL HDR10 fMP4 静态元数据和完整解码。
+- 私密播放/跨视频 init/封面/精确帧率/MPS 专项 42 项通过；609 项全量回归包含后续 LOCAL 与任务准备改动。GitHub 必需 CI 待验证。
 - Dolby Vision、HDR10+ 和未知类型明确拒绝；>10-bit 无验证能力时明确失败。原首帧探测并不能证明所有动态类型全片均支持。
 
 ### 费用与新增批次上限
@@ -173,3 +173,33 @@
 | C09 | 历史播放与原片待线上复核；实际回滚未验 |
 
 完整云端与真机门槛仍未全部满足，不能声称所有需求完整完成。
+
+
+## 8. 2026-10-13 发布及真实微样本验收（执行中）
+
+- 修复 PR #135 已合并，服务端 commit `5bae26717f640d288c5ea6e9448dfe8d115d6205`；来源 commit `6326ba4664a6336182cde7e3c9dade5bc3f8aab1`。
+- [完整手动 CI](https://github.com/makewheels/video-2022/actions/runs/38276087873) 和 [PR 必需 CI](https://github.com/makewheels/video-2022/actions/runs/38276022780) 均通过。手动 CI 的 API、浏览器 E2E 实际运行通过，无跳过。
+- [后端发布](https://github.com/makewheels/video-2022/actions/runs/38278246731) 成功，Docker 运行环境 APP_VERSION 回读匹配上述 merge commit。
+- [函数发布](https://github.com/makewheels/video-2022/actions/runs/38278017623) 成功；镜像标签 `20261013-002459-0017`，CPU digest `sha256:3abc777473042a1fc23f52cd2d34075366c581229ce6b961b6a63c2c4846a2d4`，GPU digest `sha256:0e0b983910e29929e0b8244c97a937a684252664d7e7cfc5de1ef208a7048434`。
+- FC 回读：CPU 2 vCPU/4GB，GPU T4 16GB/8 vCPU/32GB；两函数并发上限 2、预留实例 0、平台重试 0。Beijing 实际 GPU 按需配额 3 卡、总配额 10 卡。
+- 首次构建成功但发布失败：受限临时密钥项目中的非敏感值 `2` 被 GitHub 当秘密屏蔽，导致跨 job 镜像标签 output 被丢弃。旧镜像未被替换；移除临时项目冗余并发默认值并显式指定已有标签重发成功。主生产身份仍只信任 master；临时 CI/函数身份分别只信任转码分支的对应工作流，使用仅含所需配置的独立项目。
+- 4 个自建新上传微样本全部 READY，A 为 1080p/60 fps/双音轨 SDR，B 为静态 HDR10，C 为 59.94 fps HLG 竖屏，D 为旋转 90 度 SDR。它们是自生成的 2–4 秒功能微样本；不能代替 10–30 秒实际运动素材的主观画质或 HDR 真机亮度验收。
+
+| 样本 | videoId / watchId | 原片 SHA-256 |
+|---|---|---|
+| A | `v_2982302700001035` / `2VW6AM` | `1938c74110db774fad78b93541caf9f2f9edfaab0927e6cacc00cd2482fdead7` |
+| B | `v_2982302800001192` / `2VW78J` | `dfbbdc90397b56d851eee319b1569b7755f0487832eb1c65f8374185ec6f4105` |
+| C | `v_2982302800003862` / `2VW7UX` | `9c9811b0940897c8fb43aaa4f5ce56986f75e573abee2a321c22f73e0adcd9d0` |
+| D | `v_2982302800005174` / `2VW8KG` | `25acf89abf45c0df04dc22154d5f98c3be57aa098b789c5cae6b1d04ded3fe2e` |
+
+- A 两档实际 NVENC：1280×720 / 1920×1080，均 60/1 fps、240 帧、4 秒、SDR 8-bit BT.709 limited；AAC 单声道 eng + 双声道 fra 完整保留，整份 HLS 解码通过。分别 2,529,710 / 7,566,419 字节，源片 11,640,799 字节；将原片缩放到对应档位并对齐 PTS 后 SSIM 为 0.996007 / 0.996407。数值只适用于此合成微样本。
+- A 私密主播放列表：短签名 URL 返回两档完整列表；去掉授权字段则被拒绝。真实封面 HTTP 404 暴露 OSS key 使用本地 FileUtil.getParent，被转换成 `/app/nested:...` 绝对路径；FC 异步受理后由请求校验拒绝，最终超时失败，需后续修复。新回归直接调用自建 CoverLauncher，检查实际 submit、持久化 payload/attempt 及输出路径保持 `videos/` 对象 key；另补终态失败不生成未执行第三轮的计数断言。
+- B 实测 480×270、25/1 fps、50 帧、2 秒、10-bit HDR10 BT.2020/PQ limited；mastering display 与 max-cll/max-fall 逐字段相同，AAC 单声道 eng 保留；产物 198,051 字节。
+- C 实测 240×320、60000/1001 fps、120 帧、2.001 秒、10-bit HLG BT.2020 limited，无音轨；产物 89,032 字节。
+- D 从带 rotation=90 的 320×240 原片转为 240×320、rotation=0、25/1 fps、75 帧、3 秒、无音轨；产物 159,218 字节。B/C/D 整份 HLS 解码与源/输出字段比对均通过；私密主播放签名校验通过，封面仍待修复。
+- 新 A 在本机实际 Chrome 无头模式播放：readyState=4，视频 1280×720、duration=4.017028 秒、currentTime>0.5 秒、video.error=null，seek 到 75% 通过。此证明桌面播放，不代替 iOS/Android/HDR 屏幕验收。
+- LOCAL 实际 CLI 上传 `v_2982323700001281` / `2VW8XL`：READY，两档 provider=LOCAL_TRANSCODE，无链接复用，FC 任务数 0、raw md5=null；创建时间 2026-10-12 16:55:49.209 UTC，封面完成 16:55:56.851 UTC。MPS ListJob 在对应时间段返回 0 任务；FC 指标交叉核查继续执行。
+- 2026-10-13 最新余额 2.68 元；新 GPU 首批 5 次转码均首次成功，SLS 执行 duration 合计约 23.95 秒，最终收费仍以延迟账单为准。
+- 未连接 Android 设备，devicectl 在本机不可用；iOS/Android 真机与 HDR 高光亮度未验。故障一次 MPS 兜底、实际通道回滚及封面恢复继续验收，云端阶段未验证内容仍不标通过。
+
+- 最新本地后端全量 610 项通过（0 失败/错误/跳过），新增相对 OSS key 与终态尝试计数断言。真实四个封面任务原因为 `/app/nested:...` 路径，被异步函数请求校验拒绝；原失败记录保留，针对仅本轮 4 个样本创建独立 `-repair` COVER 请求交由既有持久化恢复队列处理，结果待回读。

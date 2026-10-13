@@ -13,6 +13,7 @@ FN_NAME=$1
 IMAGE=$2
 GPU_MODE=$3
 TARGET=$4
+case "$IMAGE" in *:) echo '镜像标签为空，请显式指定已构建的版本' >&2; exit 1;; esac
 
 INVOKE_SECRET_VALUE="${ALIYUN_CF_TRANSCODE_INVOKE_SECRET:-${CALLBACK_SECRET:?CALLBACK_SECRET 未配置}}"
 
@@ -64,16 +65,19 @@ urlenc() { uv run --no-project python -c 'import urllib.parse,sys;print(urllib.p
 # aliyun CLI 路径不支持 $ 字符，GetFunction 用 API 名形式探测
 if aliyun fc GetFunction --functionName "$FN_NAME" >/dev/null 2>&1; then
   echo "函数已存在，更新: $FN_NAME"
-  aliyun fc UpdateFunction --functionName "$FN_NAME" --body "$PAYLOAD" >/dev/null && echo "updated"
+  aliyun fc UpdateFunction --functionName "$FN_NAME" --body "$PAYLOAD" >/dev/null
+  echo "updated"
 else
   echo "创建新函数: $FN_NAME"
-  aliyun fc CreateFunction --body "$PAYLOAD" >/dev/null && echo "created"
+  aliyun fc CreateFunction --body "$PAYLOAD" >/dev/null
+  echo "created"
   aliyun fc CreateTrigger --functionName "$FN_NAME" --body '{
     "triggerName": "defaultTrigger",
     "triggerType": "http",
     "qualifier": "LATEST",
     "triggerConfig": "{\"authType\":\"anonymous\",\"methods\":[\"POST\",\"GET\"]}"
-  }' >/dev/null && echo "trigger created"
+  }' >/dev/null
+  echo "trigger created"
 fi
 
 # 函数级并发上限是配额，不是预留实例；GPU 仍为最小实例 0 的按需计费。

@@ -403,6 +403,10 @@ class FcTaskFlowIntegrationTest extends BaseIntegrationTest {
         fail2.put("status", "FAILED");
         fail2.put("errorMessage", "nvenc error again");
         assertEquals(200, fcTaskCallbackService.handleCallback(fail2));
+        FcTask exhausted = fcTaskRepository.getById(task.getId());
+        assertEquals(2, exhausted.getAttemptCount());
+        assertEquals(resubmitted.getAttemptId(), exhausted.getAttemptId());
+        assertEquals(FcTaskStatus.FALLBACK_PENDING, exhausted.getStatus());
 
         Transcode afterFallback = mongoTemplate.findById(lane.getId(), Transcode.class);
         assertEquals(1, afterFallback.getFallbackCount());
