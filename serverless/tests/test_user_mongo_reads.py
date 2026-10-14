@@ -12,7 +12,9 @@ from pymongo.uri_parser import parse_uri
 from test_user_reads import ROOT, comparison
 
 from video_serverless.adapters.mongo_avatar_files import AvatarFileMappingError, MongoAvatarFiles
+from video_serverless.adapters.mongo_profile_updates import MongoProfileWrites
 from video_serverless.adapters.mongo_users import MongoUserReads, UserMappingError
+from video_serverless.business.profile_updates import ProfileUpdates
 from video_serverless.business.profiles import Profiles
 from video_serverless.business.request_identity import IdentityResolver
 from video_serverless.business.users import Users
@@ -217,6 +219,49 @@ def test_request_identity_composes_with_real_mongo_and_preserves_empty_token_beh
     assert resolve((("token", "fixture-wrong"),), (("token", "fixture-normal-token"),)).user is None
     assert resolve((), (("token", "fixture-wrong"), ("token", "fixture-normal-token"))).user is None
     assert database.user.count_documents({}) == 2
+
+
+def test_profile_write_updates_only_three_fields_and_replacement_clears_omitted_values(database):
+    original = golden_document()
+    database.user.insert_one(original.copy())
+    fixed = datetime(2025, 2, 3, 4, 5, 6, tzinfo=UTC)
+    updates = ProfileUpdates(MongoProfileWrites(lambda: database), lambda: fixed)
+    assert updates.update(original["_id"], None, " ").error is None
+    stored = database.user.find_one()
+    assert "nickname" in stored and stored["nickname"] is None
+    assert stored["bio"] == " "
+    assert stored["updateTime"] == fixed.replace(tzinfo=None)
+    assert stored["token"] == original["token"]
+    assert stored["avatarUrl"] == original["avatarUrl"]
+    assert stored["createTime"] == original["createTime"].replace(tzinfo=None)
+    assert updates.update(original["_id"], None, None).error is None
+    assert database.user.find_one()["bio"] is None
+    assert database.user.count_documents({}) == 1
+
+
+def test_profile_write_uses_object_id_without_string_fallback_or_upsert(database):
+    hex_id = "0123456789abcdef01234567"
+    database.user.insert_many([{"_id": hex_id, "nickname": "fixture-string"},
+                               {"_id": ObjectId(hex_id), "nickname": "fixture-object"}])
+    fixed = datetime(2025, 2, 3, tzinfo=UTC)
+    updates = ProfileUpdates(MongoProfileWrites(lambda: database), lambda: fixed)
+    assert updates.update(hex_id, None, " ").error is None
+    assert database.user.find_one({"_id": ObjectId(hex_id)})["nickname"] is None
+    assert database.user.find_one({"_id": hex_id})["nickname"] == "fixture-string"
+    database.user.delete_one({"_id": ObjectId(hex_id)})
+    assert updates.update(hex_id, "fixture-no-match", None).error is None
+    assert updates.update("fixture-missing", "fixture-no-upsert", None).error is None
+    assert database.user.count_documents({}) == 1
+    assert database.user.find_one()["nickname"] == "fixture-string"
+
+
+def test_profile_rejection_does_not_modify_existing_document(database):
+    original = golden_document()
+    database.user.insert_one(original.copy())
+    before = database.user.find_one()
+    updates = ProfileUpdates(MongoProfileWrites(lambda: database), lambda: datetime.now(UTC))
+    assert updates.update(original["_id"], "😀" * 16, "new").error == "昵称不能超过30字"
+    assert database.user.find_one() == before
 
 
 def test_provider_error_is_propagated_and_initialization_is_lazy():

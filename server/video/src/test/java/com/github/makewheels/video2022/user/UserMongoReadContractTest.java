@@ -127,4 +127,26 @@ class UserMongoReadContractTest extends BaseIntegrationTest {
         assertEquals(" ", mongoTemplate.findById("fixture-space-key", File.class).getKey());
         assertEquals("1234", mongoTemplate.findById("fixture-numeric-key", File.class).getKey());
     }
+
+    @Test
+    void profileUpdateUsesObjectIdWithoutUpsertOrStringFallbackAndWritesExplicitNull() {
+        String hex = "0123456789abcdef01234567";
+        mongoTemplate.getCollection("user").insertOne(new Document("_id", hex).append("nickname", "fixture-string"));
+        mongoTemplate.getCollection("user").insertOne(new Document("_id", new ObjectId(hex))
+                .append("nickname", "fixture-object").append("bio", "fixture-old")
+                .append("token", "fixture-retained-token"));
+        repository.updateProfile(hex, null, " ");
+        Document updated = mongoTemplate.getCollection("user").find(new Document("_id", new ObjectId(hex))).first();
+        assertNotNull(updated);
+        assertTrue(updated.containsKey("nickname"));
+        assertNull(updated.get("nickname"));
+        assertEquals(" ", updated.getString("bio"));
+        assertNotNull(updated.getDate("updateTime"));
+        assertEquals("fixture-retained-token", updated.getString("token"));
+        mongoTemplate.getCollection("user").deleteOne(new Document("_id", new ObjectId(hex)));
+        repository.updateProfile(hex, "fixture-no-match", null);
+        repository.updateProfile("fixture-missing", "fixture-no-upsert", null);
+        assertEquals(1, mongoTemplate.getCollection("user").countDocuments());
+        assertEquals("fixture-string", mongoTemplate.getCollection("user").find().first().getString("nickname"));
+    }
 }

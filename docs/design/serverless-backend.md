@@ -209,3 +209,7 @@ RequestMetadata保留有序重复headers/参数与原query/peer信息，Identity
 ### S06.d5 普通请求生命周期（未装配）
 
 RequestCycle保留首次身份、受保护第二次查询、401形状、处理后同步journal与精确路径排除；日志save失败保留响应/业务写并返回内部failed诊断，不重放业务。局部值不复制旧ThreadLocal泄漏；具体journal/域异常/外壳路由尚未装配。Java黄金HTTP11项、完整Python235项通过，详见[生命周期边界](../requirements/2026-10-14-serverless-backend/request-cycle.md)。
+
+### S06.e1 资料更新（未装配）
+
+ProfileUpdates保留旧UTF-16长度与双字段替换，MongoProfileWrites仅更新nickname/bio/updateTime，不upsert/不回退String ID、不接生产路由。JavaHTTP14+Mongo6项、Python247项通过，写入仅随机隔离库；JSON绑定/完整鉴权日志与真实网络仍待，详见[更新边界](../requirements/2026-10-14-serverless-backend/profile-update.md)。
