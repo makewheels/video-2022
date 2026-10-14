@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.github.makewheels.video2022.BaseIntegrationTest;
+import com.github.makewheels.video2022.file.bean.File;
+import com.github.makewheels.video2022.file.constants.FileType;
 import com.github.makewheels.video2022.user.bean.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,9 +20,11 @@ import org.springframework.web.context.WebApplicationContext;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 /** Fixed synthetic Java HTTP oracle. Optional export is confined to a task-owned OS temp folder. */
@@ -114,6 +118,71 @@ class UserReadGoldenHttpContractTest extends BaseIntegrationTest {
         JSONObject body = capture("id-missing", get("/user/getUserById").param("userId", "fixture-missing"));
         assertEquals(0, body.getIntValue("code"));
         assertEquals("success", body.getString("message"));
+        assertNull(body.get("data"));
+    }
+
+    private void avatar(boolean present) {
+        User user = mongoTemplate.findById(ID, User.class);
+        user.setAvatarFileId("fixture-avatar");
+        mongoTemplate.save(user);
+        if (present) {
+            File file = new File();
+            file.setId("fixture-avatar");
+            file.setFileType(FileType.AVATAR);
+            file.setUploaderId(ID);
+            file.setKey("avatar/" + ID + "/fixture-avatar");
+            mongoTemplate.save(file);
+            when(ossVideoService.generatePresignedUrl(file.getKey(), Duration.ofHours(24)))
+                    .thenReturn("https://example.invalid/signed-avatar.png");
+        }
+    }
+
+    private void profile(boolean present) throws Exception {
+        avatar(present);
+        JSONObject data = capture(present ? "profile-signed" : "profile-fallback",
+                get("/user/getMyProfile").header("token", TOKEN)).getJSONObject("data");
+        assertEquals(13, data.size());
+        assertNull(data.get("token"));
+        assertEquals(present ? "https://example.invalid/signed-avatar.png" : "https://example.invalid/avatar.png",
+                data.getString("avatarUrl"));
+        assertEquals(TOKEN, mongoTemplate.findById(ID, User.class).getToken());
+    }
+
+    private void channel(boolean present) throws Exception {
+        avatar(present);
+        JSONObject data = capture(present ? "channel-signed" : "channel-fallback",
+                get("/user/getChannel").param("userId", ID)).getJSONObject("data");
+        assertEquals(8, data.size());
+        assertFalse(data.getBooleanValue("isSubscribed"));
+        assertEquals(present ? "https://example.invalid/signed-avatar.png" : "https://example.invalid/avatar.png",
+                data.getString("avatarUrl"));
+    }
+
+    @Test
+    void profileWithSignedAvatar() throws Exception {
+        profile(true);
+    }
+
+    @Test
+    void profileWithLegacyAvatarFallback() throws Exception {
+        profile(false);
+    }
+
+    @Test
+    void channelWithSignedAvatar() throws Exception {
+        channel(true);
+    }
+
+    @Test
+    void channelWithLegacyAvatarFallback() throws Exception {
+        channel(false);
+    }
+
+    @Test
+    void missingChannelIsBusinessError() throws Exception {
+        JSONObject body = capture("channel-missing", get("/user/getChannel").param("userId", "fixture-missing"));
+        assertEquals(1, body.getIntValue("code"));
+        assertEquals("用户不存在", body.getString("message"));
         assertNull(body.get("data"));
     }
 }

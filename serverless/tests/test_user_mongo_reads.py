@@ -12,8 +12,9 @@ from pymongo.uri_parser import parse_uri
 from test_user_reads import ROOT, comparison
 
 from video_serverless.adapters.mongo_users import MongoUserReads, UserMappingError
+from video_serverless.business.profiles import Profiles
 from video_serverless.business.users import Users
-from video_serverless.user_responses import public_user_response, token_user_response
+from video_serverless.user_responses import channel_response, public_user_response, token_user_response
 
 
 @pytest.fixture(scope="module")
@@ -118,6 +119,35 @@ def test_numeric_conversion_and_type_sensitive_token_match_java(database):
     assert (user.phone, user.subscriber_count, user.video_count, user.create_time) == ("0", 12, 7, fixed)
     assert reads.find_by_token("1234") is None
     assert reads.find_by_id("fixture-numeric-token").token == "1234"
+
+
+@pytest.mark.parametrize("case", ["profile-signed", "profile-fallback", "channel-signed", "channel-fallback"])
+def test_real_mongo_user_reads_compose_with_profile_ports_and_java_http_goldens(database, case):
+    original = {**golden_document(), "avatarFileId": "fixture-avatar"}
+    database.user.insert_one(original.copy())
+
+    class AvatarPorts:
+        def key_for_file(self, file_id):
+            assert file_id == "fixture-avatar"
+            return "fixture-avatar-key" if case.endswith("signed") else None
+
+        def sign(self, key, validity_seconds):
+            assert key == "fixture-avatar-key"
+            assert validity_seconds == 86400
+            return "https://example.invalid/signed-avatar.png"
+
+    avatars = AvatarPorts()
+    profiles = Profiles(MongoUserReads(lambda: database), avatars, avatars)
+    response = (public_user_response(profiles.mine(original["_id"])) if case.startswith("profile")
+                else channel_response(profiles.channel(original["_id"])))
+    expected = json.loads((ROOT / "contracts/profile-read" / (case + ".json")).read_text())
+    actual = {"status": response.status, "contentType": response.headers["Content-Type"],
+              "body": json.loads(response.body)}
+    assert comparison.compare(expected, actual)["match"]
+    stored = database.user.find_one()
+    assert stored["token"] == original["token"]
+    assert stored["avatarUrl"] == original["avatarUrl"]
+    assert database.user.count_documents({}) == 1
 
 
 def test_provider_error_is_propagated_and_initialization_is_lazy():

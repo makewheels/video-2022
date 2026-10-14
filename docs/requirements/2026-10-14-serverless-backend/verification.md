@@ -210,3 +210,11 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 初稿用模型save(null)构造计数样本时本人资料实际返回0，与原始BSON显式null基线不一致；明确用原始BSON $set null构造后5项通过，再加入匿名路径实际验证，最终6项通过。没有修改业务或降低null断言。
 - #161 head748bdd06 CI38624666455必要项全通过后合并2d9cf7f0，PR E2E skipped。#160合并master CI38624255599和部署38624255442均success；新master CI38626349934/部署38626350038须查最终结果。
 - 见[profile-avatar-contract.md](profile-avatar-contract.md)。本阶段只固化旧接口，Python对应业务/完整请求日志、客户端设备、生产凭证与云网络均未验；S06未完成。
+
+## S06.c2 资料/频道纯读取与Java黄金对照（2026-10-15 04:03）
+
+- 基于masterf98e91e2，扩展既有UserReadGoldenHttpContractTest；JDK21/UTC/真实Spring MockMvc及回环独立临时Mongo，OSS仍mock。9tests/0failure/0error/0skip，5.044s，Checkstyle退出0。任务临时goldens导出5份profile/channel固定响应并保留null，原4份user-read不改；持久目录只格式化新5份合成夹具。
+- 本地CPython3.12.13，锁定web/deployment组；完整Python193passed/0skipped/1既有Starlette warning，3.74s；Ruff/500行/空白通过。新增纯用例对照/边界13项和真实Mongo用户读取+替代头像端口组合4项。签名24h、旧URL回退、计数/null及不写回保持；签名器返回null不偷偷回退。
+- 源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod及清理；Python fixture独立随机数据库finally删除。无生产数据/OSS/STS请求。
+- #162 head37ce40db CI38626919450必要项全过后合并f98e91e2；PR E2E skipped。其master CI38628443843/部署38628443893仍运行中须查最终。先前频道修复master CI38626349934/部署38626350038均success。
+- 未实现头像具体适配器、完整HTTP鉴权/日志/异常语义、更新资料或实际FC网络；纯能力未装配，不能称生产迁移。详见profile-channel-reads.md。
