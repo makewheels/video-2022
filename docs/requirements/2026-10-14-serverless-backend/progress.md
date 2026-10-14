@@ -2,7 +2,7 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-15 07:17，S06.e3已合并，更新HTTP组合已本地验证）
+## 当前快照（2026-10-15 07:31，S06.f2已合并，夜间验收收尾）
 
 - S02 [#148](https://github.com/makewheels/video-2022/pull/148) 已合并，merge `42a0ebeb0a2865adf3c6e1d8791bb276d970d8e9`；最终 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) success，所有必要 job 通过，API/浏览器 E2E 按 PR 条件 skipped。Linux 原型 79 passed，双包两次可重现、入口与 native 冒烟通过。
 - S03 工具 [#149](https://github.com/makewheels/video-2022/pull/149) 已合并，merge `2eb0065e94795073f87ca8b9bef30d9784990276`；最新 head `7fc243c4` 的 [CI 38555210822](https://github.com/makewheels/video-2022/actions/runs/38555210822) success，Linux 原型 107 passed/1 warning，全部必要 job 通过、PR 两个 E2E skipped。云端发布与回退仍未验，不能称 S03 全部完成。
@@ -40,7 +40,13 @@
 - 实际隔离 publish [38577826254](https://github.com/makewheels/video-2022/actions/runs/38577826254) 对 `2eb0065e` 失败：CI 来源门槛、两组 Infisical Actions OIDC 取密、Linux 构建/入口冒烟通过，云操作返回 AccessDenied。只读核对 OSS 身份 video-2022-oss-data-dev 的 Custom policy 仅允许 GetObject/ListObjects/GetObjectMeta/GetBucketInfo，无 PutObject；附加 STS AssumeRole 权限不等于对象写入权限，当前没有配置发布专用 role。FC 身份无 OSS 权限。没有扩权或更换生产身份重试。发布日志没有操作级上下文，不能仅凭错误断定具体被拒绝 API；现有身份缺少上传权限已证实。
 - 发布后只读 GetFunction 返回 FunctionNotFound，隔离 FC 未创建；没有 version/alias/receipt，真实晋级与回退未执行。23:21现有读取身份实际分页列该提交前缀为0对象；不推断其他前缀或账单。拟议隔离role的只读GetRole返回EntityNotExist.Role，未创建或扩权。S03/S04 保留阻塞，下一独立阶段为 S05 契约台账。
 
-## S06.f2 当前检查点
+## 夜间验收当前检查点
+
+- #176 headfaf37bd6必要CI38653142301全通过后合并846cb3b8；PR E2E skipped。#175 master CI38652998286/部署38652998328均success，新master CI38654503711/部署38654503779须查最终。
+- [夜间验收与恢复清单](night-review.md)汇总已完成/未验/失败及安全恢复；S03/S04与完整S06仍未完成。最近完整本地Python297passed，不为纯文档状态更新重复测试。
+- 07:30实时五小时额度93%已用、周88%已用；优先保存/验收/最终报告，不使用付费额外或重置卡。
+
+## S06.f2 历史检查点
 
 - #175 head36d13246必要CI38651719556全通过后合并24377e59（PR E2E skipped）；#174 master CI38651370309/部署38651370246均success。新master CI38652998286/部署38652998328待查最终。
 - [隔离更新HTTP组合](profile-update-http.md)新增15项，完整Python297passed/0skipped/1既有warning、Ruff/500行/空白通过。旧成功/长度/绑定/401黄金响应与真实Mongo更新次数/日志实测，只有测试应用，不改现有入口、不生产写入。
@@ -89,7 +95,7 @@
 
 ## 接续步骤
 
-1. #152至#175均已合并，不重复。先核对test-serverless-profile-update-http独立PR/head/必要CI，再收尾S06.f2。06:05起实际报告生成/打开并验可见页面；后续完整用户HTTP隔离装配或日志/签名适配，不开放半成品生产路由、不双写。
+1. #152至#176均已合并，不重复。先核对docs-serverless-night-review独立PR/head/必要CI并收尾验收记录；07:45后不新开大阶段，08:00截止。06:05起实际报告生成/打开并验可见页面；后续完整用户HTTP隔离装配或日志/签名适配，不开放半成品生产路由、不双写。
 2. 当前 master CI/E2E 已通过，但首次 publish 因 OSS 写权限失败；先解决独立发布身份权限并经审阅/验证，再运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
 3. publish 成功后保存非秘密 receiptKey、commit、ZIP SHA、version、同包晋级/远端回读结果。首次没有前版不能假造回退；第二次可追溯发布后用新版 receiptKey 执行 workflow rollback，实际读回 alias/version 与冒烟。
 4. S03 通过后才开始 S04 FC HTTP/冷热/原生扩展/现有 Mongo 网络；不擅自开放数据库公网、改防火墙、迁库或采购固定资源。无法安全接通则记录阻塞，推进独立 S05 契约台账。
