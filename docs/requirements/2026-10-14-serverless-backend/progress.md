@@ -6,7 +6,7 @@
 
 - S02 [#148](https://github.com/makewheels/video-2022/pull/148) 已合并，merge `42a0ebeb0a2865adf3c6e1d8791bb276d970d8e9`；最终 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) success，所有必要 job 通过，API/浏览器 E2E 按 PR 条件 skipped。Linux 原型 79 passed，双包两次可重现、入口与 native 冒烟通过。
 - S03 工具 [#149](https://github.com/makewheels/video-2022/pull/149) 已合并，merge `2eb0065e94795073f87ca8b9bef30d9784990276`；最新 head `7fc243c4` 的 [CI 38555210822](https://github.com/makewheels/video-2022/actions/runs/38555210822) success，Linux 原型 107 passed/1 warning，全部必要 job 通过、PR 两个 E2E skipped。云端发布与回退仍未验，不能称 S03 全部完成。
-- 当前记录分支 `docs-serverless-release-validation`，基于上述 merge；[master CI 38576710009](https://github.com/makewheels/video-2022/actions/runs/38576710009) 已全部 success，包含实际运行的 API/浏览器 E2E。此次 merge 触发的既有 Java 部署 workflow 38576709748 也 success；未手工操作服务器。
+- 当前记录分支 `docs-serverless-release-validation`，验收文档 [PR #150](https://github.com/makewheels/video-2022/pull/150) 已创建，等待该 PR 最新 head CI 后合并；基于上述 merge；[master CI 38576710009](https://github.com/makewheels/video-2022/actions/runs/38576710009) 已全部 success，包含实际运行的 API/浏览器 E2E。此次 merge 触发的既有 Java 部署 workflow 38576709748 也 success；未手工操作服务器。
 - 本机 Git 直接访问 GitHub 临时失败，使用当前系统代理 127.0.0.1:7890 的单次 git 参数已 fetch 至合并提交；没有修改全局代理/Git 配置。
 - 实际读取：本机 Infisical session 现在可用；prod `/` 存在 FC_DEPLOY_AK_ID/SECRET，`/oss` 存在数据 OSS 身份；dev 没有这些部署键。部署 RAM 用户 video-2022-fc-deploy 的已有 policy 允许 FC 函数/版本/别名/触发器/并发相关 API，无 OSS 权限。只读 FC 列表没有 serverless API 函数。密钥仅在内存/受限系统临时配置，未写 Git/报告。
 - S03 将由 Actions 复用现有 OIDC，独立 OSS 前缀上传/回读后把已验证 ZIP 字节交给 FC，避免扩大现有 RAM 权限。仍需验证 Actions 权限、实际发布、同包晋级/回退。生产与 Mongo 保持现状。
@@ -35,7 +35,7 @@
 
 ## 接续步骤
 
-1. 核对 Git 未提交改动和远端，查询当前记录分支、#149 合并 SHA 与 master CI 38576710009；S01/S02/S03 工具已合并，不重复实施。
+1. 核对 Git 未提交改动和远端，查询当前记录分支 PR #150 最新 head/必要 CI；通过后合并文档记录。S01/S02/S03 工具已合并，不重复实施。随后从 master 独立分支开始 S05.a 公共视频列表契约：核对 Java Controller/Service、Web/CLI/Android 调用及脱敏样本，不替换生产接口。
 2. 当前 master CI/E2E 已通过，但首次 publish 因 OSS 写权限失败；先解决独立发布身份权限并经审阅/验证，再运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
 3. publish 成功后保存非秘密 receiptKey、commit、ZIP SHA、version、同包晋级/远端回读结果。首次没有前版不能假造回退；第二次可追溯发布后用新版 receiptKey 执行 workflow rollback，实际读回 alias/version 与冒烟。
 4. S03 通过后才开始 S04 FC HTTP/冷热/原生扩展/现有 Mongo 网络；不擅自开放数据库公网、改防火墙、迁库或采购固定资源。无法安全接通则记录阻塞，推进独立 S05 契约台账。
