@@ -177,3 +177,7 @@ S01 已增加依赖边界检查和两个外壳的公共用例一致性测试，�
 ### S06.a 用户读取能力（未装配）
 
 UserReads端口仅按token/ID读取不可变标准值快照，Users纯用例保持旧token字符串和公开返回凭据清空语义，user_responses编码现有Result/字段/null/UTC日期。四个真实隔离Java HTTP固定夹具已离线对照。当前没有Mongo用户适配器、请求上下文/日志装配或新业务路由，健康/诊断原型不变；下一阶段需旧集合/ID转换/构造默认及完整HTTP验证，不能把这一能力库称为生产迁移。
+
+### S06.b2 用户Mongo读取（未装配）
+
+独立MongoUserReads复用装配传入的惰性database provider，每次单文档有界读取，显式UTC解码。保留Java基线中的缺失/null、ObjectId查询优先级和已验证转换，四份Java HTTP黄金响应已经真实隔离Mongo对照。未验证BSON类型固定错误不含值，仍须补证据后才能装配，不能把未支持类型当新增生产校验。当前不接业务路由/日志/登录写入，也无FC网络验证；详见[适配器边界](../requirements/2026-10-14-serverless-backend/user-mongo-reads.md)。
