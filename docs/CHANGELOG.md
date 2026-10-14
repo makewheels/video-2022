@@ -1,5 +1,9 @@
 # 变更日志
 
+## fix: 升级 pnpm Action 的 Node.js 运行时（2026-10-14）
+
+- CI 与部署流程的 4 处 `pnpm/action-setup` 从 v4 升级到 v5，使用其 Node.js 24 运行时，消除 Node.js 20 弃用警告；pnpm 10、应用 Node 版本和锁文件保持不变。
+
 ## docs: 拆分 Serverless 子阶段并明确可迁移与 Git 来源（2026-10-14）
 
 - P0–P4 细分为 S00–S24，小阶段、多 PR 和持续接续记录适应额度中断；更新原型 CI 17 项实际通过与生产未验证边界。
