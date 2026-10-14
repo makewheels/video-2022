@@ -140,6 +140,19 @@ S01 已增加依赖边界检查和两个外壳的公共用例一致性测试，�
 
 这条规则同样适用于其余组件：现有媒体函数镜像已来自 Git/CI，继续保留；前端/YouTube/MD5 的现役来源须按阶段盘点，缺失的旧源码需先恢复到 Git 并核对，不能假称本轮原型已经让全部云上源码完成追溯。未经授权不修改或删除旧云资源。
 
+### S02 构建来源方案（2026-10-14，草稿实现，暂停待接续）
+
+以下是目标设计；`serverless/release/` 的工具草稿尚未测试，CI 尚未接入，不能视为已满足本节要求。接续事项见进度文档。
+
+新增 `serverless/release/` 中的纯 Python 构建/验证工具。正式构建只允许 Linux x86_64、Python 3.12.12、uv 0.12.2；从干净 HEAD 的 Git 对象读取白名单输入，拒绝脏/未跟踪文件、符号链接和工作树内输出。构建中间文件及输出均位于系统任务临时目录，不能打包工作树、环境文件、测试、开发依赖或 `.git`。
+
+- handler/web 两种包分别导出锁定运行依赖；只接受带哈希的二进制 wheel，目标 `x86_64-manylinux_2_28`，不在 Windows 安装依赖再上传。两个包使用同一公共业务源码，各自保留原入口，不复制业务分支。
+- 白名单源码取 Git blob，依赖使用 `uv export --locked --no-dev --no-emit-project` 后以哈希安装。ZIP 固定顺序、时间与权限；剔除 pycache、命令包装和安装器生成的非运行元数据，保留分发包元数据及许可证。
+- sidecar manifest 记录完整 Git SHA、仓库、输入/锁文件/requirements 摘要、依赖版本、目标和工具版本、CI run、ZIP 摘要及逐文件摘要。ZIP 不包含自身 manifest，避免摘要循环；不写密钥、连接串或绝对构建路径。
+- 验证器必须收到可信来源的预期 commit 和 ZIP SHA256，并回读 Git 输入及白名单源码；拒绝篡改、缺失/额外文件、重复/危险 ZIP 路径和符号链接。manifest 本身不是签名；S03 只能从受控 CI 取得预期摘要，不能仅相信随包上传的 manifest。
+- CI 构建两次比较 ZIP 字节摘要，并从解包产物验证 native 和 ASGI 入口与原生依赖导入。Linux runner 验证不等于 FC/Debian 11 云端验证；Python 3.12 的地域/公测状态及实际 FC 配置由 S03/S04 核对。
+- S02 不上传 OSS、不创建函数，也不实现环境发布；临时产物验证后清理。S03 将复用工具接发布和受控产物保留。
+
 ## 10. 官方取舍与接续
 
 每个小阶段查阅并记录相关 [官方依据](../requirements/2026-10-14-serverless-backend/official-guidance.md)，明确官方事实/项目决定/待实测三者的区别。按 [小阶段计划](../requirements/2026-10-14-serverless-backend/plan.md) 多 PR 交付，重要状态及时写入 [接续记录](../requirements/2026-10-14-serverless-backend/progress.md)，不能依赖一次对话完成全部迁移。

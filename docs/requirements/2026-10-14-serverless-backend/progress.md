@@ -2,20 +2,18 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-14）
+## 当前快照（2026-10-14，用户要求暂停并交接）
 
 | 项目 | 当前记录 |
 |---|---|
-| 业务审计基线 | `8e4283e5`；生产仍是 Java，Python 原型未接生产流量 |
-| 已合并文档 | #141 年月日命名、#142 迁移审计；S00 #144、CI 警告 #145/#146 已合并；本轮基线 `e5fff0c5`，接续先 fetch 核对 |
-| 原型分支/提交 | `feat-serverless-api-prototype`，`9b7af7eb47d981cebf8d2a375f021424890ec44d`；含确认提交 `633066df` |
-| 原型 PR | [#143](https://github.com/makewheels/video-2022/pull/143)，已合并，merge `7c2c26d6c85ece34280c82c065ea6467a5f909f6`；不是完整业务迁移 |
-| 原型 CI | [38510090583](https://github.com/makewheels/video-2022/actions/runs/38510090583) success；Linux + 隔离 Mongo 实际 17 passed，API/浏览器 E2E skipped |
-| 本地证据 | S01 安装后 wheel 上 43 passed、真实 Mongo 1 skipped；两稳定入口和 Ruff 通过；原初始化比较不是 FC 冷启动 |
-| 本轮分支 | `feat-serverless-portable-layers`，基于 `e5fff0c5`；提交/PR/CI 以该分支 Git 历史及 PR 描述的最终验证记录为准 |
-| 当前阶段 | S01 现有原型分层实现及本地验收完成；合并门禁以 PR 实际 CI 为准，不等于生产业务迁移完成 |
-| 本轮截止 | 用户要求 2026-10-14 17:00（Asia/Shanghai）前收尾；提前完成即可结束，不扩展 S02/S03 |
-| 生产/资源 | 未切流、未迁库、未创建此次付费原型资源、未退役 Java |
+| 已完成 | S01 已合并 [#147](https://github.com/makewheels/video-2022/pull/147)，merge `4338dfb961c23d7d538184548fa808679d38e1ee`；不要重复实施 |
+| S01 实测 | [CI 38533456317](https://github.com/makewheels/video-2022/actions/runs/38533456317) success；Linux + 隔离 Mongo 44 passed、1 条已有 TestClient 警告；PR API/浏览器 E2E skipped。本地安装 wheel 43 passed、真实 Mongo 1 skipped |
+| 当前分支 | `feat-serverless-release-provenance`，基于上述 S01 merge；本次交接提交用 `git log -1` 查询，避免自引用 SHA |
+| 当前阶段 | S02 半成品，仅保存进度；未完成、未验收、未创建 PR、未合并，不可用于正式发布 |
+| 已写文件 | `serverless/release/` 下 build_release.py、release_support.py、verify_release.py、smoke_release.py，以及设计文档的 S02 方案 |
+| 实际验证 | S02 尚未跑 Ruff、pytest、Linux 构建、双次可重现构建或入口冒烟；交接只检查 Python 语法与 Git whitespace，不代表功能通过 |
+| 用户最新指令 | 停止继续实现，记录进度并 push；回家后接续。之前 17:00 小目标是 S01，已完成，不能误作 S02 必须合并的门槛 |
+| 生产/资源 | 仍为 Java；未切流、未改 Mongo、未上传 OSS、未创建/发布 FC；现役业务未改变 |
 
 ## 用户约束（接续不能丢失）
 
@@ -33,13 +31,24 @@
 - 本机 Docker daemon 不可用；CI 隔离 Mongo 已验证，不能因此声称生产网络可达。
 - Mongo 写库/投递间隙尚未解决；S01/S02/S05 可以先推进，不绕过恢复要求。
 
-## 下一步
+## S02 接续步骤（恢复工作后执行，本次暂停不执行）
 
-1. 通过 `gh pr view feat-serverless-portable-layers` 查询本轮 PR、head 和完整 CI；描述补充本地/CI 的最终证据后按门禁合并，不预写自己的 SHA。若已合并，不重做 S01。
-2. 当前代码已有 `business/prototype.py`、`ports/probe.py`、通用 HTTP Application、FC/ASGI/Mongo 适配器和 bootstrap。只处理原型真实需要的端口，OSS/任务等随业务阶段加入。
-3. S01 后进入 S02：干净 Git 提交在 Linux 构建并记录来源；本轮 wheel 验证不是 S02 的 Git 来源/不可变产物方案。S03 才做隔离环境自动发布和回退。
-4. S04 验证 FC 冷/热与 Mongo 首连；S05 补齐多值参数/header 等契约。不能以本地线程测试代替 FC 配置/生产网络。
-5. 若 17:00 时外部门禁仍未完成，保存准确状态和下一条命令后收尾，不强行合并或把未跑项目写通过。测试依赖已有的 TestClient 弃用提示仍存在，另见 CI 警告清单，不能混为本阶段失败或声称消失。
+1. `git fetch origin`，切到 `feat-serverless-release-provenance`，核对 `git status --short --branch`、`git log -1` 和远端；先读本页及 `docs/design/serverless-backend.md` 第 9 节。本次是 WIP 检查点，不要直接合并 master。
+2. 审查四个新工具：正式构建限制 Linux x86_64 / CPython 3.12.12 / uv 0.12.2；Git 对象白名单取源码，handler/web 分包；锁文件导出带哈希 wheel 依赖；固定 ZIP 元数据；sidecar 记录来源；验证需外部可信 commit/ZIP SHA；临时解包验证两入口。当前只是实现草稿，尚无测试证明。
+3. 优先补齐完整性缺口：requirements sidecar 目前只校验 manifest 自报摘要，考虑将 requirements 放入 ZIP，由可信 ZIP 摘要绑定；manifest 依赖版本未与包内 METADATA 对照；坏 ZIP 等异常应清晰拒绝。确认 uv export 对仅含 pyproject/lock 的快照能否工作，核对依赖过滤和原生扩展兼容。不要将未确认推断写成通过。
+4. 在现有 `serverless/tests/` 增加有意义的构建/验证测试：干净提交、脏树拒绝、源码白名单、路径/符号链接/重复 ZIP 项、篡改和预期 SHA/commit、双包差异、固定 ZIP。测试、venv、缓存、构建产物都使用系统临时目录并清理，不生成项目内临时文件。
+5. 接入独立 Linux CI packaging job，并加入 required summary 的 needs/失败判断。固定 Python/uv，在干净实际 PR head 上构建两次比较 ZIP；分离进程从解包产物验证 Handler/ASGI 和 BSON/Pydantic 原生模块。现有真实 Mongo job 保留，不以本地或 mock 替代云端验证。
+6. 补工具使用说明、官方依据、验收记录、changelog；本地运行 Ruff/pytest。Windows 不绕过正式 Linux 构建门禁，不把不能在本地跑的构建说成通过。
+7. 完成后再提一个 S02 PR，等待所有必要 CI 实际通过再按既有授权自行合并；PR 记录真实 counts/摘要/包体积和回退点。S03 才接隔离环境 Git → OSS → FC 发布和受控产物保留，本阶段不部署。
+
+## 已查依据与未确认边界
+
+- 阿里云 Python 运行时：https://help.aliyun.com/zh/functioncompute/python3/ 。查阅时 Python 3.12 为公测、Debian 11 x86_64；具体地域与实际 FC 配置仍需核验。
+- Python 代码包：https://help.aliyun.com/zh/functioncompute/deploy-a-code-package-1 ；第三方依赖：https://help.aliyun.com/zh/functioncompute/install-third-party-dependencies-for-a-function 。依赖需与目标 Linux/架构匹配，不能上传 Windows wheel。
+- uv 导出：https://docs.astral.sh/uv/concepts/projects/export/ 。候选 wheel target 为 `x86_64-manylinux_2_28`。
+- 本机 Docker daemon 不可用；远程查询候选 `python:3.12.12-slim-bullseye` 镜像返回 not found。因此未验证 Debian 11 容器；Linux runner 冒烟也不能替代 FC/Debian 11 实测。若需要容器，先确认真实存在且合适的镜像，不假称已通过。
+- S03/S04 才核实云资源、网络/权限、真实冷/热与 Mongo 首连。没有部署或费用发生；manifest 是完整性记录，不是数字签名，后续发布必须从受控 CI 获得可信摘要。
+- 回退点为 master 的 S01 merge `4338dfb9`；本分支无生产变更，放弃 S02 草稿不会影响现役服务。
 
 ## 检查点规则
 
