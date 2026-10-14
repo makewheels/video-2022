@@ -1,5 +1,10 @@
 # 变更日志
 
+## fix: S03.b OSS 不可变上传前提与最小权限配置（2026-10-14）
+
+- 上传前严格检查原始bucket versioning XML，拒绝启用/暂停/未知或读取失败，避免禁止覆盖头失效；修复锁定SDK漏掉namespaced状态带来的判断风险。
+- 候选role仅bucket版本状态读取及dev前缀GetObject/PutObject，trust限定数据用户；仅配置/本地保护，未应用IAM、未部署或真实回退。
+
 ## docs: S05.d 登录与观看身份契约台账（2026-10-14）
 
 - 核对六个公开入口、验证码 Mongo TTL、非生产绕过前提、旧 token、钱包与请求副作用，以及各端调用和存储寿命。

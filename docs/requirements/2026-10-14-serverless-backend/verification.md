@@ -153,3 +153,7 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 核对 UserController/Service/Repository、VerificationCode/User、client/session、环境判定、钱包及 Web/CLI/Android/iOS 调用；六入口的参数、错误码、TTL/旧 token/副作用已记录。纠正已有 API 文档 Redis 描述，未改代码。iOS LoginScreen 的 /user/initClient、/user/initSession 未在当前 Java Controller 声明中找到，Keychain 生命周期也与 Web 存储不同；记录为差异/待动态验，不把源码盘点冒充全端登录通过。git diff --check 通过；本 PR 仅文档，不重复本机全套测试，必要 CI 待验。
 
 S05.c 最终 Linux [CI 38586272991](https://github.com/makewheels/video-2022/actions/runs/38586272991) 对 6d9cdbcb 全部必要 job success，PR API/浏览器 E2E skipped，#153 合并为 7ff9a3f1。S05.e 独立测试分支已保存15cceab6（6项focused通过），不混进本台账PR。
+
+## S03.b OSS 上传前提与候选权限（2026-10-14 23:37）
+
+新增上传前versioning原始XML门禁和精确role/trust配置，未应用IAM。锁定oss2公开解析器对namespaced Enabled/Suspended返回None，真实SDK样本回归证实，因此不用它判断安全状态；仅复用认证请求路径并有界/严格解析官方XML。CPython3.12.13/web+deployment锁定临时环境完整回归 **155 passed / Mongo 1 skipped / 既有warning1**，Ruff/500行通过。首轮暴露状态/namespace假设失败已修正，最后补充属性式未知状态拒绝用例后，focused **25 passed**，Ruff/500行/空白门禁通过。临时环境已清理，无云端发布/身份代入/回退证明。候选角色缺失和OSS 0对象证据在S05.e记录/PR #155中，最新head CI仍需查询。

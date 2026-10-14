@@ -169,3 +169,7 @@ S01 已增加依赖边界检查和两个外壳的公共用例一致性测试，�
 - HTTP 触发器限定 GET/POST、RAM function 鉴权、dev 别名；诊断入口仍须随机诊断 token。token 仅驻留受控函数配置/内存，不进入 receipt/产物/日志。SDK InvokeFunction 用同一受控身份做有限健康/空请求冒烟，不保活、不调用生产 Mongo。
 - 产物与 receipt 使用不可变内容键，保留当前及前版；S03 不自动删除未知/其他组件对象或历史版本。实际云端发布、同包晋级及回退实测分别记录，没有跑通不标阶段完成。
 - 构建/部署/取密工具在 Git，临时依赖环境和下载包用系统任务临时目录并清理；发布工具的 SDK 依赖单独锁定，不能进入 API ZIP。FC Python 3.12 公测和云端 ABI 的实际支持仍需发布后验，失败不改为未知版本绕过。
+
+### S03.b 不可变 OSS 上传前提与候选最小权限
+
+上传前读取原始 versioning XML，仅接受无Status的从未启用状态，拒绝Enabled/Suspended/未知XML/权限失败；x-oss-forbid-overwrite在版本控制bucket失效，不能单凭请求头宣称不覆写。锁定SDK的公开解析器漏namespace，适配层复用认证请求并严格有界解析，真实云端仍未验。候选RAMrole/trust和边界见 [隔离权限方案](../requirements/2026-10-14-serverless-backend/isolated-oss-policy.md)：仅GetBucketVersioning及dev前缀GetObject/PutObject，未创建角色、未改现有用户权限、未实现STS装配，部署仍受身份阻塞。

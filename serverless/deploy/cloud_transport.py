@@ -3,16 +3,20 @@ import io
 import json
 import urllib.parse
 import urllib.request
+from xml.etree import ElementTree
 
 from release_plan import BUCKET, FUNCTION, PREFIX, REGION, DeploymentError, digest
 
 MAX_BYTES = 256 * 1024 * 1024
+MAX_VERSIONING_BYTES = 4096
+VERSIONING_NAMESPACE = "http://doc.oss-cn-hangzhou.aliyuncs.com"
 
 
 class CloudError(DeploymentError):
-    def __init__(self, code):
+    def __init__(self, code, operation=None):
         self.code = code
-        super().__init__("Cloud operation rejected: " + str(code))
+        context = " (" + operation + ")" if operation else ""
+        super().__init__("Cloud operation rejected" + context + ": " + str(code))
 
 
 class Functions:
@@ -80,6 +84,28 @@ class Objects:
         self.sdk = oss2
         self.bucket = oss2.Bucket(oss2.Auth(access_key, secret_key), f"https://oss-{REGION}.aliyuncs.com", BUCKET)
 
+    def require_unversioned(self):
+        try:
+            # Locked oss2's public parser misses namespaced Status elements.
+            # Use its authenticated request path, but validate the bounded raw XML ourselves.
+            response = self.bucket._Bucket__do_bucket("GET", params={"versioning": ""})
+            body = response.read(MAX_VERSIONING_BYTES + 1)
+        except Exception as error:
+            raise CloudError(getattr(error, "code", None) or type(error).__name__, "oss:GetBucketVersioning") from None
+        if response.status != 200 or len(body) > MAX_VERSIONING_BYTES or b"<!DOCTYPE" in body or b"<!ENTITY" in body:
+            raise DeploymentError("Unexpected OSS versioning response")
+        try:
+            root = ElementTree.fromstring(body)
+        except ElementTree.ParseError:
+            raise DeploymentError("Invalid OSS versioning XML") from None
+        namespace = "{" + VERSIONING_NAMESPACE + "}"
+        if root.tag not in {"VersioningConfiguration", namespace + "VersioningConfiguration"} or root.attrib:
+            raise DeploymentError("Unexpected OSS versioning XML root")
+        # An absent Status is the protocol's never-enabled bucket. All children
+        # (Enabled, Suspended, empty/unknown or malformed Status) fail closed.
+        if list(root) or (root.text or "").strip():
+            raise DeploymentError("Immutable release upload requires an unversioned OSS bucket")
+
     def get(self, key):
         if not key.startswith(PREFIX):
             raise DeploymentError("Object key outside isolated release prefix")
@@ -97,6 +123,9 @@ class Objects:
     def immutable_put(self, key, data):
         if not key.startswith(PREFIX):
             raise DeploymentError("Object key outside isolated release prefix")
+        # OSS ignores forbid-overwrite for Enabled AND Suspended buckets.
+        # Do not disable a shared bucket's versioning to make a release pass.
+        self.require_unversioned()
         try:
             self.bucket.put_object(key, data, headers={"x-oss-forbid-overwrite": "true",
                 "x-oss-object-acl": "private", "x-oss-meta-sha256": digest(data)})

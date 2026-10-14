@@ -1,0 +1,12 @@
+{
+  "Version": "1",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "RAM": ["acs:ram::<ACCOUNT_ID>:user/video-2022-oss-data-dev"]
+      }
+    }
+  ]
+}
