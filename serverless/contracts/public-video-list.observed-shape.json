@@ -1,0 +1,41 @@
+{
+  "source": "GET /video/getPublicVideoList?skip=0&limit=1",
+  "observedAt": "2026-10-14",
+  "note": "One public response, field shape only; no user data or signed URLs. Not the complete API contract.",
+  "shape": {
+    "resultKeys": [
+      "code",
+      "data",
+      "message"
+    ],
+    "dataKeys": [
+      "list",
+      "total"
+    ],
+    "videoFieldTypes": {
+      "category": "NoneType",
+      "coverUrl": "str",
+      "createTime": "str",
+      "createTimeString": "str",
+      "description": "NoneType",
+      "duration": "int",
+      "id": "str",
+      "shortUrl": "str",
+      "status": "str",
+      "tags": "list",
+      "title": "str",
+      "type": "NoneType",
+      "uploaderAvatarUrl": "NoneType",
+      "uploaderId": "str",
+      "uploaderName": "str",
+      "userId": "NoneType",
+      "visibility": "str",
+      "watchCount": "int",
+      "watchId": "str",
+      "watchUrl": "str",
+      "youtubePublishTime": "NoneType",
+      "youtubePublishTimeString": "NoneType"
+    },
+    "observedRows": 1
+  }
+}

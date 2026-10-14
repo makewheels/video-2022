@@ -4,7 +4,7 @@
 
 | 需求 | 状态 | 入口 |
 |---|---|---|
-| Python 后端迁移阿里云 FC | 调研草案，未实施；业务行为必须保持一致 | [2026-10-14-serverless-backend](2026-10-14-serverless-backend/README.md) |
+| Python 后端迁移阿里云 FC | 执行中，P1 隔离原型；未云端部署/切流，业务必须一致 | [2026-10-14-serverless-backend](2026-10-14-serverless-backend/README.md) |
 | GPU 云函数自建转码 | 独立 Worker 原型开发中，未接入生产 | [2026-10-07-gpu-cloudfunction-transcode](2026-10-07-gpu-cloudfunction-transcode/README.md) |
 | 评测数据改为可读 JSON | 已合并（PR #108） | [2026-08-12-video-agent-evaluation-json](2026-08-12-video-agent-evaluation-json/) |
 | Video Agent 评测与 Langfuse | v1 已完成，生产闭环待接入 | [2026-08-12-video-agent-evaluation](2026-08-12-video-agent-evaluation/) |
