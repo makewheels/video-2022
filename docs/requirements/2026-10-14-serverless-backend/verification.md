@@ -317,3 +317,9 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 真实Mongo仅3字段更新及日志落库；观察包装器委托真实适配器，成功/日志失败均业务更新恰好1次，绑定/长度/拒绝0次。未改Java或黄金，不重复Java套件。无生产资料/双写、无正式入口装配或网络/FC实测，其他编码/流式正文时机等边界详见profile-update-http.md。
 - env/cache/dbpath/log/pytest均系统任务临时目录，finally终止自建mongod并清理，随机库finally删除。
 - #175 CI38651719556必要项全通过后合并24377e59（PR E2E skipped）；#174 master CI38651370309/部署38651370246均success。新master CI38652998286/部署38652998328待查最终。
+
+## 夜间验收记录收尾（2026-10-15 07:31）
+
+- #176 headfaf37bd6必要CI38653142301全部成功后合并，PR两个E2E按既有条件skipped；#175 master CI38652998286/部署38652998328均success。新master CI38654503711/部署38654503779待查最终，不能从历史成功断言当前新head已通过。
+- 新增night-review.md，逐项区分已交付库/隔离HTTP组合、未部署/阻塞、失败历史与未开始项目，给出恢复/回退边界。纯文档变更，不重复Java/Python完整套件；最近完整Python297passed/0skipped/1既有warning。
+- 报告系统打开标记06:05:08、文件与独立headless QA证据分开，屏幕实际显示仍未验。工作区/PR/CI只读核对后保存；没有生产切流/迁库或权限扩张。
