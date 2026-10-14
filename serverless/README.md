@@ -77,3 +77,18 @@ Token 从环境读取，不放 URL、命令参数或结果文件。输出 JSON �
 本阶段没有自动发布流水线，不修改生产配置。未来部署必须走 GitHub Actions，独立函数/环境、受保护入口、无常驻、有限并发；现有 Mongo 网络尚未验证，不能使用腾讯云私网地址假定 FC 可达。切流前仍需全量业务兼容和恢复验收。
 
 CI 已增加独立原型测试任务，使用临时环境和隔离 Mongo 服务，不取生产密钥；本地未配置真实 Mongo 时该集成项必须显示 skipped，不能当作已通过。
+
+## S02 Git 来源构建
+
+正式构建固定 Linux x86_64、CPython 3.12.12、uv 0.12.2；macOS/Windows 只跑逻辑测试，不绕过运行环境检查。先提交所有修改，确保含未跟踪文件在内的工作区干净。工具只读当前提交的 Git 白名单，不把 `.env`、测试、媒体依赖或开发依赖放进产物。
+
+Linux 上可运行 `python -B serverless/release/check_reproducible.py`：自动创建并清理系统临时目录，分别构建 Handler/Web 两次，比较 ZIP 摘要，验证源码与元数据，并在独立进程从 ZIP 冒烟 HTTP 入口及 BSON/Pydantic 原生扩展。忽略 site-packages，避免依赖已安装环境造成假通过。CI 独立 packaging job 构建真实 PR head，并纳入汇总门禁。
+
+单包工具参数如下（`OUTPUT` 必须是系统临时任务目录下尚不存在的子目录，调用方负责注册清理）：
+
+```text
+python -B serverless/release/build_release.py --repo REPO --output OUTPUT --flavor handler
+python -B serverless/release/verify_release.py --repo REPO --directory OUTPUT --expected-commit FULL_SHA --expected-sha256 TRUSTED_ZIP_SHA256
+```
+
+每包包含 `payload.zip`、`requirements.txt`、`manifest.json`。requirements 也放入 ZIP，manifest 依赖版本与包内 METADATA 对照；验证器须收到来自受控 CI 的预期提交和摘要，不能仅相信包旁自报值。manifest 不是数字签名。S02 仅构建/校验，不上传 OSS、不发布 FC；Linux runner 通过不能证明 FC/Debian 11 兼容，S03/S04 继续实测。

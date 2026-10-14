@@ -2,20 +2,16 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-14）
+## 当前快照（2026-10-14，S02 专项验收通过，PR 收尾）
 
-| 项目 | 当前记录 |
-|---|---|
-| 业务审计基线 | `8e4283e5`；生产仍是 Java，Python 原型未接生产流量 |
-| 已合并文档 | #141 年月日命名、#142 迁移审计；S00 #144、CI 警告 #145/#146 已合并；本轮基线 `e5fff0c5`，接续先 fetch 核对 |
-| 原型分支/提交 | `feat-serverless-api-prototype`，`9b7af7eb47d981cebf8d2a375f021424890ec44d`；含确认提交 `633066df` |
-| 原型 PR | [#143](https://github.com/makewheels/video-2022/pull/143)，已合并，merge `7c2c26d6c85ece34280c82c065ea6467a5f909f6`；不是完整业务迁移 |
-| 原型 CI | [38510090583](https://github.com/makewheels/video-2022/actions/runs/38510090583) success；Linux + 隔离 Mongo 实际 17 passed，API/浏览器 E2E skipped |
-| 本地证据 | S01 安装后 wheel 上 43 passed、真实 Mongo 1 skipped；两稳定入口和 Ruff 通过；原初始化比较不是 FC 冷启动 |
-| 本轮分支 | `feat-serverless-portable-layers`，基于 `e5fff0c5`；提交/PR/CI 以该分支 Git 历史及 PR 描述的最终验证记录为准 |
-| 当前阶段 | S01 现有原型分层实现及本地验收完成；合并门禁以 PR 实际 CI 为准，不等于生产业务迁移完成 |
-| 本轮截止 | 用户要求 2026-10-14 17:00（Asia/Shanghai）前收尾；提前完成即可结束，不扩展 S02/S03 |
-| 生产/资源 | 未切流、未迁库、未创建此次付费原型资源、未退役 Java |
+- S01 #147 已合并，回退点 `4338dfb9`；S02 从交接 `7facb75a` 恢复，工作分支 `feat-serverless-release-provenance`。
+- S02 实现与专项验收通过：[PR #148](https://github.com/makewheels/video-2022/pull/148)。全仓库 CI/最终合并状态以 PR 当前 head 为准；恢复时必须查询，不根据这个历史快照重复实施或直接合并。
+- [CI 38548901668](https://github.com/makewheels/video-2022/actions/runs/38548901668) 在代码提交 `22ddda59` 上：固定 Linux CPython 3.12.12 / uv 0.12.2 packaging success；Handler/Web 各两次 ZIP SHA 相同，来源验证与隔离入口/native 冒烟通过。原型测试 Ruff 通过、79 passed（含隔离 Mongo）、既有 warning 1。其他 CI 在本快照时仍收尾。
+- Handler ZIP 1,385,323 bytes，SHA256 `d19761ade6bc6b6400370bc2699ab2216267763bd30f18f8e72c4d3af8da659a`；Web ZIP 4,748,028 bytes，SHA256 `3497049befa1cdd322ec76d50cc5c8977a1413d9d48ba870366b0fa855add5a3`。仅文档变更不会进入包；每次运行仍以当次 CI 来源记录为准。
+- 本地 macOS CPython 3.12.12 / uv 0.11.7：完整测试 77 passed、真实 Mongo 1 skipped、warning 1；随后构建边界回归 35 passed；Ruff、500 行/空白门禁通过。Linux counts 包含新增路径检查，不能混用本地旧计数。
+- 首轮 CI 用 runner 默认 Python 被严格 host gate 拒绝，已改为 uv 显式选择固定版本；旧 head CI cancelled，不用于最新提交验收。
+- 生产仍为 Java；未切流、未改 Mongo、未上传 OSS、未创建/发布 FC。Linux runner 不等于 FC/Debian 11 云端验收。
+- 下一步：查询 #148 和最新 CI，全部必要检查通过后按既有授权合并；随后从最新 master 为 S03 创建独立分支，先核验 Actions OIDC 权限、隔离资源/网络/发布回退设计。
 
 ## 用户约束（接续不能丢失）
 
@@ -33,13 +29,22 @@
 - 本机 Docker daemon 不可用；CI 隔离 Mongo 已验证，不能因此声称生产网络可达。
 - Mongo 写库/投递间隙尚未解决；S01/S02/S05 可以先推进，不绕过恢复要求。
 
-## 下一步
+## 接续步骤
 
-1. 通过 `gh pr view feat-serverless-portable-layers` 查询本轮 PR、head 和完整 CI；描述补充本地/CI 的最终证据后按门禁合并，不预写自己的 SHA。若已合并，不重做 S01。
-2. 当前代码已有 `business/prototype.py`、`ports/probe.py`、通用 HTTP Application、FC/ASGI/Mongo 适配器和 bootstrap。只处理原型真实需要的端口，OSS/任务等随业务阶段加入。
-3. S01 后进入 S02：干净 Git 提交在 Linux 构建并记录来源；本轮 wheel 验证不是 S02 的 Git 来源/不可变产物方案。S03 才做隔离环境自动发布和回退。
-4. S04 验证 FC 冷/热与 Mongo 首连；S05 补齐多值参数/header 等契约。不能以本地线程测试代替 FC 配置/生产网络。
-5. 若 17:00 时外部门禁仍未完成，保存准确状态和下一条命令后收尾，不强行合并或把未跑项目写通过。测试依赖已有的 TestClient 弃用提示仍存在，另见 CI 警告清单，不能混为本阶段失败或声称消失。
+1. `git fetch origin`，查询 #148 的 head、merge、CI 与 `git status --short --branch`。本分支已包含完整 S02 实现，不再把交接 `7facb75a` 当可合并版本。
+2. 若 #148 未合并，检查最新 head 的所有必要 CI；有失败按真实日志修复，全部通过后再合并。API/浏览器 E2E 按 PR 条件 skipped，必须明确写出，不冒充跑通。
+3. S02 工具用法见 `serverless/README.md`；正式构建保持 Linux x86_64 / CPython 3.12.12 / uv 0.12.2 的门禁。来源校验需要受控 CI 的可信 commit/ZIP SHA，manifest 不是签名。产物都在系统任务临时目录清理，S02 不保留或上传发布包。
+4. 合并后进入 S03：独立分支、先读设计/plan/official-guidance，核验现有 Actions OIDC 权限与 FC/OSS 隔离方案；由 Git→CI 单向发布，不借本机 session 失败假定 OIDC 不可用。Mongo 访问不擅自开放公网或搬库。
+5. S03 才接受控产物保留、OSS 与独立 FC 发布/回退；S04 再实测 FC/现有 Mongo 网络和冷热请求。S02 专项结果不能替代这些验收。
+
+## 已查依据与未确认边界
+
+- 阿里云 Python 运行时：https://help.aliyun.com/zh/functioncompute/python3/ 。查阅时 Python 3.12 为公测、Debian 11 x86_64；具体地域与实际 FC 配置仍需核验。
+- Python 代码包：https://help.aliyun.com/zh/functioncompute/deploy-a-code-package-1 ；第三方依赖：https://help.aliyun.com/zh/functioncompute/install-third-party-dependencies-for-a-function 。依赖需与目标 Linux/架构匹配，不能上传 Windows wheel。
+- uv 导出：https://docs.astral.sh/uv/concepts/projects/export/ 。候选 wheel target 为 `x86_64-manylinux_2_28`。
+- 本机 Docker daemon 不可用；远程查询候选 `python:3.12.12-slim-bullseye` 镜像返回 not found。因此未验证 Debian 11 容器；Linux runner 冒烟也不能替代 FC/Debian 11 实测。若需要容器，先确认真实存在且合适的镜像，不假称已通过。
+- S03/S04 才核实云资源、网络/权限、真实冷/热与 Mongo 首连。没有部署或费用发生；manifest 是完整性记录，不是数字签名，后续发布必须从受控 CI 获得可信摘要。
+- 回退点为 master 的 S01 merge `4338dfb9`；本分支无生产变更，放弃 S02 草稿不会影响现役服务。
 
 ## 检查点规则
 

@@ -34,3 +34,9 @@
 重读上表 HTTP 调用、事件函数和单实例并发资料：FC 内置运行时的 event/response 协议及 Base64 属于运行外壳；解码路径使用 requestContext.http.path，不二次解码。保持原型实现，移动到 FC 适配器后回归；原入口路径不变。文档的多值 header/query 合并行为列入 S05 兼容调查，未声称字符串字典已覆盖所有生产场景。
 
 并发配置支持不等于每种运行时/实际资源均支持相同吞吐。本轮只验证应用工厂、诊断序号和 Mongo 池在代码并发下复用，云端实测保留 S04。
+
+## S02 构建再核对（2026-10-14）
+
+重读 [uv 锁文件导出](https://docs.astral.sh/uv/concepts/projects/export/) 和 [CLI 参数](https://docs.astral.sh/uv/reference/cli/)：export 支持 requirements 格式和输出文件；项目选择 `--locked`、排除开发组/项目本身，并以 `--require-hashes --only-binary :all: --no-deps` 安装目标 wheel。固定工具版本和源码白名单属于本项目决定。requirements 导出是发布输入快照，`uv.lock` 仍是源码里的唯一依赖锁，不维护第二份手工 requirements。
+
+ZIP 可信摘要保护包内 requirements，sidecar 与包内记录对照。依赖 METADATA 校验表示来源清单一致，不代表对第三方代码安全或云端 ABI 的认证。Linux 构建/原生导入的实际结果见 verification.md，FC 运行时限制仍在 S03/S04 核实。
