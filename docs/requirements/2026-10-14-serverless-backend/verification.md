@@ -242,3 +242,11 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 元数据拷贝重复序列、header忽略大小写/参数大小写敏感、空/无token不同、首值与原query保留、异常后请求与repr隐藏原凭据均验证。现有外壳/HTTP Request未改，不声称完成协议多值采集或同步日志。
 - 源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod并清理；Python随机独立库finally删除。无生产日志/真实凭据/OSS请求。
 - #165 headc4f77f86 CI38633115869必要项全通过后合并e514ff69，PR E2E skipped；#164合并master CI38632657026/部署38632657032均success；新master CI38634877692/部署38634877557仍运行中须查最终。详见request-identity.md。
+
+## S06.d3 ASGI多值元数据转换（2026-10-15 05:03）
+
+- 基于master2017e3e5，仅新增未装配ASGI采集能力。ASGI官方规范已读，Starlette Requests网页502未取回，不冒称成功阅读；本地锁定接口实际运行验证。
+- CPython3.12.13锁定web/deployment组，完整Python225passed/0skipped/1既有Starlette warning，3.68s；Ruff/500行/空白通过。新增8项含真实TestClient重复header/query→身份解析，plus/百分号/空值、raw路径/URL/peer、缺字段/非ASCII原URI/POST表单未支持固定错误、JSON不消费body。所有数据固定合成，无真实身份请求。
+- 原型入口/HTTP Request/FC未改，表单合并/裸问号区别、代理/IPv6/真实服务器/FC尚未验；详见asgi-request-metadata.md。不能称完整HTTP或网络通过。
+- 自建回环Mongo支持原回归，随机测试库finally删除；env/cache/dbpath/log/pytest均系统任务临时目录，finally终止进程并清理，无生产数据/OSS调用。
+- #166 head063a0e1d CI38635180591必要项全通过后合并2017e3e5，PR E2E skipped；#165合并master CI38634877692/部署38634877557均success；新master CI38636953114/部署38636952960仍运行中须查最终。
