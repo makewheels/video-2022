@@ -11,7 +11,7 @@
 - S05.c [PR #153](https://github.com/makewheels/video-2022/pull/153) 最新 head `6d9cdbcb` 的 [CI 38586272991](https://github.com/makewheels/video-2022/actions/runs/38586272991) 全部必要 job success 后已合并为 `7ff9a3f1`；PR E2E skipped。首 CI 日期失败已修正，UTC 本机551/北京时间focused5通过，最终 Linux 后端也通过；具体计数/证据保留 verification。
 - S05.d [PR #154](https://github.com/makewheels/video-2022/pull/154) a1fcefd1 的 CI38587849569 必要项success后合并为fc54aee1；PR E2E skipped。
 - S05.e [PR #155](https://github.com/makewheels/video-2022/pull/155) 最新 head f8fe8541 的 CI38589941727 全部必要job success后合并为12092139；PR E2E skipped。登录HTTP6项/Checkstyle已过，生产判定/TTL清理/并发未验。
-- 当前独立分支 `fix-serverless-immutable-storage`：S03.b [上传门禁/候选最小权限](isolated-oss-policy.md) 已实现，完整155passed/Mongo1skipped/Ruff/500行；最后属性式未知状态拒绝补充focused25passed，Ruff/500行/空白通过。候选role/trust仅配置，未创建/未代入/未新增RAM权限，S03/S04仍阻塞。
+- 当前独立分支 `fix-serverless-immutable-storage`、[PR #156](https://github.com/makewheels/video-2022/pull/156)：S03.b [上传门禁/候选最小权限](isolated-oss-policy.md) 已实现，完整155passed/Mongo1skipped/Ruff/500行；最后属性式未知状态拒绝补充focused25passed，Ruff/500行/空白通过。候选role/trust仅配置，未创建/未代入/未新增RAM权限，S03/S04仍阻塞。
 
 
 - 本机 Git 直接访问 GitHub 临时失败，使用当前系统代理 127.0.0.1:7890 的单次 git 参数已 fetch 至合并提交；没有修改全局代理/Git 配置。
@@ -42,7 +42,7 @@
 
 ## 接续步骤
 
-1. #152/#153/#154/#155 已合并。先核对当前 S03.b 分支 fix-serverless-immutable-storage 的PR/最新head/必要CI，全部通过后合并。候选role/trust仅配置，不创建或扩大身份绕过Actions边界；真实发布/回退仍阻塞。下一独立工作可补登录生产判定/TTL或资料头像契约，保留所有旧业务和各端行为。
+1. #152/#153/#154/#155 已合并。先核对当前 S03.b PR #156、分支 fix-serverless-immutable-storage 的最新head/必要CI，全部通过后合并。候选role/trust仅配置，不创建或扩大身份绕过Actions边界；真实发布/回退仍阻塞。下一独立工作可补登录生产判定/TTL或资料头像契约，保留所有旧业务和各端行为。
 2. 当前 master CI/E2E 已通过，但首次 publish 因 OSS 写权限失败；先解决独立发布身份权限并经审阅/验证，再运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
 3. publish 成功后保存非秘密 receiptKey、commit、ZIP SHA、version、同包晋级/远端回读结果。首次没有前版不能假造回退；第二次可追溯发布后用新版 receiptKey 执行 workflow rollback，实际读回 alias/version 与冒烟。
 4. S03 通过后才开始 S04 FC HTTP/冷热/原生扩展/现有 Mongo 网络；不擅自开放数据库公网、改防火墙、迁库或采购固定资源。无法安全接通则记录阻塞，推进独立 S05 契约台账。
