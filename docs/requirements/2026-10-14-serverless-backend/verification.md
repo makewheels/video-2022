@@ -136,6 +136,20 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 
 实现 [compare_responses.py](../../../serverless/contracts/compare_responses.py)，仅受控 JSON HTTP 夹具。严格字段/类型/null/数组顺序与 HTTP/业务错误比较，coverUrl 有限签名值归一化保留对象/身份/签名存在性，所有输出无响应值/未知字段名/文件路径。CPython 3.12.13 + uv 锁定临时环境：Ruff 通过，25 项 focused 用例通过，500 行/空白门禁通过；环境/缓存/测试夹具清理。首次 CPython 3.14.4 的 24 项也通过，补充有限数值边界后在 3.12 重验。CI 待跑；工具匹配不代表签名有效/生产兼容，Java 动态黄金夹具和 Python 业务均未实现。
 
+## S05.c Java 受控 HTTP 夹具（2026-10-14 22:57）
+
+新增 PublicVideoHttpContractTest，完整 WebApplicationContext/MockMvc、真实独立 mongod（随机回环端口）、外部服务既有 mock。JDK 21、TZ=Asia/Shanghai；源码副本、target、日志和 Mongo dbpath 均在系统任务临时目录，finally 终止本次 mongod 并清理。`mvn -q -pl video -Dtest=PublicVideoHttpContractTest -Dspring.mongodb.port=<task-port> -Dspring.mongodb.database=video-public-contract-isolated test checkstyle:check` 最终 **5 passed / 0 failed / 0 skipped**，Checkstyle exit 0，空白门禁通过。
+
+首轮两个预期失败：负 skip 并未报错，Mongo 读取 watch=null 后 watchCount 仍为构造默认 0；依据实际结果修正黄金预期，未改业务。最终验证缺参/非整数/溢出 HTTP 200+code1、异常日志、limit0 不限条数、负 skip 第一页、PUBLIC 非 READY/可见性、字面搜索/空白/大小写/tags、分页/total、匿名/旧 token/无效 token、UTC Date+北京时间字符串、null/历史链接及请求日志。PR CI 尚待；生产、FC、实际签名与完整迁移未验。
+
+### S05.c 首次 Linux CI 差异（23:05）
+
+#153 CI 38585341779：后端 630 项，新增 HTTP 夹具 1 项日期失败（预期 11:04:05，实际 03:04:05）。原因是 DateUtil 在此前测试初始化并缓存 UTC 格式器，测试内改 TimeZone 不代表重新初始化进程。移除全局时区修改，按启动 ZoneId 用独立 JDK 日期格式计算期望，保持 UTC JSON 编码不变；正在分别复验 UTC 全后端与北京时间 focused，失败 head 不合并。业务与生产配置未改。
+
+时区修正复验完成：JDK 21、真实临时 Mongo；UTC 下本机全后端 Maven/Surefire 3.5.4 汇总 **551 passed / 0 failed / 0 skipped**，Checkstyle exit 0；另一个北京时间 JVM `-Dtest=PublicVideoHttpContractTest` **5 项 focused 通过**。第二次复用临时 target，汇总目录保留第一轮报告，不能称第二轮也跑了 551。CI 使用其既有命令/测试发现方式，首轮 630 不等同本机 551；新 head Linux 全套仍须通过。所有本次临时文件/进程已清理。
+
 ## S05.d 登录/token/观看身份台账（2026-10-14 23:13）
 
 核对 UserController/Service/Repository、VerificationCode/User、client/session、环境判定、钱包及 Web/CLI/Android/iOS 调用；六入口的参数、错误码、TTL/旧 token/副作用已记录。纠正已有 API 文档 Redis 描述，未改代码。iOS LoginScreen 的 /user/initClient、/user/initSession 未在当前 Java Controller 声明中找到，Keychain 生命周期也与 Web 存储不同；记录为差异/待动态验，不把源码盘点冒充全端登录通过。git diff --check 通过；本 PR 仅文档，不重复本机全套测试，必要 CI 待验。
+
+S05.c 最终 Linux [CI 38586272991](https://github.com/makewheels/video-2022/actions/runs/38586272991) 对 6d9cdbcb 全部必要 job success，PR API/浏览器 E2E skipped，#153 合并为 7ff9a3f1。S05.e 独立测试分支已保存15cceab6（6项focused通过），不混进本台账PR。
