@@ -83,3 +83,5 @@
 - 未部署 FC，不证明 Debian 11 ABI/实际 FC 网络、性能或生产业务等价。S02 回退到 S01 `4338dfb9` 不涉及业务/数据回退。
 
 - 首轮 [CI 38548555728](https://github.com/makewheels/video-2022/actions/runs/38548555728) packaging 在 host gate 被拒绝：setup-uv 设置 UV_PYTHON 不保证裸 python 版本。改用 `uv run --no-project --python 3.12.12`，保留严格 gate，后续结果待运行。
+
+- 边界复查追加 `.` ZIP 路径拒绝、zlib 损坏错误包装和 CPython 实现限制；本地 Ruff/构建验证测试 35 passed。首轮 Linux 原型 job 78 passed（含隔离 Mongo）、既有 warning 1，后续新 head 完整 counts 待 CI。

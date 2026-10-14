@@ -34,7 +34,8 @@ from release_support import (
 
 
 def check_host():
-    if sys.platform != "linux" or platform.machine() != "x86_64" or platform.python_version() != PYTHON_VERSION:
+    if (sys.platform != "linux" or platform.machine() != "x86_64"
+            or platform.python_version() != PYTHON_VERSION or platform.python_implementation() != "CPython"):
         raise ReleaseError("Build requires Linux x86_64 CPython " + PYTHON_VERSION)
     version = subprocess.check_output(["uv", "--version"], text=True).split()[1]
     if version != UV_VERSION:

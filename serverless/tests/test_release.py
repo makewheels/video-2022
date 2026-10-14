@@ -132,7 +132,9 @@ def test_source_rejects_nonregular_or_unapproved_files(repository, kind):
         source_inputs(repository, clean_head(repository), "handler")
 
 
-@pytest.mark.parametrize("name", ["../secret", "/etc/passwd", "a/../b", "a\\b", "a:b", "a//b", "./a", "", "a\x00b"])
+@pytest.mark.parametrize("name", [
+    "../secret", "/etc/passwd", "a/../b", "a\\b", "a:b", "a//b", "./a", ".", "", "a\x00b",
+])
 def test_archive_path_rejection(name):
     assert not safe_name(name)
 

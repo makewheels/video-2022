@@ -8,6 +8,7 @@ import stat
 import subprocess
 import tempfile
 import zipfile
+import zlib
 from email.parser import BytesParser
 from pathlib import Path, PurePosixPath
 
@@ -59,7 +60,7 @@ def clean_head(repo: Path) -> str:
 
 def safe_name(name: str) -> bool:
     path = PurePosixPath(name)
-    return bool(name) and (
+    return bool(name) and bool(path.parts) and (
         not path.is_absolute() and str(path) == name and ".." not in path.parts
         and "\\" not in name and ":" not in name and not any(ord(c) < 32 for c in name)
     )
@@ -114,7 +115,7 @@ def canonical_zip(payload: dict[str, bytes], output: Path):
 def read_zip(path: Path) -> dict[str, bytes]:
     try:
         return _read_zip(path)
-    except (zipfile.BadZipFile, RuntimeError, EOFError) as error:
+    except (zipfile.BadZipFile, zlib.error, RuntimeError, EOFError) as error:
         raise ReleaseError("Invalid or corrupt ZIP archive") from error
 
 
