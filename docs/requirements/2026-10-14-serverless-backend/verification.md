@@ -127,3 +127,7 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 [隔离 publish 38577826254](https://github.com/makewheels/video-2022/actions/runs/38577826254) 使用 merge `2eb0065e`：来源 CI 门槛、FC/OSS 两组 Infisical OIDC 取密、Linux 构建和 Handler 冒烟成功；云操作 AccessDenied，workflow failed。
 
 只读 RAM 调查确认 OSS 数据身份 video-2022-oss-data-dev 只允许 GetObject/ListObjects/GetObjectMeta/GetBucketInfo，不允许 PutObject；没有配置专用发布 role。未修改 IAM，也未换高权限身份重试。日志只含错误码，具体拒绝 API 尚无操作级证据。FC GetFunction 实际返回 FunctionNotFound；没有创建隔离函数、版本或别名，也没有真实晋级/回退通过证据。OSS 残留和账单未核实，不称零费用。S03 未全部完成，S04 未部署/未验；先推进独立 S05。
+
+## S05.a 公共视频列表台账（2026-10-14 22:38）
+
+基线 `53f275b8`，逐项核对 Controller/Repository/Service/VO、token/日志/异常管线及 Web、CLI、Android、iOS 调用，新增 [台账](public-video-list-contract.md)。确认字面关键词搜索、仅 PUBLIC 条件、独立 count、签名封面、空值与嵌套映射、GET 请求日志副作用；动态参数错误/日期与脱敏对照工具未验，S05/S07 不标完成。仅文档，git diff --check 通过，不重跑与文档无关的本机完整测试；本 PR CI 待运行。
