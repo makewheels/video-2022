@@ -310,3 +310,10 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 最终CPython3.12.13锁定web/deployment组，完整Python282passed/0skipped/1既有Starlette warning，3.97s，Ruff/500行/空白通过。新增18项，包括7种实际隔离Mongo解码后更新、10种绑定失败及重复字段先绑定后长度校验。未装配入口/正式更新管线；编码与极端输入边界见profile-json-decoder.md。
 - 所有源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod并清理，随机库finally删除。只固定合成资料，无生产更新/双写或OSS调用。
 - #174 CI38649966353必要项全通过后合并01856f2f（PR E2E skipped）；#173 master CI38649789900/部署38649789809均success。新master CI38651370309/部署38651370246须查最终。
+
+## S06.f2 更新资料ASGI组合（2026-10-15 07:17）
+
+- 基于master24377e59，CPython3.12.13锁定web/deployment组，完整Python297passed/0skipped/1既有Starlette warning，4.04s；Ruff/500行/空白通过。15项新增TestClient进程内POST/线程池同步用例组合：4种成功、2种长度、6种绑定、2种鉴权拒绝、1种日志失败后续身份隔离，既有Java黄金status/contentType/body完整对照。
+- 真实Mongo仅3字段更新及日志落库；观察包装器委托真实适配器，成功/日志失败均业务更新恰好1次，绑定/长度/拒绝0次。未改Java或黄金，不重复Java套件。无生产资料/双写、无正式入口装配或网络/FC实测，其他编码/流式正文时机等边界详见profile-update-http.md。
+- env/cache/dbpath/log/pytest均系统任务临时目录，finally终止自建mongod并清理，随机库finally删除。
+- #175 CI38651719556必要项全通过后合并24377e59（PR E2E skipped）；#174 master CI38651370309/部署38651370246均success。新master CI38652998286/部署38652998328待查最终。
