@@ -234,3 +234,11 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 已确认旧日志原样存header/query（含合成token），不是脱敏证明；生产日志/真实凭据未读取。日志保存失败、异步/跨线程、代理/FC元数据和OAuth/admin等路径未验；详见request-context-contract.md。
 - 源码/target/log/dbpath均系统任务临时目录，finally终止自建mongod并清理。运行代码/Python未改，没有无理由重复完整Python套件。
 - #164 head61ff5e55 CI38630860497必要项全通过后合并0ca7e09c，PR E2E skipped。#163合并master CI38630544702/部署38630544827均success；新master CI38632657026/部署38632657032仍运行中须查最终。
+
+## S06.d2 多值请求元数据与局部身份（2026-10-15 04:48）
+
+- 基于mastere514ff69，扩展RequestContextHttpContractTest空token HTTP边界：JDK21/UTC/真实Spring管线及回环隔离Mongo，7tests/0failure/0error/0skip，5.172s，Checkstyle退出0。确认空header无参数仍查询并可匹配存储空token，与完全无token不同；未访问生产身份。
+- CPython3.12.13锁定web/deployment组，完整Python217passed/0skipped/1既有Starlette warning，3.77s；Ruff/500行/空白通过。新增15项纯元数据/身份验证及1项真实Mongo组合；40请求/4测试线程身份不串，仅纯用例并发证明。
+- 元数据拷贝重复序列、header忽略大小写/参数大小写敏感、空/无token不同、首值与原query保留、异常后请求与repr隐藏原凭据均验证。现有外壳/HTTP Request未改，不声称完成协议多值采集或同步日志。
+- 源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod并清理；Python随机独立库finally删除。无生产日志/真实凭据/OSS请求。
+- #165 headc4f77f86 CI38633115869必要项全通过后合并e514ff69，PR E2E skipped；#164合并master CI38632657026/部署38632657032均success；新master CI38634877692/部署38634877557仍运行中须查最终。详见request-identity.md。

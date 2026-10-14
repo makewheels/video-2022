@@ -164,4 +164,19 @@ class RequestContextHttpContractTest extends BaseIntegrationTest {
         assertNull(UserHolder.get());
         assertNull(RequestLogContext.getRequestLog());
     }
+
+    @Test
+    void emptyHeaderWithoutParameterStillMatchesAStoredEmptyToken() throws Exception {
+        User user = mongoTemplate.findById(ID, User.class);
+        user.setToken("");
+        mongoTemplate.save(user);
+        assertEquals(0, body(get("/user/getMyProfile").header("token", ""), 200).getIntValue("code"));
+        assertEquals(401, body(get("/user/getMyProfile"), 401).getIntValue("code"));
+        assertEquals(0, body(get("/user/getMyProfile").param("token", ""), 200).getIntValue("code"));
+        assertEquals(0, body(get("/user/getMyProfile").header("token", "", "fixture-wrong"), 200)
+                .getIntValue("code"));
+        assertEquals(401, body(get("/user/getMyProfile").header("token", "fixture-wrong", ""), 401)
+                .getIntValue("code"));
+        assertEquals(3, mongoTemplate.findAll(RequestLog.class).size());
+    }
 }
