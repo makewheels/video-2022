@@ -73,7 +73,7 @@
 3. 无持续空轮询时的可靠唤醒/恢复机制；保留原有业务恢复能力，不能靠删扫描“解决”。
 4. 财务幂等或可靠调度若需最小技术数据/索引变更，先设计确认；不得改用户字段、账期、金额或同步接口语义。
 
-## S02 本地与 CI 验收（2026-10-14，执行中）
+## S02 本地与 CI 验收（2026-10-14，专项通过）
 
 - 从 `7facb75a` 恢复，完善 Git 白名单、requirements ZIP 绑定、依赖 METADATA 对照和 ZIP 异常拒绝。
 - macOS CPython 3.12.12 / uv 0.11.7 实际 Ruff 通过；pytest 77 passed、真实 Mongo 1 skipped、既有 TestClient warning 1；500 行门禁和 `git diff --check` 通过。另在默认 CPython 3.14.4 上跑过同样 77 passed/1 skipped，但它不是正式构建环境。
@@ -85,3 +85,13 @@
 - 首轮 [CI 38548555728](https://github.com/makewheels/video-2022/actions/runs/38548555728) packaging 在 host gate 被拒绝：setup-uv 设置 UV_PYTHON 不保证裸 python 版本。改用 `uv run --no-project --python 3.12.12`，保留严格 gate，后续结果待运行。
 
 - 边界复查追加 `.` ZIP 路径拒绝、zlib 损坏错误包装和 CPython 实现限制；本地 Ruff/构建验证测试 35 passed。首轮 Linux 原型 job 78 passed（含隔离 Mongo）、既有 warning 1，后续新 head 完整 counts 待 CI。
+
+### Linux 实际证据
+
+[CI 38548901668](https://github.com/makewheels/video-2022/actions/runs/38548901668)，提交 `22ddda5951f9b86fb8de9f7ae80dba9725a68d58`，Ubuntu 22.04 x86_64 / CPython 3.12.12 / uv 0.12.2：
+
+- packaging success：Handler/Web 各从干净 Git 对象构建两次，ZIP SHA256 各自一致；逐包源码、requirements、METADATA/manifest 校验通过；忽略 site-packages 的新进程中 Handler 和实际 ASGI HTTP 成功，BSON/Pydantic native 扩展导入通过。
+- Handler：1,385,323 bytes；SHA256 `d19761ade6bc6b6400370bc2699ab2216267763bd30f18f8e72c4d3af8da659a`；仅 dnspython 2.9.0、pymongo 4.18.3 两项运行依赖。
+- Web：4,748,028 bytes；SHA256 `3497049befa1cdd322ec76d50cc5c8977a1413d9d48ba870366b0fa855add5a3`；16 项运行依赖，版本清单见 packaging 日志。测试/dev/媒体工具与另一入口源码未入包。
+- Linux 原型 job：Ruff 通过、79 passed（含真实隔离 Mongo）、既有 TestClient warning 1；PR API/浏览器 E2E 依据现有条件 skipped。
+- 此证据对应具体代码提交；本次补写文档不进入构建输入。#148 最终 head 仍须全部必要 CI 通过才合并，最终状态查 PR。没有 FC/生产 Mongo/网络/业务迁移验收，后续 S03/S04 继续。

@@ -2,15 +2,16 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-14，已恢复 S02，待 CI）
+## 当前快照（2026-10-14，S02 专项验收通过，PR 收尾）
 
-- S01 #147 已合并，回退点 `4338dfb9`；本机 fetch 后切到 `feat-serverless-release-provenance`，从交接 `7facb75a` 接续。
-- S02 补齐 requirements 包内绑定、依赖 METADATA 对照、坏 ZIP 拒绝及有意义的回归测试；新增独立 Linux packaging job，构建真实 PR head 两次并隔离入口/native 冒烟，纳入汇总门禁。
-- 本地 macOS CPython 3.12.12 / uv 0.11.7：Ruff 通过；77 passed、真实 Mongo 1 skipped、既有 TestClient warning 1；语法/空白与 500 行门禁通过。pyproject/lock-only 快照 export 实测通过。
-- PR [#148](https://github.com/makewheels/video-2022/pull/148) 已创建；首轮 packaging 因直接 python 使用 runner 默认解释器失败，已改为 uv 显式选择 3.12.12，待新 head 检查。
-- Linux 固定 CPython 3.12.12 / uv 0.12.2 的构建与 CI 仍待运行。当前提交用 `git log -1` 查询；PR/CI 从本分支查询。未通过前不合并、不宣称 S02 完成。
-- 生产仍为 Java；未切流、未改 Mongo、未上传 OSS、未创建/发布 FC。
-- 下一步：push、创建 S02 PR，观察 packaging 和全部必要 CI；失败按真实日志修复。通过后记录双包摘要/大小和 counts，再按既有授权合并。S03 才做隔离发布。
+- S01 #147 已合并，回退点 `4338dfb9`；S02 从交接 `7facb75a` 恢复，工作分支 `feat-serverless-release-provenance`。
+- S02 实现与专项验收通过：[PR #148](https://github.com/makewheels/video-2022/pull/148)。全仓库 CI/最终合并状态以 PR 当前 head 为准；恢复时必须查询，不根据这个历史快照重复实施或直接合并。
+- [CI 38548901668](https://github.com/makewheels/video-2022/actions/runs/38548901668) 在代码提交 `22ddda59` 上：固定 Linux CPython 3.12.12 / uv 0.12.2 packaging success；Handler/Web 各两次 ZIP SHA 相同，来源验证与隔离入口/native 冒烟通过。原型测试 Ruff 通过、79 passed（含隔离 Mongo）、既有 warning 1。其他 CI 在本快照时仍收尾。
+- Handler ZIP 1,385,323 bytes，SHA256 `d19761ade6bc6b6400370bc2699ab2216267763bd30f18f8e72c4d3af8da659a`；Web ZIP 4,748,028 bytes，SHA256 `3497049befa1cdd322ec76d50cc5c8977a1413d9d48ba870366b0fa855add5a3`。仅文档变更不会进入包；每次运行仍以当次 CI 来源记录为准。
+- 本地 macOS CPython 3.12.12 / uv 0.11.7：完整测试 77 passed、真实 Mongo 1 skipped、warning 1；随后构建边界回归 35 passed；Ruff、500 行/空白门禁通过。Linux counts 包含新增路径检查，不能混用本地旧计数。
+- 首轮 CI 用 runner 默认 Python 被严格 host gate 拒绝，已改为 uv 显式选择固定版本；旧 head CI cancelled，不用于最新提交验收。
+- 生产仍为 Java；未切流、未改 Mongo、未上传 OSS、未创建/发布 FC。Linux runner 不等于 FC/Debian 11 云端验收。
+- 下一步：查询 #148 和最新 CI，全部必要检查通过后按既有授权合并；随后从最新 master 为 S03 创建独立分支，先核验 Actions OIDC 权限、隔离资源/网络/发布回退设计。
 
 ## 用户约束（接续不能丢失）
 
@@ -28,15 +29,13 @@
 - 本机 Docker daemon 不可用；CI 隔离 Mongo 已验证，不能因此声称生产网络可达。
 - Mongo 写库/投递间隙尚未解决；S01/S02/S05 可以先推进，不绕过恢复要求。
 
-## S02 接续步骤（恢复工作后执行，本次暂停不执行）
+## 接续步骤
 
-1. `git fetch origin`，切到 `feat-serverless-release-provenance`，核对 `git status --short --branch`、`git log -1` 和远端；先读本页及 `docs/design/serverless-backend.md` 第 9 节。本次是 WIP 检查点，不要直接合并 master。
-2. 审查四个新工具：正式构建限制 Linux x86_64 / CPython 3.12.12 / uv 0.12.2；Git 对象白名单取源码，handler/web 分包；锁文件导出带哈希 wheel 依赖；固定 ZIP 元数据；sidecar 记录来源；验证需外部可信 commit/ZIP SHA；临时解包验证两入口。当前只是实现草稿，尚无测试证明。
-3. 优先补齐完整性缺口：requirements sidecar 目前只校验 manifest 自报摘要，考虑将 requirements 放入 ZIP，由可信 ZIP 摘要绑定；manifest 依赖版本未与包内 METADATA 对照；坏 ZIP 等异常应清晰拒绝。确认 uv export 对仅含 pyproject/lock 的快照能否工作，核对依赖过滤和原生扩展兼容。不要将未确认推断写成通过。
-4. 在现有 `serverless/tests/` 增加有意义的构建/验证测试：干净提交、脏树拒绝、源码白名单、路径/符号链接/重复 ZIP 项、篡改和预期 SHA/commit、双包差异、固定 ZIP。测试、venv、缓存、构建产物都使用系统临时目录并清理，不生成项目内临时文件。
-5. 接入独立 Linux CI packaging job，并加入 required summary 的 needs/失败判断。固定 Python/uv，在干净实际 PR head 上构建两次比较 ZIP；分离进程从解包产物验证 Handler/ASGI 和 BSON/Pydantic 原生模块。现有真实 Mongo job 保留，不以本地或 mock 替代云端验证。
-6. 补工具使用说明、官方依据、验收记录、changelog；本地运行 Ruff/pytest。Windows 不绕过正式 Linux 构建门禁，不把不能在本地跑的构建说成通过。
-7. 完成后再提一个 S02 PR，等待所有必要 CI 实际通过再按既有授权自行合并；PR 记录真实 counts/摘要/包体积和回退点。S03 才接隔离环境 Git → OSS → FC 发布和受控产物保留，本阶段不部署。
+1. `git fetch origin`，查询 #148 的 head、merge、CI 与 `git status --short --branch`。本分支已包含完整 S02 实现，不再把交接 `7facb75a` 当可合并版本。
+2. 若 #148 未合并，检查最新 head 的所有必要 CI；有失败按真实日志修复，全部通过后再合并。API/浏览器 E2E 按 PR 条件 skipped，必须明确写出，不冒充跑通。
+3. S02 工具用法见 `serverless/README.md`；正式构建保持 Linux x86_64 / CPython 3.12.12 / uv 0.12.2 的门禁。来源校验需要受控 CI 的可信 commit/ZIP SHA，manifest 不是签名。产物都在系统任务临时目录清理，S02 不保留或上传发布包。
+4. 合并后进入 S03：独立分支、先读设计/plan/official-guidance，核验现有 Actions OIDC 权限与 FC/OSS 隔离方案；由 Git→CI 单向发布，不借本机 session 失败假定 OIDC 不可用。Mongo 访问不擅自开放公网或搬库。
+5. S03 才接受控产物保留、OSS 与独立 FC 发布/回退；S04 再实测 FC/现有 Mongo 网络和冷热请求。S02 专项结果不能替代这些验收。
 
 ## 已查依据与未确认边界
 
