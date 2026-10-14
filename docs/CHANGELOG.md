@@ -1,5 +1,10 @@
 # 变更日志
 
+## test: S05.c 公共列表真实 Java HTTP 夹具（2026-10-14）
+
+- 完整 HTTP/拦截器和隔离 Mongo 核验分页、字面搜索、可见性、旧 token、日期/null/历史链接与日志副作用。
+- 固化缺参 HTTP200+code1、limit0 无限、负skip 第一页及嵌套对象默认值；5 项集成测试和 Checkstyle 通过，不改变业务或调用生产服务。
+
 ## docs: S05.a 公共视频列表契约台账（2026-10-14）
 
 - 核对 Java 参数/过滤/排序/字段映射和 Web、CLI、Android、iOS 调用，记录 token、日志副作用及动态验收缺口。

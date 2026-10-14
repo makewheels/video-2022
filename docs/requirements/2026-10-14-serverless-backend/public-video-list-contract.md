@@ -54,3 +54,9 @@ S05.b 在既有 serverless 测试体系增加离线响应对照工具及意义�
 需要覆盖：匿名/旧 token、必填参数和异常 HTTP、空结果、正常分页、literal `.*`/中英文/空白关键词、大小写/tags、PRIVATE/UNLISTED 排除、PUBLIC 非 READY 保留、缺封面/缺用户/缺 watch/mediaInfo、固定时区日期、历史链接、签名 URL 可变及不泄密。签名正确性和实际播放留 S07/S08，字段形状比较不能替代权限签名校验。
 
 本阶段仅文档，未新增生产规则、未修改 API/客户端/数据库。回退本 PR 只移除台账，运行时不变。
+
+## S05.c 已实测边界（2026-10-14 22:57）
+
+完整 Java HTTP 管线、真实隔离 Mongo、JDK 21 和 TZ=Asia/Shanghai 下 5 项集成测试通过，详见 [HTTP 夹具](public-http-fixtures.md)。缺 skip/limit、非整数 skip、int 溢出返回 HTTP 200、JSON code=1/message=未知错误/data=null，并实际记录异常日志；不能改成框架默认 422。limit=0 不限条数，skip=-1 读第一页而不报错。Date JSON 为 `2024-01-02T03:04:05.000Z`，展示字符串 `2024-01-02 11:04:05`；保存 watch=null 的夹具从 Mongo 读取后 watchCount=0（嵌套构造默认值），watchId=null。匿名/旧 token/无效 token 的这组夹具成功。成功请求实际写 requestLog。
+
+重复参数、负 limit、null createTime、签名 cover 实际权限等仍待后续夹具；这些有限实测不取消其待验标记。

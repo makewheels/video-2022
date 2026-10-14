@@ -131,3 +131,9 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 ## S05.a 公共视频列表台账（2026-10-14 22:38）
 
 基线 `53f275b8`，逐项核对 Controller/Repository/Service/VO、token/日志/异常管线及 Web、CLI、Android、iOS 调用，新增 [台账](public-video-list-contract.md)。确认字面关键词搜索、仅 PUBLIC 条件、独立 count、签名封面、空值与嵌套映射、GET 请求日志副作用；动态参数错误/日期与脱敏对照工具未验，S05/S07 不标完成。仅文档，git diff --check 通过，不重跑与文档无关的本机完整测试；本 PR CI 待运行。
+
+## S05.c Java 受控 HTTP 夹具（2026-10-14 22:57）
+
+新增 PublicVideoHttpContractTest，完整 WebApplicationContext/MockMvc、真实独立 mongod（随机回环端口）、外部服务既有 mock。JDK 21、TZ=Asia/Shanghai；源码副本、target、日志和 Mongo dbpath 均在系统任务临时目录，finally 终止本次 mongod 并清理。`mvn -q -pl video -Dtest=PublicVideoHttpContractTest -Dspring.mongodb.port=<task-port> -Dspring.mongodb.database=video-public-contract-isolated test checkstyle:check` 最终 **5 passed / 0 failed / 0 skipped**，Checkstyle exit 0，空白门禁通过。
+
+首轮两个预期失败：负 skip 并未报错，Mongo 读取 watch=null 后 watchCount 仍为构造默认 0；依据实际结果修正黄金预期，未改业务。最终验证缺参/非整数/溢出 HTTP 200+code1、异常日志、limit0 不限条数、负 skip 第一页、PUBLIC 非 READY/可见性、字面搜索/空白/大小写/tags、分页/total、匿名/旧 token/无效 token、UTC Date+北京时间字符串、null/历史链接及请求日志。PR CI 尚待；生产、FC、实际签名与完整迁移未验。
