@@ -131,3 +131,7 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 ## S05.a 公共视频列表台账（2026-10-14 22:38）
 
 基线 `53f275b8`，逐项核对 Controller/Repository/Service/VO、token/日志/异常管线及 Web、CLI、Android、iOS 调用，新增 [台账](public-video-list-contract.md)。确认字面关键词搜索、仅 PUBLIC 条件、独立 count、签名封面、空值与嵌套映射、GET 请求日志副作用；动态参数错误/日期与脱敏对照工具未验，S05/S07 不标完成。仅文档，git diff --check 通过，不重跑与文档无关的本机完整测试；本 PR CI 待运行。
+
+## S05.b 离线响应对照工具（2026-10-14 22:51）
+
+实现 [compare_responses.py](../../../serverless/contracts/compare_responses.py)，仅受控 JSON HTTP 夹具。严格字段/类型/null/数组顺序与 HTTP/业务错误比较，coverUrl 有限签名值归一化保留对象/身份/签名存在性，所有输出无响应值/未知字段名/文件路径。CPython 3.12.13 + uv 锁定临时环境：Ruff 通过，25 项 focused 用例通过，500 行/空白门禁通过；环境/缓存/测试夹具清理。首次 CPython 3.14.4 的 24 项也通过，补充有限数值边界后在 3.12 重验。CI 待跑；工具匹配不代表签名有效/生产兼容，Java 动态黄金夹具和 Python 业务均未实现。
