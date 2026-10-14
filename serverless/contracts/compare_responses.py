@@ -16,6 +16,8 @@ SAFE_FIELDS = {
     "shortUrl", "title", "description", "type", "visibility", "tags", "category",
     "uploaderName", "uploaderAvatarUrl", "uploaderId", "createTime", "createTimeString",
     "youtubePublishTime", "youtubePublishTimeString",
+    "phone", "registerChannel", "updateTime", "token", "nickname", "avatarFileId",
+    "avatarUrl", "bannerUrl", "bio", "subscriberCount", "videoCount",
 }
 
 

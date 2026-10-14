@@ -175,3 +175,9 @@ S05.e #155 最新f8fe8541 的 CI38589941727 全部必要项success后合并12092
 JDK21/UTC、真实随机回环端口 mongod、完整 HTTP、EnvironmentService 未mock：ProductionLoginHttpContractTest **3 passed / 0 failed / 0 skipped**，Checkstyle/空白通过。TestPropertySource 将实际读取的配置设prod，同时显式固定回环测试URI/库，清库前确认名称，未读真实生产Mongo。验证码111被拒且保留记录，1234成功清码；实际实体注解索引在隔离库创建/回读：verification_codes、phone唯一、createdAt expireAfterSeconds=600。配置/索引证据不等于TTL后台删除或FC生产部署；并发恢复未验。构建/日志/dbpath均系统临时目录，finally结束进程并清理；CI尚待。
 
 S03.b #156 最新01198f60 的 CI38591679417 全部必要项success，合并8a6b5304，PR E2E skipped；仅工具/候选权限配置验收，真实IAM/发布仍未通过。S05.f #157同步该master后需要新head CI。
+
+## S06.a 旧用户读取用例/端口与黄金对照（2026-10-15 00:20）
+
+新增纯Users/UserReads/UserSnapshot和通用HTTP值编码，按旧token/公开ID读取；返回快照清空token不写库，原始token不规范化，存储异常不伪装为未找到，日期UTC毫秒/13字段/null保留。未装配Mongo适配器或业务路由，原型仍404这些路径，不称完整用户API迁移。
+
+Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，4passed/Checkstyle通过。首对照4项失败来自导出器默认遗漏Map null，已改显式保留并断言回读与实际body一致，重新生成后4份Python对照通过；未改变Java业务或删掉Python空字段。锁定CPython3.12.13 web+deployment临时环境完整 **165 passed / Mongo1 skipped / 既有warning1**，Ruff/500行/空白通过，架构依赖门禁/原接口404保护通过。源码副本/依赖环境/target/dbpath/log均清理，持久的4份合成样本在serverless/contracts/user-read；CI待验，生产/FC网络/完整日志管线未验。

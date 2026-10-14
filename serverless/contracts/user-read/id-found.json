@@ -1,0 +1,23 @@
+{
+  "status": 200,
+  "contentType": "application/json",
+  "body": {
+    "code": 0,
+    "data": {
+      "avatarUrl": "https://example.invalid/avatar.png",
+      "avatarFileId": null,
+      "bannerUrl": null,
+      "bio": null,
+      "updateTime": "2024-01-02T03:04:05.678Z",
+      "token": null,
+      "videoCount": 7,
+      "createTime": "2024-01-02T03:04:05.000Z",
+      "phone": "00000000000",
+      "registerChannel": "TEST",
+      "subscriberCount": 12,
+      "nickname": "测试读取",
+      "id": "fixture-user-reads"
+    },
+    "message": "success"
+  }
+}

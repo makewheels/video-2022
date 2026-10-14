@@ -173,3 +173,7 @@ S01 已增加依赖边界检查和两个外壳的公共用例一致性测试，�
 ### S03.b 不可变 OSS 上传前提与候选最小权限
 
 上传前读取原始 versioning XML，仅接受无Status的从未启用状态，拒绝Enabled/Suspended/未知XML/权限失败；x-oss-forbid-overwrite在版本控制bucket失效，不能单凭请求头宣称不覆写。锁定SDK的公开解析器漏namespace，适配层复用认证请求并严格有界解析，真实云端仍未验。候选RAMrole/trust和边界见 [隔离权限方案](../requirements/2026-10-14-serverless-backend/isolated-oss-policy.md)：仅GetBucketVersioning及dev前缀GetObject/PutObject，未创建角色、未改现有用户权限、未实现STS装配，部署仍受身份阻塞。
+
+### S06.a 用户读取能力（未装配）
+
+UserReads端口仅按token/ID读取不可变标准值快照，Users纯用例保持旧token字符串和公开返回凭据清空语义，user_responses编码现有Result/字段/null/UTC日期。四个真实隔离Java HTTP固定夹具已离线对照。当前没有Mongo用户适配器、请求上下文/日志装配或新业务路由，健康/诊断原型不变；下一阶段需旧集合/ID转换/构造默认及完整HTTP验证，不能把这一能力库称为生产迁移。
