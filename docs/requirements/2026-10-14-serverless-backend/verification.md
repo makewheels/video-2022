@@ -288,3 +288,10 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 仅随机隔离库，所有源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod及清理，随机库finally删除。日志异常是方法注入，不是真实网络故障；无生产日志或业务路由装配。详见mongo-request-journal.md。
 - #171 CI38645020667必要项全通过后合并db56fbe1；PR E2E skipped；#170 master CI38644545566/部署38644545434均success。新master CI38646352161/部署38646352029须查最终。
 - 06:05:08调度成功调用/usr/bin/open并写browser-opened.json；实际HTML六类状态/#171/固定提交链接已查。浏览器技能依赖node_repl js/工具搜索均不可用，因此实际屏幕显示未验，不以标记冒充可见UI。此前独立headless交互布局QA单列，未通过AppleScript/CDP绕过浏览器技能。
+
+## S06.d7 特殊header日志边界（2026-10-15 06:32）
+
+- 基于master44adaba1，JDK21/UTC/真实Spring+回环隔离Mongo，RequestJournalFailureHttpContractTest 5tests/0failure/0error/0skip，4.634s，Checkstyle退出0。新增含点/$前缀header两项没有注入Mockito异常：X.Fixture日志不落库但资料写成功、HTTP200/code0、旧上下文残留；$fixture原名落库且上下文清理。
+- CPython3.12.13锁定web/deployment组，完整Python255passed/0skipped/1既有Starlette warning，3.84s；Ruff/500行/空白通过。新增实际Mongo的$名落库和含点名生命周期保留业务成功/写入、不落日志对照；固定诊断不含原始header值。无生产日志、无实际网络故障、无入口装配。其他特殊键未穷举。
+- 所有源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod并清理，随机库finally删除。未修改Java运行逻辑或旧日志安全规则。
+- #172 CI38646677594必要项全通过后合并44adaba1（PR E2E skipped）；#171 master CI38646352161/部署38646352029均success；新master CI38648114989/部署38648115203须查最终。

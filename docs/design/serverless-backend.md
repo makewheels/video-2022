@@ -221,3 +221,5 @@ ProfileUpdates保留旧UTF-16长度与双字段替换，MongoProfileWrites仅更
 ### S06.d6 日志存储边界
 
 未装配MongoRequestJournal复用provider，同步写requestLog并保持旧BSON形状。生命周期处理日志失败，不重放业务。仅隔离库验证；特殊header键、实际网络不确定写入与日志安全策略仍为验收门槛，详见[记录](../requirements/2026-10-14-serverless-backend/mongo-request-journal.md)。
+
+S06.d7实测收窄日志门槛：含点header使旧日志失败但不改变业务响应/写入；$前缀名可落库。Python按该边界返回内部failed，不复制旧ThreadLocal残留。特殊键仍未穷举，未接生产入口。

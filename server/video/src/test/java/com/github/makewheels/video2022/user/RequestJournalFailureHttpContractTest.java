@@ -6,6 +6,7 @@ import com.github.makewheels.video2022.BaseIntegrationTest;
 import com.github.makewheels.video2022.springboot.interceptor.requestlog.RequestLog;
 import com.github.makewheels.video2022.springboot.interceptor.requestlog.RequestLogContext;
 import com.github.makewheels.video2022.user.bean.User;
+import org.bson.Document;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,6 +102,33 @@ class RequestJournalFailureHttpContractTest extends BaseIntegrationTest {
         assertEquals("fixture-updated", mongoTemplate.findById(ID, User.class).getNickname());
         assertTrue(mongoTemplate.findAll(RequestLog.class).isEmpty());
         assertNotNull(RequestLogContext.getRequestLog());
+        assertNull(UserHolder.get());
+    }
+
+    @Test
+    void dottedHeaderTriggersActualMapConversionFailureAfterBusinessWrite() throws Exception {
+        JSONObject response = body(post("/user/updateProfile").header("token", TOKEN)
+                .header("X.Fixture", "fixture-header-value")
+                .contentType(MediaType.APPLICATION_JSON).content("{\"nickname\":\"fixture-updated\"}"), 200);
+        assertEquals(0, response.getIntValue("code"));
+        assertEquals("fixture-updated", mongoTemplate.findById(ID, User.class).getNickname());
+        assertEquals(0, mongoTemplate.getCollection("requestLog").countDocuments());
+        assertNotNull(RequestLogContext.getRequestLog());
+        assertEquals("fixture-header-value", RequestLogContext.getRequestLog()
+                .getRequest().getHeaderMap().get("X.Fixture"));
+        assertNull(UserHolder.get());
+    }
+
+    @Test
+    void dollarPrefixedHeaderPersistsWithItsOriginalName() throws Exception {
+        JSONObject response = body(get("/user/getMyProfile").header("token", TOKEN)
+                .header("$fixture", "fixture-header-value"), 200);
+        assertEquals(0, response.getIntValue("code"));
+        Document log = mongoTemplate.getCollection("requestLog").find().first();
+        assertNotNull(log);
+        assertEquals("fixture-header-value", log.get("request", Document.class)
+                .get("headerMap", Document.class).getString("$fixture"));
+        assertNull(RequestLogContext.getRequestLog());
         assertNull(UserHolder.get());
     }
 

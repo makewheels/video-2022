@@ -81,10 +81,34 @@ def test_failed_storage_keeps_business_write_and_response_without_replaying(data
     assert database.requestLog.count_documents({}) == 0
 
 
-def test_unverified_dotted_header_mapping_fails_without_contacting_database():
+def test_legacy_dotted_header_mapping_fails_without_contacting_database():
     def forbidden():
-        pytest.fail("Unsupported mapping must not contact a database")
+        pytest.fail("Rejected mapping must not contact a database")
 
     request = RequestMetadata("GET", "/fixture", "http://localhost/fixture", "192.0.2.10", (("X.Fixture", "value"),))
-    with pytest.raises(JournalMappingError, match="Dotted header storage is not verified"):
+    with pytest.raises(JournalMappingError, match="Legacy journal cannot store dotted header names"):
         MongoRequestJournal(forbidden).save(RequestJournalEntry(request, 1000, 1025, 200))
+
+
+def test_dollar_header_is_stored_with_original_name_like_actual_java(database):
+    request = RequestMetadata("GET", "/fixture", "http://localhost/fixture", "192.0.2.10",
+                              (("$fixture", "fixture-header-value"),))
+    MongoRequestJournal(lambda: database).save(RequestJournalEntry(request, 1000, 1025, 200))
+    assert database.requestLog.find_one()["request"]["headerMap"] == {"$fixture": "fixture-header-value"}
+
+
+def test_dotted_header_preserves_business_success_without_persisting_journal(database):
+    request = RequestMetadata("POST", "/user/updateProfile", "http://localhost/user/updateProfile", "192.0.2.10",
+                              (("token", "fixture-legacy-token"), ("X.Fixture", "fixture-header-value")))
+    database.user.delete_many({})
+
+    def handler(request, identity):
+        database.user.insert_one({"_id": "fixture-dotted-header-write", "nickname": "fixture-updated"})
+        return ok(request, identity)
+
+    result = cycle(journal=MongoRequestJournal(lambda: database)).run(request, handler, protected=True)
+    assert result.response.status == 200
+    assert result.journal_status == "failed"
+    assert database.user.find_one()["nickname"] == "fixture-updated"
+    assert database.user.count_documents({}) == 1
+    assert database.requestLog.count_documents({}) == 0
