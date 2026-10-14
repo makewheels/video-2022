@@ -218,3 +218,11 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod及清理；Python fixture独立随机数据库finally删除。无生产数据/OSS/STS请求。
 - #162 head37ce40db CI38626919450必要项全过后合并f98e91e2；PR E2E skipped。其master CI38628443843/部署38628443893仍运行中须查最终。先前频道修复master CI38626349934/部署38626350038均success。
 - 未实现头像具体适配器、完整HTTP鉴权/日志/异常语义、更新资料或实际FC网络；纯能力未装配，不能称生产迁移。详见profile-channel-reads.md。
+
+## S06.c3 头像文件Mongo读取（2026-10-15 04:17）
+
+- 基于master104d54a7，UserMongoReadContractTest新增File ID/key基线，JDK21/UTC/真实回环独立Mongo：5tests/0failure/0error/0skip，4.774s，Checkstyle退出0。验证物理集合file、ObjectId优先无String回退、不过滤type/owner/deleted、null/空白/整数key。
+- 同一自建临时Mongo继续跑CPython3.12.13锁定web/deployment组：完整201passed/0skipped/1既有Starlette warning，3.75s，Ruff/500行/空白通过。新增8项头像文件读取边界/错误/惰性测试；4份profile/channel黄金组合从替代文件端口升级到真实user+file集合，签名仍替代。回读文件/用户确认无写回。
+- 源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod并清理；Python随机独立数据库finally删除，测试只允许无凭据回环standalone。无生产Mongo、OSS或STS请求。
+- #163 headd0ed7984 CI38628826927必要项全通过后合并104d54a7，PR E2E skipped；#162合并master CI38628443843/部署38628443893均success；新master CI38630544702/部署38630544827仍运行中须查最终。
+- 未装配路由/实际签名，未穷尽File其他字段/异常BSON转换，完整HTTP上下文/日志/生产网络未验。见avatar-mongo-reads.md，不能称S06完成。

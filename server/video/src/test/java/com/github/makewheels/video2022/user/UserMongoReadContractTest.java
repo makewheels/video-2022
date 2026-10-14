@@ -1,6 +1,7 @@
 package com.github.makewheels.video2022.user;
 
 import com.github.makewheels.video2022.BaseIntegrationTest;
+import com.github.makewheels.video2022.file.bean.File;
 import com.github.makewheels.video2022.user.bean.User;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -94,5 +95,36 @@ class UserMongoReadContractTest extends BaseIntegrationTest {
                 new Document("_id", "fixture-numeric-token").append("token", 1234L));
         assertNull(repository.getByToken("1234"));
         assertEquals("1234", repository.getById("fixture-numeric-token").getToken());
+    }
+
+    @Test
+    void fileIdsUseObjectIdWithoutFallbackAndDoNotFilterTypeOwnerOrDeletedFlag() {
+        assertEquals("file", mongoTemplate.getCollectionName(File.class));
+        String hex = "0123456789abcdef01234567";
+        mongoTemplate.getCollection("file").insertOne(new Document("_id", hex).append("key", "fixture-string-key"));
+        mongoTemplate.getCollection("file").insertOne(new Document("_id", new ObjectId(hex))
+                .append("key", "fixture-object-key").append("fileType", "RAW_VIDEO")
+                .append("uploaderId", "fixture-other-owner").append("deleted", true));
+        File file = mongoTemplate.findById(hex, File.class);
+        assertNotNull(file);
+        assertEquals("fixture-object-key", file.getKey());
+        assertEquals("RAW_VIDEO", file.getFileType());
+        assertTrue(file.getDeleted());
+        mongoTemplate.getCollection("file").deleteOne(new Document("_id", new ObjectId(hex)));
+        assertNull(mongoTemplate.findById(hex, File.class));
+    }
+
+    @Test
+    void fileKeyRetainsNullEmptyWhitespaceAndConvertsIntegralBson() {
+        mongoTemplate.getCollection("file").insertOne(new Document("_id", "fixture-missing-key"));
+        mongoTemplate.getCollection("file").insertOne(new Document("_id", "fixture-null-key").append("key", null));
+        mongoTemplate.getCollection("file").insertOne(new Document("_id", "fixture-empty-key").append("key", ""));
+        mongoTemplate.getCollection("file").insertOne(new Document("_id", "fixture-space-key").append("key", " "));
+        mongoTemplate.getCollection("file").insertOne(new Document("_id", "fixture-numeric-key").append("key", 1234L));
+        assertNull(mongoTemplate.findById("fixture-missing-key", File.class).getKey());
+        assertNull(mongoTemplate.findById("fixture-null-key", File.class).getKey());
+        assertEquals("", mongoTemplate.findById("fixture-empty-key", File.class).getKey());
+        assertEquals(" ", mongoTemplate.findById("fixture-space-key", File.class).getKey());
+        assertEquals("1234", mongoTemplate.findById("fixture-numeric-key", File.class).getKey());
     }
 }
