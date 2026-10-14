@@ -135,3 +135,7 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 ## S05.b 离线响应对照工具（2026-10-14 22:51）
 
 实现 [compare_responses.py](../../../serverless/contracts/compare_responses.py)，仅受控 JSON HTTP 夹具。严格字段/类型/null/数组顺序与 HTTP/业务错误比较，coverUrl 有限签名值归一化保留对象/身份/签名存在性，所有输出无响应值/未知字段名/文件路径。CPython 3.12.13 + uv 锁定临时环境：Ruff 通过，25 项 focused 用例通过，500 行/空白门禁通过；环境/缓存/测试夹具清理。首次 CPython 3.14.4 的 24 项也通过，补充有限数值边界后在 3.12 重验。CI 待跑；工具匹配不代表签名有效/生产兼容，Java 动态黄金夹具和 Python 业务均未实现。
+
+## S05.e 登录与观看身份真实 HTTP 夹具（2026-10-14 23:14）
+
+新增 LoginHttpContractTest，JDK21/UTC、完整 HTTP/真实随机回环端口 Mongo、既有外部 mock：`mvn -q -pl video -Dtest=LoginHttpContractTest -Dspring.mongodb.port=<task-port> -Dspring.mongodb.database=video-login-contract-isolated test checkstyle:check` 实际 **6 passed / 0 failed / 0 skipped**，Checkstyle/空白通过。测试覆盖验证码复用/创建时间、码11/12、错误不消耗、正确登录覆盖旧token/清码/保留12.34钱包余额、非生产111先需记录且创建钱包、公开用户响应token清空但库仍有效、401无data/头优先query、client/session每次持久化IP/UA。所有源码/target/dbpath/log在系统任务临时目录，finally结束mongod并清理；生产判定/TTL删除时机/并发恢复未验，CI待跑。
