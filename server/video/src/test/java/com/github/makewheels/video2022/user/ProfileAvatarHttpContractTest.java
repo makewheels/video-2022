@@ -119,8 +119,39 @@ class ProfileAvatarHttpContractTest extends BaseIntegrationTest {
     }
 
     @Test
+    void jsonNumericLexemesAndDuplicatePropertiesRetainLegacyBinding() throws Exception {
+        for (String[] values : new String[][]{{"1e2", "-0.50"}, {"1E+2", "-0"}}) {
+            JSONObject result = body(post("/user/updateProfile").header("token", TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"nickname\":" + values[0] + ",\"bio\":" + values[1] + "}"), 200);
+            assertEquals(0, result.getIntValue("code"));
+            assertEquals(values[0], stored().getNickname());
+            assertEquals(values[1], stored().getBio());
+        }
+        JSONObject result = body(post("/user/updateProfile").header("token", TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"nickname\":\"" + "x".repeat(31) + "\",\"nickname\":\"last\"}"), 200);
+        assertEquals(0, result.getIntValue("code"));
+        assertEquals("last", stored().getNickname());
+        assertNull(stored().getBio());
+    }
+
+    @Test
+    void jsonBindingRejectsTrailingRootOrGarbageBeforeProfileWrite() throws Exception {
+        for (String json : new String[]{"{\"nickname\":\"first\"}{}", "{\"nickname\":\"first\"} trailing"}) {
+            JSONObject result = body(post("/user/updateProfile").header("token", TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON).content(json), 200);
+            assertEquals(1, result.getIntValue("code"), json);
+            assertEquals("原昵称", stored().getNickname());
+            assertEquals("原简介", stored().getBio());
+            assertEquals(new Date(0), stored().getUpdateTime());
+        }
+    }
+
+    @Test
     void jsonContainersAndMissingBodiesFailBeforeAnyProfileWrite() throws Exception {
         for (String json : new String[]{"{\"nickname\":[]}", "{\"bio\":{}}",
+                "{\"nickname\":[],\"nickname\":\"valid\"}",
                 "[]", "\"text\"", "null", "", "{"}) {
             JSONObject result = body(post("/user/updateProfile").header("token", TOKEN)
                     .contentType(MediaType.APPLICATION_JSON).content(json), 200);

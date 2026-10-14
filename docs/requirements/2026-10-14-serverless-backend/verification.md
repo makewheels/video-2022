@@ -302,3 +302,11 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 未改Java/黄金文件，不重复Java套件。没有网络TCP/代理或FC实测；必需参数/方法404/JSON更新/完整异常不在本次覆盖，测试路由不接入现有Application/web/FC。详见profile-http-composition.md。
 - 源码无临时中转文件；环境/cache/dbpath/log/pytest均系统任务临时目录，finally终止自建mongod与清理，随机隔离库finally删除。仅固定合成身份/日志，无生产读写或OSS调用。
 - #173 CI38648327035必要项全通过后合并55263bf9（PR E2E skipped）；#172 master CI38648114989/部署38648115203均success。新master CI38649789900/部署38649789809待查最终。
+
+## S06.e3 资料JSON解码（2026-10-15 07:03）
+
+- 基于master01856f2f，JDK21/UTC/真实旧Spring HTTP+回环隔离Mongo，ProfileAvatarHttpContractTest最终10tests/0failure/0error/0skip，5.196s，Checkstyle退出0。小数/指数词法、重复字段每次类型/最终长度语义、第二根对象/尾随垃圾拒绝且不写资料均固化。
+- 首次数字探测9项通过；扩展尾随内容后首次10项有1失败，推翻“忽略尾随内容”的探测假设，按实测修正Java期望/Python解码并完整复验后通过。初版Python281项不作为最终验收。
+- 最终CPython3.12.13锁定web/deployment组，完整Python282passed/0skipped/1既有Starlette warning，3.97s，Ruff/500行/空白通过。新增18项，包括7种实际隔离Mongo解码后更新、10种绑定失败及重复字段先绑定后长度校验。未装配入口/正式更新管线；编码与极端输入边界见profile-json-decoder.md。
+- 所有源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod并清理，随机库finally删除。只固定合成资料，无生产更新/双写或OSS调用。
+- #174 CI38649966353必要项全通过后合并01856f2f（PR E2E skipped）；#173 master CI38649789900/部署38649789809均success。新master CI38651370309/部署38651370246须查最终。

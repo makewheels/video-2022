@@ -227,3 +227,7 @@ S06.d7实测收窄日志门槛：含点header使旧日志失败但不改变业�
 ### S06.f1 隔离HTTP组合证据
 
 测试专用ASGI链路已组合元数据、身份、真实Mongo资料/头像元数据和同步日志，5份旧Java响应/3份401与日志失败恢复对照通过；签名仍替代。该应用只存在测试中，不是正式路由表或FC入口，详见[组合边界](../requirements/2026-10-14-serverless-backend/profile-http-composition.md)。
+
+### S06.e3 JSON值绑定（未装配）
+
+普通decode_profile保留小数/指数原始词法、每次重复字段的类型检查与后值语义，并拒绝旧HTTP实测的尾随内容。只针对已验UTF-8；编码/极端输入和完整更新HTTP尚未验，详见[解码边界](../requirements/2026-10-14-serverless-backend/profile-json-decoder.md)。
