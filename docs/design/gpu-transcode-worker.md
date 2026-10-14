@@ -1,6 +1,6 @@
 # GPU 转码 Worker 原型设计
 
-对应需求：[GPU 云函数自建转码](../requirements/2026-10-gpu-cloudfunction-transcode/README.md)。状态：原型，未接入生产。
+对应需求：[GPU 云函数自建转码](../requirements/2026-10-07-gpu-cloudfunction-transcode/README.md)。状态：原型，未接入生产。
 
 ## 执行与产物
 

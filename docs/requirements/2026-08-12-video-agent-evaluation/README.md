@@ -16,7 +16,7 @@
 
 ## 后续需求
 
-- [2026-08-video-langfuse-project-isolation](../2026-08-video-langfuse-project-isolation/)：Langfuse 项目隔离修复，评测数据迁入独立 `video-2022` project（2026-08-12 完成）。
+- [2026-08-13-video-langfuse-project-isolation](../2026-08-13-video-langfuse-project-isolation/)：Langfuse 项目隔离修复，评测数据迁入独立 `video-2022` project（2026-08-12 完成）。
 
 ## 当前阶段
 

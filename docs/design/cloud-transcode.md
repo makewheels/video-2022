@@ -1,7 +1,7 @@
 # 自建云函数点播处理设计
 
 > 执行中。P0 盘点已确认可行路径（2026-10-11，证据见需求目录 PLAN.md）。不能以本文断言生产具备相应能力，云端实测项以 verification.md 记录为准。
-> 对应需求：[需求目录](../requirements/2026-10-gpu-cloudfunction-transcode/README.md)。
+> 对应需求：[需求目录](../requirements/2026-10-07-gpu-cloudfunction-transcode/README.md)。
 
 ## 2026-10-11 续验发现与修正约束
 

@@ -2,11 +2,11 @@
 
 > 状态：已完成
 > 日期：2026-08-12
-> 关联需求：[2026-08-video-agent-evaluation](../2026-08-video-agent-evaluation/)
+> 关联需求：[2026-08-12-video-agent-evaluation](../2026-08-12-video-agent-evaluation/)
 
 ## 背景
 
-`2026-08-video-agent-evaluation` 交付时，video-2022 的 Smoke、Regression、Multi-turn 三套 Dataset 及全部 Experiment Run 都写入了 Langfuse 的 `speakup` project（属于另一个产品的观测空间）。两个产品的 Dataset、Trace、Score 混在同一 project 中：
+`2026-08-12-video-agent-evaluation` 交付时，video-2022 的 Smoke、Regression、Multi-turn 三套 Dataset 及全部 Experiment Run 都写入了 Langfuse 的 `speakup` project（属于另一个产品的观测空间）。两个产品的 Dataset、Trace、Score 混在同一 project 中：
 
 - video-2022 的评测数据污染 speakup 的观测视图，反之亦然；
 - 无法按 project 独立管理 video-2022 的 API Key、成员和保留策略；

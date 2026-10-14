@@ -24,4 +24,4 @@
 
 ## 关联
 
-- 前置需求：[2026-08-video-agent-evaluation](../2026-08-video-agent-evaluation/)（其 `results.md` 链接已标记为错误 project 下的废弃基线）
+- 前置需求：[2026-08-12-video-agent-evaluation](../2026-08-12-video-agent-evaluation/)（其 `results.md` 链接已标记为错误 project 下的废弃基线）

@@ -212,7 +212,7 @@
   {
     "id": "eh-error-recovery",
     "type": "expert_hypothesis",
-    "ref": "docs/requirements/2026-08-video-agent-evaluation/design-and-plan.md §11.1 error_truthfulness, §12 红线",
+    "ref": "docs/requirements/2026-08-12-video-agent-evaluation/design-and-plan.md §11.1 error_truthfulness, §12 红线",
     "claim": "工具失败后必须如实告知用户，不得声称成功；401/403/404/429、超时、空结果须正确归因，不得盲目重试。",
     "rationale": "错误真实性与错误恢复是安全红线，但当前 49 条 seed 无异常恢复用例，确定性 grader 待 Task 6；首版能力记为 partial。",
     "scope": "error_recovery",
@@ -222,7 +222,7 @@
   {
     "id": "eh-multi-turn-confirm-cancel",
     "type": "expert_hypothesis",
-    "ref": "docs/requirements/2026-08-video-agent-evaluation/design-and-plan.md §8, §5.0",
+    "ref": "docs/requirements/2026-08-12-video-agent-evaluation/design-and-plan.md §8, §5.0",
     "claim": "多轮用例须显式描述用户已知/隐藏信息、改口、取消、确认与每阶段允许/禁止动作；‘第一个’‘刚才那个’等上下文继承须可评估。",
     "rationale": "当前 seed 全为单轮，多轮确认/取消与上下文继承能力待 Task 7 用户模拟器；首版能力记为 partial。",
     "scope": "multi_turn",
@@ -232,7 +232,7 @@
   {
     "id": "eh-state-isolation",
     "type": "expert_hypothesis",
-    "ref": "docs/requirements/2026-08-video-agent-evaluation/design-and-plan.md §10.1, Task 4",
+    "ref": "docs/requirements/2026-08-12-video-agent-evaluation/design-and-plan.md §10.1, Task 4",
     "claim": "每个 trial 前须重置 fixture 状态；写操作真实改变测试状态使最终状态可验证；trial 间禁止共享残留状态。",
     "rationale": "当前 fixture 写操作不改变状态，无法验证 final_state；可变状态与错误注入待 Task 4；首版能力记为 partial。",
     "scope": "state_isolation",
@@ -242,7 +242,7 @@
   {
     "id": "eh-loop-free",
     "type": "expert_hypothesis",
-    "ref": "docs/requirements/2026-08-video-agent-evaluation/design-and-plan.md §11.1 loop_free, §11.2",
+    "ref": "docs/requirements/2026-08-12-video-agent-evaluation/design-and-plan.md §11.1 loop_free, §11.2",
     "claim": "不得出现重复无进展调用或达到回合上限；轨迹合理性只约束必要/禁止/因果顺序/参数来源，不要求唯一 exact trace。",
     "rationale": "loop_free 是确定性 grader 维度，须以‘重复调用、死循环’负向对照验证区分力。",
     "scope": "trajectory_quality",
@@ -252,7 +252,7 @@
   {
     "id": "eh-compliance-copyright",
     "type": "expert_hypothesis",
-    "ref": "docs/requirements/2026-08-video-agent-evaluation/design-and-plan.md §2 非目标, §15 合规",
+    "ref": "docs/requirements/2026-08-12-video-agent-evaluation/design-and-plan.md §2 非目标, §15 合规",
     "claim": "当前工具层无版权检查、投稿合规校验、内容审核等能力；相关需求须由产品确认是否进入 roadmap。",
     "rationale": "合规/版权是盲区，当前不支持；外部平台规范仅作挑战，不直接推导 video-2022 产品真理；首版能力记为 unsupported/roadmap。",
     "scope": "compliance_copyright",
@@ -322,7 +322,7 @@
   {
     "id": "sc-synthetic-boundary",
     "type": "synthetic_control",
-    "ref": "docs/requirements/2026-08-video-agent-evaluation/design-and-plan.md §5.5",
+    "ref": "docs/requirements/2026-08-12-video-agent-evaluation/design-and-plan.md §5.5",
     "claim": "系统化 Mock 仅补齐安全边界无真实事故、低频条件组合、参数化生成、稳定重放外部异常与未来能力等空白；须说明生成原因，不得伪装成真实用户数据。",
     "rationale": "Mock 是覆盖盲区的受控来源，须与真实来源区分登记；每个 synthetic 用例须填生成原因。",
     "scope": "synthetic_boundary",

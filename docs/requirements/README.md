@@ -4,16 +4,18 @@
 
 | 需求 | 状态 | 入口 |
 |---|---|---|
-| GPU 云函数自建转码 | 独立 Worker 原型开发中，未接入生产 | [2026-10-gpu-cloudfunction-transcode](2026-10-gpu-cloudfunction-transcode/README.md) |
-| 评测数据改为可读 JSON | 已合并（PR #108） | [2026-08-video-agent-evaluation-json](2026-08-video-agent-evaluation-json/) |
-| Video Agent 评测与 Langfuse | v1 已完成，生产闭环待接入 | [2026-08-video-agent-evaluation](2026-08-video-agent-evaluation/) |
-| 项目文件结构审计与重组 | 待人工复核（PR #109） | [2026-08-project-structure-review](2026-08-project-structure-review/) |
-| Langfuse 项目隔离 | 已完成（PR #110） | [2026-08-video-langfuse-project-isolation](2026-08-video-langfuse-project-isolation/) |
+| GPU 云函数自建转码 | 独立 Worker 原型开发中，未接入生产 | [2026-10-07-gpu-cloudfunction-transcode](2026-10-07-gpu-cloudfunction-transcode/README.md) |
+| 评测数据改为可读 JSON | 已合并（PR #108） | [2026-08-12-video-agent-evaluation-json](2026-08-12-video-agent-evaluation-json/) |
+| Video Agent 评测与 Langfuse | v1 已完成，生产闭环待接入 | [2026-08-12-video-agent-evaluation](2026-08-12-video-agent-evaluation/) |
+| 项目文件结构审计与重组 | 待人工复核（PR #109） | [2026-08-12-project-structure-review](2026-08-12-project-structure-review/) |
+| Langfuse 项目隔离 | 已完成（PR #110） | [2026-08-13-video-langfuse-project-isolation](2026-08-13-video-langfuse-project-isolation/) |
 
 ## 目录约定
 
+需求目录使用 `YYYY-MM-DD-<feature>`，日期表示需求建档日，不随后续实施或验收日期变化。存量月级目录按首次引入 Git 的提交日期补齐日，文档正文中的历史业务日期保持原样。
+
 ```text
-docs/requirements/YYYY-MM-<feature>/
+docs/requirements/YYYY-MM-DD-<feature>/
 ├── README.md            # 状态、文档导航、PR/结果入口
 ├── requirements.md      # 目标、范围和验收标准
 ├── plan.md              # 本次实施步骤

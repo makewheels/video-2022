@@ -12,11 +12,13 @@
 
 文件命名：
 
+需求目录统一使用 `YYYY-MM-DD-<feature>`，日期为需求建档日；后续实施和验收不重命名目录。存量月级目录按首次引入 Git 的提交日期补齐日，不改写正文历史日期。
+
 ```text
-docs/requirements/YYYY-MM-<feature>/README.md
-docs/requirements/YYYY-MM-<feature>/requirements.md
-docs/requirements/YYYY-MM-<feature>/plan.md
-docs/requirements/YYYY-MM-<feature>/verification.md
+docs/requirements/YYYY-MM-DD-<feature>/README.md
+docs/requirements/YYYY-MM-DD-<feature>/requirements.md
+docs/requirements/YYYY-MM-DD-<feature>/plan.md
+docs/requirements/YYYY-MM-DD-<feature>/verification.md
 docs/design/<subsystem-or-capability>.md
 ```
 

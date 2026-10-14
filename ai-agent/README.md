@@ -93,5 +93,5 @@ uv run pytest tests/ -v
 
 - 评测体系当前设计：`../docs/design/video-agent-evaluation.md`
 - 评测数据与命令：`evals/README.md`
-- 需求与验收记录：`../docs/requirements/2026-08-video-agent-evaluation*`
+- 需求与验收记录：`../docs/requirements/2026-08-12-video-agent-evaluation*`
 - 历史计划与实施快照：`docs/archive/`（仅背景参考）
