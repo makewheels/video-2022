@@ -223,3 +223,7 @@ ProfileUpdates保留旧UTF-16长度与双字段替换，MongoProfileWrites仅更
 未装配MongoRequestJournal复用provider，同步写requestLog并保持旧BSON形状。生命周期处理日志失败，不重放业务。仅隔离库验证；特殊header键、实际网络不确定写入与日志安全策略仍为验收门槛，详见[记录](../requirements/2026-10-14-serverless-backend/mongo-request-journal.md)。
 
 S06.d7实测收窄日志门槛：含点header使旧日志失败但不改变业务响应/写入；$前缀名可落库。Python按该边界返回内部failed，不复制旧ThreadLocal残留。特殊键仍未穷举，未接生产入口。
+
+### S06.f1 隔离HTTP组合证据
+
+测试专用ASGI链路已组合元数据、身份、真实Mongo资料/头像元数据和同步日志，5份旧Java响应/3份401与日志失败恢复对照通过；签名仍替代。该应用只存在测试中，不是正式路由表或FC入口，详见[组合边界](../requirements/2026-10-14-serverless-backend/profile-http-composition.md)。
