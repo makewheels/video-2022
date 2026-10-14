@@ -205,3 +205,7 @@ RequestMetadata保留有序重复headers/参数与原query/peer信息，Identity
 ### S06.d4 日志故障语义
 
 真实Spring/隔离Mongo与指定方法异常注入3项确认：日志afterCompletion save失败不会撤销成功响应或业务写，但旧日志ThreadLocal清理被跳过；身份查询提前失败则未进入日志。未改运行代码；Python请求生命周期需保留业务提交/响应边界并可靠清理局部状态，不能假设日志失败应重试业务。详见[故障基线](../requirements/2026-10-14-serverless-backend/request-journal-failure.md)。
+
+### S06.d5 普通请求生命周期（未装配）
+
+RequestCycle保留首次身份、受保护第二次查询、401形状、处理后同步journal与精确路径排除；日志save失败保留响应/业务写并返回内部failed诊断，不重放业务。局部值不复制旧ThreadLocal泄漏；具体journal/域异常/外壳路由尚未装配。Java黄金HTTP11项、完整Python235项通过，详见[生命周期边界](../requirements/2026-10-14-serverless-backend/request-cycle.md)。

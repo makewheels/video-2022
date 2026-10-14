@@ -257,3 +257,12 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 日志afterCompletion save失败仍HTTP200/code0，业务更新保留，无requestLog文档；UserHolder清空但RequestLogContext残留，同线程下一次401仍保留同一对象。身份查询在日志前失败则HTTP200/code1/未知错误，无日志/两个上下文空。afterEach明确清理残留和隔离库，避免污染其他测试。
 - 此为方法故障注入，不是真实网络故障/不确定写入或生产日志审计。只用合成身份，未改运行代码，未重跑无关Python完整套件。源码/target/log/dbpath均系统任务临时目录，finally终止自建mongod并清理。
 - #167 head4f8d788f CI38637312136必要项全通过后合并175ff4eb，PR E2E skipped；#166合并master CI38636953114/部署38636952960均success；新master CI38639010341/部署38639008711仍运行中须查最终。详见request-journal-failure.md。
+
+## S06.d5 普通请求生命周期与汇报准备（2026-10-15 05:39）
+
+- 基于master708ac2b8，JDK21/UTC/真实旧Spring MockMvc+隔离回环Mongo，UserReadGoldenHttpContractTest 11tests/0failure/0error/0skip，4.820s，Checkstyle退出0；新增401与通用绑定错误黄金响应（原9份值不变）。同步日志替代端口及两个黄金HTTP状态/contentType/body完整对照。
+- CPython3.12.13锁定web/deployment组，完整Python235passed/0skipped/1既有Starlette warning，3.74s；Ruff/500行/空白通过。初次仅签名行121字符lint失败，换行后只重跑Python检查，未重复Java。新增10项顺序/两次查询/首次身份/拒绝/异常/日志失败/排除路径/时间差/域映射验证。新HTTP层依赖边界通过。具体日志存储/路由/真实平台尚未装配。
+- 源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod与清理，随机测试库finally删除。无真实日志或生产请求。
+- #168 CI38639197445 attempt1后端Maven插件4.0.3解析失败、未进测试；网页工具未取回官方POM，但curl官方地址实测HTTP200。gh run rerun --failed一次，attempt2必要项全部success后合并708ac2b8，PR E2E skipped。
+- #167 master CI38639010341 success；部署38639008711 attempt1及失败job单次重试attempt2均因镜像代理docker.m.daocloud.io返回Bad Gateway无法解析Caddy，未直接改服务器，未继续重试，也未据此断言生产状态。原有deploy并发group=deploy/cancel-in-progress=false，后续新master部署按队列查询。
+- 调度report.py新增六分类、最新验收摘录、固定Git提交证据链接、API失败不冒充PR数0，PR查询扩大100条避免本夜记录截断。独立headless Chrome对临时HTML实际点击print（替代window.print确认调用）/详情、证据链接、1280与390宽整页无横溢、print CSS隐藏按钮，全部通过；未提前调用/usr/bin/open，06:05之后实际浏览器显示仍待核验。临时HTML/依赖/缓存finally清理，脚本为用户授权的持久调度配置，不含密钥。

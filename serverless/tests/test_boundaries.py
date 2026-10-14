@@ -60,3 +60,7 @@ def test_http_controller_has_no_configuration_or_infrastructure_imports():
     assert not forbidden_imports(source, "video_serverless", PURE_STDLIB | {
         "video_serverless.http", "video_serverless.ports"
     })
+    source = (ROOT / "request_cycle.py").read_text(encoding="utf-8")
+    assert not forbidden_imports(source, "video_serverless", PURE_STDLIB | {
+        "video_serverless.http", "video_serverless.ports", "video_serverless.business"
+    })

@@ -2,7 +2,7 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-15 05:17，S06.d3已合并，日志故障语义已本地验证）
+## 当前快照（2026-10-15 05:39，S06.d4已合并，请求生命周期已本地验证）
 
 - S02 [#148](https://github.com/makewheels/video-2022/pull/148) 已合并，merge `42a0ebeb0a2865adf3c6e1d8791bb276d970d8e9`；最终 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) success，所有必要 job 通过，API/浏览器 E2E 按 PR 条件 skipped。Linux 原型 79 passed，双包两次可重现、入口与 native 冒烟通过。
 - S03 工具 [#149](https://github.com/makewheels/video-2022/pull/149) 已合并，merge `2eb0065e94795073f87ca8b9bef30d9784990276`；最新 head `7fc243c4` 的 [CI 38555210822](https://github.com/makewheels/video-2022/actions/runs/38555210822) success，Linux 原型 107 passed/1 warning，全部必要 job 通过、PR 两个 E2E skipped。云端发布与回退仍未验，不能称 S03 全部完成。
@@ -23,7 +23,10 @@
 - S06.d1 #165 headc4f77f86必要CI38633115869全通过后合并e514ff69（PR E2E skipped）；#164合并master CI38632657026/部署38632657032均success。
 - S06.d2 #166 head063a0e1d必要CI38635180591全通过后合并2017e3e5（PR E2E skipped）；#165合并master CI38634877692/部署38634877557均success。
 - S06.d3 #167 head4f8d788f必要CI38637312136全通过后合并175ff4eb（PR E2E skipped）；#166合并master CI38636953114/部署38636952960均success。
-- 当前分支`test-serverless-request-journal-failure`基于175ff4eb，S06.d4 [日志故障基线](request-journal-failure.md)：真实Spring/隔离Mongo+指定方法注入异常，3passed/Checkstyle。日志save失败保留成功响应/业务写，但RequestLogContext残留，鉴权拒绝不清它；身份查询先失败则无日志。仅测试记录，未修运行代码，Python同步日志尚未装配。
+- S06.d4 #168 head162eb6f0，CI38639197445首次后端在Maven插件解析失败（测试未执行）；官方POM本机HTTP200后仅重试失败任务，attempt2全部必要job成功，已合并708ac2b8，PR E2E skipped。
+- 当前分支`feat-serverless-request-cycle`基于708ac2b8，S06.d5 [普通请求生命周期](request-cycle.md)：Java黄金HTTP11passed/Checkstyle，两份新401/通用错误对照，完整Python235passed/0skipped/1warning、Ruff/500行/空白通过。保留两次身份查询、同步journal顺序及日志失败保留响应/业务写，无共享上下文；未接现有入口/具体日志库。
+- #167合并master CI38639010341 success，但Java部署38639008711因Caddy镜像代理Bad Gateway失败；仅通过Actions重试失败job一次，attempt2仍同因失败，不继续碰运气、不直接操作服务器，不断言现役生产运行状态。新master CI/部署以实际查询为准。
+- 06:05报告脚本已增强六类成果/验收边界和固定提交证据链接；本机独立headless Chrome实际点击打印/详情并验桌面/手机无整页横溢、打印CSS通过。仅系统任务临时HTML/环境，未提前打开用户可见浏览器；06:05起仍须生成/打开实际报告并核验。
 - #158合并后master CI38620293672失败：浏览器频道等待选择器strict mode匹配2元素，79passed/1failed；既有Java部署38620293649成功。#159合并master CI38622137273已success（实际API/浏览器E2E通过）；部署38622137369另查询。旧失败仍有确定的并存元素证据，独立修复测试竞态。
 
 - 本机 Git 直接访问 GitHub 临时失败，使用当前系统代理 127.0.0.1:7890 的单次 git 参数已 fetch 至合并提交；没有修改全局代理/Git 配置。
@@ -54,7 +57,7 @@
 
 ## 接续步骤
 
-1. #152至#167均已合并，不重复。先核对test-serverless-request-journal-failure独立PR/head/必要CI再合并S06.d4。后续基于故障基线补普通日志端口/请求生命周期，或FC元数据/参数合并；不把日志失败改成业务500/重试业务写，不开放半成品路由。
+1. #152至#168均已合并，不重复。先核对feat-serverless-request-cycle独立PR/head/必要CI再合并S06.d5。后续具体日志适配/完整外壳与域异常或签名；现有入口未装配，不开放半成品路由。Java部署镜像代理两次失败已记录，先查最新Actions，不直接改服务器或无理由重试。
 2. 当前 master CI/E2E 已通过，但首次 publish 因 OSS 写权限失败；先解决独立发布身份权限并经审阅/验证，再运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
 3. publish 成功后保存非秘密 receiptKey、commit、ZIP SHA、version、同包晋级/远端回读结果。首次没有前版不能假造回退；第二次可追溯发布后用新版 receiptKey 执行 workflow rollback，实际读回 alias/version 与冒烟。
 4. S03 通过后才开始 S04 FC HTTP/冷热/原生扩展/现有 Mongo 网络；不擅自开放数据库公网、改防火墙、迁库或采购固定资源。无法安全接通则记录阻塞，推进独立 S05 契约台账。
