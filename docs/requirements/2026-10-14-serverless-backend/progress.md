@@ -2,16 +2,15 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-14，S02 专项验收通过，PR 收尾）
+## 当前快照（2026-10-14 18:40，S02 已合并，S03 开始）
 
-- S01 #147 已合并，回退点 `4338dfb9`；S02 从交接 `7facb75a` 恢复，工作分支 `feat-serverless-release-provenance`。
-- S02 实现与专项验收通过：[PR #148](https://github.com/makewheels/video-2022/pull/148)。全仓库 CI/最终合并状态以 PR 当前 head 为准；恢复时必须查询，不根据这个历史快照重复实施或直接合并。
-- [CI 38548901668](https://github.com/makewheels/video-2022/actions/runs/38548901668) 在代码提交 `22ddda59` 上：固定 Linux CPython 3.12.12 / uv 0.12.2 packaging success；Handler/Web 各两次 ZIP SHA 相同，来源验证与隔离入口/native 冒烟通过。原型测试 Ruff 通过、79 passed（含隔离 Mongo）、既有 warning 1。其他 CI 在本快照时仍收尾。
-- Handler ZIP 1,385,323 bytes，SHA256 `d19761ade6bc6b6400370bc2699ab2216267763bd30f18f8e72c4d3af8da659a`；Web ZIP 4,748,028 bytes，SHA256 `3497049befa1cdd322ec76d50cc5c8977a1413d9d48ba870366b0fa855add5a3`。仅文档变更不会进入包；每次运行仍以当次 CI 来源记录为准。
-- 本地 macOS CPython 3.12.12 / uv 0.11.7：完整测试 77 passed、真实 Mongo 1 skipped、warning 1；随后构建边界回归 35 passed；Ruff、500 行/空白门禁通过。Linux counts 包含新增路径检查，不能混用本地旧计数。
-- 首轮 CI 用 runner 默认 Python 被严格 host gate 拒绝，已改为 uv 显式选择固定版本；旧 head CI cancelled，不用于最新提交验收。
-- 生产仍为 Java；未切流、未改 Mongo、未上传 OSS、未创建/发布 FC。Linux runner 不等于 FC/Debian 11 云端验收。
-- 下一步：查询 #148 和最新 CI，全部必要检查通过后按既有授权合并；随后从最新 master 为 S03 创建独立分支，先核验 Actions OIDC 权限、隔离资源/网络/发布回退设计。
+- S02 [#148](https://github.com/makewheels/video-2022/pull/148) 已合并，merge `42a0ebeb0a2865adf3c6e1d8791bb276d970d8e9`；最终 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) success，所有必要 job 通过，API/浏览器 E2E 按 PR 条件 skipped。Linux 原型 79 passed，双包两次可重现、入口与 native 冒烟通过。
+- 当前分支 `feat-serverless-isolated-release`，基于 S02 merge；S03 设计已补，开始独立 Handler 隔离发布，不复用/改生产函数。尚未创建 S03 PR 或发布 FC/OSS。
+- 本机 Git 直接访问 GitHub 临时失败，使用当前系统代理 127.0.0.1:7890 的单次 git 参数已 fetch 至合并提交；没有修改全局代理/Git 配置。
+- 实际读取：本机 Infisical session 现在可用；prod `/` 存在 FC_DEPLOY_AK_ID/SECRET，`/oss` 存在数据 OSS 身份；dev 没有这些部署键。部署 RAM 用户 video-2022-fc-deploy 的已有 policy 允许 FC 函数/版本/别名/触发器/并发相关 API，无 OSS 权限。只读 FC 列表没有 serverless API 函数。密钥仅在内存/受限系统临时配置，未写 Git/报告。
+- S03 将由 Actions 复用现有 OIDC，独立 OSS 前缀上传/回读后把已验证 ZIP 字节交给 FC，避免扩大现有 RAM 权限。仍需验证 Actions 权限、实际发布、同包晋级/回退。生产与 Mongo 保持现状。
+- 用户新授权：夜间自主接续至 2026-10-15 08:00；06:05 起在浏览器打开 HTML 汇报。macOS launchd 已注册，同一会话每 15 分钟接续，账户额度不足等待重试；报告独立每 5 分钟更新；配置在 `~/Library/Application Support/video2022-night-run-20261014/`，报告为 `~/Documents/video2022-2026-10-15-夜间进度.html`。注册/语法/限额查询/HTML生成已验，实际触发运行记录查该目录日志。
+- 下一步：先完成 S03 发布工具/锁定 SDK/模拟失败回退测试和 workflow，推送小阶段 PR，全部必要 CI 后再通过 Actions 做有限隔离发布；若身份/运行时阻塞，保存证据并推进 S05，不能绕过 Mongo 安全。
 
 ## 用户约束（接续不能丢失）
 
@@ -24,7 +23,7 @@
 
 ## 当前阻塞与独立工作
 
-- 本机 Infisical CLI session 过期，已请求用户恢复；**不代表 Actions OIDC 不可用**。发布优先复用 Git 管理的 Actions 取密，核验身份权限，不因本机登录停止独立工作。
+- 先前交接的本机 Infisical session 阻塞已通过本次实际读取解除；仍须实测新 workflow 的 Actions OIDC 和资源权限，不用本机可读取替代 Actions 证明。
 - 现有 Mongo 的跨云访问、最小权限和真实 FC 冷启动未验；不擅自开放公网/改防火墙/搬库。
 - 本机 Docker daemon 不可用；CI 隔离 Mongo 已验证，不能因此声称生产网络可达。
 - Mongo 写库/投递间隙尚未解决；S01/S02/S05 可以先推进，不绕过恢复要求。

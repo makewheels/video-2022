@@ -40,3 +40,9 @@
 重读 [uv 锁文件导出](https://docs.astral.sh/uv/concepts/projects/export/) 和 [CLI 参数](https://docs.astral.sh/uv/reference/cli/)：export 支持 requirements 格式和输出文件；项目选择 `--locked`、排除开发组/项目本身，并以 `--require-hashes --only-binary :all: --no-deps` 安装目标 wheel。固定工具版本和源码白名单属于本项目决定。requirements 导出是发布输入快照，`uv.lock` 仍是源码里的唯一依赖锁，不维护第二份手工 requirements。
 
 ZIP 可信摘要保护包内 requirements，sidecar 与包内记录对照。依赖 METADATA 校验表示来源清单一致，不代表对第三方代码安全或云端 ABI 的认证。Linux 构建/原生导入的实际结果见 verification.md，FC 运行时限制仍在 S03/S04 核实。
+
+## S03 再核对（2026-10-14）
+
+- [CreateFunctionInput](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-struct-createfunctioninput) 与 [InputCodeLocation](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-struct-inputcodelocation)：支持 OSS 地址或 Base64 ZIP 两种传包方式；平台 checksum 为 CRC64，不是 SHA256。S03 始终先从独立 OSS 前缀回读并校验可信 SHA，再传同一包字节，不扩大 FC 身份的 OSS 权限。
+- [PublishFunctionVersion](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-publishfunctionversion)、[UpdateAlias](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-updatealias)、[GetFunctionCode](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-getfunctioncode)：版本/别名及代码包读取能力支持受控发布、回读和回退；本项目须实际下载校验，不能用 API 退出码当摘要证明。
+- SDK 本地隔离解析：alibabacloud-fc20230330 4.8.3、oss2 2.18.4。SDK 仅用于发布工具，不进入公共业务/API 运行依赖。官方支持 Python 3.12 仍不替代实际地域发布和原生模块验收。

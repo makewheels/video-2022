@@ -157,3 +157,15 @@ S01 已增加依赖边界检查和两个外壳的公共用例一致性测试，�
 ## 10. 官方取舍与接续
 
 每个小阶段查阅并记录相关 [官方依据](../requirements/2026-10-14-serverless-backend/official-guidance.md)，明确官方事实/项目决定/待实测三者的区别。按 [小阶段计划](../requirements/2026-10-14-serverless-backend/plan.md) 多 PR 交付，重要状态及时写入 [接续记录](../requirements/2026-10-14-serverless-backend/progress.md)，不能依赖一次对话完成全部迁移。
+
+### S03 隔离发布方案（2026-10-14，实施中）
+
+先交付 Handler 路线，不把 Web 的自定义 Python 运行时兼容猜测作为已验证结论。固定 `cn-beijing`、函数 `video-2022-dev-serverless-api`、`candidate`/`dev` 别名；禁止参数选择生产函数、业务域名或其他地域。配置采用 0.25 vCPU / 512 MB、单实例并发 1、函数并发上限 2、无预留实例；API 原型无 Mongo 配置、无 VPC/公网出站依赖，只验健康与空请求。
+
+- 新增独立 `deploy-serverless.yml`，只允许手动 dispatch 受控 master 提交。先验证对应 Git 来源/必要 CI，再从干净 Git 对象构建 Linux Handler 包；取密在测试构建通过后进行。Infisical Actions OIDC 复用现有身份，FC 部署身份和 OSS 数据身份分开注入，不把运行时变成有 OSS/部署权限的业务函数。
+- 使用既有 `oss-data-bucket` 的 `video-2022-dev/serverless/releases/` 独立前缀；ZIP 键包含完整 commit/ZIP SHA，生成元数据键也含内容 SHA。禁止覆写，存在时回读同摘要才复用。上传后回读 ZIP/sidecar 并验证，才进入 FC。
+- 当前 FC 部署 RAM 身份没有 OSS 权限。S03 使用从 OSS 回读并按可信 SHA 验证的同一 ZIP 字节作为 FC `code.zipFile`，避免为代码获取扩大该身份的权限；这仍是 Git→CI→OSS 产物→FC 的单向来源链，不能绕过 OSS 回读或从另一份源码重建晋级包。普通运行时不获得任何发布身份。
+- 发布函数版本前/后通过 GetFunctionCode 下载并核对 ZIP/源码摘要；版本描述关联完整 commit、ZIP SHA。candidate 验证成功才将同一 versionId 晋级 dev，不能再打包。dev 失败恢复原 alias/version 并验证；首次发布无前版则记录没有可恢复旧版本，不假造回退成功。
+- HTTP 触发器限定 GET/POST、RAM function 鉴权、dev 别名；诊断入口仍须随机诊断 token。token 仅驻留受控函数配置/内存，不进入 receipt/产物/日志。SDK InvokeFunction 用同一受控身份做有限健康/空请求冒烟，不保活、不调用生产 Mongo。
+- 产物与 receipt 使用不可变内容键，保留当前及前版；S03 不自动删除未知/其他组件对象或历史版本。实际云端发布、同包晋级及回退实测分别记录，没有跑通不标阶段完成。
+- 构建/部署/取密工具在 Git，临时依赖环境和下载包用系统任务临时目录并清理；发布工具的 SDK 依赖单独锁定，不能进入 API ZIP。FC Python 3.12 公测和云端 ABI 的实际支持仍需发布后验，失败不改为未知版本绕过。

@@ -95,3 +95,11 @@
 - Web：4,748,028 bytes；SHA256 `3497049befa1cdd322ec76d50cc5c8977a1413d9d48ba870366b0fa855add5a3`；16 项运行依赖，版本清单见 packaging 日志。测试/dev/媒体工具与另一入口源码未入包。
 - Linux 原型 job：Ruff 通过、79 passed（含真实隔离 Mongo）、既有 TestClient warning 1；PR API/浏览器 E2E 依据现有条件 skipped。
 - 此证据对应具体代码提交；本次补写文档不进入构建输入。#148 最终 head 仍须全部必要 CI 通过才合并，最终状态查 PR。没有 FC/生产 Mongo/网络/业务迁移验收，后续 S03/S04 继续。
+
+- S02 最终文档 head `8e0e13d2` 的 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) 实际 success，全部必要 job 通过，API/浏览器 E2E skipped；#148 已合并为 `42a0ebeb`。本阶段实际成果为 Linux 构建来源/回归/双包可重现，FC 发布进入 S03。
+
+## S03 隔离发布（2026-10-14，实施中）
+
+- 实际只读查到本机 Infisical session 已可用、既有部署 RAM 身份允许 FC API、没有 OSS 权限；北京 FC 中尚无 serverless API 函数。检查不等于 Actions OIDC 或新发布已通。
+- SDK 隔离解析/方法签名核对：FC SDK 4.8.3、oss2 2.18.4。设计选择独立 OSS 前缀上传/回读验证，再传同一 ZIP 字节，不扩 FC 身份权限，不注入生产 Mongo。
+- 工具/workflow/回退测试尚未完成；未发布/上传/调用隔离 FC，不宣称 S03 完成。
