@@ -7,13 +7,14 @@
 | 项目 | 当前记录 |
 |---|---|
 | 业务审计基线 | `8e4283e5`；生产仍是 Java，Python 原型未接生产流量 |
-| 已合并文档 | #141 年月日命名、#142 迁移审计；原型合并后 master 已知 `7c2c26d6`，接续先 fetch 核对 |
+| 已合并文档 | #141 年月日命名、#142 迁移审计；S00 #144、CI 警告 #145/#146 已合并；本轮基线 `e5fff0c5`，接续先 fetch 核对 |
 | 原型分支/提交 | `feat-serverless-api-prototype`，`9b7af7eb47d981cebf8d2a375f021424890ec44d`；含确认提交 `633066df` |
 | 原型 PR | [#143](https://github.com/makewheels/video-2022/pull/143)，已合并，merge `7c2c26d6c85ece34280c82c065ea6467a5f909f6`；不是完整业务迁移 |
 | 原型 CI | [38510090583](https://github.com/makewheels/video-2022/actions/runs/38510090583) success；Linux + 隔离 Mongo 实际 17 passed，API/浏览器 E2E skipped |
-| 本地证据 | 16 passed、真实 Mongo 1 skipped；初始化比较见 verification.md，不是 FC 冷启动 |
-| 本次文档分支 | `docs-serverless-stages-portability`，基于原型；不预写本文件自己的 SHA，以 Git/PR head 为准 |
-| 当前阶段 | S00 文档、官方依据和接续；S01 外壳/业务彻底分层尚未实施 |
+| 本地证据 | S01 安装后 wheel 上 43 passed、真实 Mongo 1 skipped；两稳定入口和 Ruff 通过；原初始化比较不是 FC 冷启动 |
+| 本轮分支 | `feat-serverless-portable-layers`，基于 `e5fff0c5`；提交/PR/CI 以该分支 Git 历史及 PR 描述的最终验证记录为准 |
+| 当前阶段 | S01 现有原型分层实现及本地验收完成；合并门禁以 PR 实际 CI 为准，不等于生产业务迁移完成 |
+| 本轮截止 | 用户要求 2026-10-14 17:00（Asia/Shanghai）前收尾；提前完成即可结束，不扩展 S02/S03 |
 | 生产/资源 | 未切流、未迁库、未创建此次付费原型资源、未退役 Java |
 
 ## 用户约束（接续不能丢失）
@@ -34,11 +35,11 @@
 
 ## 下一步
 
-1. 校验并提交本次 S00 文档，单独发 PR；门禁通过后合并，以 GitHub 的实际状态为准。
-2. #143 已按成功 CI 合并；本次文档 PR 编号从 `docs-serverless-stages-portability` 的 PR 查询，不预写自己的 SHA。
-3. S01 只分离业务用例、公共端口、FC/FastAPI 外壳、Mongo/OSS/任务适配与配置装配；不同时迁移视频业务或编写发布流水线。
-4. 先读官方 HTTP/运行时/并发说明；检查两个外壳行为一致、公共层无 SDK/框架依赖、原型回归通过。
-5. S01 结束进入 S02 构建及来源追溯，S03 环境隔离发布具备后再部署云端原型。
+1. 通过 `gh pr view feat-serverless-portable-layers` 查询本轮 PR、head 和完整 CI；描述补充本地/CI 的最终证据后按门禁合并，不预写自己的 SHA。若已合并，不重做 S01。
+2. 当前代码已有 `business/prototype.py`、`ports/probe.py`、通用 HTTP Application、FC/ASGI/Mongo 适配器和 bootstrap。只处理原型真实需要的端口，OSS/任务等随业务阶段加入。
+3. S01 后进入 S02：干净 Git 提交在 Linux 构建并记录来源；本轮 wheel 验证不是 S02 的 Git 来源/不可变产物方案。S03 才做隔离环境自动发布和回退。
+4. S04 验证 FC 冷/热与 Mongo 首连；S05 补齐多值参数/header 等契约。不能以本地线程测试代替 FC 配置/生产网络。
+5. 若 17:00 时外部门禁仍未完成，保存准确状态和下一条命令后收尾，不强行合并或把未跑项目写通过。测试依赖已有的 TestClient 弃用提示仍存在，另见 CI 警告清单，不能混为本阶段失败或声称消失。
 
 ## 检查点规则
 

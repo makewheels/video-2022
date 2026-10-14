@@ -1,8 +1,3 @@
-"""Entry point: video_serverless.fc_handler.handler (FC built-in Python)."""
+"""Stable FC entry point: video_serverless.fc_handler.handler."""
 
-from video_serverless.application import dispatch
-from video_serverless.http import from_fc
-
-
-def handler(event, context):
-    return dispatch(from_fc(event)).fc()
+from video_serverless.adapters.fc import handler as handler

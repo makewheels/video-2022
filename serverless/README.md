@@ -9,6 +9,24 @@
 
 两种部署包分别使用基础依赖和 `web` extra；不能把带 FastAPI 的全依赖原型包当作已经精简过的生产 Handler 包。Python 版本必须选目标地域实际支持的版本并在相同 Linux 环境构建，不上传 Windows 本机依赖到 FC。
 
+## S01 分层（2026-10-14）
+
+稳定入口仍是上面的 Handler 和 `web:app`，实现按下列方向依赖：
+
+```text
+FC / ASGI 外壳 → 通用 HTTP Application → business.Prototype → ports.PublicVideoProbe
+                        ↑                                        ↑
+              bootstrap 配置/装配                  adapters.mongo 具体实现
+```
+
+- `business/` 和 `ports/` 不导入 HTTP、框架、云 SDK 或数据库驱动，只交换普通 Python 结果；依赖边界由测试检查。
+- `application.py` 保留既有路由、鉴权、状态/正文与错误脱敏；`http.py` 只保留通用 Request/Response。FC event/Base64/response envelope 在 `adapters/fc.py`，FastAPI 在 `adapters/asgi.py`。
+- `bootstrap.py` 按进程读取配置并在线程锁保护下装配一次应用；配置变更通过实例替换生效。Mongo 适配器只在首次读时加载驱动并建池，空请求和健康请求不连接数据库。
+- 连接池配置与单条 PUBLIC 视频 ID 投影保持原型原值；Mongo 查询和配置不泄漏到公共用例。实例 ID/序号仅为进程内诊断。
+- 目前只实现 Mongo；替换测试适配器不等于已实现 PostgreSQL。没有 OSS/任务用例，不创建空接口目录。
+
+回归同时覆盖两个外壳、并发首次装配/连接复用、错误脱敏和依赖规则。完整构建 wheel 后，在已安装 wheel 上验证两个稳定入口并运行测试，防止只在源码目录能导入。具体结果见 [验收记录](../docs/requirements/2026-10-14-serverless-backend/verification.md)。
+
 ## 入口与权限
 
 | 路径 | 行为 |

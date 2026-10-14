@@ -6,11 +6,25 @@
 
 - 新增 `serverless/`，共用同一应用的内置 Python Handler 和 FastAPI Web 入口。仅健康检查及受鉴权保护的空请求/Mongo 单条只读诊断，不包含生产业务接口替代实现。
 - Windows Python 3.12.12 实际运行 16 项测试通过，1 项真实 Mongo 查询因无配置 skipped；Ruff、500 行门禁及锁定依赖解析通过。测试覆盖请求 Base64/大小写头、文本 m3u8/302/binary 响应、诊断鉴权和错误脱敏、Mongo 连接池复用及真实本地 HTTP 统计。测试夹具不等于生产 Mongo 查询已通。
-- 两个入口各 20 个新解释器样本：Handler 模块加载 P50 30.793ms / P95 32.212ms，FastAPI P50 642.513ms / P95 781.559ms。**仅本机模块初始化，不含 FC 调度、网络、Mongo 认证或 API 业务，不能当成 FC 响应指标。** 因此优先验证内置 Handler，保留相同应用用于后续云端比较。
+- S01 分层前的原型，两个入口各 20 个新解释器样本：Handler 模块加载 P50 30.793ms / P95 32.212ms，FastAPI P50 642.513ms / P95 781.559ms。**仅本机模块初始化，不含 FC 调度、网络、Mongo 认证或 API 业务，不能当成 FC 响应指标。** 因此优先验证内置 Handler，保留相同应用用于后续云端比较。
 - 通过代理实际读取现有 `/video/getPublicVideoList?skip=0&limit=1`；只保留字段名称/类型/空值形状到 `serverless/contracts/`。它不是完整业务契约，不保存用户内容、ID 或带签名 URL。
 - 本机 Docker daemon 不可用，未启动/修改 Docker；[原型 CI 38510090583](https://github.com/makewheels/video-2022/actions/runs/38510090583) 已实际 success，其中 Linux + 隔离 Mongo 17 passed；API/浏览器 E2E skipped，不等于生产网络或完整迁移验证。
 - Infisical CLI 本机 session 过期，自动登录失败；先前已请求恢复。它不证明 Actions OIDC 失效，后续发布优先核验并复用 CI 取密身份，不重复索取密码或因本机单点停止独立工作。FC/生产 Mongo 仍未验证。
 - 本地 FastAPI TestClient 对 httpx 给出弃用提醒；测试通过，尚未将其当作云端运行时结论。
+
+## S01 原型分层验收（2026-10-14）
+
+用户给定本轮截止为 **2026-10-14 17:00（Asia/Shanghai）**；目标只完成现有原型分层、验证和单独 PR，不扩到 S02/S03 或生产接口迁移。
+
+- 实现 `business/ports/application/http/adapters/bootstrap` 边界；保留 `fc_handler.handler`、`web:app` 两个入口。配置读取集中装配层，业务无环境变量/SDK 依赖；FC envelope 从通用 HTTP 值移出。
+- 同步用例被 FC 直接调用、ASGI 在线程池调用；进程应用和惰性 Mongo 池均通过锁防止首次并发重复创建。未加预热/保活，不改池大小和超时。
+- 本地 Windows Python 3.12.12、锁定原依赖：Ruff 最终 0 错误；wheel 构建并重装到隔离环境通过，用 `-I` 确认从安装目录加载两个稳定入口；native 健康检查未加载 PyMongo/FastAPI。
+- **实际在安装后的 wheel 上跑完整测试：43 passed，真实 Mongo 集成 1 skipped，已有 TestClient 弃用提醒 1 条**。临时环境、缓存和 wheel 均放系统任务临时目录并清理。没有连接生产 Mongo，不能把 skipped 算作通过。
+- 验证覆盖：普通 Python 替代探测适配器/时钟；依赖规则及禁止依赖的反例（含相对导入）；健康/空请求无驱动；两个外壳的鉴权顺序、成功/403/404/405/503、错误脱敏、POST 正文/查询、m3u8/302/二进制；32 个并发调用的唯一序号、应用只创建一次和连接池复用。
+- 上述并发是代码级并发检查，不代表 FC 并发配置、真实吞吐或冷启动已验。真实 Mongo 由 CI 隔离 Mongo 检查；PR 最终结果在对应 PR 描述追加，以 `feat-serverless-portable-layers` 查询，API/浏览器 E2E 跳过必须单列。
+- 官方 HTTP 文档说明内置运行时的重复 header/query 值以逗号合并；现有原型 Request 是字符串字典，ASGI 仍沿用原型的字典转换。这轮不扩大生产协议兼容声明，S05 必须按真实业务补多值参数/头契约，再决定适配。
+
+验收边界：这证明现有原型的用例与外壳可替换，不证明其他云/PG 已实现、生产业务已等价或部署链路已建。S02/S03、云端性能/现有 Mongo 网络及生产切流均未执行。可通过回退本轮提交恢复原型结构，无业务数据/资源回退。
 
 ## 已实际执行
 

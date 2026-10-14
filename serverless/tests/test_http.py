@@ -3,7 +3,8 @@ import json
 
 import pytest
 
-from video_serverless.http import Response, from_fc
+from video_serverless.adapters.fc import from_fc, to_fc
+from video_serverless.http import Response
 
 
 def test_fc_decodes_beacon_body_and_normalized_headers():
@@ -24,16 +25,16 @@ def test_fc_decodes_beacon_body_and_normalized_headers():
 
 def test_hls_remains_text_and_redirect_keeps_location():
     playlist = '#EXTM3U\n#EXT-X-MAP:URI="init.mp4?sign=a"\nsegment.m4s?sign=b\n'
-    result = Response(200, playlist.encode(), {"Content-Type": "application/vnd.apple.mpegurl"}).fc()
+    result = to_fc(Response(200, playlist.encode(), {"Content-Type": "application/vnd.apple.mpegurl"}))
     assert result["body"] == playlist
     assert result["isBase64Encoded"] is False
-    redirect = Response(302, b"", {"Location": "https://oss.example/segment?sign=existing"}).fc()
+    redirect = to_fc(Response(302, b"", {"Location": "https://oss.example/segment?sign=existing"}))
     assert redirect["statusCode"] == 302
     assert redirect["headers"]["Location"].endswith("?sign=existing")
 
 
 def test_binary_valid_utf8_still_uses_base64():
-    result = Response(200, b"abc", {"Content-Type": "application/octet-stream"}).fc()
+    result = to_fc(Response(200, b"abc", {"Content-Type": "application/octet-stream"}))
     assert result["isBase64Encoded"] is True
     assert base64.b64decode(result["body"]) == b"abc"
 
