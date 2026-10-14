@@ -18,7 +18,7 @@ UserReadGoldenHttpContractTest扩展到11项，真实旧Spring HTTP/隔离Mongo�
 
 完整Python235passed/0skipped/1既有warning、Ruff/500行/空白通过。新增10项验证两次身份查询、保留首次上下文、save早于return、黄金401/错误、身份提前异常不落日志、处理器异常最终状态、日志失败保留写/响应与后续请求隔离、精确排除及时间差、可注入域映射。架构门禁覆盖新HTTP层不导入环境/SDK/数据库。
 
-journal目前为测试替代端口，没有实际Python日志落库，也没有将raw token/header持久化到生产。元数据repr隐藏不等于脱敏方案，旧日志安全问题仍须单独处理。
+S06.d6新增[未装配Mongo适配](mongo-request-journal.md)，已在随机隔离库验证普通元数据日志落库；仍没有将raw token/header持久化到生产。元数据repr隐藏不等于脱敏方案，旧日志安全问题仍须单独处理。
 
 ## 尚未通过
 

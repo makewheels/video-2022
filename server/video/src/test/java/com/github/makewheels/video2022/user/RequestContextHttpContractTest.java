@@ -6,6 +6,8 @@ import com.github.makewheels.video2022.BaseIntegrationTest;
 import com.github.makewheels.video2022.springboot.interceptor.requestlog.RequestLog;
 import com.github.makewheels.video2022.springboot.interceptor.requestlog.RequestLogContext;
 import com.github.makewheels.video2022.user.bean.User;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,6 +69,7 @@ class RequestContextHttpContractTest extends BaseIntegrationTest {
     void publicBusinessErrorStillPersistsRequestMetadataWithFirstHeaderValues() throws Exception {
         JSONObject response = body(get("/user/getChannel?userId=fixture-missing&token=fixture-query-token")
                 .header("token", TOKEN, "fixture-second-token")
+                .header("TOKEN", "fixture-third-token")
                 .header("User-Agent", "fixture-first-agent", "fixture-second-agent")
                 .header("X-Forwarded-For", "198.51.100.20")
                 .with(request -> {
@@ -75,6 +78,20 @@ class RequestContextHttpContractTest extends BaseIntegrationTest {
                 }), 200);
         assertEquals(1, response.getIntValue("code"));
         RequestLog log = onlyLog();
+        Document raw = mongoTemplate.getCollection("requestLog").find().first();
+        assertNotNull(raw);
+        assertInstanceOf(ObjectId.class, raw.get("_id"));
+        assertFalse(raw.containsKey("_class"));
+        assertInstanceOf(Long.class, raw.get("timeCost"));
+        assertInstanceOf(java.util.Date.class, raw.get("startTime"));
+        assertInstanceOf(java.util.Date.class, raw.get("endTime"));
+        Document rawRequest = raw.get("request", Document.class);
+        assertFalse(rawRequest.containsKey("body"));
+        assertFalse(rawRequest.containsKey("_class"));
+        assertEquals(TOKEN, rawRequest.get("headerMap", Document.class).getString("token"));
+        assertFalse(rawRequest.get("headerMap", Document.class).containsKey("TOKEN"));
+        Document rawResponse = raw.get("response", Document.class);
+        assertEquals(new Document("httpStatus", 200), rawResponse);
         assertEquals("/user/getChannel", log.getRequestPath());
         assertEquals(log.getRequestPath(), log.getRequest().getPath());
         assertEquals("http://localhost/user/getChannel", log.getRequest().getUrl());

@@ -217,3 +217,7 @@ ProfileUpdates保留旧UTF-16长度与双字段替换，MongoProfileWrites仅更
 ### S06.e2 JSON绑定兼容门槛
 
 旧资料更新HTTP已实测整数/布尔转String、未知字段忽略，容器或非法正文HTTP200/code1且不写资料。Python字符串端口不等于JSON绑定兼容；详见[基线](../requirements/2026-10-14-serverless-backend/profile-json-binding.md)，尚不装配生产更新路由。
+
+### S06.d6 日志存储边界
+
+未装配MongoRequestJournal复用provider，同步写requestLog并保持旧BSON形状。生命周期处理日志失败，不重放业务。仅隔离库验证；特殊header键、实际网络不确定写入与日志安全策略仍为验收门槛，详见[记录](../requirements/2026-10-14-serverless-backend/mongo-request-journal.md)。
