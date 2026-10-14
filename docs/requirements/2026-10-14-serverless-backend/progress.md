@@ -44,7 +44,7 @@
 
 ## 接续步骤
 
-1. #152至#157均已合并，不重复。核对当前 feat-serverless-user-reads 的独立PR/最新head/必要CI，通过后合并S06.a。下一独立阶段先核实原Mongo用户集合、ID转换、null/缺字段构造默认，再实现只读适配器/同一黄金对照；没有真实FC/Mongo生产网络证明，不切流。
+1. #152至#158均已合并，不重复。核对当前test-serverless-user-mongo-contract的独立PR/最新head/必要CI，通过后合并S06.b1。原Mongo用户集合、ID转换、null/缺字段构造默认已由3项隔离Java测试确认，见user-mongo-matrix.md；下一阶段实现Python只读适配器/同一黄金对照。没有真实FC/Mongo生产网络证明，不切流。
 2. 当前 master CI/E2E 已通过，但首次 publish 因 OSS 写权限失败；先解决独立发布身份权限并经审阅/验证，再运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
 3. publish 成功后保存非秘密 receiptKey、commit、ZIP SHA、version、同包晋级/远端回读结果。首次没有前版不能假造回退；第二次可追溯发布后用新版 receiptKey 执行 workflow rollback，实际读回 alias/version 与冒烟。
 4. S03 通过后才开始 S04 FC HTTP/冷热/原生扩展/现有 Mongo 网络；不擅自开放数据库公网、改防火墙、迁库或采购固定资源。无法安全接通则记录阻塞，推进独立 S05 契约台账。
