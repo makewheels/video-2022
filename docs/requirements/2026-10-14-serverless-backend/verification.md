@@ -11,7 +11,7 @@
 - 核查官方 FC HTTP/VPC/数据库/资源上限、消息投递和 PyMongo 连接池资料。资料来源见 audit.md 和候选设计末尾。
 
 - 本地文档检查实际通过：59 个本地链接存在；40 个 Controller 均进入清单；139 处方法映射与源码计数一致，展开为 148 条路径；6 个有效 Scheduled 计数一致；代码围栏配对及 `git diff --check` 通过。
-- 命名 PR #141 查询时：后端/前端/CLI/AI Agent/Android/iOS、质量门禁和构建通过；转码 Worker 尚在运行，API/浏览器 E2E 标记 skipped。本次不能称完整 CI 已通过，也不能将这些 Java/客户端检查当成 Python 迁移验收。
+- 命名 PR #141 的 [CI 38507189852](https://github.com/makewheels/video-2022/actions/runs/38507189852) 最终 success，转码 Worker、后端/前端/CLI/AI Agent/Android/iOS、质量门禁、构建和汇总门禁通过；API/浏览器 E2E 按流水线条件 skipped，不能说这两项实际跑通。PR 已合并为 `188ea817`；这些 Java/客户端检查不等于 Python 迁移验收。
 
 以上检查只证明文档引用及静态盘点完整，不证明云端可用。
 
