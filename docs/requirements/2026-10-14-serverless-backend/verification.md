@@ -164,6 +164,14 @@ S05.c 最终 Linux [CI 38586272991](https://github.com/makewheels/video-2022/act
 
 S05.d #154 最新 a1fcefd1 的 CI 38587849569 success 后已合并为 fc54aee1；S05.e #155 首 f2c184e4 的 CI 38588504819 全部必要job success（PR E2E skipped），同步master文档后等待新head CI，不把旧CI代替新head。
 
+## S03.b OSS 上传前提与候选权限（2026-10-14 23:37）
+
+新增上传前versioning原始XML门禁和精确role/trust配置，未应用IAM。锁定oss2公开解析器对namespaced Enabled/Suspended返回None，真实SDK样本回归证实，因此不用它判断安全状态；仅复用认证请求路径并有界/严格解析官方XML。CPython3.12.13/web+deployment锁定临时环境完整回归 **155 passed / Mongo 1 skipped / 既有warning1**，Ruff/500行通过。首轮暴露状态/namespace假设失败已修正，最后补充属性式未知状态拒绝用例后，focused **25 passed**，Ruff/500行/空白门禁通过。临时环境已清理，无云端发布/身份代入/回退证明。候选角色缺失和OSS 0对象证据在S05.e记录/PR #155中，最新head CI仍需查询。
+
+S05.e #155 最新f8fe8541 的 CI38589941727 全部必要项success后合并12092139，PR E2E skipped。S03.b 上传保护/候选权限已同步该master，未改变IAM或生产bucket，实际云端权限和晋级/回退仍阻塞。
+
 ## S05.f 生产判定与 TTL 索引（2026-10-14 23:55）
 
 JDK21/UTC、真实随机回环端口 mongod、完整 HTTP、EnvironmentService 未mock：ProductionLoginHttpContractTest **3 passed / 0 failed / 0 skipped**，Checkstyle/空白通过。TestPropertySource 将实际读取的配置设prod，同时显式固定回环测试URI/库，清库前确认名称，未读真实生产Mongo。验证码111被拒且保留记录，1234成功清码；实际实体注解索引在隔离库创建/回读：verification_codes、phone唯一、createdAt expireAfterSeconds=600。配置/索引证据不等于TTL后台删除或FC生产部署；并发恢复未验。构建/日志/dbpath均系统临时目录，finally结束进程并清理；CI尚待。
+
+S03.b #156 最新01198f60 的 CI38591679417 全部必要项success，合并8a6b5304，PR E2E skipped；仅工具/候选权限配置验收，真实IAM/发布仍未通过。S05.f #157同步该master后需要新head CI。
