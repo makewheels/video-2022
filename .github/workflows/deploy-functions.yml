@@ -2,7 +2,7 @@ name: 函数部署
 
 # 自建 CPU/GPU 转码函数的镜像构建与 FC 部署。
 # 构建可随时手动触发；FC 部署需要 Infisical 中已配置 FC_DEPLOY_AK_*。
-# 见 docs/requirements/2026-10-gpu-cloudfunction-transcode/PLAN.md P3。
+# 见 docs/requirements/2026-10-07-gpu-cloudfunction-transcode/PLAN.md P3。
 on:
   workflow_dispatch:
     inputs:

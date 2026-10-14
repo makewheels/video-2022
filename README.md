@@ -161,7 +161,7 @@ cd web && npm run dev  # 端口 5173，自动代理 API 到 5022
 
 新上传由 `transcode.pipeline=self-hosted` 使用自建 CPU/GPU 函数：CPU 探测、封面及合规 H.264 重封装，GPU NVENC 负责缩放或重编码，有限失败后允许符合媒体策略的 MPS 兜底一次。CLI LOCAL 继续在本机处理。
 
-新任务只生成适用的 720p/1080p；低于 720p 保持实际尺寸单档。SDR 使用 TS，HEVC/10-bit 使用 fMP4，init 与分片均登记并签名。历史 TS/480p 继续读取，已删除旧函数不再接受新任务。媒体支持、验收和发布证据见 [转码验收记录](docs/requirements/2026-10-gpu-cloudfunction-transcode/verification.md)。
+新任务只生成适用的 720p/1080p；低于 720p 保持实际尺寸单档。SDR 使用 TS，HEVC/10-bit 使用 fMP4，init 与分片均登记并签名。历史 TS/480p 继续读取，已删除旧函数不再接受新任务。媒体支持、验收和发布证据见 [转码验收记录](docs/requirements/2026-10-07-gpu-cloudfunction-transcode/verification.md)。
 
 ---
 

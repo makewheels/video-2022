@@ -1,5 +1,10 @@
 # 变更日志
 
+## docs: 需求目录统一使用年月日（2026-10-14）
+
+- 五个既有需求目录补齐为 `YYYY-MM-DD-<feature>`，按首次引入 Git 的日期命名，保留正文中的历史日期和业务状态。
+- 同步需求索引、贡献规范及仓库内文档、工作流注释、评测来源引用；不修改业务实现或部署行为。
+
 ## fix: 保留MPS单音轨的HLS语言声明（2026-10-13）
 - 实测 MPS 会丢失 TS 的语言标签；使用无 URI 的 muxed AUDIO group 在主列表保留源单音轨 LANGUAGE/CHANNELS。
 - 核查实际 AAC 音轨数与声道，拒绝不合规产物；链接视频读取实际来源，语言标签防属性注入，未知语言不猜。
@@ -39,7 +44,7 @@
 
 ## feat: 自建云函数点播转码与 MPS 兜底（第一阶段实现，默认关闭）
 
-需求与验收：`docs/requirements/2026-10-gpu-cloudfunction-transcode/`；设计：`docs/design/cloud-transcode.md`
+需求与验收：`docs/requirements/2026-10-07-gpu-cloudfunction-transcode/`；设计：`docs/design/cloud-transcode.md`
 
 - 新增 `transcode.pipeline` 开关（默认 legacy，行为零变化）：self-hosted 链路 = 自建 CPU 函数 ffprobe 探测 → 显示短边选档（≥1080 两档 / 否则单档，不放大、无 480p 新档）→ 先持久化全部档位再逐档提交 CPU remux / GPU NVENC
 - 新增 FcTask 任务模型（attempt/deadline/payload 快照/原子认领）、新回调 `/transcode/cloudFunctionCallback`（attempt 校验、晚到/重复回调幂等）、超时恢复定时服务；未知 provider 不再默认成功
@@ -83,7 +88,7 @@
 ---
 
 ## refactor: 项目文件与文档结构重组（[PR #109](https://github.com/makewheels/video-2022/pull/109)）
-- 结构审计：新增 `docs/requirements/2026-08-project-structure-review/`（分析、实施记录）
+- 结构审计：新增 `docs/requirements/2026-08-12-project-structure-review/`（分析、实施记录）
 - 历史计划文档 `docs/plans/` 整体迁入 `docs/归档/plans/`，同步 living 文档与 `.github/skills/` 的路径指引
 - `ai-agent/docs/` 历史文档迁入 `archive/`；删除断线的 Anthropic SDK 文档与两个 orphan 模块，移除 `anthropic` 依赖
 - eval 子系统迁入 `video_agent/evaluation/` 子包；旧 seed 归位 `evals/legacy/`；Langfuse 稳定 ID 不受影响

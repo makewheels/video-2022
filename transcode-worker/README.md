@@ -1,6 +1,6 @@
 # Video GPU Transcode Worker
 
-独立原型，未接入生产。需求及设计见 [需求入口](../docs/requirements/2026-10-gpu-cloudfunction-transcode/README.md)。
+独立原型，未接入生产。需求及设计见 [需求入口](../docs/requirements/2026-10-07-gpu-cloudfunction-transcode/README.md)。
 
 ## 本地媒体验证
 
