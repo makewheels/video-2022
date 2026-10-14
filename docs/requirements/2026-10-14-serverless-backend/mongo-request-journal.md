@@ -14,6 +14,6 @@
 
 RequestCycle 同步调用适配器；日志异常仍保留原响应/已完成业务写，内部只返回固定 failed 状态。失败可能已落库但未收到确认，不宣称零写入，也不重试业务。测试的 provider 抛错仅故障注入，不是真实网络不确定写入。
 
-含点 header 名的 Spring Map 转换与其他特殊 BSON 键仍未完成兼容验证，适配器固定 JournalMappingError 在访问数据库前拒绝。这是未装配代码的验收门槛，不能据此新增生产规则或宣称全部 header 已兼容。日期超范围、驱动网络重试/写关注、平台元数据、完整 HTTP 管线/业务异常仍待；S06 尚未完成。
+S06.d7真实旧HTTP/隔离Mongo已验证：含点header（X.Fixture）使日志保存失败，业务资料更新与HTTP200/code0保留、requestLog为0且旧RequestLogContext残留；此项没有注入Mockito异常。$fixture header可以原名落库并正常清理上下文。Python保留含点名的固定JournalMappingError，并由生命周期转为failed，保持业务成功而不落日志；不把它改为业务400/500。新Python没有ThreadLocal，因此不复制旧上下文残留。其他特殊键仍未穷举，不能宣称全部header兼容。日期超范围、驱动网络重试/写关注、平台元数据、完整 HTTP 管线/业务异常仍待；S06 尚未完成。
 
 回退删除本模块/测试/文档，无生产资源和日志回退。

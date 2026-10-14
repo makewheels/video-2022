@@ -8,7 +8,7 @@ from video_serverless.ports.request_journal import RequestJournalEntry
 
 
 class JournalMappingError(ValueError):
-    """Fixed diagnostic for metadata outside the verified storage contract."""
+    """Fixed diagnostic for metadata rejected by the legacy storage mapping."""
 
 
 class MongoRequestJournal:
@@ -24,7 +24,7 @@ class MongoRequestJournal:
             if name.lower() in seen:
                 continue
             if "." in name:
-                raise JournalMappingError("Dotted header storage is not verified")
+                raise JournalMappingError("Legacy journal cannot store dotted header names")
             seen.add(name.lower())
             headers[name] = value
         request = {"url": metadata.url, "path": metadata.path, "method": metadata.method,
