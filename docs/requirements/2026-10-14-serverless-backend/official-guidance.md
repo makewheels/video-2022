@@ -46,3 +46,5 @@ ZIP 可信摘要保护包内 requirements，sidecar 与包内记录对照。依�
 - [CreateFunctionInput](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-struct-createfunctioninput) 与 [InputCodeLocation](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-struct-inputcodelocation)：支持 OSS 地址或 Base64 ZIP 两种传包方式；平台 checksum 为 CRC64，不是 SHA256。S03 始终先从独立 OSS 前缀回读并校验可信 SHA，再传同一包字节，不扩大 FC 身份的 OSS 权限。
 - [PublishFunctionVersion](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-publishfunctionversion)、[UpdateAlias](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-updatealias)、[GetFunctionCode](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-getfunctioncode)：版本/别名及代码包读取能力支持受控发布、回读和回退；本项目须实际下载校验，不能用 API 退出码当摘要证明。
 - SDK 本地隔离解析：alibabacloud-fc20230330 4.8.3、oss2 2.18.4。SDK 仅用于发布工具，不进入公共业务/API 运行依赖。官方支持 Python 3.12 仍不替代实际地域发布和原生模块验收。
+
+- [ListProvisionConfigs](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-listprovisionconfigs) 支持按函数查预留、定时和跟踪配置；S03 发布/冒烟回读拒绝存在预留配置。官方 CLI 3.4.11 dry-run 和 SDK 只读实测确认 FC3 使用 fcv3.cn-beijing.aliyuncs.com；不能混用 FC2 接入地址。

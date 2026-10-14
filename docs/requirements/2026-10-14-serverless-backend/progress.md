@@ -2,17 +2,18 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-14 18:40，S02 已合并，S03 开始）
+## 当前快照（2026-10-14 19:14，S02 已合并，S03 PR 验收中）
 
 - S02 [#148](https://github.com/makewheels/video-2022/pull/148) 已合并，merge `42a0ebeb0a2865adf3c6e1d8791bb276d970d8e9`；最终 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) success，所有必要 job 通过，API/浏览器 E2E 按 PR 条件 skipped。Linux 原型 79 passed，双包两次可重现、入口与 native 冒烟通过。
-- 当前分支 `feat-serverless-isolated-release`，基于 S02 merge；S03 设计、发布工具、独立 workflow 与回退/真实 SDK 请求序列化测试已实现；本地验证通过，待 S03 PR/CI/实际发布。未发布 FC/OSS。
+- 当前分支 `feat-serverless-isolated-release`，基于 S02 merge；S03 设计、发布工具、独立 workflow 与回退/真实 SDK 请求序列化测试已实现；本地验证通过，[S03 PR #149](https://github.com/makewheels/video-2022/pull/149) 已创建，等待最新 head CI/实际发布。未发布 FC/OSS。
 - 本机 Git 直接访问 GitHub 临时失败，使用当前系统代理 127.0.0.1:7890 的单次 git 参数已 fetch 至合并提交；没有修改全局代理/Git 配置。
 - 实际读取：本机 Infisical session 现在可用；prod `/` 存在 FC_DEPLOY_AK_ID/SECRET，`/oss` 存在数据 OSS 身份；dev 没有这些部署键。部署 RAM 用户 video-2022-fc-deploy 的已有 policy 允许 FC 函数/版本/别名/触发器/并发相关 API，无 OSS 权限。只读 FC 列表没有 serverless API 函数。密钥仅在内存/受限系统临时配置，未写 Git/报告。
 - S03 将由 Actions 复用现有 OIDC，独立 OSS 前缀上传/回读后把已验证 ZIP 字节交给 FC，避免扩大现有 RAM 权限。仍需验证 Actions 权限、实际发布、同包晋级/回退。生产与 Mongo 保持现状。
 - 用户新授权：夜间自主接续至 2026-10-15 08:00；06:05 起在浏览器打开 HTML 汇报。macOS launchd 已注册，同一会话每 15 分钟接续，账户额度不足等待重试；报告独立每 5 分钟更新；配置在 `~/Library/Application Support/video2022-night-run-20261014/`，报告为 `~/Documents/video2022-2026-10-15-夜间进度.html`。注册/语法/限额查询/HTML生成已验，实际触发运行记录查该目录日志。
 - 当前稳定检查点：本地 CPython 3.12.12 + 锁定 web/deployment 组，Ruff 通过、103 passed、真实 Mongo 1 skipped、既有 warning 1，500 行/空白门禁通过。SDK 间接依赖 pycryptodome 4.0.0 仅发布 cp315 wheel，已限制 <4 并锁定可用 3.24.1；API ZIP 仍排除此组。
 - 调度实际修复：18:45 日历已触发，但独立 CLI resume 遇到现有 writer 冲突；改成共享本机服务 Unix WebSocket RPC，18:52 实测原会话 turn/start 送达，工作中 heartbeat 跳过不并行。19:00 实际 tick 正常跳过；限额/线程读回已验。
-- 下一步：创建 S03 PR，等待 Linux/全仓库 CI；全部通过合并后等待该 master CI 再 dispatch 独立发布。运行期不能把 SDK/mock 测试算实际云发布；对 FC ZIP 回读、API 函数鉴权、首次回退及实际配置按真实日志修复，若阻塞则推进 S05。
+- 云端只读检查发现旧 `fc.cn-beijing` 入口返回 InvalidVersion；用官方 CLI 3.4.11 dry-run 回读目标 `fcv3.cn-beijing.aliyuncs.com` 后修正 SDK，并实际得到目标 FunctionNotFound。ListProvisionConfigs 对不存在函数也返回 FunctionNotFound，按不存在处理；创建后及各次冒烟继续确认无预留配置，不忽略 Forbidden。最新本地完整 104 passed/1 skipped/1 warning，随后发布回归 28 passed，Ruff 通过。
+- 下一步：查询 #149 的最新 head CI（首次 38554283709 不代表后续修正 head）；全部必要 CI 通过合并，再等待对应 master CI success 后 dispatch `deploy-serverless.yml` 的 publish。第一次没有前版，不虚构实际回退；需要第二次可追溯发布后用新版 receipt 实测恢复前版。按云端真实错误修复，不因 mock/SDK 校验声称已发布。若 FC/Mongo 网络阻塞则推进 S05。
 
 ## 用户约束（接续不能丢失）
 

@@ -111,3 +111,7 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 测试覆盖不可变对象/可信 SHA、包与 OSS 篡改先于 FC 调用、固定隔离配置、拒绝外部 alias/LATEST/手工同名函数、candidate 失败不晋级、dev 失败恢复前版且冒烟、首次失败不假造旧版、可信 receipt 过期拒绝、未鉴权诊断不能通过、master/CI gate、锁定 SDK 的嵌套 body/流式 InvokeFunction 序列化和错误脱敏。这些 SDK/mock 用例不等于 FC 真实发布已成功。
 
 当前尚无 S03 云端发布证据，PR/Linux CI 和 Actions OIDC/OSS 写权限/FC 运行时、同包晋级、实际回退仍待执行。
+
+- S03 PR [#149](https://github.com/makewheels/video-2022/pull/149) 已创建。首轮 [CI 38554283709](https://github.com/makewheels/video-2022/actions/runs/38554283709) 原型与 packaging job 通过，但后续新 head 仍须实际检查全部必要 CI，不能把旧 head 结果冒充新提交验收。
+- 云端只读 SDK 实测发现旧 FC endpoint 返回 InvalidVersion，官方 CLI 3.4.11 dry-run 回读实际 FC3 地址 `fcv3.cn-beijing.aliyuncs.com`，修正后对隔离目标 GetFunction 实际返回 FunctionNotFound。ListProvisionConfigs 对该不存在函数也返回 FunctionNotFound；创建后/冒烟前必须继续确认无预留实例配置，不能把缺函数当权限失败或反过来。
+- 增加预留配置拒绝/初次发布配置缺失/receipt 保存失败回退回归。修正后的本地完整 104 passed、真实 Mongo 1 skipped、既有 warning 1；再追加故障用例后的发布与 SDK 回归 28 passed，Ruff 通过。尚未上传 OSS、创建/发布 FC。

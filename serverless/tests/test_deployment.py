@@ -57,6 +57,7 @@ class FakeFunctions:
         self.safe_version = "1" if previous else None
         self.concurrency = None
         self.trigger = None
+        self.provisions = []
         if previous:
             old_archive = b"old-fixture"
             self.versions["1"] = (function_body(OLD_COMMIT, digest(old_archive), "s" * 32,
@@ -66,6 +67,9 @@ class FakeFunctions:
 
     def call(self, operation, *args, body=None, query=None):
         self.calls.append((operation, args, body, query))
+        if operation == "list_provision_configs":
+            assert query["functionName"] == FUNCTION
+            return {"provisionConfigs": self.provisions}
         if operation != "create_function":
             assert args[0] == FUNCTION
         if operation == "get_alias":
@@ -293,3 +297,35 @@ def test_ci_requires_latest_successful_github_actions_summary(monkeypatch, concl
     monkeypatch.setattr(execute_release.subprocess, "run", lambda *args, **kwargs: Response())
     with pytest.raises(DeploymentError, match="CI"):
         required_ci(COMMIT)
+
+
+def test_reserved_instances_cannot_be_adopted_or_changed(artifact):
+    functions = FakeFunctions(previous=True)
+    functions.provisions = [{"target": 1}]
+    with pytest.raises(DeploymentError, match="Reserved"):
+        release(functions, FakeObjects(), artifact)
+    assert not any(call[0] in {"create_function", "update_function"} for call in functions.calls)
+
+
+def test_new_function_has_no_provision_configuration_until_creation(artifact):
+    class FirstDeployment(FakeFunctions):
+        def call(self, operation, *args, **kwargs):
+            if operation == 'list_provision_configs' and self.latest is None:
+                raise CloudError('FunctionNotFound')
+            return super().call(operation, *args, **kwargs)
+    functions = FirstDeployment()
+    receipt = release(functions, FakeObjects(), artifact)
+    assert receipt['version'] == '1'
+    assert sum(call[0] == 'list_provision_configs' for call in functions.calls) >= 3
+
+
+def test_receipt_write_failure_restores_previous_dev_release(artifact):
+    class ReceiptFailure(FakeObjects):
+        def immutable_put(self, key, data):
+            if '/receipts/' in key:
+                raise DeploymentError('Receipt storage failure')
+            return super().immutable_put(key, data)
+    functions = FakeFunctions(previous=True)
+    with pytest.raises(DeploymentError, match='Receipt'):
+        release(functions, ReceiptFailure(), artifact)
+    assert functions.aliases['dev'] == '1'

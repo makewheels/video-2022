@@ -23,6 +23,17 @@ from release_plan import (
 NOT_FOUND = {"FunctionNotFound", "AliasNotFound", "TriggerNotFound", "ResourceNotFound", "NotFound"}
 
 
+def verify_no_reservations(functions):
+    try:
+        result = functions.call("list_provision_configs", query={"functionName": FUNCTION, "limit": 100})
+    except CloudError as error:
+        if error.code == "FunctionNotFound":
+            return  # A function that does not exist cannot have a provision configuration.
+        raise
+    if "provisionConfigs" not in result or result["provisionConfigs"] or result.get("nextToken"):
+        raise DeploymentError("Reserved instances or scheduled provision configs are not allowed")
+
+
 def optional(functions, operation, *args, **kwargs):
     try:
         return functions.call(operation, *args, **kwargs)
@@ -60,6 +71,7 @@ def set_alias(functions, alias, version, description):
 
 
 def smoke(functions, version):
+    verify_no_reservations(functions)
     config = functions.call("get_function", FUNCTION, query={"qualifier": version})
     commit, expected_hash = parse_identity(config.get("description"))
     verify_configuration(config, commit, expected_hash)
@@ -125,6 +137,7 @@ def publish(functions, objects, directory: Path, manifest: dict, trusted_commit:
     if digest(archive) != trusted_hash:
         raise DeploymentError("OSS ZIP readback digest mismatch")
     previous = alias_version(functions, "dev")
+    verify_no_reservations(functions)
     existing = optional(functions, "get_function", FUNCTION, query={})
     body = function_body(trusted_commit, trusted_hash, secrets.token_urlsafe(32), base64.b64encode(archive).decode())
     if existing is None:
@@ -138,6 +151,7 @@ def publish(functions, objects, directory: Path, manifest: dict, trusted_commit:
     functions.call("put_concurrency_config", FUNCTION, body={"reservedConcurrency": 2})
     if functions.call("get_concurrency_config", FUNCTION).get("reservedConcurrency") != 2:
         raise DeploymentError("Function concurrency cap readback mismatch")
+    verify_no_reservations(functions)
     wait_ready(functions, trusted_commit, trusted_hash)
     description = identity(trusted_commit, trusted_hash)
     version = functions.call("publish_function_version", FUNCTION, body={"description": description})["versionId"]

@@ -22,7 +22,7 @@ class Functions:
         from alibabacloud_tea_openapi.models import Config
         self.models = models
         self.client = Client(Config(access_key_id=access_key, access_key_secret=secret_key,
-                                    endpoint=f"fc.{REGION}.aliyuncs.com", read_timeout=30000, connect_timeout=10000))
+                                    endpoint=f"fcv3.{REGION}.aliyuncs.com", read_timeout=30000, connect_timeout=10000))
 
     def call(self, operation, *args, body=None, query=None):
         try:
