@@ -69,3 +69,9 @@
 - 当前分支 `test-serverless-login-http-contract`，基于已合并 S05.b `5cf8716c`；S05.c #153 已合并，S05.d #154 已合并为 fc54aee1，最新查询为准。不能合并未完成 CI。
 - S05.e [登录 HTTP 夹具](login-http-fixtures.md) 6 项集成测试+Checkstyle/空白通过，测试是真实隔离 Mongo/完整管线、固定身份；生产配置/TTL清理/并发未验。
 - 下一步收尾 #154 最新必要CI并合并；当前分支已同步 #153 merge，建立独立 S05.e PR，必要CI后合并，#154 合并后的文档同步需保留各阶段真实记录。不要回到已合并 #149/#152 重复实现。
+
+## 当前执行补充（2026-10-14 23:55，S05.f）
+
+- 分支 `test-serverless-production-login-contract`，基于 master12092139，独立补生产判定与TTL索引HTTP夹具；真实临时Mongo/真实EnvironmentService配置绑定，3passed/Checkstyle/空白通过，临时进程/目录清理。
+- S03.b #156 最新01198f60的CI38591679417执行中。已取消被替代旧head e297348c 的同PR CI38591558651，避免旧run占用并阻塞新head；没有取消masterCI或部署，不沿用旧head验收。
+- 下一步：#156最新必要CI通过后合并；当前分支同步最新master、保留证据，建立独立S05.f PR并等必要CI。TTL后台删除/生产部署/并发仍待，不使用生产账号或真实验证码。

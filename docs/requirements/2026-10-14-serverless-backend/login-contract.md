@@ -1,6 +1,6 @@
 # S05.d 登录、旧 token 和观看身份契约台账
 
-状态：源码/调用核对，动态 HTTP 对照和 Python 登录业务未实现；不是 S06 完成。基线 `5cf8716c`，日期 2026-10-14。资料/头像独立后续阶段补齐，不把 UserController 整体称已覆盖。
+状态：源码/调用核对，核心 HTTP/生产判定/索引已用隔离夹具核对（各PR CI状态见进度），Python 登录业务未实现；不是 S06 完成。基线 `5cf8716c`，日期 2026-10-14。资料/头像独立后续阶段补齐，不把 UserController 整体称已覆盖。
 
 ## 六个公开入口
 
@@ -41,3 +41,5 @@ PutTokenInterceptor 作用全部路径；UserService.getUserByRequest 优先非�
 下一独立阶段：复用完整 Java HTTP/真实隔离 Mongo 夹具，覆盖请求复用、正确/错误/过期、非生产111与生产禁用、成功删码、token覆盖/旧token查询、钱包保留、公开用户返回token清空但数据库仍有效、client/session每请求保存与IP/UA；输出脱敏。需使用固定夹具，不索取真实用户凭据或调用生产短信/登录。再据结果实施 S06，受限字段与钱包一致性不能由形状工具替代。
 
 本 PR 只台账与纠正已有接口文档事实；不改认证、生产配置或数据库。回退无运行/数据影响。
+
+S05.f 隔离夹具通过：[生产判定/TTL配置](production-login-fixtures.md) 验证真实EnvironmentService读取prod拒绝111、正确码清除记录；实际Mongo回读唯一phone/600s TTL。TTL后台删除时机、完整生产配置与并发恢复仍未通过。

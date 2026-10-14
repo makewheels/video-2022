@@ -163,3 +163,7 @@ S05.c 最终 Linux [CI 38586272991](https://github.com/makewheels/video-2022/act
 现有 OSS 数据身份通过 oss2.ObjectIterator 完整分页列出 `video-2022-dev/serverless/releases/2eb0065e94795073f87ca8b9bef30d9784990276/`：0对象。没有写入/删除或扩大权限；不推断其他前缀或整个bucket无残留，账单仍未验。独立拟议角色 video-2022-serverless-release-oss 的只读 GetRole 实际 EntityNotExist.Role。身份/网络阻塞仍成立，未部署FC/未执行真实回退。读取环境/缓存/密钥仅在受限系统临时任务与内存中，已清理。
 
 S05.d #154 最新 a1fcefd1 的 CI 38587849569 success 后已合并为 fc54aee1；S05.e #155 首 f2c184e4 的 CI 38588504819 全部必要job success（PR E2E skipped），同步master文档后等待新head CI，不把旧CI代替新head。
+
+## S05.f 生产判定与 TTL 索引（2026-10-14 23:55）
+
+JDK21/UTC、真实随机回环端口 mongod、完整 HTTP、EnvironmentService 未mock：ProductionLoginHttpContractTest **3 passed / 0 failed / 0 skipped**，Checkstyle/空白通过。TestPropertySource 将实际读取的配置设prod，同时显式固定回环测试URI/库，清库前确认名称，未读真实生产Mongo。验证码111被拒且保留记录，1234成功清码；实际实体注解索引在隔离库创建/回读：verification_codes、phone唯一、createdAt expireAfterSeconds=600。配置/索引证据不等于TTL后台删除或FC生产部署；并发恢复未验。构建/日志/dbpath均系统临时目录，finally结束进程并清理；CI尚待。
