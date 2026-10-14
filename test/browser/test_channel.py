@@ -41,7 +41,8 @@ class TestChannelPageStructure:
         loading = page.locator("text=加载中")
         error = page.locator("text=加载频道失败")
         channel_name = page.locator("h1.channel-name")
-        loading.or_(error).or_(channel_name).wait_for(timeout=BASE_TIMEOUT)
+        # Loading and the error toast can coexist; wait for any visible state.
+        loading.or_(error).or_(channel_name).filter(visible=True).first.wait_for(timeout=BASE_TIMEOUT)
 
     def test_header_visible(self, page, base_url):
         """NavBar header is visible on the channel page."""

@@ -194,3 +194,11 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 新增10项Python测试：真实Mongo四份Java黄金响应、缺失/null、ObjectId不回退、数字/类型敏感token、错误传播/惰性、未验证BSON固定消息。完整套件含既有真实Mongo诊断测试；没有用skip代替本地数据库通过。
 - S06.b1 #159 CI38620516871必要项全部通过后合并286c3e7d，PR E2E skipped。#158合并master CI38620293672：浏览器79passed/1failed，频道加载等待locator strict mode匹配2元素；Java部署38620293649 success。最新master CI38622137273仍须查询，不将PR跳过的E2E写成通过。
 - 未装配路由/生产Mongo/FC网络；不支持的BSON仍为兼容缺口而非新增业务规则，详见user-mongo-reads.md。
+
+## 独立频道浏览器等待修复（2026-10-15 03:33）
+
+- master39af8559的CI38620293672实际失败日志显示同一页loading div与错误toast同时存在，or_匹配2元素导致strict mode。后续master286c3e7d的CI38622137273和部署38622137369均success，说明该失败并非每次出现，不掩盖旧结果。
+- 按[Playwright Locator.or_官方说明](https://playwright.dev/python/docs/api/class-locator#locator-or)处理多匹配，并先filter(visible=True)避免隐藏的第一候选挡住可见状态。保留三个候选和原10秒等待，仅改test/browser/test_channel.py，不改业务。
+- 本机Playwright1.58.0+独立headless系统Chrome，实际调用修改前/后的测试方法（导航用固定UTF-8 HTML拦截，不访问生产）：旧写法在loading+toast共存确定复现strict mode；新写法loading/error/content单独、两者共存、首候选隐藏共5种状态通过；无候选仍TimeoutError。此为定位器定向浏览器验证，不是完整应用E2E。AST/500行/空白通过。
+- 临时验证程序首轮回调参数误绑定Request、第二轮缺UTF-8 charset均失败，修正验证程序后上述结果才通过；没有为修复验证程序修改应用或继续放宽断言。依赖/env/缓存均任务系统临时目录并finally清理，浏览器/page均finally关闭，无持久回归脚本。
+- S06.b2 #160 f5640c6a，CI38622565458必要项全通过后合并9fa11d75；PR API/浏览器E2E skipped。其master CI38624255599/部署38624255442仍须按最新查询，不沿用其他head证据。
