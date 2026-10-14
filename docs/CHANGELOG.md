@@ -1,5 +1,10 @@
 # 变更日志
 
+## test: S06.b1 旧用户 BSON 读取契约（2026-10-15）
+
+- 隔离真实Mongo验证缺失与null、String/ObjectId查询、数字转换及token类型敏感性；3项集成测试与Checkstyle通过。
+- 只新增Java基线与适配矩阵，不修改业务，不代表Python数据库适配器或云端网络通过。
+
 ## feat: S06.a 旧用户读取纯用例与 Java 黄金响应对照（2026-10-15）
 
 - 新增普通值读取端口/不可变快照、旧token与公开ID用例及Result编码；保留13字段/null/UTC日期，公开返回清空token而不改原凭据。

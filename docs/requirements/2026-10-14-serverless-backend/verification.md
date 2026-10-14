@@ -181,3 +181,9 @@ S03.b #156 最新01198f60 的 CI38591679417 全部必要项success，合并8a6b5
 新增纯Users/UserReads/UserSnapshot和通用HTTP值编码，按旧token/公开ID读取；返回快照清空token不写库，原始token不规范化，存储异常不伪装为未找到，日期UTC毫秒/13字段/null保留。未装配Mongo适配器或业务路由，原型仍404这些路径，不称完整用户API迁移。
 
 Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，4passed/Checkstyle通过。首对照4项失败来自导出器默认遗漏Map null，已改显式保留并断言回读与实际body一致，重新生成后4份Python对照通过；未改变Java业务或删掉Python空字段。锁定CPython3.12.13 web+deployment临时环境完整 **165 passed / Mongo1 skipped / 既有warning1**，Ruff/500行/空白通过，架构依赖门禁/原接口404保护通过。源码副本/依赖环境/target/dbpath/log均清理，持久的4份合成样本在serverless/contracts/user-read；CI待验，生产/FC网络/完整日志管线未验。
+
+## S06.b1 旧用户原始 BSON 基线（2026-10-15 03:05）
+
+- 基于master39af8559，真实回环独立临时mongod，源码/构建/日志/数据库均系统任务临时目录，finally终止自建进程并清理。JDK21/TZ=UTC，mvn -q -pl video -Dtest=UserMongoReadContractTest（临时Mongo端口/库覆盖）test checkstyle:check：3 tests / 0 failures / 0 errors / 0 skipped，退出0。
+- 缺失字段保留构造默认，显式null清空；ID和数值转换见[user-mongo-matrix.md](user-mongo-matrix.md)。初稿null假设失败，标记逐样本复核后修正断言；未修改运行代码。测试后仅移除诊断输出/改准确方法名。
+- S06.a #158必要CI38597432860全部通过，PR API/浏览器E2E按条件skipped，已合并39af8559；合并master CI38620293672及既有Java部署38620293649当前运行中。本阶段未验证Python适配器/生产数据/FC网络，不重复失败发布。
