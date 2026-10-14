@@ -145,3 +145,5 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 ### S05.c 首次 Linux CI 差异（23:05）
 
 #153 CI 38585341779：后端 630 项，新增 HTTP 夹具 1 项日期失败（预期 11:04:05，实际 03:04:05）。原因是 DateUtil 在此前测试初始化并缓存 UTC 格式器，测试内改 TimeZone 不代表重新初始化进程。移除全局时区修改，按启动 ZoneId 用独立 JDK 日期格式计算期望，保持 UTC JSON 编码不变；正在分别复验 UTC 全后端与北京时间 focused，失败 head 不合并。业务与生产配置未改。
+
+时区修正复验完成：JDK 21、真实临时 Mongo；UTC 下本机全后端 Maven/Surefire 3.5.4 汇总 **551 passed / 0 failed / 0 skipped**，Checkstyle exit 0；另一个北京时间 JVM `-Dtest=PublicVideoHttpContractTest` **5 项 focused 通过**。第二次复用临时 target，汇总目录保留第一轮报告，不能称第二轮也跑了 551。CI 使用其既有命令/测试发现方式，首轮 630 不等同本机 551；新 head Linux 全套仍须通过。所有本次临时文件/进程已清理。

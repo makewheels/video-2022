@@ -7,3 +7,5 @@
 验证目标：匿名成功、缺失/非整数参数 HTTP/body、limit=0、负 skip、字面关键词/空白、PUBLIC 非 READY、PRIVATE/UNLISTED 排除、分页及 total、缺用户/封面/嵌套对象、旧 token、日期编码与历史链接、成功/异常日志确实存在。先运行得到实际证据再更新台账，不能为了让测试绿改变业务或猜定未知响应。
 
 本阶段固定夹具结果仅证明既有 Java 行为，为下一阶段 Python 对照提供基线；不等于 FC/Mongo 生产网络、线上签名、播放器或完整 S05/S07 验收。实际命令和 passed/failed 见 verification.md。回退只删测试/台账，不影响业务运行。
+
+日期夹具不在 JVM 内修改全局时区：JSON Date 固定 UTC，展示字符串按进程启动 ZoneId 核验。独立 UTC/Asia-Shanghai JVM 已复验；DateUtil 已初始化后的时区缓存不通过临时改 TimeZone 绕过。

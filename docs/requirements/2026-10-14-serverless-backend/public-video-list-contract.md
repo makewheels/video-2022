@@ -57,6 +57,6 @@ S05.b 在既有 serverless 测试体系增加离线响应对照工具及意义�
 
 ## S05.c 已实测边界（2026-10-14 22:57）
 
-完整 Java HTTP 管线、真实隔离 Mongo、JDK 21 和 TZ=Asia/Shanghai 下 5 项集成测试通过，详见 [HTTP 夹具](public-http-fixtures.md)。缺 skip/limit、非整数 skip、int 溢出返回 HTTP 200、JSON code=1/message=未知错误/data=null，并实际记录异常日志；不能改成框架默认 422。limit=0 不限条数，skip=-1 读第一页而不报错。Date JSON 为 `2024-01-02T03:04:05.000Z`，展示字符串 `2024-01-02 11:04:05`；保存 watch=null 的夹具从 Mongo 读取后 watchCount=0（嵌套构造默认值），watchId=null。匿名/旧 token/无效 token 的这组夹具成功。成功请求实际写 requestLog。
+完整 Java HTTP 管线、真实隔离 Mongo、JDK 21 和 TZ=Asia/Shanghai 下 5 项集成测试通过，详见 [HTTP 夹具](public-http-fixtures.md)。缺 skip/limit、非整数 skip、int 溢出返回 HTTP 200、JSON code=1/message=未知错误/data=null，并实际记录异常日志；不能改成框架默认 422。limit=0 不限条数，skip=-1 读第一页而不报错。Date JSON 为 `2024-01-02T03:04:05.000Z`，展示字符串在北京时间启动进程为 `2024-01-02 11:04:05`，UTC 启动为 `2024-01-02 03:04:05`（依赖启动时区及格式器缓存）；保存 watch=null 的夹具从 Mongo 读取后 watchCount=0（嵌套构造默认值），watchId=null。匿名/旧 token/无效 token 的这组夹具成功。成功请求实际写 requestLog。
 
 重复参数、负 limit、null createTime、签名 cover 实际权限等仍待后续夹具；这些有限实测不取消其待验标记。

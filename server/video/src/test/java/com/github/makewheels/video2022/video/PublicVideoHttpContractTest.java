@@ -18,7 +18,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -32,19 +34,15 @@ class PublicVideoHttpContractTest extends BaseIntegrationTest {
     private WebApplicationContext context;
 
     private MockMvc mvc;
-    private TimeZone originalZone;
 
     @BeforeEach
     void setUp() {
         cleanDatabase();
-        originalZone = TimeZone.getDefault();
-        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
         mvc = MockMvcBuilders.webAppContextSetup(context).build();
     }
 
     @AfterEach
     void tearDown() {
-        TimeZone.setDefault(originalZone);
         cleanDatabase();
     }
 
@@ -156,7 +154,9 @@ class PublicVideoHttpContractTest extends BaseIntegrationTest {
             assertTrue(row.containsKey(field), field);
             assertNull(row.get(field), field);
         }
-        assertEquals("2024-01-02 11:04:05", row.getString("createTimeString"));
+        String expectedDisplay = Instant.ofEpochMilli(FIXED_TIME).atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        assertEquals(expectedDisplay, row.getString("createTimeString"));
         assertEquals("2024-01-02T03:04:05.000Z", row.getString("createTime"));
         mongoTemplate.remove(user);
         value.setWatch(null);
