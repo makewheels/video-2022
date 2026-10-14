@@ -189,3 +189,7 @@ Profiles共享UserReads，AvatarFiles/AvatarUrls仅传字符串key/ID/有效秒�
 ### S06.c3 头像File读取（未装配）
 
 MongoAvatarFiles复用惰性database provider，对旧file集合有界只读，保持ID转换、key/null和原读取不按owner/type/deleted过滤的行为。真实Java5项/Python201项通过，profile/channel组合已读取真实user+file集合；仅签名替代。其他BSON字段转换、真实OSS签名及完整HTTP/日志仍待，详见[适配边界](../requirements/2026-10-14-serverless-backend/avatar-mongo-reads.md)。
+
+### S06.d1 HTTP身份/日志基线
+
+真实Java HTTP6项确认身份首值与鉴权顺序、401前置拒绝无requestLog、处理后状态与同步落库/清理。旧日志保存原始headers/query含凭据，已记录且仅用隔离合成值验证，不能称已脱敏。Python完整请求作用域/多值元数据/日志与错误尚未装配，不提前暴露业务路由；详见[上下文契约](../requirements/2026-10-14-serverless-backend/request-context-contract.md)。

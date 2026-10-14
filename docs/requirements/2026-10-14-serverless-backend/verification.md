@@ -226,3 +226,11 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod并清理；Python随机独立数据库finally删除，测试只允许无凭据回环standalone。无生产Mongo、OSS或STS请求。
 - #163 headd0ed7984 CI38628826927必要项全通过后合并104d54a7，PR E2E skipped；#162合并master CI38628443843/部署38628443893均success；新master CI38630544702/部署38630544827仍运行中须查最终。
 - 未装配路由/实际签名，未穷尽File其他字段/异常BSON转换，完整HTTP上下文/日志/生产网络未验。见avatar-mongo-reads.md，不能称S06完成。
+
+## S06.d1 HTTP身份上下文与请求日志基线（2026-10-15 04:33）
+
+- 基于master0ca7e09c，JDK21/UTC/真实Spring MockMvc+隔离自建回环mongod，RequestContextHttpContractTest初5项通过，再补日志排除路径的绑定错误验证，最终6tests/0failure/0error/0skip，5.109s，Checkstyle退出0。
+- 覆盖header/query首值与大小写、空串回退/空格不trim、受保护401在RequestLog前拒绝且无data/无日志、公开业务错误与成功POST/畸形JSON最终状态落库、body未捕获、remoteAddr不被本夹具XFF覆盖、两上下文清理、/file/access及/heartbeat/add错误请求跳过保存。全部固定合成身份，未重放生产访问/心跳。
+- 已确认旧日志原样存header/query（含合成token），不是脱敏证明；生产日志/真实凭据未读取。日志保存失败、异步/跨线程、代理/FC元数据和OAuth/admin等路径未验；详见request-context-contract.md。
+- 源码/target/log/dbpath均系统任务临时目录，finally终止自建mongod并清理。运行代码/Python未改，没有无理由重复完整Python套件。
+- #164 head61ff5e55 CI38630860497必要项全通过后合并0ca7e09c，PR E2E skipped。#163合并master CI38630544702/部署38630544827均success；新master CI38632657026/部署38632657032仍运行中须查最终。
