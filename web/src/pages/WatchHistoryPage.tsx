@@ -24,22 +24,21 @@ export default function WatchHistoryPage() {
   }, [navigate]);
 
   useEffect(() => {
+    const loadHistory = async () => {
+      setLoading(true);
+      try {
+        const res = await api.get(`/watchHistory/getMyHistory?page=${page}&pageSize=${pageSize}`);
+        const data = res.data.data;
+        setItems(data.list || []);
+        setTotal(data.total || 0);
+      } catch (err) {
+        console.error('加载观看历史失败', err);
+      } finally {
+        setLoading(false);
+      }
+    };
     loadHistory();
   }, [page]);
-
-  const loadHistory = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get(`/watchHistory/getMyHistory?page=${page}&pageSize=${pageSize}`);
-      const data = res.data.data;
-      setItems(data.list || []);
-      setTotal(data.total || 0);
-    } catch (err) {
-      console.error('加载观看历史失败', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleClear = async () => {
     if (!window.confirm('确定要清除所有观看历史吗？')) return;
@@ -54,11 +53,6 @@ export default function WatchHistoryPage() {
 
   const totalPages = Math.ceil(total / pageSize);
 
-  const formatTime = (timeStr: string) => {
-    if (!timeStr) return '';
-    const d = new Date(timeStr);
-    return d.toLocaleString('zh-CN');
-  };
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
@@ -89,40 +83,7 @@ export default function WatchHistoryPage() {
         <>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {items.map((item, idx) => (
-              <Link
-                key={`${item.videoId}-${idx}`}
-                to={`/watch/${item.videoId}`}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: 16,
-                    padding: 12,
-                    borderRadius: 8,
-                    border: '1px solid #eee',
-                    transition: 'box-shadow 0.2s',
-                  }}
-                >
-                  {item.coverUrl ? (
-                    <img
-                      src={item.coverUrl}
-                      alt={item.title}
-                      style={{ width: 160, height: 90, objectFit: 'cover', borderRadius: 4 }}
-                    />
-                  ) : (
-                    <div style={{ width: 160, height: 90, background: '#f0f0f0', borderRadius: 4 }} />
-                  )}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 8 }}>
-                      {item.title || '未命名视频'}
-                    </div>
-                    <div style={{ color: '#999', fontSize: 13 }}>
-                      观看时间: {formatTime(item.watchTime)}
-                    </div>
-                  </div>
-                </div>
-              </Link>
+              <HistoryRow key={`${item.videoId}-${idx}`} item={item} />
             ))}
           </div>
 
@@ -150,5 +111,49 @@ export default function WatchHistoryPage() {
         </>
       )}
     </div>
+  );
+}
+
+function HistoryRow({ item }: { item: WatchHistoryItem }) {
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return '';
+    const d = new Date(timeStr);
+    return d.toLocaleString('zh-CN');
+  };
+
+  return (
+    <Link
+      to={`/watch/${item.videoId}`}
+      style={{ textDecoration: 'none', color: 'inherit' }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          gap: 16,
+          padding: 12,
+          borderRadius: 8,
+          border: '1px solid #eee',
+          transition: 'box-shadow 0.2s',
+        }}
+      >
+        {item.coverUrl ? (
+          <img
+            src={item.coverUrl}
+            alt={item.title}
+            style={{ width: 160, height: 90, objectFit: 'cover', borderRadius: 4 }}
+          />
+        ) : (
+          <div style={{ width: 160, height: 90, background: '#f0f0f0', borderRadius: 4 }} />
+        )}
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 8 }}>
+            {item.title || '未命名视频'}
+          </div>
+          <div style={{ color: '#999', fontSize: 13 }}>
+            观看时间: {formatTime(item.watchTime)}
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 }

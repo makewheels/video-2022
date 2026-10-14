@@ -1,5 +1,11 @@
 # 变更日志
 
+## fix: 清理 CI Action 与前端 lint 警告（2026-10-14）
+
+- 上传/下载产物及缓存 Action 升级到声明 Node.js 24 的版本，覆盖 CI、部署和发布流程。
+- 拆分 Web/控制台页面状态与视图、聊天流解析和播放器快捷键处理，修复 Hook 依赖；保持接口、页面内容和业务流程。Web 与控制台 lint 0 警告，CI 使用 `--max-warnings 0` 防止回归。
+- 本地系统临时目录中实际通过前端 51 项测试、两端 TypeScript/Vite 构建；新增分块 UTF-8/SSE 和键盘回归，修正现有测试的异步等待。全流水线实际结果及其他日志警告见 [警告清单](reviews/2026-10-14-ci-warnings.md)。
+
 ## fix: 升级 pnpm Action 的 Node.js 运行时（2026-10-14）
 
 - CI 与部署流程的 4 处 `pnpm/action-setup` 从 v4 升级到 v5，使用其 Node.js 24 运行时，消除 Node.js 20 弃用警告；pnpm 10、应用 Node 版本和锁文件保持不变。

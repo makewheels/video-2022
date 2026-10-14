@@ -61,6 +61,7 @@ describe('ChatPage', () => {
 
   it('renders welcome screen with quick actions', async () => {
     renderChat();
+    await screen.findByText(/MiniMax/);
     const title = document.querySelector('.chat-title');
     expect(title?.textContent).toContain('AI 视频助手');
     expect(screen.getByText('我上传了几个视频？')).toBeDefined();

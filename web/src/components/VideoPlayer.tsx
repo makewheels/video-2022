@@ -61,61 +61,42 @@ function initializePlayer(
   return player;
 }
 
-function setupKeyboardShortcuts(
-  player: ReturnType<typeof videojs>,
-): (e: KeyboardEvent) => void {
+function togglePlayback(player: ReturnType<typeof videojs>) {
+  if (player.paused()) player.play();
+  else player.pause();
+}
+
+function toggleFullscreen(player: ReturnType<typeof videojs>) {
+  if (player.isFullscreen()) player.exitFullscreen();
+  else player.requestFullscreen();
+}
+
+function seekBy(player: ReturnType<typeof videojs>, seconds: number) {
+  const time = (player.currentTime() ?? 0) + seconds;
+  player.currentTime(seconds < 0 ? Math.max(0, time) : time);
+}
+
+function setupKeyboardShortcuts(player: ReturnType<typeof videojs>): (e: KeyboardEvent) => void {
+  const actions: Record<string, () => void> = {
+    ' ': () => togglePlayback(player),
+    k: () => togglePlayback(player),
+    ArrowLeft: () => seekBy(player, -5),
+    ArrowRight: () => seekBy(player, 5),
+    j: () => seekBy(player, -10),
+    l: () => seekBy(player, 10),
+    f: () => toggleFullscreen(player),
+    m: () => player.muted(!player.muted()),
+    ArrowUp: () => player.volume(clampVolume((player.volume() ?? 1) + 0.1)),
+    ArrowDown: () => player.volume(clampVolume((player.volume() ?? 1) - 0.1)),
+  };
   return (e: KeyboardEvent) => {
     if (player.isDisposed()) return;
     const tag = (e.target as HTMLElement)?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-
-    switch (e.key) {
-      case ' ':
-      case 'k':
-        e.preventDefault();
-        if (player.paused()) {
-          player.play();
-        } else {
-          player.pause();
-        }
-        break;
-      case 'ArrowLeft':
-        e.preventDefault();
-        player.currentTime(Math.max(0, (player.currentTime() ?? 0) - 5));
-        break;
-      case 'ArrowRight':
-        e.preventDefault();
-        player.currentTime((player.currentTime() ?? 0) + 5);
-        break;
-      case 'j':
-        e.preventDefault();
-        player.currentTime(Math.max(0, (player.currentTime() ?? 0) - 10));
-        break;
-      case 'l':
-        e.preventDefault();
-        player.currentTime((player.currentTime() ?? 0) + 10);
-        break;
-      case 'f':
-        e.preventDefault();
-        if (player.isFullscreen()) {
-          player.exitFullscreen();
-        } else {
-          player.requestFullscreen();
-        }
-        break;
-      case 'm':
-        e.preventDefault();
-        player.muted(!player.muted());
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        player.volume(clampVolume((player.volume() ?? 1) + 0.1));
-        break;
-      case 'ArrowDown':
-        e.preventDefault();
-        player.volume(clampVolume((player.volume() ?? 1) - 0.1));
-        break;
-    }
+    const action = Object.hasOwn(actions, e.key) ? actions[e.key] : undefined;
+    if (!action) return;
+    e.preventDefault();
+    action();
   };
 }
 
