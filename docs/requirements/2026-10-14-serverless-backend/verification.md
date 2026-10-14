@@ -153,3 +153,13 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 核对 UserController/Service/Repository、VerificationCode/User、client/session、环境判定、钱包及 Web/CLI/Android/iOS 调用；六入口的参数、错误码、TTL/旧 token/副作用已记录。纠正已有 API 文档 Redis 描述，未改代码。iOS LoginScreen 的 /user/initClient、/user/initSession 未在当前 Java Controller 声明中找到，Keychain 生命周期也与 Web 存储不同；记录为差异/待动态验，不把源码盘点冒充全端登录通过。git diff --check 通过；本 PR 仅文档，不重复本机全套测试，必要 CI 待验。
 
 S05.c 最终 Linux [CI 38586272991](https://github.com/makewheels/video-2022/actions/runs/38586272991) 对 6d9cdbcb 全部必要 job success，PR API/浏览器 E2E skipped，#153 合并为 7ff9a3f1。S05.e 独立测试分支已保存15cceab6（6项focused通过），不混进本台账PR。
+
+## S05.e 登录与观看身份真实 HTTP 夹具（2026-10-14 23:14）
+
+新增 LoginHttpContractTest，JDK21/UTC、完整 HTTP/真实随机回环端口 Mongo、既有外部 mock：`mvn -q -pl video -Dtest=LoginHttpContractTest -Dspring.mongodb.port=<task-port> -Dspring.mongodb.database=video-login-contract-isolated test checkstyle:check` 实际 **6 passed / 0 failed / 0 skipped**，Checkstyle/空白通过。测试覆盖验证码复用/创建时间、码11/12、错误不消耗、正确登录覆盖旧token/清码/保留12.34钱包余额、非生产111先需记录且创建钱包、公开用户响应token清空但库仍有效、401无data/头优先query、client/session每次持久化IP/UA。所有源码/target/dbpath/log在系统任务临时目录，finally结束mongod并清理；生产判定/TTL删除时机/并发恢复未验，CI待跑。
+
+### S03 对象残留只读核验（23:21）
+
+现有 OSS 数据身份通过 oss2.ObjectIterator 完整分页列出 `video-2022-dev/serverless/releases/2eb0065e94795073f87ca8b9bef30d9784990276/`：0对象。没有写入/删除或扩大权限；不推断其他前缀或整个bucket无残留，账单仍未验。独立拟议角色 video-2022-serverless-release-oss 的只读 GetRole 实际 EntityNotExist.Role。身份/网络阻塞仍成立，未部署FC/未执行真实回退。读取环境/缓存/密钥仅在受限系统临时任务与内存中，已清理。
+
+S05.d #154 最新 a1fcefd1 的 CI 38587849569 success 后已合并为 fc54aee1；S05.e #155 首 f2c184e4 的 CI 38588504819 全部必要job success（PR E2E skipped），同步master文档后等待新head CI，不把旧CI代替新head。

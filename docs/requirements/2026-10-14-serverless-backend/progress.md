@@ -2,14 +2,16 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-14 23:16，S05.c 已合并，S05.d 同步 master，S05.e 已验待 PR）
+## 当前快照（2026-10-14 23:28，S05.d 已合并，S05.e 同步文档待新CI）
 
 - S02 [#148](https://github.com/makewheels/video-2022/pull/148) 已合并，merge `42a0ebeb0a2865adf3c6e1d8791bb276d970d8e9`；最终 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) success，所有必要 job 通过，API/浏览器 E2E 按 PR 条件 skipped。Linux 原型 79 passed，双包两次可重现、入口与 native 冒烟通过。
 - S03 工具 [#149](https://github.com/makewheels/video-2022/pull/149) 已合并，merge `2eb0065e94795073f87ca8b9bef30d9784990276`；最新 head `7fc243c4` 的 [CI 38555210822](https://github.com/makewheels/video-2022/actions/runs/38555210822) success，Linux 原型 107 passed/1 warning，全部必要 job 通过、PR 两个 E2E skipped。云端发布与回退仍未验，不能称 S03 全部完成。
-- 验收文档 [PR #150](https://github.com/makewheels/video-2022/pull/150) 已合并为 `53f275b8`。S05.a [PR #151](https://github.com/makewheels/video-2022/pull/151) 最新 head `20a71229` 的 [CI 38581828673](https://github.com/makewheels/video-2022/actions/runs/38581828673) success 后合并为 `33b1a68f`；PR E2E 按既有条件 skipped。
-- S05.b [PR #152](https://github.com/makewheels/video-2022/pull/152) 最新 head b479d27b 的 CI 38584373965 全部必要 job success 后合并为 `5cf8716c`，PR E2E skipped；本地 25 项离线对照回归/Ruff/500 行通过。
-- S05.c [PR #153](https://github.com/makewheels/video-2022/pull/153) 最新 head `6d9cdbcb` 的 [CI 38586272991](https://github.com/makewheels/video-2022/actions/runs/38586272991) 全部必要 job success 后已合并为 `7ff9a3f1`；PR E2E skipped。首 CI 日期失败已修正，UTC 本机551/北京时间focused5通过，最终 Linux 后端也通过；具体计数/证据保留 verification。
-- 当前分支 `docs-serverless-login-contract`、[PR #154](https://github.com/makewheels/video-2022/pull/154) 已同步 master `7ff9a3f1`， 独立补 S05.d [登录/观看身份台账](login-contract.md)，六个路由/旧token/TTL/钱包副作用和多端已核对；iOS initClient/initSession 路径差异记录为待验证。仅文档，Python 业务未实现。S05.e 独立分支 `test-serverless-login-http-contract` 已 push `15cceab6`，登录HTTP6项/Checkstyle通过，待 #154 合并后同步master/建PR；生产判定/TTL清理/并发未验。
+- 验收文档 [PR #150](https://github.com/makewheels/video-2022/pull/150) 已合并为 `53f275b8`。S05.a [PR #151](https://github.com/makewheels/video-2022/pull/151) 最新 head `20a71229` 的 CI 38581828673 success 后已合并为 `33b1a68f`。
+- S05.b [PR #152](https://github.com/makewheels/video-2022/pull/152)、head `b479d27b` 的 CI 38584373965 全部必要 job success 后已合并为 `5cf8716c`，PR E2E skipped。离线工具本地最终 CPython 3.12.13：25 passed、Ruff/500 行门禁通过，不请求生产/不打印响应值。
+- S05.c [PR #153](https://github.com/makewheels/video-2022/pull/153) 最新 head `6d9cdbcb` 的 CI 38586272991 全部必要 job success 后合并为 `7ff9a3f1`，PR E2E skipped。时区夹具已修复，首轮失败和本机两时区结果保留 verification。
+- S05.d [PR #154](https://github.com/makewheels/video-2022/pull/154) head `a1fcefd1` 的 CI 38587849569 全部必要 job success 后已合并为 `fc54aee1`（PR E2E skipped）；登录契约/iOS路径差异仅台账，未实施生产迁移。
+- 当前 S05.e 分支 `test-serverless-login-http-contract`、[PR #155](https://github.com/makewheels/video-2022/pull/155) 首 head f2c184e4 的 CI 38588504819 全部必要 job success；因 #154 合并产生文档冲突，现已同步 fc54aee1 并保留两阶段证据，待新 head CI；真实隔离Mongo HTTP6 passed/Checkstyle通过；生产判定/TTL清理/并发未验。
+
 
 - 本机 Git 直接访问 GitHub 临时失败，使用当前系统代理 127.0.0.1:7890 的单次 git 参数已 fetch 至合并提交；没有修改全局代理/Git 配置。
 - 实际读取：本机 Infisical session 现在可用；prod `/` 存在 FC_DEPLOY_AK_ID/SECRET，`/oss` 存在数据 OSS 身份；dev 没有这些部署键。部署 RAM 用户 video-2022-fc-deploy 的已有 policy 允许 FC 函数/版本/别名/触发器/并发相关 API，无 OSS 权限。只读 FC 列表没有 serverless API 函数。密钥仅在内存/受限系统临时配置，未写 Git/报告。
@@ -19,7 +21,7 @@
 - 调度实际修复：18:45 日历已触发，但独立 CLI resume 遇到现有 writer 冲突；改成共享本机服务 Unix WebSocket RPC，18:52 实测原会话 turn/start 送达，工作中 heartbeat 跳过不并行。19:00 实际 tick 正常跳过；限额/线程读回已验。
 - 云端只读检查发现旧 `fc.cn-beijing` 入口返回 InvalidVersion；用官方 CLI 3.4.11 dry-run 回读目标 `fcv3.cn-beijing.aliyuncs.com` 后修正 SDK，并实际得到目标 FunctionNotFound。ListProvisionConfigs 对不存在函数也返回 FunctionNotFound，按不存在处理；创建后及各次冒烟继续确认无预留配置，不忽略 Forbidden。最新本地完整 104 passed/1 skipped/1 warning，随后发布回归 28 passed，Ruff 通过。
 - 实际隔离 publish [38577826254](https://github.com/makewheels/video-2022/actions/runs/38577826254) 对 `2eb0065e` 失败：CI 来源门槛、两组 Infisical Actions OIDC 取密、Linux 构建/入口冒烟通过，云操作返回 AccessDenied。只读核对 OSS 身份 video-2022-oss-data-dev 的 Custom policy 仅允许 GetObject/ListObjects/GetObjectMeta/GetBucketInfo，无 PutObject；附加 STS AssumeRole 权限不等于对象写入权限，当前没有配置发布专用 role。FC 身份无 OSS 权限。没有扩权或更换生产身份重试。发布日志没有操作级上下文，不能仅凭错误断定具体被拒绝 API；现有身份缺少上传权限已证实。
-- 发布后只读 GetFunction 返回 FunctionNotFound，隔离 FC 未创建；没有 version/alias/receipt，真实晋级与回退未执行。未完成对象残留清单核验，不宣称 OSS 无残留或零费用。S03/S04 保留阻塞，下一独立阶段为 S05 契约台账。
+- 发布后只读 GetFunction 返回 FunctionNotFound，隔离 FC 未创建；没有 version/alias/receipt，真实晋级与回退未执行。23:21 用现有OSS读取身份实际完整分页列出该 commit 独立前缀，0对象；不扩大为整个bucket无残留或零费用。拟议隔离角色 video-2022-serverless-release-oss 的只读 GetRole 返回 EntityNotExist.Role，未创建/授予权限。S03/S04 保留阻塞，下一独立阶段为 S05 契约台账。
 
 ## 用户约束（接续不能丢失）
 
@@ -39,7 +41,7 @@
 
 ## 接续步骤
 
-1. #152/#153 已合并。先核对 #154 同步 master 后的新 head/完整CI，全部必要项通过后合并。随后切回已推送的 S05.e `test-serverless-login-http-contract`（15cceab6），同步最新master、保留两阶段文档证据、建立独立PR，CI后合并。不重放生产或调用真实短信。
+1. #152/#153/#154 已合并。先核对 #155 同步文档后的最新head/必要CI，通过后合并；不得用旧head CI代替。S03.b 不可变OSS保护/候选role配置在独立分支 fix-serverless-immutable-storage 尚未提交，CloudTransport未提交差异属于该阶段，不混入 #155；切回该分支完成测试/commit/push/独立PR。候选IAM未应用。
 2. 当前 master CI/E2E 已通过，但首次 publish 因 OSS 写权限失败；先解决独立发布身份权限并经审阅/验证，再运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
 3. publish 成功后保存非秘密 receiptKey、commit、ZIP SHA、version、同包晋级/远端回读结果。首次没有前版不能假造回退；第二次可追溯发布后用新版 receiptKey 执行 workflow rollback，实际读回 alias/version 与冒烟。
 4. S03 通过后才开始 S04 FC HTTP/冷热/原生扩展/现有 Mongo 网络；不擅自开放数据库公网、改防火墙、迁库或采购固定资源。无法安全接通则记录阻塞，推进独立 S05 契约台账。
@@ -61,3 +63,9 @@
 - 半成品留在工作分支并标注，不把未跑测试的阶段标完成。CI 等待时不无理由重跑全套或不断提交状态刷新。
 - 接续先 `git status --short`、fetch、查询 PR head/CI；未提交改动先确认归属，禁止 reset/覆盖后再调查。
 - 阶段收尾写“实际成果、剩余项、回退点、下一阶段”；系统临时目录不是唯一工作记录。不承诺额度恢复后平台自动执行，恢复工作以此记录为准。
+
+## 当前执行补充（2026-10-14 23:14，S05.e）
+
+- 当前分支 `test-serverless-login-http-contract`，基于已合并 S05.b `5cf8716c`；S05.c #153 已合并，S05.d #154 已合并为 fc54aee1，最新查询为准。不能合并未完成 CI。
+- S05.e [登录 HTTP 夹具](login-http-fixtures.md) 6 项集成测试+Checkstyle/空白通过，测试是真实隔离 Mongo/完整管线、固定身份；生产配置/TTL清理/并发未验。
+- 下一步收尾 #154 最新必要CI并合并；当前分支已同步 #153 merge，建立独立 S05.e PR，必要CI后合并，#154 合并后的文档同步需保留各阶段真实记录。不要回到已合并 #149/#152 重复实现。
