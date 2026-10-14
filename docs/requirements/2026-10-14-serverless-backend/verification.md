@@ -202,3 +202,11 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 本机Playwright1.58.0+独立headless系统Chrome，实际调用修改前/后的测试方法（导航用固定UTF-8 HTML拦截，不访问生产）：旧写法在loading+toast共存确定复现strict mode；新写法loading/error/content单独、两者共存、首候选隐藏共5种状态通过；无候选仍TimeoutError。此为定位器定向浏览器验证，不是完整应用E2E。AST/500行/空白通过。
 - 临时验证程序首轮回调参数误绑定Request、第二轮缺UTF-8 charset均失败，修正验证程序后上述结果才通过；没有为修复验证程序修改应用或继续放宽断言。依赖/env/缓存均任务系统临时目录并finally清理，浏览器/page均finally关闭，无持久回归脚本。
 - S06.b2 #160 f5640c6a，CI38622565458必要项全通过后合并9fa11d75；PR API/浏览器E2E skipped。其master CI38624255599/部署38624255442仍须按最新查询，不沿用其他head证据。
+
+## S06.c1 资料/频道/头像 HTTP 基线（2026-10-15 03:49）
+
+- 基于master2d9cf7f0，JDK21/UTC，继承BaseIntegrationTest，真实Spring MockMvc/自建回环临时mongod，OSS为既有mock；源码/target/log/dbpath均系统任务临时目录，finally终止自建进程/清理。mvn -q -pl video -Dtest=ProfileAvatarHttpContractTest（临时Mongo端口/库覆盖）test checkstyle:check：6tests/0failures/0errors/0skipped，5.119s，退出0。
+- 覆盖UTF-16长度/无trim/缺失字段清空、受保护资料401、频道与本人资料签名24h/历史回退/不写回token与URL、头像重复创建、凭证类型与owner顺序/31/33/34、完成对象检查与重复通知、现有匿名头像路由缺口。无实际STS或OSS上传，全部固定合成记录。
+- 初稿用模型save(null)构造计数样本时本人资料实际返回0，与原始BSON显式null基线不一致；明确用原始BSON $set null构造后5项通过，再加入匿名路径实际验证，最终6项通过。没有修改业务或降低null断言。
+- #161 head748bdd06 CI38624666455必要项全通过后合并2d9cf7f0，PR E2E skipped。#160合并master CI38624255599和部署38624255442均success；新master CI38626349934/部署38626350038须查最终结果。
+- 见[profile-avatar-contract.md](profile-avatar-contract.md)。本阶段只固化旧接口，Python对应业务/完整请求日志、客户端设备、生产凭证与云网络均未验；S06未完成。
