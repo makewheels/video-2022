@@ -1,0 +1,92 @@
+name: Serverless 隔离发布
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 独立 dev 函数发布或按可信 receipt 回退（禁止生产）
+        type: choice
+        required: true
+        default: publish
+        options: [publish, rollback]
+      receipt_key:
+        description: rollback 时填写原 Actions 摘要的完整 receiptKey
+        type: string
+        required: false
+
+concurrency:
+  group: serverless-isolated-dev-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      checks: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v8.2.0
+        with:
+          version: '0.12.2'
+          python-version: '3.12.12'
+          enable-cache: false
+      - name: 确认当前 master 完整 CI 门禁
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          uv run --no-project --python 3.12.12 python -B - <<'PY'
+          import os, sys
+          sys.path.insert(0, 'serverless/deploy')
+          from execute_release import actions_commit, required_ci
+          from pathlib import Path
+          required_ci(actions_commit(Path.cwd()))
+          PY
+      - name: 从 Infisical 读取既有 FC 部署身份
+        uses: Infisical/secrets-action@v1.0.16
+        with:
+          method: oidc
+          identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
+          domain: ${{ vars.INFISICAL_DOMAIN }}
+          project-slug: video-2022-secrets
+          env-slug: prod
+          secret-path: /
+          recursive: false
+      - name: 从 Infisical 读取既有 OSS 数据身份
+        uses: Infisical/secrets-action@v1.0.16
+        with:
+          method: oidc
+          identity-id: 322a3702-73a7-4bbe-8f55-ebd6376e15d4
+          oidc-audience: ${{ vars.INFISICAL_OIDC_AUDIENCE }}
+          domain: ${{ vars.INFISICAL_DOMAIN }}
+          project-slug: video-2022-secrets
+          env-slug: prod
+          secret-path: /oss
+          recursive: false
+      - name: 从 Git 构建并发布隔离环境（或回退）
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_MODE: ${{ inputs.mode }}
+          RECEIPT_KEY: ${{ inputs.receipt_key }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          uv run --no-project --python 3.12.12 python -B - <<'PY'
+          import os, subprocess, tempfile
+          from pathlib import Path
+          root = Path(tempfile.gettempdir()).resolve()
+          with tempfile.TemporaryDirectory(prefix='video-serverless-release-job-', dir=root) as name:
+              task = Path(name).resolve()
+              assert task.parent == root and task.name.startswith('video-serverless-release-job-')
+              env = dict(os.environ, UV_PROJECT_ENVIRONMENT=str(task / 'venv'),
+                         UV_CACHE_DIR=str(task / 'cache'), PYTHONDONTWRITEBYTECODE='1')
+              subprocess.run(['uv', 'run', '--locked', '--project', 'serverless', '--python', '3.12.12',
+                  '--no-default-groups', '--group', 'deployment', 'python', '-B',
+                  'serverless/deploy/execute_release.py', '--mode', env['RELEASE_MODE'],
+                  '--receipt-key', env.get('RECEIPT_KEY', '')], env=env, check=True)
+          PY

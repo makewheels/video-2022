@@ -95,3 +95,23 @@
 - Web：4,748,028 bytes；SHA256 `3497049befa1cdd322ec76d50cc5c8977a1413d9d48ba870366b0fa855add5a3`；16 项运行依赖，版本清单见 packaging 日志。测试/dev/媒体工具与另一入口源码未入包。
 - Linux 原型 job：Ruff 通过、79 passed（含真实隔离 Mongo）、既有 TestClient warning 1；PR API/浏览器 E2E 依据现有条件 skipped。
 - 此证据对应具体代码提交；本次补写文档不进入构建输入。#148 最终 head 仍须全部必要 CI 通过才合并，最终状态查 PR。没有 FC/生产 Mongo/网络/业务迁移验收，后续 S03/S04 继续。
+
+- S02 最终文档 head `8e0e13d2` 的 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) 实际 success，全部必要 job 通过，API/浏览器 E2E skipped；#148 已合并为 `42a0ebeb`。本阶段实际成果为 Linux 构建来源/回归/双包可重现，FC 发布进入 S03。
+
+## S03 隔离发布（2026-10-14，实施中）
+
+- 实际只读查到本机 Infisical session 已可用、既有部署 RAM 身份允许 FC API、没有 OSS 权限；北京 FC 中尚无 serverless API 函数。检查不等于 Actions OIDC 或新发布已通。
+- SDK 隔离解析/方法签名核对：FC SDK 4.8.3、oss2 2.18.4。设计选择独立 OSS 前缀上传/回读验证，再传同一 ZIP 字节，不扩 FC 身份权限，不注入生产 Mongo。
+- 工具/workflow/回退测试尚未完成；未发布/上传/调用隔离 FC，不宣称 S03 完成。
+
+### S03 本地工具验收
+
+CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、真实 Mongo 1 skipped、既有 TestClient warning 1；500 行门禁和空白检查通过。依赖组解析发现 pycryptodome 4.0.0 只提供 cp315 wheel，限制 <4 后锁定 3.24.1，实际 SDK 安装成功；运行 ZIP 的依赖导出排除 deployment 组。
+
+测试覆盖不可变对象/可信 SHA、包与 OSS 篡改先于 FC 调用、固定隔离配置、拒绝外部 alias/LATEST/手工同名函数、candidate 失败不晋级、dev 失败恢复前版且冒烟、首次失败不假造旧版、可信 receipt 过期拒绝、未鉴权诊断不能通过、master/CI gate、锁定 SDK 的嵌套 body/流式 InvokeFunction 序列化和错误脱敏。这些 SDK/mock 用例不等于 FC 真实发布已成功。
+
+当前尚无 S03 云端发布证据，PR/Linux CI 和 Actions OIDC/OSS 写权限/FC 运行时、同包晋级、实际回退仍待执行。
+
+- S03 PR [#149](https://github.com/makewheels/video-2022/pull/149) 已创建。首轮 [CI 38554283709](https://github.com/makewheels/video-2022/actions/runs/38554283709) 原型与 packaging job 通过，但后续新 head 仍须实际检查全部必要 CI，不能把旧 head 结果冒充新提交验收。
+- 云端只读 SDK 实测发现旧 FC endpoint 返回 InvalidVersion，官方 CLI 3.4.11 dry-run 回读实际 FC3 地址 `fcv3.cn-beijing.aliyuncs.com`，修正后对隔离目标 GetFunction 实际返回 FunctionNotFound。ListProvisionConfigs 对该不存在函数也返回 FunctionNotFound；创建后/冒烟前必须继续确认无预留实例配置，不能把缺函数当权限失败或反过来。
+- 增加预留配置拒绝/初次发布配置缺失/receipt 保存失败回退回归。修正后的本地完整 104 passed、真实 Mongo 1 skipped、既有 warning 1；再追加故障用例后的发布与 SDK 回归 28 passed，Ruff 通过。尚未上传 OSS、创建/发布 FC。
