@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from video_serverless.mongo import read_probe
+from video_serverless.adapters.mongo import MongoPublicVideoProbe
 
 
 @pytest.mark.skipif(
@@ -12,7 +12,12 @@ from video_serverless.mongo import read_probe
     reason="Actual MongoDB connection has not been configured",
 )
 def test_actual_mongo_query():
-    result = read_probe()
-    assert isinstance(result["foundPublicVideo"], bool)
-    assert result["clientSetupMs"] >= 0
-    assert result["readMs"] >= 0
+    probe = MongoPublicVideoProbe(os.environ["MONGODB_URI"], os.environ["MONGODB_DATABASE"])
+    try:
+        result = probe.read_public_video()
+        assert isinstance(result.found_public_video, bool)
+        assert result.client_setup_ms >= 0
+        assert result.read_ms >= 0
+    finally:
+        if probe._client is not None:
+            probe._client.close()

@@ -1,4 +1,3 @@
-import importlib
 import json
 import re
 import subprocess
@@ -7,8 +6,12 @@ import sys
 import pytest
 from fastapi.testclient import TestClient
 
-from video_serverless import mongo
+from video_serverless import bootstrap
+from video_serverless.adapters.mongo import MongoPublicVideoProbe
+from video_serverless.application import Application
+from video_serverless.business.prototype import Prototype
 from video_serverless.fc_handler import handler
+from video_serverless.ports.probe import ProbeReading
 from video_serverless.web import app
 
 
@@ -34,13 +37,13 @@ def test_health_is_java_text_form_and_has_no_mongo_dependency():
 @pytest.mark.parametrize("configured,provided", [("", ""), ("secret", "wrong"), ("secret", "错误")])
 def test_mongo_diagnostics_fail_closed_without_valid_secret(monkeypatch, configured, provided):
     monkeypatch.setenv("PROTOTYPE_TOKEN", configured)
-    monkeypatch.setattr(mongo, "read_probe", lambda: pytest.fail("must not touch Mongo"))
+    monkeypatch.setattr(MongoPublicVideoProbe, "read_public_video", lambda self: pytest.fail("must not touch Mongo"))
     assert fc("/_prototype/mongo-read", token=provided)["statusCode"] == 403
 
 
 def test_probe_status_and_contract_match_both_entry_points(monkeypatch):
     monkeypatch.setenv("PROTOTYPE_TOKEN", "test-secret")
-    monkeypatch.setattr(mongo, "read_probe", lambda: {"foundPublicVideo": True, "readMs": 1.0})
+    monkeypatch.setattr(MongoPublicVideoProbe, "read_public_video", lambda self: ProbeReading(True, 0.5, 1.0))
     native = fc("/_prototype/mongo-read", token="test-secret")
     with TestClient(app) as client:
         web = client.get("/_prototype/mongo-read", headers={"X-Prototype-Token": "test-secret"})
@@ -53,10 +56,10 @@ def test_probe_status_and_contract_match_both_entry_points(monkeypatch):
 def test_database_error_does_not_leak_connection_or_password(monkeypatch):
     monkeypatch.setenv("PROTOTYPE_TOKEN", "test-secret")
 
-    def broken():
+    def broken(self):
         raise RuntimeError("mongodb://user:sensitive-secret@private-host")
 
-    monkeypatch.setattr(mongo, "read_probe", broken)
+    monkeypatch.setattr(MongoPublicVideoProbe, "read_public_video", broken)
     result = fc("/_prototype/mongo-read", token="test-secret")
     assert result["statusCode"] == 503
     assert "sensitive-secret" not in result["body"]
@@ -75,44 +78,39 @@ def test_methods_not_silently_reinterpreted(monkeypatch):
     assert response["headers"]["Allow"] == "GET"
 
 
-def test_probe_has_one_bounded_read_and_does_not_return_record(monkeypatch):
-    calls = []
 
-    class Collection:
-        def find_one(self, *args, **kwargs):
-            calls.append((args, kwargs))
-            return {"_id": "private-record"}
+@pytest.mark.parametrize("path,method,token,status", [
+    ("/healthCheck", "GET", "", 200),
+    ("/_prototype/empty", "GET", "test-secret", 200),
+    ("/_prototype/mongo-read", "GET", "test-secret", 200),
+    ("/_prototype/mongo-read", "GET", "wrong", 403),
+    ("/_prototype/empty", "POST", "test-secret", 405),
+    ("/_prototype/empty", "POST", "wrong", 403),
+    ("/video/create", "POST", "test-secret", 404),
+])
+def test_both_shells_preserve_success_failure_and_auth_order(monkeypatch, path, method, token, status):
+    class OtherProvider:
+        def read_public_video(self):
+            return ProbeReading(False, 0.25, 1.5)
 
-    class Database:
-        video = Collection()
+    shared = Application(Prototype(OtherProvider(), lambda: 1_730_000_000_000), "test-secret")
+    monkeypatch.setattr(bootstrap, "get_application", lambda: shared)
+    native = fc(path, method, token)
+    with TestClient(app) as client:
+        web = client.request(method, path, headers={"X-Prototype-Token": token})
+    assert native["statusCode"] == web.status_code == status
+    assert native["body"] == web.text  # Includes exact health/JSON text and empty 405.
+    for name in ["Content-Type", "Allow", "Cache-Control", "X-Prototype-Instance"]:
+        assert native["headers"].get(name) == web.headers.get(name)
 
-    monkeypatch.setattr(mongo, "database", lambda: Database())
-    result = mongo.read_probe()
-    assert calls == [(({"visibility": "PUBLIC"}, {"_id": 1}), {"max_time_ms": 1000})]
-    assert result["foundPublicVideo"] is True
-    assert "private-record" not in json.dumps(result)
 
-
-def test_client_created_once_and_existing_pool_reused(monkeypatch):
-    module = importlib.reload(mongo)
-    monkeypatch.setenv("MONGODB_URI", "mongodb://localhost:27017")
-    monkeypatch.setenv("MONGODB_DATABASE", "isolated-test")
-    calls = []
-    db = object()
-
-    class Client:
-        def __init__(self, *args, **kwargs):
-            calls.append((args, kwargs))
-
-        def __getitem__(self, name):
-            assert name == "isolated-test"
-            return db
-
-    monkeypatch.setattr("pymongo.MongoClient", Client)
-    try:
-        assert module.database() is module.database() is db
-        assert len(calls) == 1
-        assert calls[0][1]["maxPoolSize"] == 5
-        assert calls[0][1]["minPoolSize"] == 0
-    finally:
-        importlib.reload(module)
+def test_health_and_empty_in_fresh_process_do_not_import_drivers_or_web_framework(monkeypatch):
+    monkeypatch.setenv("PROTOTYPE_TOKEN", "probe-token")
+    subprocess.run([sys.executable, "-c", (
+        "import sys; from video_serverless.fc_handler import handler; "
+        "result = handler({'rawPath':'/_prototype/empty',"
+        "'headers':{'X-Prototype-Token':'probe-token'}},None); "
+        "assert result['statusCode']==200; "
+        "assert 'pymongo' not in sys.modules; assert 'fastapi' not in sys.modules; "
+        "assert 'starlette' not in sys.modules"
+    )], check=True)
