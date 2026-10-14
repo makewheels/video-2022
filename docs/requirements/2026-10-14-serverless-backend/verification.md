@@ -274,3 +274,9 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 端口普通datetime/字符串，无框架或数据库类型；具体适配使用既有provider/连接池，不新增应用重试。JSON类型绑定/非法编码/完整鉴权日志与不确定写入仍未验，见profile-update.md。当前入口/业务路由未变。
 - 源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod并清理，测试随机库finally删除。无生产用户或OSS调用。
 - #169 headf85cae57 CI38641932763最后Worker完成后必要项全通过合并af2c068f，PR E2E skipped；#168合并master CI38641368850/Java部署38641369038均success。#167部署两次失败仍为历史证据，不能改写成成功；后续新部署已通过。新master CI38642888158/部署38642888150仍运行中须查最终。
+
+## S06.e2 资料更新JSON绑定（2026-10-15 06:04）
+
+- 基于masterca38fea1，JDK21/UTC/真实Spring MockMvc与自建回环隔离Mongo，ProfileAvatarHttpContractTest 8tests/0failure/0error/0skip，4.942s，Checkstyle退出0。新增2项测试覆盖整数/布尔与未知字段、7种非法容器/正文输入，断言HTTP200/code1/未知错误及昵称/简介/updateTime不变。未改运行代码，未无理由重跑Python套件。
+- 源码/target/log/dbpath均系统任务临时目录，finally终止自建mongod并清理。无生产请求/真实OSS。数值词法/其他类型/编码未验证，见profile-json-binding.md。
+- #170 CI38643314470必要项全通过后合并ca38fea1；#169合并master CI38642888158/部署38642888150均success；新master CI38644545566/部署38644545434待查最终。

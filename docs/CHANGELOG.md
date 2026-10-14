@@ -1,5 +1,10 @@
 # 变更日志
 
+## test: S06.e2 资料更新 JSON 绑定基线（2026-10-15）
+
+- 固化旧HTTP整数/布尔转字符串及未知字段忽略，容器/非法正文失败且不更新资料。
+- 真实Spring/隔离Mongo8项与Checkstyle通过；未改运行逻辑或装配Python业务路由。
+
 ## feat: S06.e1 资料更新用例与 Mongo 适配（2026-10-15）
 
 - 保持UTF-16长度、双字段替换/null和旧ObjectId更新语义，仅改昵称/简介/updateTime，不upsert或重试业务。
