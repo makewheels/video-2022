@@ -2,12 +2,15 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-14 22:51，S05.a 已合并，S05.b 离线对照工具已验待 CI）
+## 当前快照（2026-10-14 23:13，S05.b 已合并，S05.c CI 等待，S05.d 台账已核对）
 
 - S02 [#148](https://github.com/makewheels/video-2022/pull/148) 已合并，merge `42a0ebeb0a2865adf3c6e1d8791bb276d970d8e9`；最终 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) success，所有必要 job 通过，API/浏览器 E2E 按 PR 条件 skipped。Linux 原型 79 passed，双包两次可重现、入口与 native 冒烟通过。
 - S03 工具 [#149](https://github.com/makewheels/video-2022/pull/149) 已合并，merge `2eb0065e94795073f87ca8b9bef30d9784990276`；最新 head `7fc243c4` 的 [CI 38555210822](https://github.com/makewheels/video-2022/actions/runs/38555210822) success，Linux 原型 107 passed/1 warning，全部必要 job 通过、PR 两个 E2E skipped。云端发布与回退仍未验，不能称 S03 全部完成。
 - 验收文档 [PR #150](https://github.com/makewheels/video-2022/pull/150) 已合并为 `53f275b8`。S05.a [PR #151](https://github.com/makewheels/video-2022/pull/151) 最新 head `20a71229` 的 [CI 38581828673](https://github.com/makewheels/video-2022/actions/runs/38581828673) success 后合并为 `33b1a68f`；PR E2E 按既有条件 skipped。
-- 当前独立分支 `feat-serverless-contract-comparison` 实施 S05.b：[离线响应对照](response-comparison.md) 不发网络请求、不打印响应值，仅有限归一化 coverUrl 签名时间/摘要。CPython 3.12.13 锁定环境实际 25 passed，Ruff/500 行/空白门禁通过，临时环境已清理。动态 Java HTTP 黄金夹具和业务实现未完成，S05/S07 不标完成。
+- S05.b [PR #152](https://github.com/makewheels/video-2022/pull/152) 最新 head b479d27b 的 CI 38584373965 全部必要 job success 后合并为 `5cf8716c`，PR E2E skipped；本地 25 项离线对照回归/Ruff/500 行通过。
+- S05.c [PR #153](https://github.com/makewheels/video-2022/pull/153) 最新 head `6d9cdbcb`：首 CI 日期夹具失败已修复，移除 JVM 内临时时区改动，UTC 本机后端551与北京时间focused5通过。新 CI 已完成必要 job（含后端）success，仍等待转码GPU构建；最新状态先查 Git/PR。未合并，不能把本机和首次失败 head 算 CI 通过。
+- 当前分支 `docs-serverless-login-contract` 基于 master `5cf8716c` 独立补 S05.d [登录/观看身份台账](login-contract.md)，六个路由/旧token/TTL/钱包副作用和多端已核对；iOS initClient/initSession 路径差异记录为待验证。仅文档，动态登录及 Python 业务未实现。
+
 - 本机 Git 直接访问 GitHub 临时失败，使用当前系统代理 127.0.0.1:7890 的单次 git 参数已 fetch 至合并提交；没有修改全局代理/Git 配置。
 - 实际读取：本机 Infisical session 现在可用；prod `/` 存在 FC_DEPLOY_AK_ID/SECRET，`/oss` 存在数据 OSS 身份；dev 没有这些部署键。部署 RAM 用户 video-2022-fc-deploy 的已有 policy 允许 FC 函数/版本/别名/触发器/并发相关 API，无 OSS 权限。只读 FC 列表没有 serverless API 函数。密钥仅在内存/受限系统临时配置，未写 Git/报告。
 - S03 将由 Actions 复用现有 OIDC，独立 OSS 前缀上传/回读后把已验证 ZIP 字节交给 FC，避免扩大现有 RAM 权限。仍需验证 Actions 权限、实际发布、同包晋级/回退。生产与 Mongo 保持现状。
@@ -36,7 +39,7 @@
 
 ## 接续步骤
 
-1. 核对 Git 未提交改动和远端，查询 `feat-serverless-contract-comparison` 的 PR/最新 head/必要 CI，通过后合并 S05.b。随后独立分支做 S05.c Java 受控 HTTP 黄金夹具，验证参数错误/日期/null/历史链接等实际 HTTP 形状，复用后端既有隔离 Mongo 测试，不重放生产带日志副作用链路。
+1. #152 已合并。先核对 #153 修正后的最新 head/完整CI，通过后合并。S05.d 分支 `docs-serverless-login-contract` 同步最新 master 时保留两阶段文档证据，必要 CI 全通过才合并。下一独立阶段为登录/验证码/身份受控动态夹具（见登录台账）；不重放生产或调用真实短信。
 2. 当前 master CI/E2E 已通过，但首次 publish 因 OSS 写权限失败；先解决独立发布身份权限并经审阅/验证，再运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
 3. publish 成功后保存非秘密 receiptKey、commit、ZIP SHA、version、同包晋级/远端回读结果。首次没有前版不能假造回退；第二次可追溯发布后用新版 receiptKey 执行 workflow rollback，实际读回 alias/version 与冒烟。
 4. S03 通过后才开始 S04 FC HTTP/冷热/原生扩展/现有 Mongo 网络；不擅自开放数据库公网、改防火墙、迁库或采购固定资源。无法安全接通则记录阻塞，推进独立 S05 契约台账。
