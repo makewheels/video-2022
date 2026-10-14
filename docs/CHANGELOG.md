@@ -1,5 +1,10 @@
 # 变更日志
 
+## docs: 接续 S03 工具合并与云端验收（2026-10-14）
+
+- #149 最新 CI 全部必要检查通过，Linux 原型 107 项通过；记录 merge、PR E2E skipped 和 master 发布门槛。
+- master CI 含 API/浏览器 E2E 实际通过，Actions 首次发布因 OSS 身份无写权限失败；记录 RAM 只读证据、FC 未创建、回退未执行及 S05 接续，不把工具测试冒充云端验收。
+
 ## feat: S03 隔离环境发布与可验证回退工具（2026-10-14）
 
 - 新增 master/CI 限定的独立 dev 发布 workflow，固定函数/OSS 前缀；不可变对象回读、FC ZIP 摘要回读、同版本晋级及可信 receipt 回退，不提供生产参数。

@@ -115,3 +115,15 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 - S03 PR [#149](https://github.com/makewheels/video-2022/pull/149) 已创建。首轮 [CI 38554283709](https://github.com/makewheels/video-2022/actions/runs/38554283709) 原型与 packaging job 通过，但后续新 head 仍须实际检查全部必要 CI，不能把旧 head 结果冒充新提交验收。
 - 云端只读 SDK 实测发现旧 FC endpoint 返回 InvalidVersion，官方 CLI 3.4.11 dry-run 回读实际 FC3 地址 `fcv3.cn-beijing.aliyuncs.com`，修正后对隔离目标 GetFunction 实际返回 FunctionNotFound。ListProvisionConfigs 对该不存在函数也返回 FunctionNotFound；创建后/冒烟前必须继续确认无预留实例配置，不能把缺函数当权限失败或反过来。
 - 增加预留配置拒绝/初次发布配置缺失/receipt 保存失败回退回归。修正后的本地完整 104 passed、真实 Mongo 1 skipped、既有 warning 1；再追加故障用例后的发布与 SDK 回归 28 passed，Ruff 通过。尚未上传 OSS、创建/发布 FC。
+
+### S03 工具 PR 最终结果（2026-10-14 22:00 接续）
+
+#149 最新 head `7fc243c4` 的 [CI 38555210822](https://github.com/makewheels/video-2022/actions/runs/38555210822) 实际 success：Linux 原型 107 passed、既有 warning 1；packaging 和全部必要 job 通过。PR API/浏览器 E2E skipped，未冒充通过。已合并为 `2eb0065e94795073f87ca8b9bef30d9784990276`。
+
+合并后的 [master CI 38576710009](https://github.com/makewheels/video-2022/actions/runs/38576710009) 全部 success，API/浏览器 E2E 实际运行通过；既有 Java 部署 38576709748 success。
+
+### S03 首次 Actions 发布实测（22:08–22:16）
+
+[隔离 publish 38577826254](https://github.com/makewheels/video-2022/actions/runs/38577826254) 使用 merge `2eb0065e`：来源 CI 门槛、FC/OSS 两组 Infisical OIDC 取密、Linux 构建和 Handler 冒烟成功；云操作 AccessDenied，workflow failed。
+
+只读 RAM 调查确认 OSS 数据身份 video-2022-oss-data-dev 只允许 GetObject/ListObjects/GetObjectMeta/GetBucketInfo，不允许 PutObject；没有配置专用发布 role。未修改 IAM，也未换高权限身份重试。日志只含错误码，具体拒绝 API 尚无操作级证据。FC GetFunction 实际返回 FunctionNotFound；没有创建隔离函数、版本或别名，也没有真实晋级/回退通过证据。OSS 残留和账单未核实，不称零费用。S03 未全部完成，S04 未部署/未验；先推进独立 S05。
