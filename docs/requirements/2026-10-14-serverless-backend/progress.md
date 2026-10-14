@@ -7,6 +7,7 @@
 - S01 #147 已合并，回退点 `4338dfb9`；本机 fetch 后切到 `feat-serverless-release-provenance`，从交接 `7facb75a` 接续。
 - S02 补齐 requirements 包内绑定、依赖 METADATA 对照、坏 ZIP 拒绝及有意义的回归测试；新增独立 Linux packaging job，构建真实 PR head 两次并隔离入口/native 冒烟，纳入汇总门禁。
 - 本地 macOS CPython 3.12.12 / uv 0.11.7：Ruff 通过；77 passed、真实 Mongo 1 skipped、既有 TestClient warning 1；语法/空白与 500 行门禁通过。pyproject/lock-only 快照 export 实测通过。
+- PR [#148](https://github.com/makewheels/video-2022/pull/148) 已创建；首轮 packaging 因直接 python 使用 runner 默认解释器失败，已改为 uv 显式选择 3.12.12，待新 head 检查。
 - Linux 固定 CPython 3.12.12 / uv 0.12.2 的构建与 CI 仍待运行。当前提交用 `git log -1` 查询；PR/CI 从本分支查询。未通过前不合并、不宣称 S02 完成。
 - 生产仍为 Java；未切流、未改 Mongo、未上传 OSS、未创建/发布 FC。
 - 下一步：push、创建 S02 PR，观察 packaging 和全部必要 CI；失败按真实日志修复。通过后记录双包摘要/大小和 counts，再按既有授权合并。S03 才做隔离发布。

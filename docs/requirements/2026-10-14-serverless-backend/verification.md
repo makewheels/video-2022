@@ -81,3 +81,5 @@
 - 新测试覆盖可信 SHA/commit、脏树/未跟踪拒绝、Git blob/双包白名单、源码符号链接、危险/重复/坏 ZIP、固定元数据、requirements 与依赖清单篡改、变更源码、依赖注入/输出边界及 CLI 明确拒绝。
 - 独立 Linux job 固定 CPython 3.12.12 / uv 0.12.2，待 CI 验证两次 ZIP 摘要及隔离 Handler/ASGI、BSON/Pydantic native 导入。真实 Mongo 仍由原型 job 检查；API/浏览器 E2E 是否跳过单列。
 - 未部署 FC，不证明 Debian 11 ABI/实际 FC 网络、性能或生产业务等价。S02 回退到 S01 `4338dfb9` 不涉及业务/数据回退。
+
+- 首轮 [CI 38548555728](https://github.com/makewheels/video-2022/actions/runs/38548555728) packaging 在 host gate 被拒绝：setup-uv 设置 UV_PYTHON 不保证裸 python 版本。改用 `uv run --no-project --python 3.12.12`，保留严格 gate，后续结果待运行。

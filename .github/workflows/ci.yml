@@ -30,7 +30,7 @@ jobs:
       - name: Build twice, verify provenance, and smoke both isolated ZIPs
         env:
           PYTHONDONTWRITEBYTECODE: '1'
-        run: python -B serverless/release/check_reproducible.py
+        run: uv run --no-project --python 3.12.12 python -B serverless/release/check_reproducible.py
 
   serverless-prototype-tests:
     name: Serverless API 原型测试
