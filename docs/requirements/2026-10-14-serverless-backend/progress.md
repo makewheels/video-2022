@@ -2,7 +2,7 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-15 00:20，S05.f 已合并，S06.a 用户读取库已验待CI）
+## 当前快照（2026-10-15 03:05，S06.a 已合并，S06.b1 BSON基线已本地验证）
 
 - S02 [#148](https://github.com/makewheels/video-2022/pull/148) 已合并，merge `42a0ebeb0a2865adf3c6e1d8791bb276d970d8e9`；最终 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) success，所有必要 job 通过，API/浏览器 E2E 按 PR 条件 skipped。Linux 原型 79 passed，双包两次可重现、入口与 native 冒烟通过。
 - S03 工具 [#149](https://github.com/makewheels/video-2022/pull/149) 已合并，merge `2eb0065e94795073f87ca8b9bef30d9784990276`；最新 head `7fc243c4` 的 [CI 38555210822](https://github.com/makewheels/video-2022/actions/runs/38555210822) success，Linux 原型 107 passed/1 warning，全部必要 job 通过、PR 两个 E2E skipped。云端发布与回退仍未验，不能称 S03 全部完成。
@@ -13,8 +13,8 @@
 - S05.e [PR #155](https://github.com/makewheels/video-2022/pull/155) 最新 head f8fe8541 的 CI38589941727 全部必要job success后合并为12092139；PR E2E skipped。登录HTTP6项/Checkstyle已过，生产判定/TTL清理/并发未验。
 - S03.b [PR #156](https://github.com/makewheels/video-2022/pull/156) 01198f60 的 CI38591679417 全部必要job success后已合并8a6b5304（PR E2E skipped）。候选role/trust仅配置，未创建/代入，真实发布回退仍阻塞。
 - S05.f [PR #157](https://github.com/makewheels/video-2022/pull/157) a656f79c 的 CI38594738912 全部必要job success后合并fbb8502a（PR E2E skipped）。真实生产判定配置/索引夹具3passed，未验证实际生产配置/TTL删除时机/并发。
-- 当前独立分支 `feat-serverless-user-reads` 基于 fbb8502a 推进 S06.a [旧用户读取能力](user-reads.md)：纯端口/用例/HTTP值编码，4份固定Java HTTP与Python对照已过，完整Python165passed/Mongo1skipped，Java4passed/Checkstyle/Ruff/500行/空白通过。没有Mongo用户适配器或应用业务路由，不能称用户API已在FC迁移。
-
+- S06.a #158已在全部必要CI38597432860成功后合并39af8559（PR E2E skipped）；[旧用户读取能力](user-reads.md)：纯端口/用例/HTTP值编码，4份固定Java HTTP与Python对照已过，完整Python165passed/Mongo1skipped，Java4passed/Checkstyle/Ruff/500行/空白通过。没有Mongo用户适配器或应用业务路由，不能称用户API已在FC迁移。
+- 当前分支`test-serverless-user-mongo-contract`基于39af8559推进S06.b1：[原始BSON矩阵](user-mongo-matrix.md)，Java隔离Mongo3项/Checkstyle通过；未实现Python适配器。后续先收尾本PR CI，再S06.b2；03:02实时额度已重置至4%已用，沿用本会话，不使用额外额度。
 
 - 本机 Git 直接访问 GitHub 临时失败，使用当前系统代理 127.0.0.1:7890 的单次 git 参数已 fetch 至合并提交；没有修改全局代理/Git 配置。
 - 实际读取：本机 Infisical session 现在可用；prod `/` 存在 FC_DEPLOY_AK_ID/SECRET，`/oss` 存在数据 OSS 身份；dev 没有这些部署键。部署 RAM 用户 video-2022-fc-deploy 的已有 policy 允许 FC 函数/版本/别名/触发器/并发相关 API，无 OSS 权限。只读 FC 列表没有 serverless API 函数。密钥仅在内存/受限系统临时配置，未写 Git/报告。
@@ -44,7 +44,7 @@
 
 ## 接续步骤
 
-1. #152至#157均已合并，不重复。核对当前 feat-serverless-user-reads 的独立PR/最新head/必要CI，通过后合并S06.a。下一独立阶段先核实原Mongo用户集合、ID转换、null/缺字段构造默认，再实现只读适配器/同一黄金对照；没有真实FC/Mongo生产网络证明，不切流。
+1. #152至#158均已合并，不重复。核对当前test-serverless-user-mongo-contract的独立PR/最新head/必要CI，通过后合并S06.b1。原Mongo用户集合、ID转换、null/缺字段构造默认已由3项隔离Java测试确认，见user-mongo-matrix.md；下一阶段实现Python只读适配器/同一黄金对照。没有真实FC/Mongo生产网络证明，不切流。
 2. 当前 master CI/E2E 已通过，但首次 publish 因 OSS 写权限失败；先解决独立发布身份权限并经审阅/验证，再运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
 3. publish 成功后保存非秘密 receiptKey、commit、ZIP SHA、version、同包晋级/远端回读结果。首次没有前版不能假造回退；第二次可追溯发布后用新版 receiptKey 执行 workflow rollback，实际读回 alias/version 与冒烟。
 4. S03 通过后才开始 S04 FC HTTP/冷热/原生扩展/现有 Mongo 网络；不擅自开放数据库公网、改防火墙、迁库或采购固定资源。无法安全接通则记录阻塞，推进独立 S05 契约台账。
