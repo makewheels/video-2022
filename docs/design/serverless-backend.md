@@ -231,3 +231,7 @@ S06.d7实测收窄日志门槛：含点header使旧日志失败但不改变业�
 ### S06.e3 JSON值绑定（未装配）
 
 普通decode_profile保留小数/指数原始词法、每次重复字段的类型检查与后值语义，并拒绝旧HTTP实测的尾随内容。只针对已验UTF-8；编码/极端输入和完整更新HTTP尚未验，详见[解码边界](../requirements/2026-10-14-serverless-backend/profile-json-decoder.md)。
+
+### S06.f2 更新HTTP隔离组合
+
+测试专用ASGI POST链路组合身份/JSON/业务校验/真实Mongo更新与日志，旧成功/长度/绑定/401响应及实际更新次数通过；仅已验UTF-8、进程内TestClient，不修改现有入口，详见[组合证据](../requirements/2026-10-14-serverless-backend/profile-update-http.md)。
