@@ -201,3 +201,7 @@ RequestMetadata保留有序重复headers/参数与原query/peer信息，Identity
 ### S06.d3 ASGI多值采集（未装配）
 
 独立转换器从原始scope保留重复headers、原URI/query和peer，通过锁定Starlette multi_items得到有序参数；未支持表单合并/缺原始字段时明确失败。真实TestClient及完整Python225项通过，但现有入口未调用、FC/代理/完整HTTP尚未验，详见[采集边界](../requirements/2026-10-14-serverless-backend/asgi-request-metadata.md)。
+
+### S06.d4 日志故障语义
+
+真实Spring/隔离Mongo与指定方法异常注入3项确认：日志afterCompletion save失败不会撤销成功响应或业务写，但旧日志ThreadLocal清理被跳过；身份查询提前失败则未进入日志。未改运行代码；Python请求生命周期需保留业务提交/响应边界并可靠清理局部状态，不能假设日志失败应重试业务。详见[故障基线](../requirements/2026-10-14-serverless-backend/request-journal-failure.md)。

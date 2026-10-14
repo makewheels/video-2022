@@ -250,3 +250,10 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 原型入口/HTTP Request/FC未改，表单合并/裸问号区别、代理/IPv6/真实服务器/FC尚未验；详见asgi-request-metadata.md。不能称完整HTTP或网络通过。
 - 自建回环Mongo支持原回归，随机测试库finally删除；env/cache/dbpath/log/pytest均系统任务临时目录，finally终止进程并清理，无生产数据/OSS调用。
 - #166 head063a0e1d CI38635180591必要项全通过后合并2017e3e5，PR E2E skipped；#165合并master CI38634877692/部署38634877557均success；新master CI38636953114/部署38636952960仍运行中须查最终。
+
+## S06.d4 日志持久化故障语义（2026-10-15 05:17）
+
+- 基于master175ff4eb，JDK21/UTC/真实Spring MockMvc与独立回环Mongo，MockitoSpyBean仅对save(RequestLog)或findOne(Query,User.class)注入固定IllegalStateException；其他业务操作真实执行。RequestJournalFailureHttpContractTest：3tests/0failure/0error/0skip，4.635s，Checkstyle退出0；500行/空白通过。
+- 日志afterCompletion save失败仍HTTP200/code0，业务更新保留，无requestLog文档；UserHolder清空但RequestLogContext残留，同线程下一次401仍保留同一对象。身份查询在日志前失败则HTTP200/code1/未知错误，无日志/两个上下文空。afterEach明确清理残留和隔离库，避免污染其他测试。
+- 此为方法故障注入，不是真实网络故障/不确定写入或生产日志审计。只用合成身份，未改运行代码，未重跑无关Python完整套件。源码/target/log/dbpath均系统任务临时目录，finally终止自建mongod并清理。
+- #167 head4f8d788f CI38637312136必要项全通过后合并175ff4eb，PR E2E skipped；#166合并master CI38636953114/部署38636952960均success；新master CI38639010341/部署38639008711仍运行中须查最终。详见request-journal-failure.md。
