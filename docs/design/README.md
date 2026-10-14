@@ -11,4 +11,5 @@
 
 ## 文档
 
+- [Python Serverless 后端候选设计](serverless-backend.md)（提案，未实现；现行生产架构未变）
 - [Video Agent 评测体系](video-agent-evaluation.md)
