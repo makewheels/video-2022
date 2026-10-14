@@ -108,6 +108,31 @@ class ProfileAvatarHttpContractTest extends BaseIntegrationTest {
     }
 
     @Test
+    void jsonScalarFieldsCoerceToStringsAndUnknownPropertiesAreIgnored() throws Exception {
+        JSONObject result = body(post("/user/updateProfile").header("token", TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"nickname\":123,\"bio\":true,\"ignored\":{\"nested\":1}}"), 200);
+        assertEquals(0, result.getIntValue("code"));
+        assertEquals("123", stored().getNickname());
+        assertEquals("true", stored().getBio());
+        assertEquals(TOKEN, stored().getToken());
+    }
+
+    @Test
+    void jsonContainersAndMissingBodiesFailBeforeAnyProfileWrite() throws Exception {
+        for (String json : new String[]{"{\"nickname\":[]}", "{\"bio\":{}}",
+                "[]", "\"text\"", "null", "", "{"}) {
+            JSONObject result = body(post("/user/updateProfile").header("token", TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON).content(json), 200);
+            assertEquals(1, result.getIntValue("code"), json);
+            assertEquals("未知错误", result.getString("message"), json);
+            assertEquals("原昵称", stored().getNickname(), json);
+            assertEquals("原简介", stored().getBio(), json);
+            assertEquals(new Date(0), stored().getUpdateTime(), json);
+        }
+    }
+
+    @Test
     void channelAndMyProfileSignAvatarFor24HoursWithoutPersistingResponseChanges() throws Exception {
         User user = stored();
         user.setAvatarFileId("fixture-avatar");

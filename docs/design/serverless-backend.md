@@ -213,3 +213,7 @@ RequestCycle保留首次身份、受保护第二次查询、401形状、处理�
 ### S06.e1 资料更新（未装配）
 
 ProfileUpdates保留旧UTF-16长度与双字段替换，MongoProfileWrites仅更新nickname/bio/updateTime，不upsert/不回退String ID、不接生产路由。JavaHTTP14+Mongo6项、Python247项通过，写入仅随机隔离库；JSON绑定/完整鉴权日志与真实网络仍待，详见[更新边界](../requirements/2026-10-14-serverless-backend/profile-update.md)。
+
+### S06.e2 JSON绑定兼容门槛
+
+旧资料更新HTTP已实测整数/布尔转String、未知字段忽略，容器或非法正文HTTP200/code1且不写资料。Python字符串端口不等于JSON绑定兼容；详见[基线](../requirements/2026-10-14-serverless-backend/profile-json-binding.md)，尚不装配生产更新路由。
