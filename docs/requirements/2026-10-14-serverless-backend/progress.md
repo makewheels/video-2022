@@ -2,11 +2,11 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-14 22:02，S03 工具已合并，等待 master CI）
+## 当前快照（2026-10-14 22:16，S03 工具已合并，隔离发布权限阻塞）
 
 - S02 [#148](https://github.com/makewheels/video-2022/pull/148) 已合并，merge `42a0ebeb0a2865adf3c6e1d8791bb276d970d8e9`；最终 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) success，所有必要 job 通过，API/浏览器 E2E 按 PR 条件 skipped。Linux 原型 79 passed，双包两次可重现、入口与 native 冒烟通过。
 - S03 工具 [#149](https://github.com/makewheels/video-2022/pull/149) 已合并，merge `2eb0065e94795073f87ca8b9bef30d9784990276`；最新 head `7fc243c4` 的 [CI 38555210822](https://github.com/makewheels/video-2022/actions/runs/38555210822) success，Linux 原型 107 passed/1 warning，全部必要 job 通过、PR 两个 E2E skipped。云端发布与回退仍未验，不能称 S03 全部完成。
-- 当前记录分支 `docs-serverless-release-validation`，基于上述 merge；正在等待 [master CI 38576710009](https://github.com/makewheels/video-2022/actions/runs/38576710009) 全部通过，才 dispatch 隔离 publish。此次 GitHub merge 同时触发既有 Java 部署 workflow 38576709748；未手工操作服务器。
+- 当前记录分支 `docs-serverless-release-validation`，基于上述 merge；[master CI 38576710009](https://github.com/makewheels/video-2022/actions/runs/38576710009) 已全部 success，包含实际运行的 API/浏览器 E2E。此次 merge 触发的既有 Java 部署 workflow 38576709748 也 success；未手工操作服务器。
 - 本机 Git 直接访问 GitHub 临时失败，使用当前系统代理 127.0.0.1:7890 的单次 git 参数已 fetch 至合并提交；没有修改全局代理/Git 配置。
 - 实际读取：本机 Infisical session 现在可用；prod `/` 存在 FC_DEPLOY_AK_ID/SECRET，`/oss` 存在数据 OSS 身份；dev 没有这些部署键。部署 RAM 用户 video-2022-fc-deploy 的已有 policy 允许 FC 函数/版本/别名/触发器/并发相关 API，无 OSS 权限。只读 FC 列表没有 serverless API 函数。密钥仅在内存/受限系统临时配置，未写 Git/报告。
 - S03 将由 Actions 复用现有 OIDC，独立 OSS 前缀上传/回读后把已验证 ZIP 字节交给 FC，避免扩大现有 RAM 权限。仍需验证 Actions 权限、实际发布、同包晋级/回退。生产与 Mongo 保持现状。
@@ -14,7 +14,8 @@
 - 当前稳定检查点：本地 CPython 3.12.12 + 锁定 web/deployment 组，Ruff 通过、103 passed、真实 Mongo 1 skipped、既有 warning 1，500 行/空白门禁通过。SDK 间接依赖 pycryptodome 4.0.0 仅发布 cp315 wheel，已限制 <4 并锁定可用 3.24.1；API ZIP 仍排除此组。
 - 调度实际修复：18:45 日历已触发，但独立 CLI resume 遇到现有 writer 冲突；改成共享本机服务 Unix WebSocket RPC，18:52 实测原会话 turn/start 送达，工作中 heartbeat 跳过不并行。19:00 实际 tick 正常跳过；限额/线程读回已验。
 - 云端只读检查发现旧 `fc.cn-beijing` 入口返回 InvalidVersion；用官方 CLI 3.4.11 dry-run 回读目标 `fcv3.cn-beijing.aliyuncs.com` 后修正 SDK，并实际得到目标 FunctionNotFound。ListProvisionConfigs 对不存在函数也返回 FunctionNotFound，按不存在处理；创建后及各次冒烟继续确认无预留配置，不忽略 Forbidden。最新本地完整 104 passed/1 skipped/1 warning，随后发布回归 28 passed，Ruff 通过。
-- 下一步：核验 master CI 38576710009 对 `2eb0065e` 的 success 后 dispatch `deploy-serverless.yml` 的 publish。#149 已合并，不重复合并或重写。第一次没有前版，不虚构实际回退；需要第二次可追溯发布后用新版 receipt 实测恢复前版。按云端真实错误修复，不因 mock/SDK 校验声称已发布。若 FC/Mongo 网络阻塞则推进 S05。
+- 实际隔离 publish [38577826254](https://github.com/makewheels/video-2022/actions/runs/38577826254) 对 `2eb0065e` 失败：CI 来源门槛、两组 Infisical Actions OIDC 取密、Linux 构建/入口冒烟通过，云操作返回 AccessDenied。只读核对 OSS 身份 video-2022-oss-data-dev 的 Custom policy 仅允许 GetObject/ListObjects/GetObjectMeta/GetBucketInfo，无 PutObject；附加 STS AssumeRole 权限不等于对象写入权限，当前没有配置发布专用 role。FC 身份无 OSS 权限。没有扩权或更换生产身份重试。发布日志没有操作级上下文，不能仅凭错误断定具体被拒绝 API；现有身份缺少上传权限已证实。
+- 发布后只读 GetFunction 返回 FunctionNotFound，隔离 FC 未创建；没有 version/alias/receipt，真实晋级与回退未执行。未完成对象残留清单核验，不宣称 OSS 无残留或零费用。S03/S04 保留阻塞，下一独立阶段为 S05 契约台账。
 
 ## 用户约束（接续不能丢失）
 
@@ -27,7 +28,7 @@
 
 ## 当前阻塞与独立工作
 
-- 先前交接的本机 Infisical session 阻塞已通过本次实际读取解除；仍须实测新 workflow 的 Actions OIDC 和资源权限，不用本机可读取替代 Actions 证明。
+- 本机 Infisical session 和 Actions OIDC 已实际成功；OSS 发布写权限阻塞已证实。后续需可审阅的隔离前缀最小权限发布身份/role 配置及 Actions 验证，不能把读取身份升级为全 bucket 写身份。当前不擅自改 RAM、不反复重试同一已知无写权限身份，先推进 S05。
 - 现有 Mongo 的跨云访问、最小权限和真实 FC 冷启动未验；不擅自开放公网/改防火墙/搬库。
 - 本机 Docker daemon 不可用；CI 隔离 Mongo 已验证，不能因此声称生产网络可达。
 - Mongo 写库/投递间隙尚未解决；S01/S02/S05 可以先推进，不绕过恢复要求。
@@ -35,7 +36,7 @@
 ## 接续步骤
 
 1. 核对 Git 未提交改动和远端，查询当前记录分支、#149 合并 SHA 与 master CI 38576710009；S01/S02/S03 工具已合并，不重复实施。
-2. master 必要 CI 与 API/浏览器 E2E 全通过后，运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
+2. 当前 master CI/E2E 已通过，但首次 publish 因 OSS 写权限失败；先解决独立发布身份权限并经审阅/验证，再运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
 3. publish 成功后保存非秘密 receiptKey、commit、ZIP SHA、version、同包晋级/远端回读结果。首次没有前版不能假造回退；第二次可追溯发布后用新版 receiptKey 执行 workflow rollback，实际读回 alias/version 与冒烟。
 4. S03 通过后才开始 S04 FC HTTP/冷热/原生扩展/现有 Mongo 网络；不擅自开放数据库公网、改防火墙、迁库或采购固定资源。无法安全接通则记录阻塞，推进独立 S05 契约台账。
 5. 所有时间判断用实际北京时间。06:05 后运行调度报告并打开浏览器；07:45 后不开始大阶段，08:00 停止并保存检查点。额度不足时先保存、push，再由定时接续重试。
@@ -46,7 +47,7 @@
 - Python 代码包：https://help.aliyun.com/zh/functioncompute/deploy-a-code-package-1 ；第三方依赖：https://help.aliyun.com/zh/functioncompute/install-third-party-dependencies-for-a-function 。依赖需与目标 Linux/架构匹配，不能上传 Windows wheel。
 - uv 导出：https://docs.astral.sh/uv/concepts/projects/export/ 。候选 wheel target 为 `x86_64-manylinux_2_28`。
 - 本机 Docker daemon 不可用；远程查询候选 `python:3.12.12-slim-bullseye` 镜像返回 not found。因此未验证 Debian 11 容器；Linux runner 冒烟也不能替代 FC/Debian 11 实测。若需要容器，先确认真实存在且合适的镜像，不假称已通过。
-- S03/S04 才核实云资源、网络/权限、真实冷/热与 Mongo 首连。没有部署或费用发生；manifest 是完整性记录，不是数字签名，后续发布必须从受控 CI 获得可信摘要。
+- S03/S04 才核实云资源、网络/权限、真实冷/热与 Mongo 首连。隔离发布已尝试但 FC 未创建；未核实 OSS 残留或账单，不能断言零费用。manifest 是完整性记录，不是数字签名，后续发布必须从受控 CI 获得可信摘要。
 - S03 工具回退点为 S02 merge `42a0ebeb`；运行时回退以受控 receipt 的前版本为准，首次没有旧版本。现役 Java 业务未替换或切流。
 
 ## 检查点规则

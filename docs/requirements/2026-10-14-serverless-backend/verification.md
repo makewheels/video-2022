@@ -120,4 +120,10 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 
 #149 最新 head `7fc243c4` 的 [CI 38555210822](https://github.com/makewheels/video-2022/actions/runs/38555210822) 实际 success：Linux 原型 107 passed、既有 warning 1；packaging 和全部必要 job 通过。PR API/浏览器 E2E skipped，未冒充通过。已合并为 `2eb0065e94795073f87ca8b9bef30d9784990276`。
 
-合并后的 [master CI 38576710009](https://github.com/makewheels/video-2022/actions/runs/38576710009) 与既有 Java 部署 38576709748 正在运行；隔离发布须等待该 master 完整 CI。当前未上传/创建/发布 FC，没有云端同包晋级或回退证明。
+合并后的 [master CI 38576710009](https://github.com/makewheels/video-2022/actions/runs/38576710009) 全部 success，API/浏览器 E2E 实际运行通过；既有 Java 部署 38576709748 success。
+
+### S03 首次 Actions 发布实测（22:08–22:16）
+
+[隔离 publish 38577826254](https://github.com/makewheels/video-2022/actions/runs/38577826254) 使用 merge `2eb0065e`：来源 CI 门槛、FC/OSS 两组 Infisical OIDC 取密、Linux 构建和 Handler 冒烟成功；云操作 AccessDenied，workflow failed。
+
+只读 RAM 调查确认 OSS 数据身份 video-2022-oss-data-dev 只允许 GetObject/ListObjects/GetObjectMeta/GetBucketInfo，不允许 PutObject；没有配置专用发布 role。未修改 IAM，也未换高权限身份重试。日志只含错误码，具体拒绝 API 尚无操作级证据。FC GetFunction 实际返回 FunctionNotFound；没有创建隔离函数、版本或别名，也没有真实晋级/回退通过证据。OSS 残留和账单未核实，不称零费用。S03 未全部完成，S04 未部署/未验；先推进独立 S05。
