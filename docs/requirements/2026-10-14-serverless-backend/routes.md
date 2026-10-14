@@ -6,6 +6,8 @@
 
 只覆盖两个 Java 模块源码中的映射声明；`/`、网关 `/w?v=`、`/console/*`、静态资源以及框架生成的 OpenAPI/Swagger 等入口需要结合路由/配置另行验收。Controller 的依赖业务和迁移判断见 [audit.md](audit.md)。
 
+S05 按业务补契约：已核对 [公共视频列表](public-video-list-contract.md) 的源码及各端调用，动态边界和对照工具仍待验。
+
 下表不列参数、鉴权和响应类型，不能作为完整 API 契约。实施时必须补请求/响应黄金样本和各端调用覆盖；多种 Content-Type 接受范围不能仅凭路径列表判断。
 
 ## CommentController
