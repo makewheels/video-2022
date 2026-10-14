@@ -59,3 +59,7 @@ ZIP 可信摘要保护包内 requirements，sidecar 与包内记录对照。依�
 ## S06.b2 用户Mongo读取（2026-10-15）
 
 [PyMongo日期](https://www.mongodb.com/docs/languages/python/pymongo-driver/current/data-formats/dates-and-times/)：默认naive UTC，集合CodecOptions可指定aware UTC。[ObjectId](https://pymongo.readthedocs.io/en/stable/api/bson/objectid.html)提供有效性判断与构造；旧Spring ID查询优先级、缺失/null默认和数字转换来自真实Java仓库基线，不由这些官方文档推断。项目选择普通快照、复用惰性池/有界find_one；未装配HTTP、未验证生产数据类型/FC网络。
+
+## S06.d3 ASGI元数据（2026-10-15）
+
+[ASGI HTTP规范](https://asgi.readthedocs.io/en/latest/specs/www.html)区分decoded path与可选raw_path、raw query bytes、可选client及有序重复header值。项目选原始scope+锁定Starlette multi_items保留多值，未知字段/表单合并先显式失败；此转换尚未装配。Starlette Requests页面此次502未读成功，不引用为已核实依据；本地实际接口/Starlette TestClient8项和完整Python225项通过，不替代真实代理或FC证明。

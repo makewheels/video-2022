@@ -197,3 +197,7 @@ MongoAvatarFiles复用惰性database provider，对旧file集合有界只读，�
 ### S06.d2 请求作用域普通值（未装配）
 
 RequestMetadata保留有序重复headers/参数与原query/peer信息，IdentityResolver按旧首值/空值语义返回局部不可变身份，无全局/ThreadLocal缓存。真实Java7项/Python217项通过；空header无参数仍可能匹配旧空token已记录，未改生产规则。现有FC/ASGI外壳未接多值转换/日志/鉴权门槛，不能据此启用业务路由，详见[请求身份能力](../requirements/2026-10-14-serverless-backend/request-identity.md)。
+
+### S06.d3 ASGI多值采集（未装配）
+
+独立转换器从原始scope保留重复headers、原URI/query和peer，通过锁定Starlette multi_items得到有序参数；未支持表单合并/缺原始字段时明确失败。真实TestClient及完整Python225项通过，但现有入口未调用、FC/代理/完整HTTP尚未验，详见[采集边界](../requirements/2026-10-14-serverless-backend/asgi-request-metadata.md)。
