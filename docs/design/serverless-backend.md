@@ -185,3 +185,7 @@ UserReads端口仅按token/ID读取不可变标准值快照，Users纯用例保�
 ### S06.c2 资料与频道纯读取（未装配）
 
 Profiles共享UserReads，AvatarFiles/AvatarUrls仅传字符串key/ID/有效秒数，返回普通快照；本人资料清空返回token/动态头像，频道保留8字段和null计数补0。真实Java黄金HTTP9项和5份新夹具对照通过；真实Mongo仅验证用户读取组合，头像端口仍替代。具体适配器、完整HTTP上下文/日志/错误与路由仍未装配，详见[用例边界](../requirements/2026-10-14-serverless-backend/profile-channel-reads.md)。
+
+### S06.c3 头像File读取（未装配）
+
+MongoAvatarFiles复用惰性database provider，对旧file集合有界只读，保持ID转换、key/null和原读取不按owner/type/deleted过滤的行为。真实Java5项/Python201项通过，profile/channel组合已读取真实user+file集合；仅签名替代。其他BSON字段转换、真实OSS签名及完整HTTP/日志仍待，详见[适配边界](../requirements/2026-10-14-serverless-backend/avatar-mongo-reads.md)。

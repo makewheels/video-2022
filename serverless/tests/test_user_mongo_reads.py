@@ -11,6 +11,7 @@ from pymongo import MongoClient
 from pymongo.uri_parser import parse_uri
 from test_user_reads import ROOT, comparison
 
+from video_serverless.adapters.mongo_avatar_files import AvatarFileMappingError, MongoAvatarFiles
 from video_serverless.adapters.mongo_users import MongoUserReads, UserMappingError
 from video_serverless.business.profiles import Profiles
 from video_serverless.business.users import Users
@@ -43,6 +44,7 @@ def isolated_database():
 @pytest.fixture
 def database(isolated_database):
     isolated_database.user.delete_many({})
+    isolated_database.file.delete_many({})
     return isolated_database
 
 
@@ -122,22 +124,21 @@ def test_numeric_conversion_and_type_sensitive_token_match_java(database):
 
 
 @pytest.mark.parametrize("case", ["profile-signed", "profile-fallback", "channel-signed", "channel-fallback"])
-def test_real_mongo_user_reads_compose_with_profile_ports_and_java_http_goldens(database, case):
+def test_real_mongo_user_and_avatar_reads_compose_with_java_http_goldens(database, case):
     original = {**golden_document(), "avatarFileId": "fixture-avatar"}
     database.user.insert_one(original.copy())
 
-    class AvatarPorts:
-        def key_for_file(self, file_id):
-            assert file_id == "fixture-avatar"
-            return "fixture-avatar-key" if case.endswith("signed") else None
+    if case.endswith("signed"):
+        database.file.insert_one({"_id": "fixture-avatar", "key": "fixture-avatar-key",
+                                  "uploaderId": "fixture-other-owner", "fileType": "RAW_VIDEO", "deleted": True})
 
+    class AvatarSigner:
         def sign(self, key, validity_seconds):
             assert key == "fixture-avatar-key"
             assert validity_seconds == 86400
             return "https://example.invalid/signed-avatar.png"
 
-    avatars = AvatarPorts()
-    profiles = Profiles(MongoUserReads(lambda: database), avatars, avatars)
+    profiles = Profiles(MongoUserReads(lambda: database), MongoAvatarFiles(lambda: database), AvatarSigner())
     response = (public_user_response(profiles.mine(original["_id"])) if case.startswith("profile")
                 else channel_response(profiles.channel(original["_id"])))
     expected = json.loads((ROOT / "contracts/profile-read" / (case + ".json")).read_text())
@@ -148,6 +149,52 @@ def test_real_mongo_user_reads_compose_with_profile_ports_and_java_http_goldens(
     assert stored["token"] == original["token"]
     assert stored["avatarUrl"] == original["avatarUrl"]
     assert database.user.count_documents({}) == 1
+
+
+def test_file_object_id_precedence_does_not_fall_back_to_string_or_filter_other_fields(database):
+    hex_id = "0123456789abcdef01234567"
+    database.file.insert_many([
+        {"_id": hex_id, "key": "fixture-string-key"},
+        {"_id": ObjectId(hex_id), "key": "fixture-object-key", "fileType": "RAW_VIDEO",
+         "uploaderId": "fixture-other-owner", "deleted": True},
+    ])
+    files = MongoAvatarFiles(lambda: database)
+    assert files.key_for_file(hex_id) == "fixture-object-key"
+    database.file.delete_one({"_id": ObjectId(hex_id)})
+    assert files.key_for_file(hex_id) is None
+    assert database.file.count_documents({}) == 1
+
+
+@pytest.mark.parametrize("fields,expected", [
+    ({}, None), ({"key": None}, None), ({"key": ""}, ""), ({"key": " "}, " "), ({"key": 1234}, "1234"),
+])
+def test_file_key_missing_null_empty_whitespace_and_integer_match_java(database, fields, expected):
+    original = {"_id": "fixture-file", **fields}
+    database.file.insert_one(original.copy())
+    assert MongoAvatarFiles(lambda: database).key_for_file("fixture-file") == expected
+    assert database.file.find_one() == original
+
+
+def test_file_mapping_error_does_not_disclose_unverified_values(database):
+    database.file.insert_one({"_id": "fixture-file", "key": {"fixture-sensitive": "do-not-log"}})
+    with pytest.raises(AvatarFileMappingError) as error:
+        MongoAvatarFiles(lambda: database).key_for_file("fixture-file")
+    assert "fixture-sensitive" not in str(error.value)
+    assert "do-not-log" not in str(error.value)
+
+
+def test_file_provider_initialization_is_lazy_and_errors_propagate():
+    calls = []
+
+    def unavailable():
+        calls.append(True)
+        raise RuntimeError("fixture-unavailable")
+
+    files = MongoAvatarFiles(unavailable)
+    assert calls == []
+    with pytest.raises(RuntimeError, match="fixture-unavailable"):
+        files.key_for_file("fixture-file")
+    assert calls == [True]
 
 
 def test_provider_error_is_propagated_and_initialization_is_lazy():
