@@ -121,4 +121,35 @@ describe('VideoPlayer', () => {
       expect.any(Blob),
     );
   });
+  it.each([
+    ['ArrowLeft', 7.345], ['ArrowRight', 17.345], ['j', 2.345], ['l', 22.345],
+  ])('preserves %s seek offsets and prevents default', (key, expected) => {
+    const { unmount } = render(
+      <VideoPlayer src="https://example.com/video.m3u8" videoId="v_key" watchId="w_key" />,
+    );
+    const event = new KeyboardEvent('keydown', { key, cancelable: true });
+    document.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(mockPlayer.currentTime).toHaveBeenLastCalledWith(expect.closeTo(expected, 3));
+    unmount();
+  });
+
+  it('leaves input typing and unknown keys unchanged', () => {
+    const { unmount } = render(
+      <VideoPlayer src="https://example.com/video.m3u8" videoId="v_key" watchId="w_key" />,
+    );
+    const input = document.createElement('input');
+    document.body.append(input);
+    const typing = new KeyboardEvent('keydown', { key: 'k', bubbles: true, cancelable: true });
+    input.dispatchEvent(typing);
+    const unknown = new KeyboardEvent('keydown', { key: 'toString', cancelable: true });
+    document.dispatchEvent(unknown);
+    expect(typing.defaultPrevented).toBe(false);
+    expect(unknown.defaultPrevented).toBe(false);
+    expect(mockPlayer.play).not.toHaveBeenCalled();
+    expect(mockPlayer.pause).not.toHaveBeenCalled();
+    input.remove();
+    unmount();
+  });
+
 });

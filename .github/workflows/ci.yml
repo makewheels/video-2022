@@ -136,11 +136,11 @@ jobs:
 
       - name: Lint web
         working-directory: web
-        run: pnpm install --frozen-lockfile && pnpm run lint
+        run: pnpm install --frozen-lockfile && pnpm run lint --max-warnings 0
 
       - name: Lint console
         working-directory: console
-        run: pnpm install --frozen-lockfile && pnpm run lint
+        run: pnpm install --frozen-lockfile && pnpm run lint --max-warnings 0
 
   backend-tests:
     name: 后端测试
@@ -239,14 +239,14 @@ jobs:
           --batch-mode --no-transfer-progress
 
       - name: Upload backend JAR
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: backend-jar
           path: server/video/target/video-0.0.1-SNAPSHOT.jar
           retention-days: 1
 
       - name: Upload frontend build
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: frontend-build
           path: server/video/src/main/resources/static
@@ -294,7 +294,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Download backend JAR
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: backend-jar
           path: server/video/target
@@ -360,13 +360,13 @@ jobs:
           distribution: 'temurin'
 
       - name: Download backend JAR
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: backend-jar
           path: server/video/target
 
       - name: Download frontend build
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: frontend-build
           path: server/video/src/main/resources/static
@@ -397,7 +397,7 @@ jobs:
           echo "version=$(uv run python -c "import importlib.metadata; print(importlib.metadata.version('playwright'))")" >> "$GITHUB_OUTPUT"
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright

@@ -59,8 +59,9 @@ describe('MyVideosPage', () => {
     expect(await screen.findByText(/共 1 个/)).toBeInTheDocument();
   });
 
-  it('has a search input', () => {
+  it('has a search input', async () => {
     renderMyVideosPage();
+    await screen.findByText(/Test Video/);
     expect(screen.getByPlaceholderText(/搜索/)).toBeInTheDocument();
   });
 });

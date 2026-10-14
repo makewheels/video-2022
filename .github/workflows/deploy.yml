@@ -138,7 +138,7 @@ jobs:
           pnpm run build
 
       - name: 上传构建产物
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: console-dist
           path: console/dist/
@@ -179,7 +179,7 @@ jobs:
           secret-path: /deployment
 
       - name: 下载控制台产物
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: console-dist
           path: console-dist/
