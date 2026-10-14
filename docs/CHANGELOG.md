@@ -1,5 +1,10 @@
 # 变更日志
 
+## feat: S03 隔离环境发布与可验证回退工具（2026-10-14）
+
+- 新增 master/CI 限定的独立 dev 发布 workflow，固定函数/OSS 前缀；不可变对象回读、FC ZIP 摘要回读、同版本晋级及可信 receipt 回退，不提供生产参数。
+- 发布 SDK 单独锁定，不进入 API ZIP；运行函数不注入生产 Mongo/部署凭据。mock 回退与真实 SDK 请求序列化测试、本地 103 passed/真实 Mongo 1 skipped 通过，Linux/实际云端结果另记。
+
 ## feat: S02 Git 来源与可重现 Linux 构建（2026-10-14）
 
 - 完善干净 Git 白名单构建、双入口分包、可信摘要校验；requirements 绑定 ZIP，依赖清单对照包内元数据，拒绝危险或损坏 ZIP。

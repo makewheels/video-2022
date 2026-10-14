@@ -64,8 +64,8 @@ jobs:
           export UV_PROJECT_ENVIRONMENT="$task_dir/venv"
           export UV_CACHE_DIR="$task_dir/cache"
           export PYTHONDONTWRITEBYTECODE=1
-          uv run --locked --project serverless --extra web ruff check serverless --no-cache
-          uv run --locked --project serverless --extra web pytest serverless/tests -p no:cacheprovider -q
+          uv run --locked --project serverless --extra web --group deployment ruff check serverless --no-cache
+          uv run --locked --project serverless --extra web --group deployment pytest serverless/tests -p no:cacheprovider -q
 
   transcode-worker-tests:
     name: 转码 Worker 原型测试

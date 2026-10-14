@@ -103,3 +103,11 @@
 - 实际只读查到本机 Infisical session 已可用、既有部署 RAM 身份允许 FC API、没有 OSS 权限；北京 FC 中尚无 serverless API 函数。检查不等于 Actions OIDC 或新发布已通。
 - SDK 隔离解析/方法签名核对：FC SDK 4.8.3、oss2 2.18.4。设计选择独立 OSS 前缀上传/回读验证，再传同一 ZIP 字节，不扩 FC 身份权限，不注入生产 Mongo。
 - 工具/workflow/回退测试尚未完成；未发布/上传/调用隔离 FC，不宣称 S03 完成。
+
+### S03 本地工具验收
+
+CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、真实 Mongo 1 skipped、既有 TestClient warning 1；500 行门禁和空白检查通过。依赖组解析发现 pycryptodome 4.0.0 只提供 cp315 wheel，限制 <4 后锁定 3.24.1，实际 SDK 安装成功；运行 ZIP 的依赖导出排除 deployment 组。
+
+测试覆盖不可变对象/可信 SHA、包与 OSS 篡改先于 FC 调用、固定隔离配置、拒绝外部 alias/LATEST/手工同名函数、candidate 失败不晋级、dev 失败恢复前版且冒烟、首次失败不假造旧版、可信 receipt 过期拒绝、未鉴权诊断不能通过、master/CI gate、锁定 SDK 的嵌套 body/流式 InvokeFunction 序列化和错误脱敏。这些 SDK/mock 用例不等于 FC 真实发布已成功。
+
+当前尚无 S03 云端发布证据，PR/Linux CI 和 Actions OIDC/OSS 写权限/FC 运行时、同包晋级、实际回退仍待执行。

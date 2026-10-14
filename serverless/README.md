@@ -92,3 +92,15 @@ python -B serverless/release/verify_release.py --repo REPO --directory OUTPUT --
 ```
 
 每包包含 `payload.zip`、`requirements.txt`、`manifest.json`。requirements 也放入 ZIP，manifest 依赖版本与包内 METADATA 对照；验证器须收到来自受控 CI 的预期提交和摘要，不能仅相信包旁自报值。manifest 不是数字签名。S02 仅构建/校验，不上传 OSS、不发布 FC；Linux runner 通过不能证明 FC/Debian 11 兼容，S03/S04 继续实测。
+
+## S03 独立 dev 发布
+
+发布入口 `.github/workflows/deploy-serverless.yml` 只接受 `master` dispatch，先核对该完整提交的最新 `build-and-test` success；不会跟随分支名构建另一个提交。新 SDK 放 `deployment` 依赖组，不进入 Handler/Web API ZIP。
+
+范围固定为北京 `video-2022-dev-serverless-api`、`candidate`/`dev` 别名，以及既有 `oss-data-bucket` 的 `video-2022-dev/serverless/releases/`；没有生产目标、Mongo/VPC 或业务域名输入。现有 FC/OSS 部署身份通过 Actions OIDC 注入，运行函数只保存诊断 token/TZ，不获得云部署凭据。
+
+`publish` 从干净 Git 构建 Handler，校验与隔离冒烟后上传不可变 OSS 内容键；回读同一 ZIP 字节传 FC，再下载 LATEST/发布版本核对 SHA256。candidate 冒烟通过后把同一版本晋级 dev；dev 验证/触发器/receipt 保存失败恢复前版。首次发布没有前版时删除仅本次新建的 dev alias，并明确没有旧版本可回退。
+
+`rollback` 需要填写此前受控 Actions 摘要中的完整 `receiptKey`；键含 receipt SHA，读取后校验身份/摘要及当前 dev version，拒绝过期 receipt。恢复记录中的前版，回读 ZIP 与固定配置并实际冒烟。首次发布的 receipt 不提供不存在的旧版本。
+
+HTTP 触发器限定 GET/POST、RAM `function` 鉴权、dev alias；应用诊断 token 仍保留。工具用 SDK InvokeFunction 做有限健康/空请求/拒绝请求检查，不进行持续保活。S04 才测实际 HTTP 调用、冷/热、原生依赖/Mongo 网络；未跑云端发布时不能称 S03 已验收。

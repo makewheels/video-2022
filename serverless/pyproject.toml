@@ -23,6 +23,8 @@ packages = ["src/video_serverless"]
 
 [dependency-groups]
 dev = ["pytest>=8,<10", "httpx>=0.28,<1", "ruff>=0.14,<1"]
+# pycryptodome 4.0 only publishes CPython 3.15 wheels; deployment uses 3.12.
+deployment = ["alibabacloud-fc20230330==4.8.3", "oss2==2.18.4", "pycryptodome>=3.20,<4"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
