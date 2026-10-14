@@ -2,7 +2,7 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-14 23:37，S05.d 已合并，S05.e 新CI等待，S03.b 保护已验待PR）
+## 当前快照（2026-10-14 23:40，S05.e 已合并，S03.b 保护与候选权限待CI）
 
 - S02 [#148](https://github.com/makewheels/video-2022/pull/148) 已合并，merge `42a0ebeb0a2865adf3c6e1d8791bb276d970d8e9`；最终 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) success，所有必要 job 通过，API/浏览器 E2E 按 PR 条件 skipped。Linux 原型 79 passed，双包两次可重现、入口与 native 冒烟通过。
 - S03 工具 [#149](https://github.com/makewheels/video-2022/pull/149) 已合并，merge `2eb0065e94795073f87ca8b9bef30d9784990276`；最新 head `7fc243c4` 的 [CI 38555210822](https://github.com/makewheels/video-2022/actions/runs/38555210822) success，Linux 原型 107 passed/1 warning，全部必要 job 通过、PR 两个 E2E skipped。云端发布与回退仍未验，不能称 S03 全部完成。
@@ -10,7 +10,7 @@
 - S05.b [PR #152](https://github.com/makewheels/video-2022/pull/152) 最新 head b479d27b 的 CI 38584373965 全部必要 job success 后合并为 `5cf8716c`，PR E2E skipped；本地 25 项离线对照回归/Ruff/500 行通过。
 - S05.c [PR #153](https://github.com/makewheels/video-2022/pull/153) 最新 head `6d9cdbcb` 的 [CI 38586272991](https://github.com/makewheels/video-2022/actions/runs/38586272991) 全部必要 job success 后已合并为 `7ff9a3f1`；PR E2E skipped。首 CI 日期失败已修正，UTC 本机551/北京时间focused5通过，最终 Linux 后端也通过；具体计数/证据保留 verification。
 - S05.d [PR #154](https://github.com/makewheels/video-2022/pull/154) a1fcefd1 的 CI38587849569 必要项success后合并为fc54aee1；PR E2E skipped。
-- S05.e [PR #155](https://github.com/makewheels/video-2022/pull/155) 首head f2c184e4 的 CI38588504819 全部必要项success；同步#154文档后新head f8fe8541等待CI，不能沿用旧head通过。Java HTTP6项/Checkstyle已过，生产判定/TTL清理/并发未验。
+- S05.e [PR #155](https://github.com/makewheels/video-2022/pull/155) 最新 head f8fe8541 的 CI38589941727 全部必要job success后合并为12092139；PR E2E skipped。登录HTTP6项/Checkstyle已过，生产判定/TTL清理/并发未验。
 - 当前独立分支 `fix-serverless-immutable-storage`：S03.b [上传门禁/候选最小权限](isolated-oss-policy.md) 已实现，完整155passed/Mongo1skipped/Ruff/500行；最后属性式未知状态拒绝补充focused25passed，Ruff/500行/空白通过。候选role/trust仅配置，未创建/未代入/未新增RAM权限，S03/S04仍阻塞。
 
 
@@ -42,7 +42,7 @@
 
 ## 接续步骤
 
-1. #152/#153/#154 已合并。核对 #155 最新 f8fe8541/必要CI，通过后合并。当前S03.b独立分支 fix-serverless-immutable-storage已验完成，提交/push/独立PR，必要CI后才合并；同步master保留各阶段证据。之后可独立补登录生产判定/TTL或资料头像契约，不把候选IAM配置当云端解阻。
+1. #152/#153/#154/#155 已合并。先核对当前 S03.b 分支 fix-serverless-immutable-storage 的PR/最新head/必要CI，全部通过后合并。候选role/trust仅配置，不创建或扩大身份绕过Actions边界；真实发布/回退仍阻塞。下一独立工作可补登录生产判定/TTL或资料头像契约，保留所有旧业务和各端行为。
 2. 当前 master CI/E2E 已通过，但首次 publish 因 OSS 写权限失败；先解决独立发布身份权限并经审阅/验证，再运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
 3. publish 成功后保存非秘密 receiptKey、commit、ZIP SHA、version、同包晋级/远端回读结果。首次没有前版不能假造回退；第二次可追溯发布后用新版 receiptKey 执行 workflow rollback，实际读回 alias/version 与冒烟。
 4. S03 通过后才开始 S04 FC HTTP/冷热/原生扩展/现有 Mongo 网络；不擅自开放数据库公网、改防火墙、迁库或采购固定资源。无法安全接通则记录阻塞，推进独立 S05 契约台账。
@@ -64,3 +64,9 @@
 - 半成品留在工作分支并标注，不把未跑测试的阶段标完成。CI 等待时不无理由重跑全套或不断提交状态刷新。
 - 接续先 `git status --short`、fetch、查询 PR head/CI；未提交改动先确认归属，禁止 reset/覆盖后再调查。
 - 阶段收尾写“实际成果、剩余项、回退点、下一阶段”；系统临时目录不是唯一工作记录。不承诺额度恢复后平台自动执行，恢复工作以此记录为准。
+
+## 当前执行补充（2026-10-14 23:14，S05.e）
+
+- 当前分支 `test-serverless-login-http-contract`，基于已合并 S05.b `5cf8716c`；S05.c #153 已合并，S05.d #154 已合并为 fc54aee1，最新查询为准。不能合并未完成 CI。
+- S05.e [登录 HTTP 夹具](login-http-fixtures.md) 6 项集成测试+Checkstyle/空白通过，测试是真实隔离 Mongo/完整管线、固定身份；生产配置/TTL清理/并发未验。
+- 此历史执行补充已完成：#154/#155均合并，当前以页首S03.b快照为准。不要回到已合并 #149/#152 重复实现。
