@@ -3,6 +3,7 @@
 from datetime import UTC, datetime
 
 from video_serverless.http import Response
+from video_serverless.ports.profile_updates import ProfileUpdateResult
 from video_serverless.ports.users import ChannelSnapshot, UserSnapshot
 
 
@@ -63,3 +64,7 @@ def channel_response(channel: ChannelSnapshot | None) -> Response:
         "subscriberCount": channel.subscriber_count, "videoCount": channel.video_count,
         "isSubscribed": channel.is_subscribed,
     })
+
+
+def profile_update_response(result: ProfileUpdateResult) -> Response:
+    return _payload(None) if result.error is None else _payload(None, 1, result.error)

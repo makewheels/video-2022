@@ -1,0 +1,9 @@
+{
+  "status": 200,
+  "contentType": "application/json",
+  "body": {
+    "code": 1,
+    "data": null,
+    "message": "简介不能超过200字"
+  }
+}

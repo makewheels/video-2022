@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -26,6 +27,7 @@ import java.util.Date;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 /** Fixed synthetic Java HTTP oracle. Optional export is confined to a task-owned OS temp folder. */
 class UserReadGoldenHttpContractTest extends BaseIntegrationTest {
@@ -207,5 +209,34 @@ class UserReadGoldenHttpContractTest extends BaseIntegrationTest {
         assertEquals("未知错误", body.getString("message"));
         assertTrue(body.containsKey("data"));
         assertNull(body.get("data"));
+    }
+
+    private JSONObject profileUpdate(String name, String nickname, String bio) throws Exception {
+        JSONObject request = new JSONObject();
+        request.put("nickname", nickname);
+        request.put("bio", bio);
+        return capture(name, post("/user/updateProfile").header("token", TOKEN)
+                .contentType(MediaType.APPLICATION_JSON).content(request.toJSONString()));
+    }
+
+    @Test
+    void profileUpdateSuccessKeepsNullData() throws Exception {
+        JSONObject body = profileUpdate("success", "\uD83D\uDE00".repeat(15), " ");
+        assertEquals(0, body.getIntValue("code"));
+        assertNull(body.get("data"));
+    }
+
+    @Test
+    void profileUpdateRejectsNicknameByUtf16Units() throws Exception {
+        JSONObject body = profileUpdate("nickname-long", "\uD83D\uDE00".repeat(16), "new");
+        assertEquals(1, body.getIntValue("code"));
+        assertEquals("昵称不能超过30字", body.getString("message"));
+    }
+
+    @Test
+    void profileUpdateRejectsLongBio() throws Exception {
+        JSONObject body = profileUpdate("bio-long", "new", "字".repeat(201));
+        assertEquals(1, body.getIntValue("code"));
+        assertEquals("简介不能超过200字", body.getString("message"));
     }
 }

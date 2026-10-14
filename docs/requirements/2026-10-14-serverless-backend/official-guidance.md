@@ -63,3 +63,7 @@ ZIP 可信摘要保护包内 requirements，sidecar 与包内记录对照。依�
 ## S06.d3 ASGI元数据（2026-10-15）
 
 [ASGI HTTP规范](https://asgi.readthedocs.io/en/latest/specs/www.html)区分decoded path与可选raw_path、raw query bytes、可选client及有序重复header值。项目选原始scope+锁定Starlette multi_items保留多值，未知字段/表单合并先显式失败；此转换尚未装配。Starlette Requests页面此次502未读成功，不引用为已核实依据；本地实际接口/Starlette TestClient8项和完整Python225项通过，不替代真实代理或FC证明。
+
+## S06.e1 资料更新（2026-10-15）
+
+[Python3.12 codecs](https://docs.python.org/3.12/library/codecs.html#error-handlers)支持UTF-16LE及surrogatepass，项目用于保留Java长度计数，不据此宣称全部孤立代理码点传输已兼容。[PyMongo更新](https://www.mongodb.com/docs/languages/python/pymongo-driver/current/crud/update/)提供单文档$set/upsert控制；旧两字段替换、ObjectId/零匹配行为以真实Java为准。无生产写入、无应用重试或路由装配。
