@@ -5,6 +5,7 @@
 ## 身份选择与完成清理
 
 - token先取大小写不敏感header的首值；只有null/空串才回退Servlet参数map中token首值。空格不trim，重复query首值无效时不试第二值；错误非空header覆盖正确query。不是Bearer解析。
+- 空header且没有token参数时仍保留空串并查库，可匹配已有空token；完全无header/参数才不查库。S06.d2新增真实HTTP空凭据样本验证，属于既有风险而非新鉴权规则。
 - PutToken在前，对非null用户放入UserHolder；受保护路由CheckToken再独立查询用户。不能假称旧管线只查库一次；两次读取间凭据轮换/删除并发仍未验。
 - 受保护路由无效身份返回HTTP401、code401/请先登录，没有data字段；随后RequestLog尚未执行，因此这类拒绝不产生requestLog。公开路由业务失败仍经过日志。
 - 成功、已处理的Controller绑定异常、受保护拒绝之后，本夹具线程UserHolder与RequestLogContext均为null；同线程后续请求可以正常验证身份。没有把异步请求/跨线程/数据库保存日志失败等路径也写成已通过。

@@ -14,7 +14,9 @@ from test_user_reads import ROOT, comparison
 from video_serverless.adapters.mongo_avatar_files import AvatarFileMappingError, MongoAvatarFiles
 from video_serverless.adapters.mongo_users import MongoUserReads, UserMappingError
 from video_serverless.business.profiles import Profiles
+from video_serverless.business.request_identity import IdentityResolver
 from video_serverless.business.users import Users
+from video_serverless.ports.request_identity import RequestMetadata
 from video_serverless.user_responses import channel_response, public_user_response, token_user_response
 
 
@@ -195,6 +197,26 @@ def test_file_provider_initialization_is_lazy_and_errors_propagate():
     with pytest.raises(RuntimeError, match="fixture-unavailable"):
         files.key_for_file("fixture-file")
     assert calls == [True]
+
+
+def test_request_identity_composes_with_real_mongo_and_preserves_empty_token_behavior(database):
+    database.user.insert_many([
+        {"_id": "fixture-empty-user", "token": ""},
+        {"_id": "fixture-normal-user", "token": "fixture-normal-token"},
+    ])
+    resolver = IdentityResolver(MongoUserReads(lambda: database))
+
+    def resolve(headers=(), parameters=()):
+        request = RequestMetadata("GET", "/user/getMyProfile", "http://fixture.invalid/user/getMyProfile",
+                                  "192.0.2.10", headers, parameters)
+        return resolver.resolve(request)
+
+    assert resolve().user_id is None
+    assert resolve((("token", ""),)).user_id == "fixture-empty-user"
+    assert resolve((("TOKEN", "fixture-normal-token"),)).user_id == "fixture-normal-user"
+    assert resolve((("token", "fixture-wrong"),), (("token", "fixture-normal-token"),)).user is None
+    assert resolve((), (("token", "fixture-wrong"), ("token", "fixture-normal-token"))).user is None
+    assert database.user.count_documents({}) == 2
 
 
 def test_provider_error_is_propagated_and_initialization_is_lazy():

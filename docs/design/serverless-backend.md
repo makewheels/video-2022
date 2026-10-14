@@ -193,3 +193,7 @@ MongoAvatarFiles复用惰性database provider，对旧file集合有界只读，�
 ### S06.d1 HTTP身份/日志基线
 
 真实Java HTTP6项确认身份首值与鉴权顺序、401前置拒绝无requestLog、处理后状态与同步落库/清理。旧日志保存原始headers/query含凭据，已记录且仅用隔离合成值验证，不能称已脱敏。Python完整请求作用域/多值元数据/日志与错误尚未装配，不提前暴露业务路由；详见[上下文契约](../requirements/2026-10-14-serverless-backend/request-context-contract.md)。
+
+### S06.d2 请求作用域普通值（未装配）
+
+RequestMetadata保留有序重复headers/参数与原query/peer信息，IdentityResolver按旧首值/空值语义返回局部不可变身份，无全局/ThreadLocal缓存。真实Java7项/Python217项通过；空header无参数仍可能匹配旧空token已记录，未改生产规则。现有FC/ASGI外壳未接多值转换/日志/鉴权门槛，不能据此启用业务路由，详见[请求身份能力](../requirements/2026-10-14-serverless-backend/request-identity.md)。
