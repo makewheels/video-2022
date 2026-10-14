@@ -26,3 +26,23 @@ class UserReads(Protocol):
     def find_by_token(self, token: str) -> UserSnapshot | None: ...
 
     def find_by_id(self, user_id: str) -> UserSnapshot | None: ...
+
+
+@dataclass(frozen=True)
+class ChannelSnapshot:
+    user_id: str
+    nickname: str | None
+    avatar_url: str | None
+    banner_url: str | None
+    bio: str | None
+    subscriber_count: int
+    video_count: int
+    is_subscribed: bool = False
+
+
+class AvatarFiles(Protocol):
+    def key_for_file(self, file_id: str) -> str | None: ...
+
+
+class AvatarUrls(Protocol):
+    def sign(self, key: str, validity_seconds: int) -> str | None: ...

@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 
 from video_serverless.http import Response
-from video_serverless.ports.users import UserSnapshot
+from video_serverless.ports.users import ChannelSnapshot, UserSnapshot
 
 
 def _date(value: datetime | None) -> str | None:
@@ -35,7 +35,11 @@ def _user(user: UserSnapshot | None):
 
 
 def _result(user: UserSnapshot | None, code=0, message="success") -> Response:
-    response = Response.json({"code": code, "message": message, "data": _user(user)})
+    return _payload(_user(user), code, message)
+
+
+def _payload(data, code=0, message="success") -> Response:
+    response = Response.json({"code": code, "message": message, "data": data})
     # Spring's existing JSON content type does not add a charset parameter.
     return Response(response.status, response.body, {"Content-Type": "application/json"})
 
@@ -48,3 +52,14 @@ def token_user_response(user: UserSnapshot | None) -> Response:
 
 def public_user_response(user: UserSnapshot | None) -> Response:
     return _result(user)
+
+
+def channel_response(channel: ChannelSnapshot | None) -> Response:
+    if channel is None:
+        return _payload(None, 1, "用户不存在")
+    return _payload({
+        "userId": channel.user_id, "nickname": channel.nickname, "avatarUrl": channel.avatar_url,
+        "bannerUrl": channel.banner_url, "bio": channel.bio,
+        "subscriberCount": channel.subscriber_count, "videoCount": channel.video_count,
+        "isSubscribed": channel.is_subscribed,
+    })

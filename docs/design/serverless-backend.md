@@ -181,3 +181,7 @@ UserReads端口仅按token/ID读取不可变标准值快照，Users纯用例保�
 ### S06.b2 用户Mongo读取（未装配）
 
 独立MongoUserReads复用装配传入的惰性database provider，每次单文档有界读取，显式UTC解码。保留Java基线中的缺失/null、ObjectId查询优先级和已验证转换，四份Java HTTP黄金响应已经真实隔离Mongo对照。未验证BSON类型固定错误不含值，仍须补证据后才能装配，不能把未支持类型当新增生产校验。当前不接业务路由/日志/登录写入，也无FC网络验证；详见[适配器边界](../requirements/2026-10-14-serverless-backend/user-mongo-reads.md)。
+
+### S06.c2 资料与频道纯读取（未装配）
+
+Profiles共享UserReads，AvatarFiles/AvatarUrls仅传字符串key/ID/有效秒数，返回普通快照；本人资料清空返回token/动态头像，频道保留8字段和null计数补0。真实Java黄金HTTP9项和5份新夹具对照通过；真实Mongo仅验证用户读取组合，头像端口仍替代。具体适配器、完整HTTP上下文/日志/错误与路由仍未装配，详见[用例边界](../requirements/2026-10-14-serverless-backend/profile-channel-reads.md)。

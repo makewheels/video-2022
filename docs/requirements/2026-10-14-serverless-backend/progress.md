@@ -2,7 +2,7 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-15 03:49，频道测试已合并，S06.c1资料头像契约已本地验证）
+## 当前快照（2026-10-15 04:03，S06.c1已合并，资料/频道纯读取已本地验证）
 
 - S02 [#148](https://github.com/makewheels/video-2022/pull/148) 已合并，merge `42a0ebeb0a2865adf3c6e1d8791bb276d970d8e9`；最终 [CI 38549335594](https://github.com/makewheels/video-2022/actions/runs/38549335594) success，所有必要 job 通过，API/浏览器 E2E 按 PR 条件 skipped。Linux 原型 79 passed，双包两次可重现、入口与 native 冒烟通过。
 - S03 工具 [#149](https://github.com/makewheels/video-2022/pull/149) 已合并，merge `2eb0065e94795073f87ca8b9bef30d9784990276`；最新 head `7fc243c4` 的 [CI 38555210822](https://github.com/makewheels/video-2022/actions/runs/38555210822) success，Linux 原型 107 passed/1 warning，全部必要 job 通过、PR 两个 E2E skipped。云端发布与回退仍未验，不能称 S03 全部完成。
@@ -17,7 +17,8 @@
 - S06.b1 #159 a9933666 的CI38620516871全部必要job成功后合并`286c3e7d`（PR E2E skipped），Java3项基线已固化。
 - S06.b2 #160 f5640c6a 的CI38622565458必要项全通过后合并9fa11d75（PR E2E skipped）；Mongo只读适配器176passed，未装配HTTP，未验证BSON类型/完整请求日志/生产网络仍为门槛。
 - 频道测试修复#161 head748bdd06的CI38624666455必要项全通过后合并2d9cf7f0（PR E2E skipped）；#160合并master CI38624255599/部署38624255442均success。
-- 当前分支`test-serverless-profile-avatar-contract`基于2d9cf7f0，S06.c1 [资料与头像契约](profile-avatar-contract.md)真实隔离Java HTTP6项/Checkstyle通过。已证实三个头像路由缺CheckToken登记：匿名创建可产生null owner文件，其他头像操作无用户时存在异常；仅隔离记录，不在生产重放、不擅自改规则。Python资料/头像用例、真实STS/OSS和完整日志尚未验。
+- S06.c1 #162 head37ce40db必要CI38626919450全通过后合并f98e91e2（PR E2E skipped），头像匿名鉴权缺口已记录，未修业务。
+- 当前分支`feat-serverless-profile-channel-reads`基于f98e91e2，S06.c2 [纯资料/频道读取](profile-channel-reads.md)：Java黄金HTTP9项/Checkstyle、5份新夹具对照及完整Python193passed/0skipped/1warning、Ruff/500行/空白通过。真实Mongo只覆盖用户读取；头像文件/签名仍替代端口，未装配HTTP/日志，S06未完成。
 - #158合并后master CI38620293672失败：浏览器频道等待选择器strict mode匹配2元素，79passed/1failed；既有Java部署38620293649成功。#159合并master CI38622137273已success（实际API/浏览器E2E通过）；部署38622137369另查询。旧失败仍有确定的并存元素证据，独立修复测试竞态。
 
 - 本机 Git 直接访问 GitHub 临时失败，使用当前系统代理 127.0.0.1:7890 的单次 git 参数已 fetch 至合并提交；没有修改全局代理/Git 配置。
@@ -48,7 +49,7 @@
 
 ## 接续步骤
 
-1. #152至#161均已合并，不重复。先核对test-serverless-profile-avatar-contract独立PR/head/必要CI再合并S06.c1。后续推进纯资料/频道用例或完整HTTP上下文/日志契约；头像鉴权缺口已记录，不能宣称已修复，也不能直接暴露半成品Python路由。
+1. #152至#162均已合并，不重复。先核对feat-serverless-profile-channel-reads独立PR/head/必要CI再合并S06.c2。后续独立实现头像元数据适配或完整HTTP上下文/日志契约；不直接暴露未完成路由，不顺带修旧匿名头像规则。
 2. 当前 master CI/E2E 已通过，但首次 publish 因 OSS 写权限失败；先解决独立发布身份权限并经审阅/验证，再运行 `gh workflow run deploy-serverless.yml --ref master -f mode=publish`；锁定实际 run 的 head，等待并检查全程日志。失败按真实错误在独立 fix 分支修复，再经 PR/CI/master CI 重试；不把旧 head 通过当新提交证据。
 3. publish 成功后保存非秘密 receiptKey、commit、ZIP SHA、version、同包晋级/远端回读结果。首次没有前版不能假造回退；第二次可追溯发布后用新版 receiptKey 执行 workflow rollback，实际读回 alias/version 与冒烟。
 4. S03 通过后才开始 S04 FC HTTP/冷热/原生扩展/现有 Mongo 网络；不擅自开放数据库公网、改防火墙、迁库或采购固定资源。无法安全接通则记录阻塞，推进独立 S05 契约台账。
