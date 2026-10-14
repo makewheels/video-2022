@@ -280,3 +280,11 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 基于masterca38fea1，JDK21/UTC/真实Spring MockMvc与自建回环隔离Mongo，ProfileAvatarHttpContractTest 8tests/0failure/0error/0skip，4.942s，Checkstyle退出0。新增2项测试覆盖整数/布尔与未知字段、7种非法容器/正文输入，断言HTTP200/code1/未知错误及昵称/简介/updateTime不变。未改运行代码，未无理由重跑Python套件。
 - 源码/target/log/dbpath均系统任务临时目录，finally终止自建mongod并清理。无生产请求/真实OSS。数值词法/其他类型/编码未验证，见profile-json-binding.md。
 - #170 CI38643314470必要项全通过后合并ca38fea1；#169合并master CI38642888158/部署38642888150均success；新master CI38644545566/部署38644545434待查最终。
+
+## S06.d6 Mongo同步日志适配（2026-10-15 06:19）
+
+- 基于masterdb56fbe1，JDK21/UTC/真实Spring HTTP+自建回环隔离Mongo，RequestContextHttpContractTest 7tests/0failure/0error/0skip，4.565s，Checkstyle退出0。新增原始BSON ObjectId/Date/Long/Integer、无_class、空字段省略、大小写重复header首值断言。
+- CPython3.12.13锁定web/deployment组，完整Python253passed/0skipped/1既有Starlette warning，3.82s；Ruff/500行/空白通过。6项新增覆盖实际BSON/空query/负耗时、生命周期保存/401及排除、provider失败保留业务写与响应、未验证含点header的固定失败门槛。首次lint读取到修改前122字符长行失败，换行后仅重跑Python，Java未重复。
+- 仅随机隔离库，所有源码/target/log/dbpath/env/cache/pytest均系统任务临时目录，finally终止自建mongod及清理，随机库finally删除。日志异常是方法注入，不是真实网络故障；无生产日志或业务路由装配。详见mongo-request-journal.md。
+- #171 CI38645020667必要项全通过后合并db56fbe1；PR E2E skipped；#170 master CI38644545566/部署38644545434均success。新master CI38646352161/部署38646352029须查最终。
+- 06:05:08调度成功调用/usr/bin/open并写browser-opened.json；实际HTML六类状态/#171/固定提交链接已查。浏览器技能依赖node_repl js/工具搜索均不可用，因此实际屏幕显示未验，不以标记冒充可见UI。此前独立headless交互布局QA单列，未通过AppleScript/CDP绕过浏览器技能。
