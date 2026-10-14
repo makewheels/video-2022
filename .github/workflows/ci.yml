@@ -12,6 +12,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  serverless-release-packaging:
+    name: Serverless Linux 来源与可重现构建
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Build the actual PR head, never GitHub's synthetic merge commit.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: astral-sh/setup-uv@v8.2.0
+        with:
+          version: '0.12.2'
+          python-version: '3.12.12'
+          enable-cache: false
+      - name: Build twice, verify provenance, and smoke both isolated ZIPs
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python -B serverless/release/check_reproducible.py
+
   serverless-prototype-tests:
     name: Serverless API 原型测试
     runs-on: ubuntu-latest
@@ -544,7 +564,7 @@ jobs:
 
   build-and-test:
     name: build-and-test
-    needs: [lint, backend-tests, frontend-tests, api-e2e-tests, browser-e2e-tests, cli-tests, ai-agent-tests, android-tests, ios-tests, transcode-worker-tests, serverless-prototype-tests]
+    needs: [lint, backend-tests, frontend-tests, api-e2e-tests, browser-e2e-tests, cli-tests, ai-agent-tests, android-tests, ios-tests, transcode-worker-tests, serverless-prototype-tests, serverless-release-packaging]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -553,6 +573,7 @@ jobs:
           # E2E 在 master push 或仓库成员手动触发时运行；普通 PR 不取密，允许 skipped；其余 job 必须 success
           if [ "${{ needs.lint.result }}" != "success" ] || \
              [ "${{ needs.serverless-prototype-tests.result }}" != "success" ] || \
+             [ "${{ needs.serverless-release-packaging.result }}" != "success" ] || \
              [ "${{ needs.transcode-worker-tests.result }}" != "success" ] || \
              [ "${{ needs.backend-tests.result }}" != "success" ] || \
              [ "${{ needs.frontend-tests.result }}" != "success" ] || \

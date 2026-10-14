@@ -72,3 +72,12 @@
 2. 比较内置 Handler/FastAPI 的冷启动和兼容性，确定依赖/网络优化；这不是待用户选择的框架问题。
 3. 无持续空轮询时的可靠唤醒/恢复机制；保留原有业务恢复能力，不能靠删扫描“解决”。
 4. 财务幂等或可靠调度若需最小技术数据/索引变更，先设计确认；不得改用户字段、账期、金额或同步接口语义。
+
+## S02 本地与 CI 验收（2026-10-14，执行中）
+
+- 从 `7facb75a` 恢复，完善 Git 白名单、requirements ZIP 绑定、依赖 METADATA 对照和 ZIP 异常拒绝。
+- macOS CPython 3.12.12 / uv 0.11.7 实际 Ruff 通过；pytest 77 passed、真实 Mongo 1 skipped、既有 TestClient warning 1；500 行门禁和 `git diff --check` 通过。另在默认 CPython 3.14.4 上跑过同样 77 passed/1 skipped，但它不是正式构建环境。
+- 实际验证 pyproject.toml/uv.lock-only 临时快照可执行 `uv export --locked --no-dev --no-default-groups --no-emit-project`；本地工具版本不是固定 Linux builder，不等于正式构建已通过。
+- 新测试覆盖可信 SHA/commit、脏树/未跟踪拒绝、Git blob/双包白名单、源码符号链接、危险/重复/坏 ZIP、固定元数据、requirements 与依赖清单篡改、变更源码、依赖注入/输出边界及 CLI 明确拒绝。
+- 独立 Linux job 固定 CPython 3.12.12 / uv 0.12.2，待 CI 验证两次 ZIP 摘要及隔离 Handler/ASGI、BSON/Pydantic native 导入。真实 Mongo 仍由原型 job 检查；API/浏览器 E2E 是否跳过单列。
+- 未部署 FC，不证明 Debian 11 ABI/实际 FC 网络、性能或生产业务等价。S02 回退到 S01 `4338dfb9` 不涉及业务/数据回退。

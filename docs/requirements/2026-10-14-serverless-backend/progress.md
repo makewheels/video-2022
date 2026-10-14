@@ -2,18 +2,14 @@
 
 额度中断、上下文压缩或更换执行环境后，先读本页，再核对 Git、PR、CI。记录必须随阶段和重要状态更新，不能只在额度用完时补写；不保存密钥、用户数据或临时下载内容。
 
-## 当前快照（2026-10-14，用户要求暂停并交接）
+## 当前快照（2026-10-14，已恢复 S02，待 CI）
 
-| 项目 | 当前记录 |
-|---|---|
-| 已完成 | S01 已合并 [#147](https://github.com/makewheels/video-2022/pull/147)，merge `4338dfb961c23d7d538184548fa808679d38e1ee`；不要重复实施 |
-| S01 实测 | [CI 38533456317](https://github.com/makewheels/video-2022/actions/runs/38533456317) success；Linux + 隔离 Mongo 44 passed、1 条已有 TestClient 警告；PR API/浏览器 E2E skipped。本地安装 wheel 43 passed、真实 Mongo 1 skipped |
-| 当前分支 | `feat-serverless-release-provenance`，基于上述 S01 merge；本次交接提交用 `git log -1` 查询，避免自引用 SHA |
-| 当前阶段 | S02 半成品，仅保存进度；未完成、未验收、未创建 PR、未合并，不可用于正式发布 |
-| 已写文件 | `serverless/release/` 下 build_release.py、release_support.py、verify_release.py、smoke_release.py，以及设计文档的 S02 方案 |
-| 实际验证 | S02 尚未跑 Ruff、pytest、Linux 构建、双次可重现构建或入口冒烟；交接只检查 Python 语法与 Git whitespace，不代表功能通过 |
-| 用户最新指令 | 停止继续实现，记录进度并 push；回家后接续。之前 17:00 小目标是 S01，已完成，不能误作 S02 必须合并的门槛 |
-| 生产/资源 | 仍为 Java；未切流、未改 Mongo、未上传 OSS、未创建/发布 FC；现役业务未改变 |
+- S01 #147 已合并，回退点 `4338dfb9`；本机 fetch 后切到 `feat-serverless-release-provenance`，从交接 `7facb75a` 接续。
+- S02 补齐 requirements 包内绑定、依赖 METADATA 对照、坏 ZIP 拒绝及有意义的回归测试；新增独立 Linux packaging job，构建真实 PR head 两次并隔离入口/native 冒烟，纳入汇总门禁。
+- 本地 macOS CPython 3.12.12 / uv 0.11.7：Ruff 通过；77 passed、真实 Mongo 1 skipped、既有 TestClient warning 1；语法/空白与 500 行门禁通过。pyproject/lock-only 快照 export 实测通过。
+- Linux 固定 CPython 3.12.12 / uv 0.12.2 的构建与 CI 仍待运行。当前提交用 `git log -1` 查询；PR/CI 从本分支查询。未通过前不合并、不宣称 S02 完成。
+- 生产仍为 Java；未切流、未改 Mongo、未上传 OSS、未创建/发布 FC。
+- 下一步：push、创建 S02 PR，观察 packaging 和全部必要 CI；失败按真实日志修复。通过后记录双包摘要/大小和 counts，再按既有授权合并。S03 才做隔离发布。
 
 ## 用户约束（接续不能丢失）
 

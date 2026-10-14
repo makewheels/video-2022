@@ -12,7 +12,9 @@ import time
 import urllib.request
 from pathlib import Path
 
-from release_support import read_zip
+# -I ignores the script directory; add only the committed tool directory.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from release_support import read_zip  # noqa: E402
 
 
 def smoke(directory: Path, flavor: str):
@@ -52,7 +54,7 @@ def web_smoke(task: Path):
         port = listener.getsockname()[1]
         env = {**os.environ, "PYTHONPATH": str(task), "PYTHONDONTWRITEBYTECODE": "1"}
         child = subprocess.Popen(
-            [sys.executable, "-m", "uvicorn", "video_serverless.web:app", "--fd", str(listener.fileno()),
+            [sys.executable, "-S", "-m", "uvicorn", "video_serverless.web:app", "--fd", str(listener.fileno()),
              "--log-level", "error"], cwd=task, env=env, pass_fds=(listener.fileno(),),
         )
         try:

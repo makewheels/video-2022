@@ -8,6 +8,7 @@ import stat
 import subprocess
 import tempfile
 import zipfile
+from email.parser import BytesParser
 from pathlib import Path, PurePosixPath
 
 UV_VERSION = "0.12.2"
@@ -16,7 +17,7 @@ WHEEL_PLATFORM = "x86_64-manylinux_2_28"
 COMPONENT = "video-serverless-api"
 REPOSITORY = "makewheels/video-2022"
 PREFIX = "serverless/src/video_serverless/"
-TOOLS = ("release_support.py", "build_release.py", "verify_release.py", "smoke_release.py")
+TOOLS = ("release_support.py", "build_release.py", "verify_release.py", "smoke_release.py", "check_reproducible.py")
 ENTRYPOINTS = {"handler": "video_serverless.fc_handler.handler", "web": "video_serverless.web:app"}
 EXCLUDED = {
     "handler": {"web.py", "adapters/asgi.py", "benchmark.py", "startup.py"},
@@ -111,6 +112,13 @@ def canonical_zip(payload: dict[str, bytes], output: Path):
 
 
 def read_zip(path: Path) -> dict[str, bytes]:
+    try:
+        return _read_zip(path)
+    except (zipfile.BadZipFile, RuntimeError, EOFError) as error:
+        raise ReleaseError("Invalid or corrupt ZIP archive") from error
+
+
+def _read_zip(path: Path) -> dict[str, bytes]:
     if path.stat().st_size > MAX_SIZE:
         raise ReleaseError("Archive exceeds project limits")
     with zipfile.ZipFile(path) as archive:
@@ -122,11 +130,32 @@ def read_zip(path: Path) -> dict[str, bytes]:
             raise ReleaseError("Duplicate archive entry")
         for info in infos:
             mode = info.external_attr >> 16
-            if not safe_name(info.filename) or info.is_dir() or stat.S_ISLNK(mode):
+            if not safe_name(info.filename) or info.is_dir() or stat.S_IFMT(mode) not in {0, stat.S_IFREG}:
                 raise ReleaseError("Unsafe archive entry")
             if info.flag_bits & 1 or info.compress_type not in {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}:
                 raise ReleaseError("Unsupported archive encoding")
         return {info.filename: archive.read(info) for info in infos}
+
+
+def dependency_inventory(payload: dict[str, bytes]) -> list[dict[str, str]]:
+    dependencies = []
+    seen = set()
+    for name, data in sorted(payload.items()):
+        parts = PurePosixPath(name).parts
+        if len(parts) != 2 or not parts[0].endswith(".dist-info") or parts[1] != "METADATA":
+            continue
+        metadata = BytesParser().parsebytes(data, headersonly=True)
+        package, version = metadata.get("Name"), metadata.get("Version")
+        if (len(metadata.get_all("Name", [])) != 1 or len(metadata.get_all("Version", [])) != 1
+                or not package or not version or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", package)
+                or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9.!+_-]*", version)):
+            raise ReleaseError("Invalid dependency metadata")
+        normalized = re.sub(r"[-_.]+", "-", package).lower()
+        if normalized in seen:
+            raise ReleaseError("Duplicate dependency metadata")
+        seen.add(normalized)
+        dependencies.append({"name": package, "version": version})
+    return sorted(dependencies, key=lambda dependency: dependency["name"].lower())
 
 
 def temporary_output(output: Path, repo: Path):

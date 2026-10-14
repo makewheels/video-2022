@@ -1,7 +1,6 @@
 """Build a Linux candidate from clean Git objects; never deploys anything."""
 
 import argparse
-import importlib.metadata
 import json
 import os
 import platform
@@ -13,9 +12,24 @@ import zlib
 from pathlib import Path
 
 from release_support import (
-    COMPONENT, ENTRYPOINTS, PYTHON_VERSION, REPOSITORY, TOOLS, UV_VERSION, WHEEL_PLATFORM,
-    ReleaseError, ci_context, clean_head, file_hash, sha256, source_inputs, source_payload,
-    canonical_zip, temporary_output, write_json,
+    COMPONENT,
+    ENTRYPOINTS,
+    PYTHON_VERSION,
+    REPOSITORY,
+    TOOLS,
+    UV_VERSION,
+    WHEEL_PLATFORM,
+    ReleaseError,
+    canonical_zip,
+    ci_context,
+    clean_head,
+    dependency_inventory,
+    file_hash,
+    sha256,
+    source_inputs,
+    source_payload,
+    temporary_output,
+    write_json,
 )
 
 
@@ -82,14 +96,12 @@ def build(repo: Path, output: Path, flavor: str) -> dict:
         subprocess.run([
             "uv", "pip", "install", "--python", sys.executable, "--python-platform", WHEEL_PLATFORM,
             "--target", str(stage), "--require-hashes", "--only-binary", ":all:", "--no-deps",
-            "--link-mode", "copy", "--requirements", str(requirements),
+            "--link-mode", "hardlink", "--requirements", str(requirements),
         ], env=env, check=True)
-        dependencies = sorted(
-            [{"name": d.metadata["Name"], "version": d.version}
-             for d in importlib.metadata.distributions(path=[str(stage)])], key=lambda d: d["name"].lower(),
-        )
         payload = dependency_payload(stage)
+        dependencies = dependency_inventory(payload)
         payload.update(source_payload(inputs))
+        payload["release/requirements.txt"] = requirements.read_bytes()
         archive = task / "payload.zip"
         canonical_zip(payload, archive)
         manifest = {

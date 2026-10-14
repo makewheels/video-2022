@@ -5,8 +5,19 @@ import json
 from pathlib import Path
 
 from release_support import (
-    COMPONENT, ENTRYPOINTS, PYTHON_VERSION, REPOSITORY, UV_VERSION, WHEEL_PLATFORM,
-    ReleaseError, file_hash, read_zip, sha256, source_inputs, source_payload,
+    COMPONENT,
+    ENTRYPOINTS,
+    PYTHON_VERSION,
+    REPOSITORY,
+    UV_VERSION,
+    WHEEL_PLATFORM,
+    ReleaseError,
+    dependency_inventory,
+    file_hash,
+    read_zip,
+    sha256,
+    source_inputs,
+    source_payload,
 )
 
 
@@ -15,6 +26,8 @@ def verify(repo: Path, directory: Path, commit: str, expected_sha256: str) -> di
     if path.stat().st_size > 8 * 1024 * 1024:
         raise ReleaseError("Manifest exceeds project limit")
     manifest = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict):
+        raise ReleaseError("Manifest must be an object")
     flavor = manifest["flavor"]
     if (manifest["schemaVersion"] != 1 or manifest["component"] != COMPONENT
             or manifest["repository"] != REPOSITORY or manifest["commit"] != commit
@@ -34,6 +47,11 @@ def verify(repo: Path, directory: Path, commit: str, expected_sha256: str) -> di
     if manifest["inputs"] != {name: sha256(data) for name, data in inputs.items()}:
         raise ReleaseError("Git input digest mismatch")
     payload = read_zip(archive)
+    requirements = (directory / "requirements.txt").read_bytes()
+    if payload.get("release/requirements.txt") != requirements:
+        raise ReleaseError("Requirements are not bound to the trusted archive")
+    if manifest["dependencies"] != dependency_inventory(payload):
+        raise ReleaseError("Dependency inventory does not match package metadata")
     if manifest["files"] != {name: sha256(data) for name, data in payload.items()}:
         raise ReleaseError("Archive inventory mismatch")
     expected_source = source_payload(inputs)
