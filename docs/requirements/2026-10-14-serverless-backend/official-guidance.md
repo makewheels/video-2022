@@ -48,3 +48,10 @@ ZIP 可信摘要保护包内 requirements，sidecar 与包内记录对照。依�
 - SDK 本地隔离解析：alibabacloud-fc20230330 4.8.3、oss2 2.18.4。SDK 仅用于发布工具，不进入公共业务/API 运行依赖。官方支持 Python 3.12 仍不替代实际地域发布和原生模块验收。
 
 - [ListProvisionConfigs](https://help.aliyun.com/zh/functioncompute/api-fc-2023-03-30-listprovisionconfigs) 支持按函数查预留、定时和跟踪配置；S03 发布/冒烟回读拒绝存在预留配置。官方 CLI 3.4.11 dry-run 和 SDK 只读实测确认 FC3 使用 fcv3.cn-beijing.aliyuncs.com；不能混用 FC2 接入地址。
+
+## S03.b OSS 不可变上传与 RAM role（2026-10-14）
+
+- [PutObject](https://help.aliyun.com/zh/oss/developer-reference/putobject)：启用/暂停 versioning 时 x-oss-forbid-overwrite 不生效；当前客户端没有用 tagging/KMS，不按这些功能预授权限。
+- [GetBucketVersioning](https://help.aliyun.com/zh/oss/developer-reference/getbucketversioning)：空配置为从未启用，Status 为 Enabled/Suspended；发布前必须只读确认，不自动改共享bucket。
+- [AssumeRole](https://www.alibabacloud.com/help/en/ram/user-guide/assume-a-ram-role)：调用者权限和目标trust均须允许；现有STS系统策略不等于目标OSS读写权限。候选trust限定现有数据用户、读写限定dev发布前缀；未创建/未代入，IAM/Actions仍未验。
+- 本地锁定 oss2 2.18.4 实查及回归发现公开XML解析器 root.find("Status") 漏掉namespaced状态；SDK认证请求路径仍复用，项目对bounded原始XML按官方协议严格解析。此为项目实测观察，不把SDK源码作为真实IAM/云端验证。
