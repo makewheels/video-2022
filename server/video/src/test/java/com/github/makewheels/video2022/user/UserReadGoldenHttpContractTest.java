@@ -61,9 +61,14 @@ class UserReadGoldenHttpContractTest extends BaseIntegrationTest {
     }
 
     private JSONObject capture(String name, MockHttpServletRequestBuilder request) throws Exception {
+        return capture(name, request, 200, "application/json");
+    }
+
+    private JSONObject capture(String name, MockHttpServletRequestBuilder request, int status, String contentType)
+            throws Exception {
         MvcResult result = mvc.perform(request).andReturn();
-        assertEquals(200, result.getResponse().getStatus());
-        assertEquals("application/json", result.getResponse().getContentType());
+        assertEquals(status, result.getResponse().getStatus());
+        assertEquals(contentType, result.getResponse().getContentType());
         JSONObject fixture = new JSONObject(true);
         fixture.put("status", result.getResponse().getStatus());
         fixture.put("contentType", result.getResponse().getContentType());
@@ -183,6 +188,24 @@ class UserReadGoldenHttpContractTest extends BaseIntegrationTest {
         JSONObject body = capture("channel-missing", get("/user/getChannel").param("userId", "fixture-missing"));
         assertEquals(1, body.getIntValue("code"));
         assertEquals("用户不存在", body.getString("message"));
+        assertNull(body.get("data"));
+    }
+
+    @Test
+    void unauthorizedResponseKeepsLiteralStatusContentTypeAndMissingData() throws Exception {
+        JSONObject body = capture("unauthorized", get("/user/getMyProfile"), 401,
+                "application/json;charset=UTF-8");
+        assertEquals(401, body.getIntValue("code"));
+        assertEquals("请先登录", body.getString("message"));
+        assertFalse(body.containsKey("data"));
+    }
+
+    @Test
+    void handledBindingErrorKeepsGenericResultAndNullData() throws Exception {
+        JSONObject body = capture("binding-error", get("/user/getChannel"));
+        assertEquals(1, body.getIntValue("code"));
+        assertEquals("未知错误", body.getString("message"));
+        assertTrue(body.containsKey("data"));
         assertNull(body.get("data"));
     }
 }
