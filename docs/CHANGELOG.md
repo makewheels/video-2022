@@ -1,5 +1,10 @@
 # 变更日志
 
+## feat: S06.b2 旧用户 Mongo 只读适配器（2026-10-15）
+
+- 保留缺失/null、ObjectId查询及已验证字段转换，复用惰性连接池和UTC解码，不创建索引或写库。
+- 完整Python176passed，真实隔离Mongo对照4份Java黄金响应；未装配HTTP，其他BSON类型/生产网络仍为门槛。
+
 ## test: S06.b1 旧用户 BSON 读取契约（2026-10-15）
 
 - 隔离真实Mongo验证缺失与null、String/ObjectId查询、数字转换及token类型敏感性；3项集成测试与Checkstyle通过。

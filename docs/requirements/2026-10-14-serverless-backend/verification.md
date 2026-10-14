@@ -187,3 +187,10 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 基于master39af8559，真实回环独立临时mongod，源码/构建/日志/数据库均系统任务临时目录，finally终止自建进程并清理。JDK21/TZ=UTC，mvn -q -pl video -Dtest=UserMongoReadContractTest（临时Mongo端口/库覆盖）test checkstyle:check：3 tests / 0 failures / 0 errors / 0 skipped，退出0。
 - 缺失字段保留构造默认，显式null清空；ID和数值转换见[user-mongo-matrix.md](user-mongo-matrix.md)。初稿null假设失败，标记逐样本复核后修正断言；未修改运行代码。测试后仅移除诊断输出/改准确方法名。
 - S06.a #158必要CI38597432860全部通过，PR API/浏览器E2E按条件skipped，已合并39af8559；合并master CI38620293672及既有Java部署38620293649当前运行中。本阶段未验证Python适配器/生产数据/FC网络，不重复失败发布。
+
+## S06.b2 Mongo只读适配器（2026-10-15 03:18）
+
+- 本地CPython3.12.13，锁定web/deployment组，系统任务临时env/cache/pytest/dbpath；独立自建回环mongod，finally终止进程/清理目录，测试独立随机数据库finally删除。完整pytest：176passed/0skipped/1既有Starlette warning，3.74s。Ruff/500行/空白通过。初次仅import排序门禁失败，修正后才跑完整套件。
+- 新增10项Python测试：真实Mongo四份Java黄金响应、缺失/null、ObjectId不回退、数字/类型敏感token、错误传播/惰性、未验证BSON固定消息。完整套件含既有真实Mongo诊断测试；没有用skip代替本地数据库通过。
+- S06.b1 #159 CI38620516871必要项全部通过后合并286c3e7d，PR E2E skipped。#158合并master CI38620293672：浏览器79passed/1failed，频道加载等待locator strict mode匹配2元素；Java部署38620293649 success。最新master CI38622137273仍须查询，不将PR跳过的E2E写成通过。
+- 未装配路由/生产Mongo/FC网络；不支持的BSON仍为兼容缺口而非新增业务规则，详见user-mongo-reads.md。

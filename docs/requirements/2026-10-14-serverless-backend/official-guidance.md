@@ -55,3 +55,7 @@ ZIP 可信摘要保护包内 requirements，sidecar 与包内记录对照。依�
 - [GetBucketVersioning](https://help.aliyun.com/zh/oss/developer-reference/getbucketversioning)：空配置为从未启用，Status 为 Enabled/Suspended；发布前必须只读确认，不自动改共享bucket。
 - [AssumeRole](https://www.alibabacloud.com/help/en/ram/user-guide/assume-a-ram-role)：调用者权限和目标trust均须允许；现有STS系统策略不等于目标OSS读写权限。候选trust限定现有数据用户、读写限定dev发布前缀；未创建/未代入，IAM/Actions仍未验。
 - 本地锁定 oss2 2.18.4 实查及回归发现公开XML解析器 root.find("Status") 漏掉namespaced状态；SDK认证请求路径仍复用，项目对bounded原始XML按官方协议严格解析。此为项目实测观察，不把SDK源码作为真实IAM/云端验证。
+
+## S06.b2 用户Mongo读取（2026-10-15）
+
+[PyMongo日期](https://www.mongodb.com/docs/languages/python/pymongo-driver/current/data-formats/dates-and-times/)：默认naive UTC，集合CodecOptions可指定aware UTC。[ObjectId](https://pymongo.readthedocs.io/en/stable/api/bson/objectid.html)提供有效性判断与构造；旧Spring ID查询优先级、缺失/null默认和数字转换来自真实Java仓库基线，不由这些官方文档推断。项目选择普通快照、复用惰性池/有界find_one；未装配HTTP、未验证生产数据类型/FC网络。
