@@ -80,6 +80,7 @@ cd web && npm run dev  # 端口 5173，自动代理 API 到 5022
 - `ai-agent/` - 自然语言视频助手与评测体系 (Python，封装 video-cli)
 - `test/` - Python E2E 测试 (pytest + Playwright)
 - `transcode-worker/` - 独立 GPU 转码原型（未接入生产，见该目录 README）
+- `serverless/` - Python FC API 隔离性能原型（未替代 Java 业务后端，未切流，见该目录 README）
 
 ### 核心模块分包结构 (video 模块)
 

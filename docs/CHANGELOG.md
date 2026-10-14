@@ -1,5 +1,11 @@
 # 变更日志
 
+## feat: Serverless API 隔离性能原型（2026-10-14）
+
+- 新增共用应用的 Python FC Handler/FastAPI 入口及只读鉴权诊断、HTTP/新进程初始化测量工具，不接生产流量、不替代业务接口。
+- 本地 16 项测试通过、真实 Mongo 集成 1 项 skipped，记录真实公开列表字段形状；新 CI 使用隔离 Mongo，实际结果另记。
+- 本机模块初始化对比支持优先验证 Handler，但不代表 FC 冷启动或 Mongo 网络性能；Infisical 登录过期，云端验证尚未执行。
+
 ## docs: 落实 Serverless 方案后续确认（2026-10-14）
 
 - 本轮继续使用现有 MongoDB，未来 TableStore 迁移不纳入范围；不将保留数据库产品理解为授权迁库或采购。
