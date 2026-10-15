@@ -27,7 +27,8 @@ class Urls:
 @pytest.fixture
 def composed(isolated_database):
     database = isolated_database
-    for name in ("video", "user", "progress", "cover", "requestLog", "exceptionLog", "client", "session"):
+    for name in ("video", "user", "progress", "cover", "requestLog", "exceptionLog", "client", "session",
+                 "transcode", "tsFile"):
         database[name].delete_many({})
     database.user.insert_one(golden_document())
     database.video.insert_one({"_id": "fixture-video", "watch": {"watchId": "fixture-watch"},

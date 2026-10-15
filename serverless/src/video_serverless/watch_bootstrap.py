@@ -4,9 +4,13 @@ import secrets
 from time import time_ns
 
 from video_serverless.adapters.hmac_access_signatures import HmacAccessSignatures
+from video_serverless.adapters.mongo_hls import MongoHlsReads
 from video_serverless.adapters.mongo_watch_info import MongoWatchReads
+from video_serverless.business.hls import ChildPlaylists
+from video_serverless.business.hls_master import MasterPlaylists
 from video_serverless.business.playback_authorization import PlaybackAuthorization
 from video_serverless.business.watch_info import WatchInfos
+from video_serverless.playlist_application import PlaylistApplication
 from video_serverless.watch_application import WatchApplication
 
 
@@ -20,5 +24,8 @@ def build_watch_application(database_provider, urls, cycle, *, signature_secret,
             alphabet = "_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
             return "".join(secrets.choice(alphabet) for _ in range(21))
     authorization = PlaybackAuthorization(HmacAccessSignatures(signature_secret, clock_ms), clock_ms, nano_id)
+    reads = MongoHlsReads(database_provider)
+    playlists = PlaylistApplication(MasterPlaylists(reads, authorization, internal_base_url),
+                                    ChildPlaylists(reads, authorization, internal_base_url), cycle)
     return WatchApplication(WatchInfos(MongoWatchReads(database_provider), urls, authorization,
-                                       internal_base_url, nano_id), cycle)
+                                       internal_base_url, nano_id), cycle, playlists)

@@ -1,9 +1,10 @@
-"""Explicit watch-info HTTP capability; playlist and media delivery are not yet installed."""
+"""Explicit watch-info and optional HLS HTTP composition."""
 
 from dataclasses import dataclass
 
 from video_serverless.business.watch_info import WatchInfos
 from video_serverless.http import Response
+from video_serverless.playlist_application import PLAYLIST_ROUTES, PlaylistApplication
 from video_serverless.ports.request_identity import RequestMetadata
 from video_serverless.request_cycle import CycleResult, RequestCycle
 from video_serverless.user_application import UserBindingError, UserRequestError
@@ -13,8 +14,11 @@ from video_serverless.user_application import UserBindingError, UserRequestError
 class WatchApplication:
     watches: WatchInfos
     cycle: RequestCycle
+    playlists: PlaylistApplication | None = None
 
     def dispatch(self, request: RequestMetadata, body: bytes = b"") -> CycleResult:
+        if self.playlists is not None and request.path in PLAYLIST_ROUTES:
+            return self.playlists.dispatch(request, body)
         if request.path != "/watchController/getWatchInfo":
             return CycleResult(Response.json({"message": "Watch route not found"}, 404), "not_started")
 
