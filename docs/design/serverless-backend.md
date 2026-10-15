@@ -237,3 +237,7 @@ S06.d7实测收窄日志门槛：含点header使旧日志失败但不改变业�
 测试专用ASGI POST链路组合身份/JSON/业务校验/真实Mongo更新与日志，旧成功/长度/绑定/401响应及实际更新次数通过；仅已验UTF-8、进程内TestClient，不修改现有入口，详见[组合证据](../requirements/2026-10-14-serverless-backend/profile-update-http.md)。
 
 2026-10-15夜间交付与尚未通过的阶段，汇总于[验收与恢复清单](../requirements/2026-10-14-serverless-backend/night-review.md)。运行入口/真实云端验收按该清单与progress保留边界，不能把未装配库称为生产迁移完成。
+
+## 文件访问计费迁移门槛
+
+先以完整Spring隔离契约验证302和异步日志实际结果，见[file/access基线](../requirements/2026-10-14-serverless-backend/file-access-contract.md)。文件访问不可隐式启用第二计费所有者，可靠任务与两次写入恢复需独立验收。

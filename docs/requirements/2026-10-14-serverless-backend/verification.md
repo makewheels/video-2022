@@ -323,3 +323,7 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - #176 headfaf37bd6必要CI38653142301全部成功后合并，PR两个E2E按既有条件skipped；#175 master CI38652998286/部署38652998328均success。新master CI38654503711/部署38654503779待查最终，不能从历史成功断言当前新head已通过。
 - 新增night-review.md，逐项区分已交付库/隔离HTTP组合、未部署/阻塞、失败历史与未开始项目，给出恢复/回退边界。纯文档变更，不重复Java/Python完整套件；最近完整Python297passed/0skipped/1既有warning。
 - 报告系统打开标记06:05:08、文件与独立headless QA证据分开，屏幕实际显示仍未验。工作区/PR/CI只读核对后保存；没有生产切流/迁库或权限扩张。
+
+## S08.f 文件访问旧HTTP契约（2026-10-15晚间）
+
+JDK21、真实Spring MVC/回环随机Mongo，FileAccessHttpContractTest9passed/0failed/0error/0skipped、Checkstyle通过；异步真实故障不注入，latch等待后清库。首次对外过期详情假设失败，按实际通用message与exceptionLog详情修正后全套复验。302 Content-Type与JSON正文固定；未修改运行计费规则或调用真实OSS。详见file-access-contract.md。
