@@ -263,3 +263,5 @@ BackendApplication 显式工厂可成对提供播放签名密钥与内部地址�
 S09.b增加普通`ProgressHeartbeat`/`ProgressRecord`/`ProgressStore`与`ProgressUpdates`。Mongo适配复用惰性provider并有界findOne，save以原ID整文档替换/upsert（旧MongoTemplate.save语义），省略null且不写_class。保持旧读改写竞争语义；没有将它擅改成原子最大进度或单调时长规则。暂未接入任何应用入口。
 
 S09.c增加不可变完整Heartbeat和同步存储端口；普通Heartbeats用例局部覆盖身份/创建时间，心跳存储成功后才调用进度能力，不回滚/重试先前写入。Mongo将音量转Decimal128、进度转Int64并保持指定ID替换语义。该能力仍未装配生产HTTP。
+
+S09.d：[播放会话](../requirements/2026-10-14-serverless-backend/playback/playback-sessions.md)采用普通不可变snapshot/command与同步存储端口，保持旧start/心跳/退出读改写、Java int32回绕及Long/Integer/Date映射；未知BSON转换明确拒绝，不推定完整兼容。尚未装配HTTP/生产入口，未改既有Java运行规则。

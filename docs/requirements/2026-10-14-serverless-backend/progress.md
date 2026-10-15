@@ -1,5 +1,12 @@
 # 接续记录
 
+## 2026-10-16 S09.d 播放会话/时长/退出
+
+- #202 head4eccdb52必要CI38796068733通过后合并3991797c；#201 master CI38795766121/部署38795766316均success。
+- 普通PlaybackSessions/端口/Mongo适配完成本地验收：Java旧HTTP6passed/Checkstyle，完整Python529passed/0skipped/1既有warning，Ruff/500行/空白通过。
+- 保留旧时长覆盖/负值/暂停旗标忽略、退出后心跳/任意退出类型、计数溢出、无会话成功；不引入新所有权或重试。仅隔离库；完整JSON/HTTP、观看历史和FC未完成。见[会话契约](playback/playback-sessions.md)。
+
+
 ## 2026-10-16 S09.c 心跳持久化
 
 - #201 head54a322de必要CI38795305473成功后合并1aff6f7f；#200 master CI38794939615/部署38794939689均success。
