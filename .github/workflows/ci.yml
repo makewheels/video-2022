@@ -113,7 +113,8 @@ jobs:
           push: false
           tags: video-transcode-worker:prototype
           cache-from: type=gha,scope=worker-prototype
-          cache-to: type=gha,scope=worker-prototype,mode=max
+          # PR merge-ref caches cannot warm master; avoid uploading large CUDA layers per PR.
+          cache-to: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && 'type=gha,scope=worker-prototype,mode=max' || '' }}
       - name: Verify changed prototype encoder and imports
         if: steps.gpu-image.outputs.required == 'true'
         run: |

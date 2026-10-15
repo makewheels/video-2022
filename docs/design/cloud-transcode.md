@@ -206,3 +206,5 @@ CALLBACK_SECRET 的取密、部署输入和 Compose 容器环境必须全部映�
 ## CI原型镜像与发布镜像
 
 ci.yml的Worker原型镜像只验证编译/NVENC编码器与导入，不是deploy-functions.yml发布的CPU/GPU函数镜像，也不在无GPU runner做硬件编码。原型只在相关目录、CI/判断脚本变化或手工触发时重建；比较失败保守构建。Buildx复用GitHub层缓存，load本地后仍执行相同冒烟。部署镜像继续按既有Actions发布和缓存策略。依据：[Docker缓存文档](https://docs.docker.com/build/ci/github-actions/cache/)。
+
+缓存只由master push写入；PR与手工运行只读取缓存，避免PR专属cache重复上传大型CUDA层。首次主干冷缓存写入可能较慢；不把首次缓存建立当作稳定耗时或承诺每次构建只需固定秒数。
