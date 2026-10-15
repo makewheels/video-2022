@@ -1,5 +1,13 @@
 # 接续记录
 
+## 2026-10-16 S09.e 观看历史
+
+- #203 headec305081必要CI38796946930成功后合并2fcf6c7b。
+- 迁移普通历史读取/清理端口、用例与Mongo适配；保留每条日志/缺视频空字段、Java分页溢出/零负limit、两小时封面及旧空viewer语义。
+- Java真实HTTP5passed/Checkstyle，完整Python541passed/0skipped/1既有warning，新增12项；Ruff/500行/空白通过。仅隔离库，签名替代，无生产清理/重放。
+- S09仍缺完整JSON/HTTP组合、watchLog创建/计数与真实FC/全端验收。见[观看历史](playback/watch-history.md)。
+
+
 ## 2026-10-16 S09.d 播放会话/时长/退出
 
 - #202 head4eccdb52必要CI38796068733通过后合并3991797c；#201 master CI38795766121/部署38795766316均success。
