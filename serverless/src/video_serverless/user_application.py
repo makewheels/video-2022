@@ -42,10 +42,11 @@ class UserBindingError(ValueError):
 
 
 class UserRequestError(RuntimeError):
-    def __init__(self, code: int, message: str):
-        super().__init__()
+    def __init__(self, code: int, message: str, detail: str | None = None):
+        super().__init__(*(() if detail is None else (detail,)))
         self.code = code
         self.message = message
+        self.detail = detail
 
 
 def _parameter(request: RequestMetadata, name: str) -> str:

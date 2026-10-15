@@ -203,3 +203,9 @@ S03发布权限/S04云网络仍阻塞，不沿用已结束的夜间时间授权�
 [旧文件签名与私密播放授权](playback-authorization.md)。实际直接编译当前Java服务源
 取得3组黄金HMAC，新增22项及架构8项共30passed、Ruff通过。尚无播放HTTP/媒体
 清单/计费迁移；下一步getWatchInfo及主/子m3u8，不能宣称已可播放。
+
+## 2026-10-15 连续推进：S08.b 播放信息
+
+分支feat-serverless-watch-info基于S08.a，实现[播放信息独立HTTP能力](watch-info.md)。
+真实隔离Mongo新增6项、连用户HTTP/架构24passed，Ruff通过；无生产入口切换。
+签名/播放详情已实现不等于URL后续路径已迁移。继续HLS子清单与主清单、302/计费。
