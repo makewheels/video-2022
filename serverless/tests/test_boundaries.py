@@ -65,12 +65,13 @@ def test_http_controller_has_no_configuration_or_infrastructure_imports():
         "video_serverless.business", "video_serverless.http", "video_serverless.ports",
         "video_serverless.profile_json", "video_serverless.request_cycle", "video_serverless.user_responses",
     })
-    for name in ("public_video_application.py", "backend_application.py", "watch_application.py"):
+    for name in ("public_video_application.py", "backend_application.py", "search_application.py", "watch_application.py"):
         source = (ROOT / name).read_text(encoding="utf-8")
         assert not forbidden_imports(source, "video_serverless", PURE_STDLIB | {
             "re", "video_serverless.business", "video_serverless.http", "video_serverless.ports",
             "video_serverless.request_cycle", "video_serverless.user_application",
             "video_serverless.public_video_application",
+            "video_serverless.video_responses", "video_serverless.search_application",
         })
     source = (ROOT / "request_cycle.py").read_text(encoding="utf-8")
     assert not forbidden_imports(source, "video_serverless", PURE_STDLIB | {

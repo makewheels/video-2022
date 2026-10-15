@@ -34,6 +34,11 @@ class PublicVideos:
 
     def page(self, skip: int, limit: int, keyword: str | None) -> PublicPage:
         sources = self.videos.page(skip, limit, keyword)
+        result = self.enrich(sources)
+        # Preserve the separate count after page enrichment; no pretend atomic snapshot.
+        return PublicPage(result, self.videos.count(keyword))
+
+    def enrich(self, sources: tuple[PublicVideo, ...]) -> tuple[VideoCard, ...]:
         covers = self.covers.signed(tuple(video.cover_id for video in sources if video.cover_id is not None))
         uploaders = {user_id: self.users.find_by_id(user_id)
                      for user_id in dict.fromkeys(video.uploader_id for video in sources) if user_id is not None}
@@ -52,5 +57,4 @@ class PublicVideos:
                                     video.uploader_id if user is None else user.id,
                                     self.display_date(video.create_time),
                                     self.display_date(video.youtube_publish_time)))
-        # Preserve the separate count after page enrichment; no pretend atomic snapshot.
-        return PublicPage(tuple(result), self.videos.count(keyword))
+        return tuple(result)

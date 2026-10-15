@@ -2,16 +2,18 @@
 
 import re
 from dataclasses import dataclass
-from datetime import UTC
 
 from video_serverless.business.public_videos import PublicVideos
 from video_serverless.http import Response
 from video_serverless.ports.request_identity import RequestMetadata
 from video_serverless.request_cycle import CycleResult, RequestCycle
+from video_serverless.video_responses import video_result, video_rows
 
 
-def _integer(request, name):
+def _integer(request, name, default=None):
     value = request.first_parameter(name)
+    if default is not None and (value is None or value == ""):
+        return default
     if value is None:
         raise ValueError("Required pagination parameter is missing")
     # Verified against Spring NumberUtils7.0.5, not FastAPI's default integer parsing.
@@ -32,10 +34,6 @@ def _integer(request, name):
     return number
 
 
-def _date(value):
-    return None if value is None else value.astimezone(UTC).isoformat(timespec="milliseconds").replace("+00:00", "Z")
-
-
 @dataclass(frozen=True)
 class PublicVideoApplication:
     videos: PublicVideos
@@ -50,21 +48,6 @@ class PublicVideoApplication:
                 raise ValueError("Request method is not supported")
             page = self.videos.page(_integer(metadata, "skip"), _integer(metadata, "limit"),
                                     metadata.first_parameter("keyword"))
-            rows = []
-            for card in page.videos:
-                video = card.source
-                rows.append({
-                    "id": video.id, "userId": None, "watchCount": video.watch_count, "duration": video.duration,
-                    "coverUrl": card.cover_url, "watchId": video.watch_id, "watchUrl": video.watch_url,
-                    "shortUrl": video.short_url, "title": video.title, "description": video.description,
-                    "type": None, "status": video.status, "visibility": video.visibility,
-                    "tags": None if video.tags is None else list(video.tags), "category": video.category,
-                    "uploaderName": card.uploader_name, "uploaderAvatarUrl": card.uploader_avatar_url,
-                    "uploaderId": card.uploader_id, "createTime": _date(video.create_time),
-                    "createTimeString": card.create_time_string, "youtubePublishTime": None,
-                    "youtubePublishTimeString": card.youtube_publish_time_string,
-                })
-            response = Response.json({"code": 0, "message": "success", "data": {"list": rows, "total": page.total}})
-            return Response(response.status, response.body, {"Content-Type": "application/json"})
+            return video_result({"list": video_rows(page.videos), "total": page.total})
 
         return self.cycle.run(request, handle)
