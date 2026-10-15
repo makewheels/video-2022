@@ -1,5 +1,18 @@
 # 接续记录
 
+## 2026-10-15 20:14 文档分类与本轮最终接续点
+
+用户要求单执行者慢慢推进，已停用subagent及旧夜间worker/report定时任务，不重新启用。
+[总体进度与剩余清单](overview/status.md)按25个顶层阶段列出3个基础已交付、2个云端阻塞/未验、5个部分、15个主体未迁移；不按PR数量计算百分比。
+#194已合并63fb35cb；#198最新headca80d1a9必要CI38730885954成功后合并d193fd20。
+#195最新head186cd0b9 CI38731433781通过后合并356d3bab；#196最新headcc4f2658 CI38731897337通过后合并d1a5d3b0；#197最新head5efc0c8a CI38732436486通过后合并78c43a3a。
+#199为文档分类/入口状态校正，旧head首轮CI38731532874已成功；最终新head须重新查CI，全部必要项通过才能合并，不用旧head代替。若已合并，不重复实施，转下一小阶段。
+46份主题契约归入overview/deployment/http/user/video/playback/tasks，根目录仅五入口；更新相对链接，原51份文档保留，固定SHA历史URL不改。
+GPU原型镜像按变化构建已实际生效：#199首轮Worker job116410228932为59秒且三项镜像步骤skipped；测试照常。旧首轮cache导出926.1秒保留为开销，已改仅master push写cache、PR/手工只读。
+最近完整Python486passed/0skipped/1既有warning；Java访问HTTP9项、持久化故障2项、真实提交HTTP12项和相关任务/封面12项通过。没有真实FC权限/网络/回退完成，不新增付费云测试。
+后续先查#199及最新master CI/E2E/Java部署实际结果，再按S08文件HTTP/S09/S12独立小阶段推进；不得生产切流、迁库、改旧计费规则或扩大权限。
+
+
 ## 2026-10-15 文档与分支导航整理
 
 新增[总体进度与剩余清单](overview/status.md)，按S00–S24区分交付/部分/阻塞/未开始，与已上线转码工程分开。
@@ -12,7 +25,7 @@
 
 #193合并c26f48d5后master CI38725534826/Java部署38725534873均success。
 #194 head798845db转码隐式重发修复、#195 head1b2717f0文件访问契约、#196 headae614b1d纯重定向均待最新必要CI，不能沿用旧head。
-新增[任务持久化故障基线](task-submission-persistence.md)，真实自建回环Mongo2passed/Checkstyle。
+新增[任务持久化故障基线](tasks/task-submission-persistence.md)，真实自建回环Mongo2passed/Checkstyle。
 手工装配无Spring调度，认领前CREATED可同attempt安全提交，派发后SUBMITTED重建阻止重发且Mongo原文档不变。
 本阶段只是故障证据，S12可靠唤醒/零空扫及S03云权限仍未解决；无生产任务/云收费调用。
 最近完整Python486passed（#196）/0skipped/1既有warning；新Java测试不重复无关Python。

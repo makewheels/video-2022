@@ -4,3 +4,4 @@
 
 | 文档 | 内容 |
 |---|---|
+| [task-submission-persistence](task-submission-persistence.md) | S12.a 提交持久化故障基线 |

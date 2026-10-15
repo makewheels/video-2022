@@ -9,5 +9,4 @@
 | [official-guidance](official-guidance.md) | 阿里云官方依据与项目取舍 |
 | [response-comparison](response-comparison.md) | S05.b 离线响应对照工具 |
 | [routes](routes.md) | Controller 声明接口盘点 |
-
-优先阅读：[总体进度与剩余清单](status.md)。
+| [status](status.md) | 总体进度与剩余清单 |

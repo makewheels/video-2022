@@ -250,7 +250,7 @@ BackendApplication 显式工厂可成对提供播放签名密钥与内部地址�
 
 ## S12.a 恢复前置故障证据
 
-先使用真实随机Mongo与手工装配验证FcTask认领前/派发后的持久化边界，不启Spring调度、不新增生产机制。对象重建不等于真实进程崩溃；严格零空扫和可靠唤醒仍未解决，见[故障基线](../requirements/2026-10-14-serverless-backend/task-submission-persistence.md)。
+先使用真实随机Mongo与手工装配验证FcTask认领前/派发后的持久化边界，不启Spring调度、不新增生产机制。对象重建不等于真实进程崩溃；严格零空扫和可靠唤醒仍未解决，见[故障基线](../requirements/2026-10-14-serverless-backend/tasks/task-submission-persistence.md)。
 
 ## 文件重定向能力边界（2026-10-15）
 
