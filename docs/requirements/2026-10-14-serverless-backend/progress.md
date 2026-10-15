@@ -1,5 +1,14 @@
 # 接续记录
 
+## 2026-10-15 连续推进：S07.b
+
+#184公开视频列表head6d179d3c及#185发布错误定位head1f8b0a97均已提交，CI须查最终。
+分支feat-serverless-search-category基于#184，新增[搜索/分类](search-category.md)，
+受影响模块focused30passed、Ruff通过、1warning；JDK21算术边界探针已实际执行。
+没有整套本机重跑或真实FC验证，不把旧Java源码/算术探针当完整HTTP验收。
+本轮已连续完成观看身份、共享ID/token、用户HTTP/TCP、头像/OSS/STS、公开列表、
+搜索分类及发布诊断多个阶段；剩余核心为播放、上传/可靠任务、其它业务和云端门槛。
+
 ## 2026-10-15 连续推进：S07.a
 
 #183精确head1bcb5e97必要CI38671383841通过后合并2026014e，PR E2E按条件skipped。
