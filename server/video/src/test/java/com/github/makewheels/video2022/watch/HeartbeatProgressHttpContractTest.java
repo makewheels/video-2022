@@ -158,4 +158,48 @@ class HeartbeatProgressHttpContractTest extends BaseIntegrationTest {
         assertFalse(replaced.containsKey("progressInMillis"));
     }
 
+    @Test
+    void explicitHeartbeatIdReplacesDocumentWithDecimalAndDateTypes() throws Exception {
+        String body = "{\"id\":\"fixture-heartbeat-id\",\"clientId\":\"c\",\"videoId\":\"unknown\","
+                + "\"playerStatus\":\"PLAYING\",\"playerTime\":42,\"playerVolume\":0.1250,"
+                + "\"clientTime\":1704164645000,\"createTime\":1,\"event\":\"fixture-event\"}";
+        assertEquals(0, response(heartbeat(body)).getIntValue("code"));
+        Document original = mongoTemplate.getCollection("heartbeat").find().first();
+        assertEquals("fixture-heartbeat-id", original.get("_id"));
+        assertInstanceOf(Long.class, original.get("playerTime"));
+        assertEquals(new java.math.BigDecimal("0.1250"),
+                original.get("playerVolume", org.bson.types.Decimal128.class).bigDecimalValue());
+        assertEquals(1704164645000L, original.getDate("clientTime").getTime());
+        assertTrue(original.getDate("createTime").getTime() > 1);
+        assertFalse(original.containsKey("_class"));
+        assertEquals(0, response(heartbeat("{\"id\":\"fixture-heartbeat-id\",\"clientId\":\"other\"}"))
+                .getIntValue("code"));
+        assertEquals(1, mongoTemplate.getCollection("heartbeat").countDocuments());
+        Document replaced = mongoTemplate.getCollection("heartbeat").find().first();
+        assertEquals("other", replaced.getString("clientId"));
+        assertFalse(replaced.containsKey("event"));
+        assertFalse(replaced.containsKey("playerVolume"));
+    }
+
+    @Test
+    void validHexHeartbeatIdUsesObjectIdWithoutReplacingEqualStringId() throws Exception {
+        String id = "64b000000000000000000001";
+        mongoTemplate.getCollection("heartbeat").insertOne(new Document("_id", id).append("fixture", "original"));
+        assertEquals(0, response(heartbeat("{\"id\":\"" + id + "\"}")).getIntValue("code"));
+        assertEquals(2, mongoTemplate.getCollection("heartbeat").countDocuments());
+        assertEquals("original", mongoTemplate.getCollection("heartbeat").find(new Document("_id", id))
+                .first().getString("fixture"));
+        assertNotNull(mongoTemplate.getCollection("heartbeat").find(
+                new Document("_id", new org.bson.types.ObjectId(id))).first());
+    }
+
+    @Test
+    void unrestrictedMethodStillAcceptsJsonButTextPlainIsRejectedBeforeSave() throws Exception {
+        assertEquals(0, response(get("/heartbeat/add").contentType("application/json")
+                .content("{\"clientId\":\"fixture-client\"}")).getIntValue("code"));
+        assertEquals(1, response(post("/heartbeat/add").contentType("text/plain")
+                .content("{\"clientId\":\"fixture-client\"}")).getIntValue("code"));
+        assertEquals(1, mongoTemplate.getCollection("heartbeat").countDocuments());
+    }
+
 }

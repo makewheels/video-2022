@@ -31,3 +31,15 @@
 旧Java HTTP/BSON11passed/0skipped，Maven/Checkstyle成功；完整Python503passed/0skipped/1既有Starlette warning，新增17项（真实Mongo含跨设备、空viewer/client、日期默认/null、整文档替换、删除后save重建、真实写后合成确认异常不重试）。Ruff、500行门禁及diff --check通过。
 
 原始BSON证实ObjectId/Long/Date、null省略、无_class、原创建时间保留和额外字段删除。首次假设_class存在的Java断言失败，查全局MongoConfiguration禁用配置后修正实现并全量复验；未把首轮失败称作通过。其他BSON类型、竞争写入/网络不确定提交和完整HTTP心跳仍未验。
+
+## S09.c 完整心跳持久化
+
+实施中：普通不可变Heartbeat值、同步HeartbeatStore和先心跳后进度的用例；Mongo复用惰性provider，保留客户端指定ID的save替换/无ID插入、Decimal128音量、Long进度、日期及null省略。鉴权解析与JSON绑定仍在外层，不在业务端口引入BSON/框架类型。
+
+真实旧HTTP验证BSON/指定ID替换/方法和正文类型，Python以真实隔离库验证组合、失败不重试与后续身份无残留。不复制ThreadLocal，不安装到生产入口；网络不确定写入和完整JSON绑定仍单独验收。
+
+### S09.c本地验证
+
+旧Java真实MVC/回环Mongo14passed/0skipped，Checkstyle通过：Decimal128保留0.1250精度、Long/Date、createTime由服务端覆盖，无_class；指定String ID整文档替换并省略null，24hex ObjectId与同文本String ID可共存；旧ANY方法允许GET JSON，而text/plain在保存前拒绝。
+
+完整Python516passed/0skipped/1既有warning（本阶段新增13项），真实Mongo组合：登录覆盖/匿名正文viewer、无全局身份残留、非playing仍存心跳、缺身份失败保留已存心跳、心跳真实写后合成异常不重试/不写进度、进度失败不重放心跳。无真实网络故障/生产重放；纯值已绑定，JSON字段转换和HTTP响应仍未装配。

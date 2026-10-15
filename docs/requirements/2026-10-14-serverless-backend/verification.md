@@ -359,3 +359,7 @@ JDK21/自建回环随机端口Mongo，手工装配Repository/Submitter无Spring�
 ## 2026-10-16 S09.b
 
 真实旧Java HTTP/BSON11passed/0skipped（含Checkstyle）；完整Python503passed/0skipped/1既有warning，Ruff/500行/空白通过。新17项包含真实隔离Mongo，不连接共享/生产库。首次_class假设错误已由旧HTTP证据纠正并复验；详细范围见[心跳/进度](playback/heartbeat-progress.md)。未装配心跳/生产HTTP/FC。
+
+## 2026-10-16 S09.c
+
+Java旧HTTP/BSON14passed/0skipped，Maven/Checkstyle通过；完整Python516passed/0skipped/1既有warning。详见[心跳/进度](playback/heartbeat-progress.md)的Decimal128/ID/日期与组合失败验证。Ruff换行问题纠正后单独复验，运行行为未改。业务入口/JSON绑定/FC尚未验。
