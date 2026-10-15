@@ -238,6 +238,16 @@ S06.d7实测收窄日志门槛：含点header使旧日志失败但不改变业�
 
 2026-10-15夜间交付与尚未通过的阶段，汇总于[验收与恢复清单](../requirements/2026-10-14-serverless-backend/overview/night-review.md)。运行入口/真实云端验收按该清单与progress保留边界，不能把未装配库称为生产迁移完成。
 
+## 文件访问计费迁移门槛
+
+先以完整Spring隔离契约验证302和异步日志实际结果，见[file/access基线](../requirements/2026-10-14-serverless-backend/file-access-contract.md)。文件访问不可隐式启用第二计费所有者，可靠任务与两次写入恢复需独立验收。
+
 ## 统一隔离播放装配（2026-10-15）
 
 BackendApplication 显式工厂可成对提供播放签名密钥与内部地址，复用用户 RequestCycle 装配观看信息和 HLS。默认入口不变；详见[路由装配验收](../requirements/2026-10-14-serverless-backend/playback/backend-watch-routing.md)。
+
+BackendApplication 显式工厂可成对提供播放签名密钥与内部地址，复用用户 RequestCycle 装配观看信息和 HLS。默认入口不变；详见[路由装配验收](../requirements/2026-10-14-serverless-backend/backend-watch-routing.md)。
+
+## 文件重定向能力边界（2026-10-15）
+
+纯用例验证短时HMAC后只读tsFile并请求三小时预签名，具体Mongo读取与普通端口分离。没有访问计费写入或HTTP入口装配；不能以此替代S12可靠计费，见[file-redirect](../requirements/2026-10-14-serverless-backend/file-redirect.md)。

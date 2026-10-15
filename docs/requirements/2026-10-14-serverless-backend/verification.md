@@ -324,6 +324,10 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 新增night-review.md，逐项区分已交付库/隔离HTTP组合、未部署/阻塞、失败历史与未开始项目，给出恢复/回退边界。纯文档变更，不重复Java/Python完整套件；最近完整Python297passed/0skipped/1既有warning。
 - 报告系统打开标记06:05:08、文件与独立headless QA证据分开，屏幕实际显示仍未验。工作区/PR/CI只读核对后保存；没有生产切流/迁库或权限扩张。
 
+## S08.f 文件访问旧HTTP契约（2026-10-15晚间）
+
+JDK21、真实Spring MVC/回环随机Mongo，FileAccessHttpContractTest9passed/0failed/0error/0skipped、Checkstyle通过；异步真实故障不注入，latch等待后清库。首次对外过期详情假设失败，按实际通用message与exceptionLog详情修正后全套复验。302 Content-Type与JSON正文固定；未修改运行计费规则或调用真实OSS。详见file-access-contract.md。
+
 ## S08.e 统一后端播放装配（2026-10-15 晚间）
 
 真实回环Mongo、CPython3.12.13完整465passed/0skipped/1既有Starlette warning、Ruff通过；新增6项，私密观看信息→主→子清单只落3条日志，拒绝与既有用户路由正常，无用户/视频/client写入。配置缺失时无Mongo访问。未改Java业务，不重复Java测试。测试env/db/log/cache均系统临时目录，finally终止Mongo并清理。未验证真实OSS/网络/FC，见backend-watch-routing.md。
@@ -337,3 +341,7 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 ### GPU按需构建的实际CI对照
 
 用户原job116394017733共7分8秒，镜像编译步骤6分4秒；#199纯文档首轮CI38731532874的Worker job116410228932为59秒，Buildx/镜像构建/镜像验证三步skipped，Worker与函数测试仍成功。首次旧缓存策略导出926.1秒的额外开销保留，#198已改仅主干写cache。此为实际job对照，不推算所有后续运行固定耗时，主干冷缓存仍可能较慢。
+
+## S08.g 文件重定向纯能力（2026-10-15晚间）
+
+真实回环随机Mongo/CPython3.12.13完整486passed/0skipped/1既有warning、Ruff通过，新增21项。验证时间先于HMAC/存储、签名绑定上下文、ObjectId不回退String、三小时TTL、缺失/null/空/空白/数字key与不按owner/type/deleted筛选；签名失败不重试。所有环境/db/log/cache位于系统临时目录，finally停止Mongo并清理。无实际OSS、计费、HTTP或FC装配，见file-redirect.md。
