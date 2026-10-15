@@ -248,6 +248,10 @@ BackendApplication 显式工厂可成对提供播放签名密钥与内部地址�
 
 BackendApplication 显式工厂可成对提供播放签名密钥与内部地址，复用用户 RequestCycle 装配观看信息和 HLS。默认入口不变；详见[路由装配验收](../requirements/2026-10-14-serverless-backend/playback/backend-watch-routing.md)。
 
+## S12.a 恢复前置故障证据
+
+先使用真实随机Mongo与手工装配验证FcTask认领前/派发后的持久化边界，不启Spring调度、不新增生产机制。对象重建不等于真实进程崩溃；严格零空扫和可靠唤醒仍未解决，见[故障基线](../requirements/2026-10-14-serverless-backend/task-submission-persistence.md)。
+
 ## 文件重定向能力边界（2026-10-15）
 
 纯用例验证短时HMAC后只读tsFile并请求三小时预签名，具体Mongo读取与普通端口分离。没有访问计费写入或HTTP入口装配；不能以此替代S12可靠计费，见[file-redirect](../requirements/2026-10-14-serverless-backend/playback/file-redirect.md)。

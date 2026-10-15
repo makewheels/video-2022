@@ -8,6 +8,15 @@
 #194已合并63fb35cb；#195/#196/#197需跟随新master收尾。#198按变化构建/缓存Worker原型镜像，必要CI须查最终。
 本次纯文档导航调整，检查路径/链接/内容保留，不重复业务测试。
 
+## 2026-10-15 晚间接续：S12.a 持久化故障基线
+
+#193合并c26f48d5后master CI38725534826/Java部署38725534873均success。
+#194 head798845db转码隐式重发修复、#195 head1b2717f0文件访问契约、#196 headae614b1d纯重定向均待最新必要CI，不能沿用旧head。
+新增[任务持久化故障基线](task-submission-persistence.md)，真实自建回环Mongo2passed/Checkstyle。
+手工装配无Spring调度，认领前CREATED可同attempt安全提交，派发后SUBMITTED重建阻止重发且Mongo原文档不变。
+本阶段只是故障证据，S12可靠唤醒/零空扫及S03云权限仍未解决；无生产任务/云收费调用。
+最近完整Python486passed（#196）/0skipped/1既有warning；新Java测试不重复无关Python。
+
 
 
 ## 2026-10-15 晚间接续：S08.g 纯文件重定向

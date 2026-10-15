@@ -342,6 +342,10 @@ JDK21、真实Spring MVC/回环随机Mongo，FileAccessHttpContractTest9passed/0
 
 用户原job116394017733共7分8秒，镜像编译步骤6分4秒；#199纯文档首轮CI38731532874的Worker job116410228932为59秒，Buildx/镜像构建/镜像验证三步skipped，Worker与函数测试仍成功。首次旧缓存策略导出926.1秒的额外开销保留，#198已改仅主干写cache。此为实际job对照，不推算所有后续运行固定耗时，主干冷缓存仍可能较慢。
 
+## S12.a 持久化故障基线（2026-10-15晚间）
+
+JDK21/自建回环随机端口Mongo，手工装配Repository/Submitter无Spring调度，FcSubmissionPersistenceTest 2passed/0failed/0error/0skipped，Checkstyle通过。认领前持久化后合成中断，重建后同attempt成功提交1次；派发后合成中断，真实回读SUBMITTED完整快照，重建后总提交仍1、原始Mongo文档不变。无真实进程崩溃/云受理/自动扫描证明。构建/db/log系统临时目录finally清理，见task-submission-persistence.md。
+
 ## S08.g 文件重定向纯能力（2026-10-15晚间）
 
 真实回环随机Mongo/CPython3.12.13完整486passed/0skipped/1既有warning、Ruff通过，新增21项。验证时间先于HMAC/存储、签名绑定上下文、ObjectId不回退String、三小时TTL、缺失/null/空/空白/数字key与不按owner/type/deleted筛选；签名失败不重试。所有环境/db/log/cache位于系统临时目录，finally停止Mongo并清理。无实际OSS、计费、HTTP或FC装配，见file-redirect.md。
