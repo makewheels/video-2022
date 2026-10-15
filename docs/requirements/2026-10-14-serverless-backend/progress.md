@@ -1,5 +1,12 @@
 # 接续记录
 
+## 2026-10-16 S09.b 进度读写
+
+- #200 head a1d1e36a必要CI38794385714全部通过后合并fec341da。PR API/浏览器E2E按既有条件skip；合并master结果另查。
+- 普通ProgressUpdates/ProgressStore与MongoProgressStore保持旧findOne/save、viewer优先、null省略和BSON Long。新增真实Java BSON对照，首次_class假设被实测推翻，已按全局禁用配置纠正；最终Java11passed/Checkstyle、完整Python503passed/0skipped/1既有warning，Ruff/500行/空白通过。
+- 未装配生产入口，不包含心跳正文/存储、播放会话/历史或FC验收。
+
+
 ## 2026-10-16 S09.a 心跳/进度契约
 
 - 新增真实MVC/隔离Mongo10项，Maven/Checkstyle通过；仅小写playing、匿名正文viewer、跨设备原client保留、负数/null及先心跳后进度失败已固定。
