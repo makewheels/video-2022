@@ -371,3 +371,7 @@ Java旧HTTP/BSON14passed/0skipped，Maven/Checkstyle通过；完整Python516pass
 ## 2026-10-16 S09.e
 
 旧观看历史真实MVC/Mongo5passed/0skipped，Checkstyle成功；完整Python541passed/0skipped/1既有warning，Ruff/500行/空白通过。新增12项真实Mongo包括实际clear后合成故障不重放；旧匿名接口仅隔离记录，不在生产重放。详见[历史](playback/watch-history.md)。无HTTP/生产入口或真实签名验收。
+
+## 2026-10-16 S09.f
+
+旧历史/进度MVC/Mongo6passed/0skipped、Checkstyle通过，4份全文夹具；完整Python552passed/0skipped/1既有warning，Ruff/500行/空白通过。首次夹具导出丢null的4项失败已纠正并全量复验。11项新增ASGI/Mongo链路见[历史HTTP](playback/watch-history.md)。未安装既有入口，不是TCP/FC/完整S09验收。

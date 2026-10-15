@@ -1,5 +1,12 @@
 # 接续记录
 
+## 2026-10-16 S09.f 进度/历史HTTP
+
+- #204 head07356c6f必要CI38798005770全通过后合并7156a77a；#203 master CI38797545768/部署38797545777均success。
+- 显式HistoryProgressApplication组合身份/业务/同步日志，4份真实旧Java全文夹具；修正夹具导出丢null后匹配。Java真实HTTP6passed/Checkstyle，完整Python552passed/0skipped/1既有warning，Ruff/500行/空白通过。
+- 未装配既有Backend/ASGI/FC入口，未验真实网络；完整心跳/会话JSON/HTTP和watchLog创建/计数仍待实施，不能称S09完成。
+
+
 ## 2026-10-16 S09.e 观看历史
 
 - #203 headec305081必要CI38796946930成功后合并2fcf6c7b。
