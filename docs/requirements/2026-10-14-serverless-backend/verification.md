@@ -323,3 +323,7 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - #176 headfaf37bd6必要CI38653142301全部成功后合并，PR两个E2E按既有条件skipped；#175 master CI38652998286/部署38652998328均success。新master CI38654503711/部署38654503779待查最终，不能从历史成功断言当前新head已通过。
 - 新增night-review.md，逐项区分已交付库/隔离HTTP组合、未部署/阻塞、失败历史与未开始项目，给出恢复/回退边界。纯文档变更，不重复Java/Python完整套件；最近完整Python297passed/0skipped/1既有warning。
 - 报告系统打开标记06:05:08、文件与独立headless QA证据分开，屏幕实际显示仍未验。工作区/PR/CI只读核对后保存；没有生产切流/迁库或权限扩张。
+
+## S08.e 统一后端播放装配（2026-10-15 晚间）
+
+真实回环Mongo、CPython3.12.13完整465passed/0skipped/1既有Starlette warning、Ruff通过；新增6项，私密观看信息→主→子清单只落3条日志，拒绝与既有用户路由正常，无用户/视频/client写入。配置缺失时无Mongo访问。未改Java业务，不重复Java测试。测试env/db/log/cache均系统临时目录，finally终止Mongo并清理。未验证真实OSS/网络/FC，见backend-watch-routing.md。

@@ -237,3 +237,7 @@ S06.d7实测收窄日志门槛：含点header使旧日志失败但不改变业�
 测试专用ASGI POST链路组合身份/JSON/业务校验/真实Mongo更新与日志，旧成功/长度/绑定/401响应及实际更新次数通过；仅已验UTF-8、进程内TestClient，不修改现有入口，详见[组合证据](../requirements/2026-10-14-serverless-backend/profile-update-http.md)。
 
 2026-10-15夜间交付与尚未通过的阶段，汇总于[验收与恢复清单](../requirements/2026-10-14-serverless-backend/night-review.md)。运行入口/真实云端验收按该清单与progress保留边界，不能把未装配库称为生产迁移完成。
+
+## 统一隔离播放装配（2026-10-15）
+
+BackendApplication 显式工厂可成对提供播放签名密钥与内部地址，复用用户 RequestCycle 装配观看信息和 HLS。默认入口不变；详见[路由装配验收](../requirements/2026-10-14-serverless-backend/backend-watch-routing.md)。
