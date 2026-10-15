@@ -19,3 +19,15 @@
 - GET进度按登录viewer优先；匿名按client查询，不存在返回code0/null，缺少身份返回code1。
 
 没有实现Python心跳写入、播放会话/累计时长或观看历史；未进行生产重放。
+
+## S09.b 进度能力实施边界
+
+独立普通进度用例与Mongo端口：仅小写playing触发，viewer非null优先（含空串），否则client；按旧findOne/save保留读改写语义，不新增唯一索引/原子合并。新文档默认创建/更新时间，旧文档保留video/viewer/client/createTime，只替换session/进度/更新时间；省略null，Long强制BSON int64。
+
+先用旧HTTP对原始BSON固定类型/替换行为，再与真实隔离Mongo对照。没有心跳正文解码/持久化、HTTP装配或播放会话统计；不能单独把本能力接入生产替代整条心跳链路。未知BSON转换保持明确未验门槛。
+
+### S09.b最终本地验证
+
+旧Java HTTP/BSON11passed/0skipped，Maven/Checkstyle成功；完整Python503passed/0skipped/1既有Starlette warning，新增17项（真实Mongo含跨设备、空viewer/client、日期默认/null、整文档替换、删除后save重建、真实写后合成确认异常不重试）。Ruff、500行门禁及diff --check通过。
+
+原始BSON证实ObjectId/Long/Date、null省略、无_class、原创建时间保留和额外字段删除。首次假设_class存在的Java断言失败，查全局MongoConfiguration禁用配置后修正实现并全量复验；未把首轮失败称作通过。其他BSON类型、竞争写入/网络不确定提交和完整HTTP心跳仍未验。

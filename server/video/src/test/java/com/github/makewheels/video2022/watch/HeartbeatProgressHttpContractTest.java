@@ -136,4 +136,26 @@ class HeartbeatProgressHttpContractTest extends BaseIntegrationTest {
         assertEquals(0, mongoTemplate.getCollection("heartbeat").countDocuments());
         assertEquals(0, mongoTemplate.getCollection("progress").countDocuments());
     }
+    @Test
+    void progressReplacementDropsUnknownFieldsAndOmitsNullsWithLegacyBsonTypes() throws Exception {
+        String body = "{\"videoId\":\"unknown\",\"clientId\":\"c\","
+                + "\"playerStatus\":\"playing\",\"sessionId\":\"s\",\"playerTime\":42}";
+        assertEquals(0, response(heartbeat(body)).getIntValue("code"));
+        Document original = progress();
+        assertInstanceOf(org.bson.types.ObjectId.class, original.get("_id"));
+        assertInstanceOf(Long.class, original.get("progressInMillis"));
+        assertFalse(original.containsKey("_class"));
+        assertFalse(original.containsKey("viewerId"));
+        mongoTemplate.getCollection("progress").updateOne(new Document("_id", original.get("_id")),
+                new Document("$set", new Document("fixtureExtra", "drop-me")));
+        assertEquals(0, response(heartbeat(body.replace(",\"sessionId\":\"s\",\"playerTime\":42", "")))
+                .getIntValue("code"));
+        Document replaced = progress();
+        assertEquals(original.get("_id"), replaced.get("_id"));
+        assertEquals(original.get("createTime"), replaced.get("createTime"));
+        assertFalse(replaced.containsKey("fixtureExtra"));
+        assertFalse(replaced.containsKey("sessionId"));
+        assertFalse(replaced.containsKey("progressInMillis"));
+    }
+
 }

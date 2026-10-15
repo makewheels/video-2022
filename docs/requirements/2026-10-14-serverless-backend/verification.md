@@ -355,3 +355,7 @@ JDK21/自建回环随机端口Mongo，手工装配Repository/Submitter无Spring�
 ## 2026-10-16 S09.a
 
 旧心跳/进度真实MVC+独享回环Mongo10passed/0skipped，Checkstyle通过；未改Java运行代码，无生产写入。详见[心跳契约](playback/heartbeat-progress.md)。仅固定迁移基线，不代表S09实现完成。
+
+## 2026-10-16 S09.b
+
+真实旧Java HTTP/BSON11passed/0skipped（含Checkstyle）；完整Python503passed/0skipped/1既有warning，Ruff/500行/空白通过。新17项包含真实隔离Mongo，不连接共享/生产库。首次_class假设错误已由旧HTTP证据纠正并复验；详细范围见[心跳/进度](playback/heartbeat-progress.md)。未装配心跳/生产HTTP/FC。

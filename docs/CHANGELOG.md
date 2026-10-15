@@ -1,5 +1,10 @@
 # 变更日志
 
+## feat: 迁移普通续播进度与Mongo读写（2026-10-16）
+
+- 保留小写playing、viewer优先、null省略、BSON Long及整文档替换，不新增重试/唯一索引或改原client。
+- 真实旧HTTP/BSON与隔离Mongo验证；尚未接入心跳或生产HTTP入口。
+
 ## test: 固定旧心跳与进度HTTP契约（2026-10-16）
 
 - 真实MVC/隔离Mongo验证状态大小写、身份选择、部分持久化和绑定错误；不修改运行代码。
