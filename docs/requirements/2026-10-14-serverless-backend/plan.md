@@ -85,4 +85,4 @@ Git 是唯一自研源码来源。流程为已知提交→CI 测试/构建→OSS
 
 ## 2026-10-16 S09继续实施
 
-当前a–h已合并，i–n待实施/验收。固定14项及PR链接以[任务总表](overview/status.md)为准；历史逐轮记录只保留在[progress](progress.md)与[verification](verification.md)，本计划不重复追加过时状态。
+当前a–h已合并，i本地验证通过、待CI，j–n待实施/验收。固定14项及PR链接以[任务总表](overview/status.md)为准；历史逐轮记录只保留在[progress](progress.md)与[verification](verification.md)，本计划不重复追加过时状态。

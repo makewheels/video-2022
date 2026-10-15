@@ -273,3 +273,5 @@ S09.f：显式HistoryProgressApplication按旧query/身份规则返回进度/历
 S09.g：[观看日志基线](../requirements/2026-10-14-serverless-backend/playback/watch-log.md)固定先存在检查、按请求status去重/计数、按实际status保存，以及两次IP调用的部分失败顺序。旧增数使用BSON Long；迁移不得改成隐式业务重试或原子事务。Python能力待下一阶段。
 
 S09.h：WatchLogs普通用例按旧顺序组合WatchLogStore/IpLocations，计数和事件写入不重试/不事务回滚；Mongo显式Int64增数并递归转换IP Decimal/null，事件使用实际视频ID/status。外部IP/缓存和HTTP仍独立，不导入业务层或装配生产入口。
+
+S09.i：IP缓存record/存储端口、Mongo适配、外部API与缓存组合分别实现；沿用ip_cache字段/唯一键/六小时TTL存在语义，普通WatchLogs只依赖IpLocations。JSON扁平/Decimal/null由适配处理，业务不导入HTTP/数据库类型；新传输三秒/单次/不自动跳转仅回环已验，真实供应商/FC、非标准JSON另验，未接生产入口。
