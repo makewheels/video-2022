@@ -42,7 +42,7 @@ class Functions:
             return result.body.to_map() if result.body is not None else {}
         except Exception as error:
             # API messages can include environment values; retain only the structured error code.
-            raise CloudError(getattr(error, "code", None) or type(error).__name__) from None
+            raise CloudError(getattr(error, "code", None) or type(error).__name__, "fc:" + operation) from None
 
     def invoke(self, version, event):
         try:
@@ -50,15 +50,15 @@ class Functions:
             result = self.client.invoke_function(FUNCTION, request)
             headers = {key.lower(): value for key, value in (result.headers or {}).items()}
             if headers.get("x-fc-error-type"):
-                raise CloudError("FunctionExecutionFailed")
+                raise CloudError("FunctionExecutionFailed", "fc:invoke_function")
             data = result.body.read(MAX_BYTES + 1)
             if len(data) > MAX_BYTES:
-                raise CloudError("ResponseTooLarge")
+                raise CloudError("ResponseTooLarge", "fc:invoke_function")
             return json.loads(data)
         except CloudError:
             raise
         except Exception as error:
-            raise CloudError(getattr(error, "code", None) or type(error).__name__) from None
+            raise CloudError(getattr(error, "code", None) or type(error).__name__, "fc:invoke_function") from None
 
     def code(self, version):
         result = self.call("get_function_code", FUNCTION, query={"qualifier": version})
@@ -118,7 +118,7 @@ class Objects:
         except DeploymentError:
             raise
         except Exception as error:
-            raise CloudError(getattr(error, "code", None) or type(error).__name__) from None
+            raise CloudError(getattr(error, "code", None) or type(error).__name__, "oss:GetObject") from None
 
     def immutable_put(self, key, data):
         if not key.startswith(PREFIX):
@@ -131,8 +131,8 @@ class Objects:
                 "x-oss-object-acl": "private", "x-oss-meta-sha256": digest(data)})
         except self.sdk.exceptions.ServerError as error:
             if error.status != 409:
-                raise CloudError(error.code) from None
+                raise CloudError(error.code, "oss:PutObject") from None
         except Exception as error:
-            raise CloudError(getattr(error, "code", None) or type(error).__name__) from None
+            raise CloudError(getattr(error, "code", None) or type(error).__name__, "oss:PutObject") from None
         if self.get(key) != data:
             raise DeploymentError("Immutable OSS object readback mismatch")

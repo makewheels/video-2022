@@ -58,4 +58,5 @@ def test_sdk_exception_is_redacted_to_structured_code():
     functions.client = SimpleNamespace(get_alias=fail)
     with pytest.raises(CloudError) as error:
         functions.call("get_alias", FUNCTION, "dev")
-    assert str(error.value) == "Cloud operation rejected: Forbidden"
+    assert str(error.value) == "Cloud operation rejected (fc:get_alias): Forbidden"
+    assert "secret credential" not in str(error.value)
