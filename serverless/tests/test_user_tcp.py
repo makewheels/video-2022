@@ -12,18 +12,18 @@ from test_user_mongo_reads import isolated_database as isolated_database
 
 CHILD = """
 import os
-from datetime import datetime
+from datetime import UTC, datetime
 from pymongo import MongoClient
 import uvicorn
 from video_serverless.adapters.user_asgi import create_user_asgi
-from video_serverless.user_bootstrap import build_user_application
+from video_serverless.backend_bootstrap import build_backend_application
 class NoMedia:
     def sign(self, key, validity_seconds):
         raise RuntimeError('Media signing is outside this fixture')
 client = MongoClient(os.environ['MONGODB_URI'], serverSelectionTimeoutMS=3000, maxPoolSize=3)
 try:
-    app = build_user_application(lambda: client[os.environ['FIXTURE_DATABASE']], NoMedia(),
-        profile='prod', local_clock=datetime.now, worker=1, datacenter=1)
+    app = build_backend_application(lambda: client[os.environ['FIXTURE_DATABASE']], NoMedia(),
+        profile='prod', local_clock=datetime.now, display_timezone=UTC, worker=1, datacenter=1)
     uvicorn.run(create_user_asgi(app), host='127.0.0.1', port=int(os.environ['FIXTURE_PORT']),
         log_level='critical', access_log=False, proxy_headers=False)
 finally:
@@ -33,7 +33,8 @@ finally:
 
 def test_tcp_login_profile_and_peer_metadata_survive_real_server_boundary(isolated_database):
     database = isolated_database
-    for name in ("user", "wallet", "verification_codes", "id_counters", "client", "requestLog", "exceptionLog"):
+    for name in ("user", "wallet", "verification_codes", "id_counters", "client", "requestLog",
+                 "exceptionLog", "video"):
         database[name].delete_many({})
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
@@ -68,9 +69,10 @@ def test_tcp_login_profile_and_peer_metadata_survive_real_server_boundary(isolat
         token = logged_in["data"]["token"]
         assert get("/user/getMyProfile", {"token": token})["data"]["token"] is None
         get("/client/requestClientId", {"User-Agent": "fixture-tcp", "X-Forwarded-For": "192.0.2.1"})
+        assert get("/video/getPublicVideoList?skip=0&limit=20")["data"] == {"list": [], "total": 0}
         assert database["client"].find_one()["ip"] == "127.0.0.1"
         assert database["client"].find_one()["userAgent"] == "fixture-tcp"
-        assert database.requestLog.count_documents({}) == 4
+        assert database.requestLog.count_documents({}) == 5
         assert database.exceptionLog.count_documents({}) == 0
     finally:
         if connection is not None:
