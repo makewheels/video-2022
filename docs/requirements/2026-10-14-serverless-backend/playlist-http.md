@@ -17,5 +17,9 @@ text/plain;charset=UTF-8，application/vnd.apple.mpegurl 添加 UTF-8，applicat
 后两步不再携带用户 token；确认三个请求只落三条日志，无新增 client/session 写入。
 同时覆盖四种已核对 MIME、缺参、跨视频拒绝、私密异常详情及缺失视频空清单。
 
+随后本地完整 serverless 回归实际 457 passed、2 deselected（Windows 符号链接权限
+不足，Linux CI 仍应执行这两项）、1 条已有 Starlette 弃用警告；临时 Mongo、环境和
+缓存均在系统临时目录内运行并清理。PR #192 的 Linux 检查尚待完成，未宣称 CI 通过。
+
 本阶段结束于分片 URL 生成；file/access、真实 OSS 下载、计费写入、线上流量和
 完整后端根路由的生产装配仍不在本次验收范围。Linux CI 结果独立确认。
