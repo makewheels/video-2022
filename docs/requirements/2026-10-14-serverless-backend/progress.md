@@ -1,5 +1,13 @@
 # 接续记录
 
+## 2026-10-15 连续推进：S06.i
+
+client/session已提交PR#180，精确head8e856a84；本地15passed，必要CI仍需查最终。
+独立分支feat-serverless-identifiers基于master1183ae20，实现[Long ID与共享token生成](identifiers.md)。
+已运行项目锁定Hutool5.8.25/JDK21黄金探针，本地Mongo新增6项及架构8项14passed，
+Ruff通过。token共享分配用原id_counters的内部键及原字段；尚未装配生产node/时区，
+真实Mongo版本/拓扑/写关注和Java共存时的单写者交接仍待验，不宣称完整登录上线。
+
 ## 2026-10-15 连续推进：S06.h
 
 用户要求连续分阶段推进，不逐阶段等待确认。#179必要CI38667775210全部通过，
