@@ -1,5 +1,15 @@
 # 接续记录
 
+## 2026-10-15 连续推进：S06.j
+
+#180必要CI38669584312通过后精确head8e856a84合并7ef5bdad。#181初head bf72100b
+必要CI38669795999通过；为解决与#180的接续文档冲突，合入依赖与master后head
+d1675608，必须等新head CI，不沿用旧head通过结论。
+分支feat-serverless-user-http复用上述依赖完成[九条用户路径及真实TCP](user-http-application.md)。
+完整本地328passed/2deselected（符号链接权限）/1warning；再增4份Java黄金对照后
+focused19passed，Ruff通过。工厂真实装配时钟/随机源/共享ID及异常日志，仍不替换
+生产fc_handler/web入口。继续头像创建/凭证/完成链路；完整FC、CORS与网络未验。
+
 ## 2026-10-15 连续推进：S06.i
 
 client/session已提交PR#180，精确head8e856a84；本地15passed，必要CI仍需查最终。
