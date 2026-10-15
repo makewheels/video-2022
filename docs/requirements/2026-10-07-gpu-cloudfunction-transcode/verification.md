@@ -298,3 +298,11 @@
 修复后8项传输测试通过；真实回环隔离Mongo的FcTaskFlowIntegrationTest11项、CoverTaskSubmissionTest1项也通过，共20项，0失败/错误/跳过，Maven validate附带Checkstyle通过。随后补301/303/307/308重定向及测试线程volatile，最终传输12项全部通过、0失败/错误/跳过，Checkstyle通过。构建源码/target/Mongo db/log均系统临时目录，finally停止自建Mongo并清理，未连接生产或触发付费任务。
 
 本地证明EOF后不重放，不能代替真实HTTPS/FC主动429、30秒读超时、完整崩溃、真实素材与设备矩阵。PR/CI最终状态以远端查询为准。
+
+## 14. CI Worker原型镜像按变化构建（2026-10-15）
+
+用户指出的run38726640918/job116394017733实际为Worker原型验证，不是生产函数发布。该job7分8秒，原型镜像步骤11:21:38–11:27:42 UTC耗时6分4秒。每次裸docker build从源码编译FFmpeg且无跨runner层缓存，导致无关PR重复执行。
+
+改为相关目录/CI/判断脚本变化及手工触发才Buildx构建、GitHub层缓存、本地load后验证NVENC枚举和Python导入；所有Worker/函数单元测试每次仍运行，job门禁不变。比较失败保守执行构建。6项本地unittest通过，含真实临时Git仓库PR分叉merge-base与移出目录重命名，diff失败/首次push/手工触发边界；Ruff/空白/YAML与远端CI结果另记。Docker daemon本机不可用，不冒称本机完整镜像构建通过，实际Buildx需本PR CI验证。
+
+首次PR Buildx运行经cache API已看到单层2,646,171,659字节等写入，当前冷构建/缓存过程比旧裸构建慢，未冒称性能已经通过。收紧为仅master push导出缓存、PR/手工只读；相关变更仍构建，无关变更直接跳过。最终真实workflow结果须按新head查询。
