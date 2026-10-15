@@ -1,8 +1,5 @@
 package com.github.makewheels.video2022.transcode.cloudfunction;
 
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
-import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.makewheels.video2022.transcode.contants.TranscodeProvider;
@@ -11,6 +8,10 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 自建云函数提交客户端：异步 POST 新协议任务，返回 FC 受理结果。
@@ -46,24 +47,38 @@ public class CloudFunctionClient {
     public SubmitResult submit(String provider, JSONObject payload) {
         String url = getFunctionUrl(provider);
         String taskId = payload.getString("taskId");
-        HttpRequest post = HttpUtil.createPost(url);
-        post.header("X-Fc-Invocation-Type", "Async");
-        post.header("X-Invoke-Secret", invokeSecret);
-        post.timeout(30_000);
-        post.body(payload.toJSONString());
+        byte[] body = payload.toJSONString().getBytes(StandardCharsets.UTF_8);
         log.info("提交自建云函数任务 provider = {}, taskId = {}, attemptId = {}",
                 provider, taskId, payload.getString("attemptId"));
         SubmitResult result = new SubmitResult();
-        try (HttpResponse response = post.execute()) {
-            result.setHttpStatus(response.getStatus());
-            result.setRequestId(response.header("X-Fc-Request-Id"));
-            result.setAccepted(response.getStatus() >= 200 && response.getStatus() < 300);
-            result.setThrottled(response.getStatus() == 429);
+        HttpURLConnection connection = null;
+        try {
+            connection = (HttpURLConnection) URI.create(url).toURL().openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setConnectTimeout(30_000);
+            connection.setReadTimeout(30_000);
+            connection.setInstanceFollowRedirects(false);
+            connection.setRequestProperty("X-Fc-Invocation-Type", "Async");
+            connection.setRequestProperty("X-Invoke-Secret", invokeSecret);
+            connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+            // Buffered POST may be transparently replayed after EOF; never replay an uncertain paid task.
+            connection.setFixedLengthStreamingMode(body.length);
+            try (var output = connection.getOutputStream()) {
+                output.write(body);
+            }
+            int status = connection.getResponseCode();
+            result.setHttpStatus(status);
+            result.setRequestId(connection.getHeaderField("X-Fc-Request-Id"));
+            result.setAccepted(status >= 200 && status < 300);
+            result.setThrottled(status == 429);
         } catch (Exception e) {
             // 网络异常：受理结果不确定，按未受理返回，由上层走恢复流程，不盲目重复提交
             log.warn("自建云函数提交异常 provider = {}, taskId = {}: {}", provider, taskId, e.getMessage());
             result.setAccepted(false);
             result.setThrottled(false);
+        } finally {
+            if (connection != null) connection.disconnect();
         }
         return result;
     }
