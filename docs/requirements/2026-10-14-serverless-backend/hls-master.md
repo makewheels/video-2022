@@ -15,5 +15,10 @@ CODECS、FRAME-RATE、VIDEO-RANGE 按现有非空条件输出。帧率用三位 
 现有正常 BSON 类型已覆盖；Fastjson 对异常历史标量的全部强制转换语义尚未逐项核对。
 
 本次本地 Ruff 和播放相关 64 项测试通过，包含真实 Mongo 字段读取及主/子清单测试。
-完整套件和 Linux CI 另行记录。仍未注册 HTTP 路由，未验证 Java HTTP 内容类型，
+本地完整套件实际 441 passed、2 deselected（Windows 无符号链接权限）、1 条已有警告。
+随后在临时目录编译当前 WatchController 源码，以真实 Spring MockMvc standalone 和替身
+WatchService 实测内容协商：Accept */* 或 text/plain 返回 text/plain;charset=ISO-8859-1，
+application/vnd.apple.mpegurl 返回同 MIME 加 ISO-8859-1，application/json 返回 application/json。
+这只证明 standalone 转换器行为，尚未证明完整 Boot 配置的 charset、过滤器及日志合约。
+Linux CI 另行确认。仍未注册 HTTP 路由，未确认完整 Java HTTP 合约，
 file/access 重定向、计费及可靠异步写入未完成，不作为完整播放验收或生产切流依据。
