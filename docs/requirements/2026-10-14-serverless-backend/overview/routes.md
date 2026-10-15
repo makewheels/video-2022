@@ -6,15 +6,15 @@
 
 只覆盖两个 Java 模块源码中的映射声明；`/`、网关 `/w?v=`、`/console/*`、静态资源以及框架生成的 OpenAPI/Swagger 等入口需要结合路由/配置另行验收。Controller 的依赖业务和迁移判断见 [audit.md](audit.md)。
 
-S05 新增 [登录/旧 token/观看身份台账](login-contract.md)，已发现 iOS 身份初始化路径差异，动态对照待验。
+S05 新增 [登录/旧 token/观看身份台账](../user/login-contract.md)，已发现 iOS 身份初始化路径差异，动态对照待验。
 
-S05 按业务补契约：已核对 [公共视频列表](public-video-list-contract.md) 的源码及各端调用，动态边界和对照工具仍待验。
+S05 按业务补契约：已核对 [公共视频列表](../video/public-video-list-contract.md) 的源码及各端调用，动态边界和对照工具仍待验。
 
 下表不列参数、鉴权和响应类型，不能作为完整 API 契约。实施时必须补请求/响应黄金样本和各端调用覆盖；多种 Content-Type 接受范围不能仅凭路径列表判断。
 
 ## CommentController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/comment/CommentController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/comment/CommentController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/comment/CommentController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/comment/CommentController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -27,7 +27,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## CoverController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/cover/CoverController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/cover/CoverController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/cover/CoverController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/cover/CoverController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -37,7 +37,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## DeveloperAppController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/developer/controller/DeveloperAppController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/developer/controller/DeveloperAppController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/developer/controller/DeveloperAppController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/developer/controller/DeveloperAppController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -50,7 +50,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## DeveloperTokenController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/developer/controller/DeveloperTokenController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/developer/controller/DeveloperTokenController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/developer/controller/DeveloperTokenController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/developer/controller/DeveloperTokenController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -59,7 +59,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## AppController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/etc/app/AppController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/etc/app/AppController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/etc/app/AppController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/etc/app/AppController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -68,7 +68,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## StatisticsController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/etc/statistics/StatisticsController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/etc/statistics/StatisticsController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/etc/statistics/StatisticsController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/etc/statistics/StatisticsController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -77,7 +77,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## FileController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/file/FileController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/file/FileController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/file/FileController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/file/FileController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -88,7 +88,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## NotificationController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/notification/NotificationController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/notification/NotificationController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/notification/NotificationController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/notification/NotificationController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -99,7 +99,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## DeveloperConsoleController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/DeveloperConsoleController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/DeveloperConsoleController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/DeveloperConsoleController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/DeveloperConsoleController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -110,7 +110,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## DeveloperController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/DeveloperController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/DeveloperController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/DeveloperController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/DeveloperController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -123,7 +123,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## OAuthController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/OAuthController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/OAuthController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/OAuthController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/oauth/OAuthController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -132,7 +132,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## RateLimitController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/ratelimit/RateLimitController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/ratelimit/RateLimitController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/ratelimit/RateLimitController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/ratelimit/RateLimitController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -140,7 +140,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## ApiCommentController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiCommentController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiCommentController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiCommentController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiCommentController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -150,7 +150,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## ApiNotificationController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiNotificationController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiNotificationController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiNotificationController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiNotificationController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -158,7 +158,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## ApiPlaylistController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiPlaylistController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiPlaylistController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiPlaylistController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiPlaylistController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -172,7 +172,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## ApiUserController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiUserController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiUserController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiUserController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiUserController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -181,7 +181,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## ApiVideoController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiVideoController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiVideoController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiVideoController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiVideoController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -197,7 +197,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## ApiWebhookController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiWebhookController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiWebhookController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiWebhookController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/openapi/v1/ApiWebhookController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -207,7 +207,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## OssLogController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/oss/osslog/OssLogController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/oss/osslog/OssLogController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/oss/osslog/OssLogController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/oss/osslog/OssLogController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -215,7 +215,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## PlaylistController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/playlist/PlaylistController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/playlist/PlaylistController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/playlist/PlaylistController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/playlist/PlaylistController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -234,7 +234,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## ShareController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/share/ShareController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/share/ShareController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/share/ShareController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/share/ShareController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -244,7 +244,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## ExceptionController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/springboot/exception/ExceptionController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/springboot/exception/ExceptionController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/springboot/exception/ExceptionController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/springboot/exception/ExceptionController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -253,7 +253,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## HealthCheckController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/springboot/health/HealthCheckController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/springboot/health/HealthCheckController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/springboot/health/HealthCheckController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/springboot/health/HealthCheckController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -261,7 +261,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## SpaController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/springboot/SpaController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/springboot/SpaController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/springboot/SpaController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/springboot/SpaController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -278,7 +278,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## SubscriptionController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/subscription/SubscriptionController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/subscription/SubscriptionController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/subscription/SubscriptionController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/subscription/SubscriptionController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -289,7 +289,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## TranscodeController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/transcode/TranscodeController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/transcode/TranscodeController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/transcode/TranscodeController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/transcode/TranscodeController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -300,7 +300,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## ClientController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/user/client/ClientController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/user/client/ClientController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/user/client/ClientController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/user/client/ClientController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -308,7 +308,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## SessionController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/user/session/SessionController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/user/session/SessionController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/user/session/SessionController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/user/session/SessionController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -316,7 +316,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## UserController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/user/UserController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/user/UserController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/user/UserController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/user/UserController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -333,7 +333,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## CategoryController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/video/CategoryController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/video/CategoryController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/video/CategoryController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/video/CategoryController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -341,7 +341,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## VideoLikeController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/video/like/VideoLikeController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/video/like/VideoLikeController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/video/like/VideoLikeController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/video/like/VideoLikeController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -351,7 +351,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## SearchController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/video/SearchController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/video/SearchController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/video/SearchController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/video/SearchController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -359,7 +359,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## VideoController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/video/VideoController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/video/VideoController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/video/VideoController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/video/VideoController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -376,7 +376,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## HeartbeatController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/watch/heartbeat/HeartbeatController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/watch/heartbeat/HeartbeatController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/watch/heartbeat/HeartbeatController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/watch/heartbeat/HeartbeatController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -384,7 +384,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## WatchController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/watch/play/WatchController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/watch/play/WatchController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/watch/play/WatchController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/watch/play/WatchController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -395,7 +395,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## PlaybackController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/watch/playback/PlaybackController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/watch/playback/PlaybackController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/watch/playback/PlaybackController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/watch/playback/PlaybackController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -405,7 +405,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## ProgressController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/watch/progress/ProgressController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/watch/progress/ProgressController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/watch/progress/ProgressController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/watch/progress/ProgressController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -413,7 +413,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## WatchHistoryController
 
-源码：[server/video/src/main/java/com/github/makewheels/video2022/watch/watchhistory/WatchHistoryController.java](../../../server/video/src/main/java/com/github/makewheels/video2022/watch/watchhistory/WatchHistoryController.java)
+源码：[server/video/src/main/java/com/github/makewheels/video2022/watch/watchhistory/WatchHistoryController.java](../../../../server/video/src/main/java/com/github/makewheels/video2022/watch/watchhistory/WatchHistoryController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -422,7 +422,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## HealthCheckController（youtube 模块）
 
-源码：[server/youtube/src/main/java/com/github/makewheels/video2022/youtube/HealthCheckController.java](../../../server/youtube/src/main/java/com/github/makewheels/video2022/youtube/HealthCheckController.java)
+源码：[server/youtube/src/main/java/com/github/makewheels/video2022/youtube/HealthCheckController.java](../../../../server/youtube/src/main/java/com/github/makewheels/video2022/youtube/HealthCheckController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|
@@ -431,7 +431,7 @@ S05 按业务补契约：已核对 [公共视频列表](public-video-list-contra
 
 ## YoutubeController（youtube 模块）
 
-源码：[server/youtube/src/main/java/com/github/makewheels/video2022/youtube/YoutubeController.java](../../../server/youtube/src/main/java/com/github/makewheels/video2022/youtube/YoutubeController.java)
+源码：[server/youtube/src/main/java/com/github/makewheels/video2022/youtube/YoutubeController.java](../../../../server/youtube/src/main/java/com/github/makewheels/video2022/youtube/YoutubeController.java)
 
 | 方法 | 声明路径 | 源码行 |
 |---|---|---|

@@ -1,6 +1,6 @@
 # S05.a 公共视频列表契约台账
 
-状态：源码及客户端核对完成；动态边界用例和 Python 业务实现未完成；离线对照工具见 [S05.b](response-comparison.md)（本阶段待 CI）。本页不表示 S05/S07 全部通过。源码基线 `53f275b8`，核对日期 2026-10-14。
+状态：源码及客户端核对完成；动态边界用例和 Python 业务实现未完成；离线对照工具见 [S05.b](../overview/response-comparison.md)（本阶段待 CI）。本页不表示 S05/S07 全部通过。源码基线 `53f275b8`，核对日期 2026-10-14。
 
 ## 请求与鉴权
 
@@ -20,7 +20,7 @@ VideoRepository.getPublicVideoList/countPublicVideos 使用相同过滤：`visib
 
 ## 响应与空值
 
-成功为 Result.ok：code=0、message="success"、data={list,total}；total Java long，list 为 VideoVO 数组。字段声明及原单条脱敏观察见 [observed-shape](../../../serverless/contracts/public-video-list.observed-shape.json)。该观察只有一次成功响应的字段类型，不能证明所有字段永远非空。
+成功为 Result.ok：code=0、message="success"、data={list,total}；total Java long，list 为 VideoVO 数组。字段声明及原单条脱敏观察见 [observed-shape](../../../../serverless/contracts/public-video-list.observed-shape.json)。该观察只有一次成功响应的字段类型，不能证明所有字段永远非空。
 
 | 字段组 | 源码处理和待保持行为 |
 |---|---|

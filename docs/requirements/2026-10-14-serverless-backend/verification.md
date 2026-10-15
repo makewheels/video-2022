@@ -130,7 +130,7 @@ CPython 3.12.12 / 锁定 web+deployment 组：Ruff 通过，pytest 103 passed、
 
 ## S05.a 公共视频列表台账（2026-10-14 22:38）
 
-基线 `53f275b8`，逐项核对 Controller/Repository/Service/VO、token/日志/异常管线及 Web、CLI、Android、iOS 调用，新增 [台账](public-video-list-contract.md)。确认字面关键词搜索、仅 PUBLIC 条件、独立 count、签名封面、空值与嵌套映射、GET 请求日志副作用；动态参数错误/日期与脱敏对照工具未验，S05/S07 不标完成。仅文档，git diff --check 通过，不重跑与文档无关的本机完整测试；本 PR CI 待运行。
+基线 `53f275b8`，逐项核对 Controller/Repository/Service/VO、token/日志/异常管线及 Web、CLI、Android、iOS 调用，新增 [台账](video/public-video-list-contract.md)。确认字面关键词搜索、仅 PUBLIC 条件、独立 count、签名封面、空值与嵌套映射、GET 请求日志副作用；动态参数错误/日期与脱敏对照工具未验，S05/S07 不标完成。仅文档，git diff --check 通过，不重跑与文档无关的本机完整测试；本 PR CI 待运行。
 
 ## S05.b 离线响应对照工具（2026-10-14 22:51）
 
@@ -185,7 +185,7 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 ## S06.b1 旧用户原始 BSON 基线（2026-10-15 03:05）
 
 - 基于master39af8559，真实回环独立临时mongod，源码/构建/日志/数据库均系统任务临时目录，finally终止自建进程并清理。JDK21/TZ=UTC，mvn -q -pl video -Dtest=UserMongoReadContractTest（临时Mongo端口/库覆盖）test checkstyle:check：3 tests / 0 failures / 0 errors / 0 skipped，退出0。
-- 缺失字段保留构造默认，显式null清空；ID和数值转换见[user-mongo-matrix.md](user-mongo-matrix.md)。初稿null假设失败，标记逐样本复核后修正断言；未修改运行代码。测试后仅移除诊断输出/改准确方法名。
+- 缺失字段保留构造默认，显式null清空；ID和数值转换见[user-mongo-matrix.md](user/user-mongo-matrix.md)。初稿null假设失败，标记逐样本复核后修正断言；未修改运行代码。测试后仅移除诊断输出/改准确方法名。
 - S06.a #158必要CI38597432860全部通过，PR API/浏览器E2E按条件skipped，已合并39af8559；合并master CI38620293672及既有Java部署38620293649当前运行中。本阶段未验证Python适配器/生产数据/FC网络，不重复失败发布。
 
 ## S06.b2 Mongo只读适配器（2026-10-15 03:18）
@@ -209,7 +209,7 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 - 覆盖UTF-16长度/无trim/缺失字段清空、受保护资料401、频道与本人资料签名24h/历史回退/不写回token与URL、头像重复创建、凭证类型与owner顺序/31/33/34、完成对象检查与重复通知、现有匿名头像路由缺口。无实际STS或OSS上传，全部固定合成记录。
 - 初稿用模型save(null)构造计数样本时本人资料实际返回0，与原始BSON显式null基线不一致；明确用原始BSON $set null构造后5项通过，再加入匿名路径实际验证，最终6项通过。没有修改业务或降低null断言。
 - #161 head748bdd06 CI38624666455必要项全通过后合并2d9cf7f0，PR E2E skipped。#160合并master CI38624255599和部署38624255442均success；新master CI38626349934/部署38626350038须查最终结果。
-- 见[profile-avatar-contract.md](profile-avatar-contract.md)。本阶段只固化旧接口，Python对应业务/完整请求日志、客户端设备、生产凭证与云网络均未验；S06未完成。
+- 见[profile-avatar-contract.md](user/profile-avatar-contract.md)。本阶段只固化旧接口，Python对应业务/完整请求日志、客户端设备、生产凭证与云网络均未验；S06未完成。
 
 ## S06.c2 资料/频道纯读取与Java黄金对照（2026-10-15 04:03）
 
@@ -332,6 +332,16 @@ JDK21、真实Spring MVC/回环随机Mongo，FileAccessHttpContractTest9passed/0
 
 真实回环Mongo、CPython3.12.13完整465passed/0skipped/1既有Starlette warning、Ruff通过；新增6项，私密观看信息→主→子清单只落3条日志，拒绝与既有用户路由正常，无用户/视频/client写入。配置缺失时无Mongo访问。未改Java业务，不重复Java测试。测试env/db/log/cache均系统临时目录，finally终止Mongo并清理。未验证真实OSS/网络/FC，见backend-watch-routing.md。
 
+## 文档/分支整理（2026-10-15）
+
+43份现有主题文档用git mv分类，根目录保留README/requirements/plan/progress/verification五份；更新所有可解析相对链接和当前仓库路径，固定SHA历史URL不改。新增总体阶段清单与主题索引；文档链接和文件保留检查另记。远端API刷新后为7分支，删除2个已被#192覆盖的关闭PR分支后5个，本地历史引用仅prune缓存，未删主干代码。
+
+整理本机检查：181个相对文件链接均存在，原有48份文档全部保留（唯一主题文件/根README），根目录仅五个入口，git diff --check通过；固定SHA证据URL未改写。无业务运行代码变更，不重复业务套件。
+
+### GPU按需构建的实际CI对照
+
+用户原job116394017733共7分8秒，镜像编译步骤6分4秒；#199纯文档首轮CI38731532874的Worker job116410228932为59秒，Buildx/镜像构建/镜像验证三步skipped，Worker与函数测试仍成功。首次旧缓存策略导出926.1秒的额外开销保留，#198已改仅主干写cache。此为实际job对照，不推算所有后续运行固定耗时，主干冷缓存仍可能较慢。
+
 ## S12.a 持久化故障基线（2026-10-15晚间）
 
 JDK21/自建回环随机端口Mongo，手工装配Repository/Submitter无Spring调度，FcSubmissionPersistenceTest 2passed/0failed/0error/0skipped，Checkstyle通过。认领前持久化后合成中断，重建后同attempt成功提交1次；派发后合成中断，真实回读SUBMITTED完整快照，重建后总提交仍1、原始Mongo文档不变。无真实进程崩溃/云受理/自动扫描证明。构建/db/log系统临时目录finally清理，见task-submission-persistence.md。
@@ -339,3 +349,5 @@ JDK21/自建回环随机端口Mongo，手工装配Repository/Submitter无Spring�
 ## S08.g 文件重定向纯能力（2026-10-15晚间）
 
 真实回环随机Mongo/CPython3.12.13完整486passed/0skipped/1既有warning、Ruff通过，新增21项。验证时间先于HMAC/存储、签名绑定上下文、ObjectId不回退String、三小时TTL、缺失/null/空/空白/数字key与不按owner/type/deleted筛选；签名失败不重试。所有环境/db/log/cache位于系统临时目录，finally停止Mongo并清理。无实际OSS、计费、HTTP或FC装配，见file-redirect.md。
+
+最终分类检查（20:14）：202个相对文件链接存在，最新master原有51份文档均保留，46份主题归类后根目录仍仅五入口，固定SHA证据URL逐份比对未改写。校正两份设计页的过期状态，旧续验标历史快照。PR#199新head检查与合并状态以GitHub实际查询为准。

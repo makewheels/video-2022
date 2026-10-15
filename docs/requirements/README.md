@@ -4,8 +4,8 @@
 
 | 需求 | 状态 | 入口 |
 |---|---|---|
-| Python 后端迁移阿里云 FC | 执行中，P1 隔离原型；未云端部署/切流，业务必须一致 | [2026-10-14-serverless-backend](2026-10-14-serverless-backend/README.md) |
-| GPU 云函数自建转码 | 独立 Worker 原型开发中，未接入生产 | [2026-10-07-gpu-cloudfunction-transcode](2026-10-07-gpu-cloudfunction-transcode/README.md) |
+| Python 后端迁移阿里云 FC | 分层/构建已交付，用户/视频/播放部分实现；FC发布/网络阻塞，未切流 | [2026-10-14-serverless-backend](2026-10-14-serverless-backend/README.md) |
+| GPU 云函数自建转码 | CPU/GPU链路已发布且有云端验收；真实素材/移动HDR及部分故障矩阵待验 | [2026-10-07-gpu-cloudfunction-transcode](2026-10-07-gpu-cloudfunction-transcode/README.md) |
 | 评测数据改为可读 JSON | 已合并（PR #108） | [2026-08-12-video-agent-evaluation-json](2026-08-12-video-agent-evaluation-json/) |
 | Video Agent 评测与 Langfuse | v1 已完成，生产闭环待接入 | [2026-08-12-video-agent-evaluation](2026-08-12-video-agent-evaluation/) |
 | 项目文件结构审计与重组 | 待人工复核（PR #109） | [2026-08-12-project-structure-review](2026-08-12-project-structure-review/) |

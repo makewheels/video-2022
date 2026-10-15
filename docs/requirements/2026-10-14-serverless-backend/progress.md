@@ -1,10 +1,31 @@
 # 接续记录
 
+## 2026-10-15 20:14 文档分类与本轮最终接续点
+
+用户要求单执行者慢慢推进，已停用subagent及旧夜间worker/report定时任务，不重新启用。
+[总体进度与剩余清单](overview/status.md)按25个顶层阶段列出3个基础已交付、2个云端阻塞/未验、5个部分、15个主体未迁移；不按PR数量计算百分比。
+#194已合并63fb35cb；#198最新headca80d1a9必要CI38730885954成功后合并d193fd20。
+#195最新head186cd0b9 CI38731433781通过后合并356d3bab；#196最新headcc4f2658 CI38731897337通过后合并d1a5d3b0；#197最新head5efc0c8a CI38732436486通过后合并78c43a3a。
+#199为文档分类/入口状态校正，旧head首轮CI38731532874已成功；最终新head须重新查CI，全部必要项通过才能合并，不用旧head代替。若已合并，不重复实施，转下一小阶段。
+46份主题契约归入overview/deployment/http/user/video/playback/tasks，根目录仅五入口；更新相对链接，原51份文档保留，固定SHA历史URL不改。
+GPU原型镜像按变化构建已实际生效：#199首轮Worker job116410228932为59秒且三项镜像步骤skipped；测试照常。旧首轮cache导出926.1秒保留为开销，已改仅master push写cache、PR/手工只读。
+最近完整Python486passed/0skipped/1既有warning；Java访问HTTP9项、持久化故障2项、真实提交HTTP12项和相关任务/封面12项通过。没有真实FC权限/网络/回退完成，不新增付费云测试。
+后续先查#199及最新master CI/E2E/Java部署实际结果，再按S08文件HTTP/S09/S12独立小阶段推进；不得生产切流、迁库、改旧计费规则或扩大权限。
+
+
+## 2026-10-15 文档与分支导航整理
+
+新增[总体进度与剩余清单](overview/status.md)，按S00–S24区分交付/部分/阻塞/未开始，与已上线转码工程分开。
+主题文档移动到overview/deployment/http/user/video/playback/tasks，根目录只留五个入口，修复相对链接，保留固定SHA历史证据URL。
+已prune本地过期remote-tracking缓存；远端API确认删除前7个分支，删除#187/#188已覆盖遗留后5个，未动4个待合并工作分支。
+#194已合并63fb35cb；#195/#196/#197需跟随新master收尾。#198按变化构建/缓存Worker原型镜像，必要CI须查最终。
+本次纯文档导航调整，检查路径/链接/内容保留，不重复业务测试。
+
 ## 2026-10-15 晚间接续：S12.a 持久化故障基线
 
 #193合并c26f48d5后master CI38725534826/Java部署38725534873均success。
 #194 head798845db转码隐式重发修复、#195 head1b2717f0文件访问契约、#196 headae614b1d纯重定向均待最新必要CI，不能沿用旧head。
-新增[任务持久化故障基线](task-submission-persistence.md)，真实自建回环Mongo2passed/Checkstyle。
+新增[任务持久化故障基线](tasks/task-submission-persistence.md)，真实自建回环Mongo2passed/Checkstyle。
 手工装配无Spring调度，认领前CREATED可同attempt安全提交，派发后SUBMITTED重建阻止重发且Mongo原文档不变。
 本阶段只是故障证据，S12可靠唤醒/零空扫及S03云权限仍未解决；无生产任务/云收费调用。
 最近完整Python486passed（#196）/0skipped/1既有warning；新Java测试不重复无关Python。
@@ -15,7 +36,7 @@
 
 #193必要CI38724627951成功后合并c26f48d5；其Java部署38725534873已success，master CI38725534826待查最终。
 #194隐式重放修复合入最新master后的head798845db须新CI通过；#195文件访问旧契约head1b2717f0须查CI。
-新增[纯文件重定向](file-redirect.md)，只读Mongo key/短时HMAC/3小时签名端口。
+新增[纯文件重定向](playback/file-redirect.md)，只读Mongo key/短时HMAC/3小时签名端口。
 完整Python486passed/0skipped/1既有warning、Ruff通过，真实回环随机Mongo；无HTTP/后台线程/计费装配。
 后续S12可靠任务故障证据与file/access实际HTTP组合分独立阶段；不擅改旧计费缺口或生产切流。
 Git直连fetch超时已诊断，用当前系统代理的单命令http.proxy恢复，不修改全局Git或网络配置。
@@ -25,7 +46,7 @@ Git直连fetch超时已诊断，用当前系统代理的单命令http.proxy恢�
 
 #193 head aa9902dc必要CI38724627951全通过后合并（SHA以远端查询为准）。
 #192合并master CI38724271123/部署38724271097均success。
-新增[file/access完整Spring契约](file-access-contract.md)，真实回环隔离Mongo9passed/0skipped、Checkstyle通过。
+新增[file/access完整Spring契约](playback/file-access-contract.md)，真实回环隔离Mongo9passed/0skipped、Checkstyle通过。
 确认旧异步线程缺请求上下文导致访问日志/费用不落库，HTTP302与JSON成功正文仍返回；只固化不修改运行规则。
 转码独立修复#194 head926ffeb3：回环复现旧POST EOF重发2次，修复后12项传输及12项任务/封面回归通过；CI须查最新。
 后续先纯文件重定向和读取端口，可靠计费单独按S12可恢复/单所有者边界设计，不使用FC后台线程。
@@ -34,7 +55,7 @@ Git直连fetch超时已诊断，用当前系统代理的单命令http.proxy恢�
 
 master已拉取公司提交；#192精确head29c921a4必要CI38709053755成功后合并6cfcf375。
 #189/#190随依赖合并自动收尾，#187/#188逐文件无独有实现，已关闭并注明由#192覆盖。
-新增[显式统一播放装配](backend-watch-routing.md)，保留默认路由集合、生产入口和数据边界。
+新增[显式统一播放装配](playback/backend-watch-routing.md)，保留默认路由集合、生产入口和数据边界。
 本地Python3.12.13完整465passed/0skipped/1既有warning、Ruff通过，真实随机隔离Mongo。
 待本PR必要CI；#192合并master CI38724271097/部署38724271123须查询最终。
 交接路径handoff-2026-10-15-1700尚未在远端发现；继续以代码/PR/现行计划为据。
@@ -45,7 +66,7 @@ S03权限/真实FC网络仍阻塞，不开放Mongo公网、不生产切流迁库
 ## 2026-10-15 连续推进：S07.b
 
 #184公开视频列表head6d179d3c及#185发布错误定位head1f8b0a97均已提交，CI须查最终。
-分支feat-serverless-search-category基于#184，新增[搜索/分类](search-category.md)，
+分支feat-serverless-search-category基于#184，新增[搜索/分类](video/search-category.md)，
 受影响模块focused30passed、Ruff通过、1warning；JDK21算术边界探针已实际执行。
 没有整套本机重跑或真实FC验证，不把旧Java源码/算术探针当完整HTTP验收。
 本轮已连续完成观看身份、共享ID/token、用户HTTP/TCP、头像/OSS/STS、公开列表、
@@ -54,7 +75,7 @@ S03权限/真实FC网络仍阻塞，不开放Mongo公网、不生产切流迁库
 ## 2026-10-15 连续推进：S07.a
 
 #183精确head1bcb5e97必要CI38671383841通过后合并2026014e，PR E2E按条件skipped。
-分支feat-serverless-public-video-list实现[公开视频列表及统一后端组合](public-video-implementation.md)。
+分支feat-serverless-public-video-list实现[公开视频列表及统一后端组合](video/public-video-implementation.md)。
 完整本地361passed/2deselected（Windows符号链接权限）/1warning，Ruff通过，包含
 统一后端真实TCP。Spring7.0.5数值与Mongo5.0.3分页已直接Java探针/字节码核对；
 本机离线Java夹具重跑因Maven插件缓存未解析而未执行，不能说通过。
@@ -64,7 +85,7 @@ S03权限/真实FC网络仍阻塞，不开放Mongo公网、不生产切流迁库
 
 #181新head d1675608必要CI38670457268通过后合并b52e0257；#182精确head879bf22b
 必要CI38670616632通过后合并4e3f4beb，PR E2E均按条件skipped，不代替master E2E。
-分支feat-serverless-avatar-lifecycle补[头像生命周期及OSS/STS适配](avatar-lifecycle.md)，
+分支feat-serverless-avatar-lifecycle补[头像生命周期及OSS/STS适配](user/avatar-lifecycle.md)，
 十二条UserController/client/session路径现已具备独立应用实现；旧生产入口仍未切换。
 本地完整348passed/2deselected（Windows符号链接权限）/1warning、Ruff通过。
 已运行锁定Java OSS3.16.3/core4.6.2合成黄金探针；没有真实STS/对象访问或生产写入。
@@ -75,7 +96,7 @@ S03权限/真实FC网络仍阻塞，不开放Mongo公网、不生产切流迁库
 #180必要CI38669584312通过后精确head8e856a84合并7ef5bdad。#181初head bf72100b
 必要CI38669795999通过；为解决与#180的接续文档冲突，合入依赖与master后head
 d1675608，必须等新head CI，不沿用旧head通过结论。
-分支feat-serverless-user-http复用上述依赖完成[九条用户路径及真实TCP](user-http-application.md)。
+分支feat-serverless-user-http复用上述依赖完成[九条用户路径及真实TCP](user/user-http-application.md)。
 完整本地328passed/2deselected（符号链接权限）/1warning；再增4份Java黄金对照后
 focused19passed，Ruff通过。工厂真实装配时钟/随机源/共享ID及异常日志，仍不替换
 生产fc_handler/web入口。继续头像创建/凭证/完成链路；完整FC、CORS与网络未验。
@@ -83,7 +104,7 @@ focused19passed，Ruff通过。工厂真实装配时钟/随机源/共享ID及异
 ## 2026-10-15 连续推进：S06.i
 
 client/session已提交PR#180，精确head8e856a84；本地15passed，必要CI仍需查最终。
-独立分支feat-serverless-identifiers基于master1183ae20，实现[Long ID与共享token生成](identifiers.md)。
+独立分支feat-serverless-identifiers基于master1183ae20，实现[Long ID与共享token生成](user/identifiers.md)。
 已运行项目锁定Hutool5.8.25/JDK21黄金探针，本地Mongo新增6项及架构8项14passed，
 Ruff通过。token共享分配用原id_counters的内部键及原字段；尚未装配生产node/时区，
 真实Mongo版本/拓扑/写关注和Java共存时的单写者交接仍待验，不宣称完整登录上线。
@@ -92,7 +113,7 @@ Ruff通过。token共享分配用原id_counters的内部键及原字段；尚未
 
 用户要求连续分阶段推进，不逐阶段等待确认。#179必要CI38667775210全部通过，
 PR E2E按条件skipped，精确head079031fe已合并1183ae20。基于该master实现
-[client/session持久化分配](client-session.md)，新增7项及架构8项共15passed、Ruff通过。
+[client/session持久化分配](user/client-session.md)，新增7项及架构8项共15passed、Ruff通过。
 无生产入口/配置变化。下一阶段是旧Long ID和多实例Snowflake token生成；已用
 项目锁定Hutool5.8.25运行临时Java探针取得固定格式样本，默认节点实际由机器派生，
 不误按其他版本文档宣称默认固定1:1。后续需避免FC各实例进程内序列冲突。
@@ -100,7 +121,7 @@ PR E2E按条件skipped，精确head079031fe已合并1183ae20。基于该master�
 ## 2026-10-15 日间：S06.g2 登录提交
 
 S06.g1 PR#178精确head6a9c99da必要CI全部通过（PR两个E2E按条件skipped），已合并
-4481ece9。继续分支feat-serverless-login-submit，实现[验证码提交及用户/钱包写入](login-submit.md)。
+4481ece9。继续分支feat-serverless-login-submit，实现[验证码提交及用户/钱包写入](user/login-submit.md)。
 真实临时Mongo回归308passed/2deselected（Windows符号链接权限）/1warning、Ruff通过；
 新增9项覆盖错误、生产/非生产、换token、钱包保留和部分失败状态。无生产HTTP装配。
 后续先做ID/token生成器与HTTP组合验证；事务/并发恢复尚未完成，不能称完整登录。
@@ -109,7 +130,7 @@ S06.g1 PR#178精确head6a9c99da必要CI全部通过（PR两个E2E按条件skippe
 ## 2026-10-15 日间重新启动：S06.g1
 
 用户明确要求分阶段继续。基于master a2f8b150，分支feat-serverless-verification-code，
-完成[验证码申请能力](verification-code-request.md)：现有记录不刷新，新记录保持原字段；
+完成[验证码申请能力](user/verification-code-request.md)：现有记录不刷新，新记录保持原字段；
 真实隔离Mongo验证，无生产路由/短信/索引/云配置改动。新增及架构12passed、Ruff通过；
 全套270passed/3skipped/2failed（Windows符号链接权限）/1warning，详见阶段文档。
 下一步为验证码提交、用户/token/钱包写入和恢复能力，完成后统一装配用户入口。
@@ -128,7 +149,7 @@ S03发布权限/S04云网络仍阻塞，不沿用已结束的夜间时间授权�
 - S05.e [PR #155](https://github.com/makewheels/video-2022/pull/155) 最新 head f8fe8541 的 CI38589941727 全部必要job success后合并为12092139；PR E2E skipped。登录HTTP6项/Checkstyle已过，生产判定/TTL清理/并发未验。
 - S03.b [PR #156](https://github.com/makewheels/video-2022/pull/156) 01198f60 的 CI38591679417 全部必要job success后已合并8a6b5304（PR E2E skipped）。候选role/trust仅配置，未创建/代入，真实发布回退仍阻塞。
 - S05.f [PR #157](https://github.com/makewheels/video-2022/pull/157) a656f79c 的 CI38594738912 全部必要job success后合并fbb8502a（PR E2E skipped）。真实生产判定配置/索引夹具3passed，未验证实际生产配置/TTL删除时机/并发。
-- S06.a #158已在全部必要CI38597432860成功后合并39af8559（PR E2E skipped）；[旧用户读取能力](user-reads.md)：纯端口/用例/HTTP值编码，4份固定Java HTTP与Python对照已过，完整Python165passed/Mongo1skipped，Java4passed/Checkstyle/Ruff/500行/空白通过。没有Mongo用户适配器或应用业务路由，不能称用户API已在FC迁移。
+- S06.a #158已在全部必要CI38597432860成功后合并39af8559（PR E2E skipped）；[旧用户读取能力](user/user-reads.md)：纯端口/用例/HTTP值编码，4份固定Java HTTP与Python对照已过，完整Python165passed/Mongo1skipped，Java4passed/Checkstyle/Ruff/500行/空白通过。没有Mongo用户适配器或应用业务路由，不能称用户API已在FC迁移。
 - S06.b1 #159 a9933666 的CI38620516871全部必要job成功后合并`286c3e7d`（PR E2E skipped），Java3项基线已固化。
 - S06.b2 #160 f5640c6a 的CI38622565458必要项全通过后合并9fa11d75（PR E2E skipped）；Mongo只读适配器176passed，未装配HTTP，未验证BSON类型/完整请求日志/生产网络仍为门槛。
 - 频道测试修复#161 head748bdd06的CI38624666455必要项全通过后合并2d9cf7f0（PR E2E skipped）；#160合并master CI38624255599/部署38624255442均success。
@@ -140,7 +161,7 @@ S03发布权限/S04云网络仍阻塞，不沿用已结束的夜间时间授权�
 - S06.d3 #167 head4f8d788f必要CI38637312136全通过后合并175ff4eb（PR E2E skipped）；#166合并master CI38636953114/部署38636952960均success。
 - S06.d4 #168 head162eb6f0，CI38639197445首次后端在Maven插件解析失败（测试未执行）；官方POM本机HTTP200后仅重试失败任务，attempt2全部必要job成功，已合并708ac2b8，PR E2E skipped。
 - S06.d5 #169 headf85cae57必要CI38641932763全部通过后合并af2c068f（PR E2E skipped）；#168合并master CI38641368850及Java部署38641369038均success，先前镜像代理失败后新部署已通过。
-- 当前分支`feat-serverless-profile-update`基于af2c068f，S06.e1 [资料更新用例/适配](profile-update.md)：Java黄金HTTP14项+Mongo更新6项/Checkstyle，完整Python247passed/0skipped/1warning、Ruff/500行/空白通过。保持UTF-16/双字段替换/显式null、仅三字段更新、ObjectId不回退/零匹配不upsert；写入仅隔离测试库，未接生产路由/日志。
+- 当前分支`feat-serverless-profile-update`基于af2c068f，S06.e1 [资料更新用例/适配](user/profile-update.md)：Java黄金HTTP14项+Mongo更新6项/Checkstyle，完整Python247passed/0skipped/1warning、Ruff/500行/空白通过。保持UTF-16/双字段替换/显式null、仅三字段更新、ObjectId不回退/零匹配不upsert；写入仅隔离测试库，未接生产路由/日志。
 - #167合并master CI38639010341 success，但Java部署38639008711因Caddy镜像代理Bad Gateway失败；仅通过Actions重试失败job一次，attempt2仍同因失败，不继续碰运气、不直接操作服务器，不断言现役生产运行状态。新master CI/部署以实际查询为准。
 - 06:05报告脚本已增强六类成果/验收边界和固定提交证据链接；本机独立headless Chrome实际点击打印/详情并验桌面/手机无整页横溢、打印CSS通过。仅系统任务临时HTML/环境，未提前打开用户可见浏览器；06:05起仍须生成/打开实际报告并核验。
 - #158合并后master CI38620293672失败：浏览器频道等待选择器strict mode匹配2元素，79passed/1failed；既有Java部署38620293649成功。#159合并master CI38622137273已success（实际API/浏览器E2E通过）；部署38622137369另查询。旧失败仍有确定的并存元素证据，独立修复测试竞态。
@@ -158,23 +179,23 @@ S03发布权限/S04云网络仍阻塞，不沿用已结束的夜间时间授权�
 ## 夜间验收当前检查点
 
 - #176 headfaf37bd6必要CI38653142301全通过后合并846cb3b8；PR E2E skipped。#175 master CI38652998286/部署38652998328均success，新master CI38654503711/部署38654503779须查最终。
-- [夜间验收与恢复清单](night-review.md)汇总已完成/未验/失败及安全恢复；S03/S04与完整S06仍未完成。最近完整本地Python297passed，不为纯文档状态更新重复测试。
+- [夜间验收与恢复清单](overview/night-review.md)汇总已完成/未验/失败及安全恢复；S03/S04与完整S06仍未完成。最近完整本地Python297passed，不为纯文档状态更新重复测试。
 - 07:30实时五小时额度93%已用、周88%已用；优先保存/验收/最终报告，不使用付费额外或重置卡。
 
 ## S06.f2 历史检查点
 
 - #175 head36d13246必要CI38651719556全通过后合并24377e59（PR E2E skipped）；#174 master CI38651370309/部署38651370246均success。新master CI38652998286/部署38652998328待查最终。
-- [隔离更新HTTP组合](profile-update-http.md)新增15项，完整Python297passed/0skipped/1既有warning、Ruff/500行/空白通过。旧成功/长度/绑定/401黄金响应与真实Mongo更新次数/日志实测，只有测试应用，不改现有入口、不生产写入。
+- [隔离更新HTTP组合](user/profile-update-http.md)新增15项，完整Python297passed/0skipped/1既有warning、Ruff/500行/空白通过。旧成功/长度/绑定/401黄金响应与真实Mongo更新次数/日志实测，只有测试应用，不改现有入口、不生产写入。
 
 ## S06.e3 历史检查点
 
 - #174 head88c28b14必要CI38649966353全通过后合并01856f2f（PR E2E skipped）；#173 master CI38649789900/部署38649789809均success。新master CI38651370309/部署38651370246待查最终。
-- [未装配JSON解码](profile-json-decoder.md)旧Java HTTP10项/Checkstyle、完整Python282passed/0skipped/1既有warning、Ruff/500行/空白通过。保留数字词法/重复键、拒绝容器和尾随内容，成功后组合纯用例与实际隔离Mongo写；UTF-8以外/极端输入仍未验，不装配生产入口。
+- [未装配JSON解码](user/profile-json-decoder.md)旧Java HTTP10项/Checkstyle、完整Python282passed/0skipped/1既有warning、Ruff/500行/空白通过。保留数字词法/重复键、拒绝容器和尾随内容，成功后组合纯用例与实际隔离Mongo写；UTF-8以外/极端输入仍未验，不装配生产入口。
 
 ## S06.f1 历史检查点
 
 - #173 head1f815d72必要CI38648327035全通过后合并55263bf9（PR E2E skipped）；#172 master CI38648114989/部署38648115203均success。新master CI38649789900/部署38649789809待查最终。
-- [隔离ASGI组合](profile-http-composition.md)新增9项，完整Python264passed/0skipped/1既有warning，Ruff/500行/空白通过。实际Mongo用户/文件/日志，5份黄金HTTP/3种401/日志失败恢复通过；签名替代，仅测试应用，不改现有入口，不等于FC或S06完成。
+- [隔离ASGI组合](user/profile-http-composition.md)新增9项，完整Python264passed/0skipped/1既有warning，Ruff/500行/空白通过。实际Mongo用户/文件/日志，5份黄金HTTP/3种401/日志失败恢复通过；签名替代，仅测试应用，不改现有入口，不等于FC或S06完成。
 
 ## S06.d7 历史检查点
 
@@ -184,13 +205,13 @@ S03发布权限/S04云网络仍阻塞，不沿用已结束的夜间时间授权�
 ## S06.d6 历史检查点
 
 - #171 head397c91b0必要CI38645020667全通过后合并db56fbe1（PR E2E skipped）；#170 master CI38644545566/部署38644545434均success。新master CI38646352161/部署38646352029待查最终。
-- [同步Mongo日志适配](mongo-request-journal.md)真实Java BSON基线7项、完整Python253passed/0skipped/1既有warning，Ruff/500行/空白通过。只在随机隔离库写入；原入口不接入，特殊键/真实网络不确定写入尚未验。
+- [同步Mongo日志适配](http/mongo-request-journal.md)真实Java BSON基线7项、完整Python253passed/0skipped/1既有warning，Ruff/500行/空白通过。只在随机隔离库写入；原入口不接入，特殊键/真实网络不确定写入尚未验。
 - 报告06:05:08由调度实际生成并成功调用系统open；打开标记与六类状态/固定提交链接已核验。浏览器控制工具不可用，实际屏幕显示未确认；此前独立headless交互/布局QA通过不等于可见页面验收。后续刷新文件，不重复开标签。
 
 ## S06.e2 历史检查点
 
 - #170 head5ec65e3d必要CI38643314470全通过后合并ca38fea1（PR E2E skipped）；#169合并master CI38642888158/部署38642888150均success。新master CI38644545566/部署38644545434待查最终。
-- [JSON绑定基线](profile-json-binding.md)真实Spring/隔离Mongo8项与Checkstyle通过：整数/布尔转字符串、未知字段忽略；容器/缺失正文等绑定失败不写资料。仅测试/文档，Python解码/路由仍未实现。
+- [JSON绑定基线](user/profile-json-binding.md)真实Spring/隔离Mongo8项与Checkstyle通过：整数/布尔转字符串、未知字段忽略；容器/缺失正文等绑定失败不写资料。仅测试/文档，Python解码/路由仍未实现。
 
 ## 用户约束（接续不能丢失）
 
@@ -236,7 +257,7 @@ S03发布权限/S04云网络仍阻塞，不沿用已结束的夜间时间授权�
 ## 当前执行补充（2026-10-14 23:14，S05.e）
 
 - 当前分支 `test-serverless-login-http-contract`，基于已合并 S05.b `5cf8716c`；S05.c #153 已合并，S05.d #154 已合并为 fc54aee1，最新查询为准。不能合并未完成 CI。
-- S05.e [登录 HTTP 夹具](login-http-fixtures.md) 6 项集成测试+Checkstyle/空白通过，测试是真实隔离 Mongo/完整管线、固定身份；生产配置/TTL清理/并发未验。
+- S05.e [登录 HTTP 夹具](user/login-http-fixtures.md) 6 项集成测试+Checkstyle/空白通过，测试是真实隔离 Mongo/完整管线、固定身份；生产配置/TTL清理/并发未验。
 - 此历史执行补充已完成：#154/#155均合并，当前以页首S03.b快照为准。不要回到已合并 #149/#152 重复实现。
 
 ## 当前执行补充（2026-10-14 23:55，S05.f）
@@ -251,13 +272,13 @@ S03发布权限/S04云网络仍阻塞，不沿用已结束的夜间时间授权�
 #185旧head1f8b0a97必要CI38672655387通过，但master更新后合并门禁要求新检查；
 已合master为d1b8323a并推送，须等新CI。#186同理更新到c034d3a5，不沿用旧head验收。
 独立分支feat-serverless-playback-authorization基于master5e27f648，实现
-[旧文件签名与私密播放授权](playback-authorization.md)。实际直接编译当前Java服务源
+[旧文件签名与私密播放授权](playback/playback-authorization.md)。实际直接编译当前Java服务源
 取得3组黄金HMAC，新增22项及架构8项共30passed、Ruff通过。尚无播放HTTP/媒体
 清单/计费迁移；下一步getWatchInfo及主/子m3u8，不能宣称已可播放。
 
 ## 2026-10-15 连续推进：S08.b 播放信息
 
-分支feat-serverless-watch-info基于S08.a，实现[播放信息独立HTTP能力](watch-info.md)。
+分支feat-serverless-watch-info基于S08.a，实现[播放信息独立HTTP能力](playback/watch-info.md)。
 真实隔离Mongo新增6项、连用户HTTP/架构24passed，Ruff通过；无生产入口切换。
 签名/播放详情已实现不等于URL后续路径已迁移。继续HLS子清单与主清单、302/计费。
 
@@ -265,7 +286,7 @@ S03发布权限/S04云网络仍阻塞，不沿用已结束的夜间时间授权�
 
 #185 更新后的必需 CI 通过并合并为 06cb03e7。#186/#187/#188 在原 head 的必需 CI
 通过后，因 master 更新再次同步基线并推送，必须等待新 head 的检查，未绕过保护。
-[子清单](hls-child.md) 提交 #189；[主清单](hls-master.md) 在独立后续分支实现。
+[子清单](playback/hls-child.md) 提交 #189；[主清单](playback/hls-master.md) 在独立后续分支实现。
 本地播放相关 64 项实际通过、Ruff 通过，包含真实临时 Mongo 与 JDK 帧率算术核对。
 主/子清单业务能力尚未注册 HTTP，生产入口不变。下一阶段是 HTTP 合约、
 file/access 的重定向与可靠计费写入；OSS 权限和实际 FC/Mongo 网络验收仍待解决。

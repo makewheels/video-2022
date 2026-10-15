@@ -1,6 +1,6 @@
 # Python Serverless 后端候选设计
 
-状态：**提案，尚未实现**。本页不代表当前生产架构。对应 [2026-10-14 需求与可行性审计](../requirements/2026-10-14-serverless-backend/README.md)。
+状态：**实施中，分层与部分业务能力已实现；真实FC部署、完整业务迁移及生产切流尚未完成**。本页描述目标架构和实施边界，不代表当前生产架构。对应 [2026-10-14 需求与可行性审计](../requirements/2026-10-14-serverless-backend/README.md)。
 
 ## 1. 架构与运行边界
 
@@ -156,7 +156,7 @@ S01 已增加依赖边界检查和两个外壳的公共用例一致性测试，�
 
 ## 10. 官方取舍与接续
 
-每个小阶段查阅并记录相关 [官方依据](../requirements/2026-10-14-serverless-backend/official-guidance.md)，明确官方事实/项目决定/待实测三者的区别。按 [小阶段计划](../requirements/2026-10-14-serverless-backend/plan.md) 多 PR 交付，重要状态及时写入 [接续记录](../requirements/2026-10-14-serverless-backend/progress.md)，不能依赖一次对话完成全部迁移。
+每个小阶段查阅并记录相关 [官方依据](../requirements/2026-10-14-serverless-backend/overview/official-guidance.md)，明确官方事实/项目决定/待实测三者的区别。按 [小阶段计划](../requirements/2026-10-14-serverless-backend/plan.md) 多 PR 交付，重要状态及时写入 [接续记录](../requirements/2026-10-14-serverless-backend/progress.md)，不能依赖一次对话完成全部迁移。
 
 ### S03 隔离发布方案（2026-10-14，实施中）
 
@@ -172,7 +172,7 @@ S01 已增加依赖边界检查和两个外壳的公共用例一致性测试，�
 
 ### S03.b 不可变 OSS 上传前提与候选最小权限
 
-上传前读取原始 versioning XML，仅接受无Status的从未启用状态，拒绝Enabled/Suspended/未知XML/权限失败；x-oss-forbid-overwrite在版本控制bucket失效，不能单凭请求头宣称不覆写。锁定SDK的公开解析器漏namespace，适配层复用认证请求并严格有界解析，真实云端仍未验。候选RAMrole/trust和边界见 [隔离权限方案](../requirements/2026-10-14-serverless-backend/isolated-oss-policy.md)：仅GetBucketVersioning及dev前缀GetObject/PutObject，未创建角色、未改现有用户权限、未实现STS装配，部署仍受身份阻塞。
+上传前读取原始 versioning XML，仅接受无Status的从未启用状态，拒绝Enabled/Suspended/未知XML/权限失败；x-oss-forbid-overwrite在版本控制bucket失效，不能单凭请求头宣称不覆写。锁定SDK的公开解析器漏namespace，适配层复用认证请求并严格有界解析，真实云端仍未验。候选RAMrole/trust和边界见 [隔离权限方案](../requirements/2026-10-14-serverless-backend/deployment/isolated-oss-policy.md)：仅GetBucketVersioning及dev前缀GetObject/PutObject，未创建角色、未改现有用户权限、未实现STS装配，部署仍受身份阻塞。
 
 ### S06.a 用户读取能力（未装配）
 
@@ -180,76 +180,78 @@ UserReads端口仅按token/ID读取不可变标准值快照，Users纯用例保�
 
 ### S06.b2 用户Mongo读取（未装配）
 
-独立MongoUserReads复用装配传入的惰性database provider，每次单文档有界读取，显式UTC解码。保留Java基线中的缺失/null、ObjectId查询优先级和已验证转换，四份Java HTTP黄金响应已经真实隔离Mongo对照。未验证BSON类型固定错误不含值，仍须补证据后才能装配，不能把未支持类型当新增生产校验。当前不接业务路由/日志/登录写入，也无FC网络验证；详见[适配器边界](../requirements/2026-10-14-serverless-backend/user-mongo-reads.md)。
+独立MongoUserReads复用装配传入的惰性database provider，每次单文档有界读取，显式UTC解码。保留Java基线中的缺失/null、ObjectId查询优先级和已验证转换，四份Java HTTP黄金响应已经真实隔离Mongo对照。未验证BSON类型固定错误不含值，仍须补证据后才能装配，不能把未支持类型当新增生产校验。当前不接业务路由/日志/登录写入，也无FC网络验证；详见[适配器边界](../requirements/2026-10-14-serverless-backend/user/user-mongo-reads.md)。
 
 ### S06.c2 资料与频道纯读取（未装配）
 
-Profiles共享UserReads，AvatarFiles/AvatarUrls仅传字符串key/ID/有效秒数，返回普通快照；本人资料清空返回token/动态头像，频道保留8字段和null计数补0。真实Java黄金HTTP9项和5份新夹具对照通过；真实Mongo仅验证用户读取组合，头像端口仍替代。具体适配器、完整HTTP上下文/日志/错误与路由仍未装配，详见[用例边界](../requirements/2026-10-14-serverless-backend/profile-channel-reads.md)。
+Profiles共享UserReads，AvatarFiles/AvatarUrls仅传字符串key/ID/有效秒数，返回普通快照；本人资料清空返回token/动态头像，频道保留8字段和null计数补0。真实Java黄金HTTP9项和5份新夹具对照通过；真实Mongo仅验证用户读取组合，头像端口仍替代。具体适配器、完整HTTP上下文/日志/错误与路由仍未装配，详见[用例边界](../requirements/2026-10-14-serverless-backend/user/profile-channel-reads.md)。
 
 ### S06.c3 头像File读取（未装配）
 
-MongoAvatarFiles复用惰性database provider，对旧file集合有界只读，保持ID转换、key/null和原读取不按owner/type/deleted过滤的行为。真实Java5项/Python201项通过，profile/channel组合已读取真实user+file集合；仅签名替代。其他BSON字段转换、真实OSS签名及完整HTTP/日志仍待，详见[适配边界](../requirements/2026-10-14-serverless-backend/avatar-mongo-reads.md)。
+MongoAvatarFiles复用惰性database provider，对旧file集合有界只读，保持ID转换、key/null和原读取不按owner/type/deleted过滤的行为。真实Java5项/Python201项通过，profile/channel组合已读取真实user+file集合；仅签名替代。其他BSON字段转换、真实OSS签名及完整HTTP/日志仍待，详见[适配边界](../requirements/2026-10-14-serverless-backend/user/avatar-mongo-reads.md)。
 
 ### S06.d1 HTTP身份/日志基线
 
-真实Java HTTP6项确认身份首值与鉴权顺序、401前置拒绝无requestLog、处理后状态与同步落库/清理。旧日志保存原始headers/query含凭据，已记录且仅用隔离合成值验证，不能称已脱敏。Python完整请求作用域/多值元数据/日志与错误尚未装配，不提前暴露业务路由；详见[上下文契约](../requirements/2026-10-14-serverless-backend/request-context-contract.md)。
+真实Java HTTP6项确认身份首值与鉴权顺序、401前置拒绝无requestLog、处理后状态与同步落库/清理。旧日志保存原始headers/query含凭据，已记录且仅用隔离合成值验证，不能称已脱敏。Python完整请求作用域/多值元数据/日志与错误尚未装配，不提前暴露业务路由；详见[上下文契约](../requirements/2026-10-14-serverless-backend/http/request-context-contract.md)。
 
 ### S06.d2 请求作用域普通值（未装配）
 
-RequestMetadata保留有序重复headers/参数与原query/peer信息，IdentityResolver按旧首值/空值语义返回局部不可变身份，无全局/ThreadLocal缓存。真实Java7项/Python217项通过；空header无参数仍可能匹配旧空token已记录，未改生产规则。现有FC/ASGI外壳未接多值转换/日志/鉴权门槛，不能据此启用业务路由，详见[请求身份能力](../requirements/2026-10-14-serverless-backend/request-identity.md)。
+RequestMetadata保留有序重复headers/参数与原query/peer信息，IdentityResolver按旧首值/空值语义返回局部不可变身份，无全局/ThreadLocal缓存。真实Java7项/Python217项通过；空header无参数仍可能匹配旧空token已记录，未改生产规则。现有FC/ASGI外壳未接多值转换/日志/鉴权门槛，不能据此启用业务路由，详见[请求身份能力](../requirements/2026-10-14-serverless-backend/http/request-identity.md)。
 
 ### S06.d3 ASGI多值采集（未装配）
 
-独立转换器从原始scope保留重复headers、原URI/query和peer，通过锁定Starlette multi_items得到有序参数；未支持表单合并/缺原始字段时明确失败。真实TestClient及完整Python225项通过，但现有入口未调用、FC/代理/完整HTTP尚未验，详见[采集边界](../requirements/2026-10-14-serverless-backend/asgi-request-metadata.md)。
+独立转换器从原始scope保留重复headers、原URI/query和peer，通过锁定Starlette multi_items得到有序参数；未支持表单合并/缺原始字段时明确失败。真实TestClient及完整Python225项通过，但现有入口未调用、FC/代理/完整HTTP尚未验，详见[采集边界](../requirements/2026-10-14-serverless-backend/http/asgi-request-metadata.md)。
 
 ### S06.d4 日志故障语义
 
-真实Spring/隔离Mongo与指定方法异常注入3项确认：日志afterCompletion save失败不会撤销成功响应或业务写，但旧日志ThreadLocal清理被跳过；身份查询提前失败则未进入日志。未改运行代码；Python请求生命周期需保留业务提交/响应边界并可靠清理局部状态，不能假设日志失败应重试业务。详见[故障基线](../requirements/2026-10-14-serverless-backend/request-journal-failure.md)。
+真实Spring/隔离Mongo与指定方法异常注入3项确认：日志afterCompletion save失败不会撤销成功响应或业务写，但旧日志ThreadLocal清理被跳过；身份查询提前失败则未进入日志。未改运行代码；Python请求生命周期需保留业务提交/响应边界并可靠清理局部状态，不能假设日志失败应重试业务。详见[故障基线](../requirements/2026-10-14-serverless-backend/http/request-journal-failure.md)。
 
 ### S06.d5 普通请求生命周期（未装配）
 
-RequestCycle保留首次身份、受保护第二次查询、401形状、处理后同步journal与精确路径排除；日志save失败保留响应/业务写并返回内部failed诊断，不重放业务。局部值不复制旧ThreadLocal泄漏；具体journal/域异常/外壳路由尚未装配。Java黄金HTTP11项、完整Python235项通过，详见[生命周期边界](../requirements/2026-10-14-serverless-backend/request-cycle.md)。
+RequestCycle保留首次身份、受保护第二次查询、401形状、处理后同步journal与精确路径排除；日志save失败保留响应/业务写并返回内部failed诊断，不重放业务。局部值不复制旧ThreadLocal泄漏；具体journal/域异常/外壳路由尚未装配。Java黄金HTTP11项、完整Python235项通过，详见[生命周期边界](../requirements/2026-10-14-serverless-backend/http/request-cycle.md)。
 
 ### S06.e1 资料更新（未装配）
 
-ProfileUpdates保留旧UTF-16长度与双字段替换，MongoProfileWrites仅更新nickname/bio/updateTime，不upsert/不回退String ID、不接生产路由。JavaHTTP14+Mongo6项、Python247项通过，写入仅随机隔离库；JSON绑定/完整鉴权日志与真实网络仍待，详见[更新边界](../requirements/2026-10-14-serverless-backend/profile-update.md)。
+ProfileUpdates保留旧UTF-16长度与双字段替换，MongoProfileWrites仅更新nickname/bio/updateTime，不upsert/不回退String ID、不接生产路由。JavaHTTP14+Mongo6项、Python247项通过，写入仅随机隔离库；JSON绑定/完整鉴权日志与真实网络仍待，详见[更新边界](../requirements/2026-10-14-serverless-backend/user/profile-update.md)。
 
 ### S06.e2 JSON绑定兼容门槛
 
-旧资料更新HTTP已实测整数/布尔转String、未知字段忽略，容器或非法正文HTTP200/code1且不写资料。Python字符串端口不等于JSON绑定兼容；详见[基线](../requirements/2026-10-14-serverless-backend/profile-json-binding.md)，尚不装配生产更新路由。
+旧资料更新HTTP已实测整数/布尔转String、未知字段忽略，容器或非法正文HTTP200/code1且不写资料。Python字符串端口不等于JSON绑定兼容；详见[基线](../requirements/2026-10-14-serverless-backend/user/profile-json-binding.md)，尚不装配生产更新路由。
 
 ### S06.d6 日志存储边界
 
-未装配MongoRequestJournal复用provider，同步写requestLog并保持旧BSON形状。生命周期处理日志失败，不重放业务。仅隔离库验证；特殊header键、实际网络不确定写入与日志安全策略仍为验收门槛，详见[记录](../requirements/2026-10-14-serverless-backend/mongo-request-journal.md)。
+未装配MongoRequestJournal复用provider，同步写requestLog并保持旧BSON形状。生命周期处理日志失败，不重放业务。仅隔离库验证；特殊header键、实际网络不确定写入与日志安全策略仍为验收门槛，详见[记录](../requirements/2026-10-14-serverless-backend/http/mongo-request-journal.md)。
 
 S06.d7实测收窄日志门槛：含点header使旧日志失败但不改变业务响应/写入；$前缀名可落库。Python按该边界返回内部failed，不复制旧ThreadLocal残留。特殊键仍未穷举，未接生产入口。
 
 ### S06.f1 隔离HTTP组合证据
 
-测试专用ASGI链路已组合元数据、身份、真实Mongo资料/头像元数据和同步日志，5份旧Java响应/3份401与日志失败恢复对照通过；签名仍替代。该应用只存在测试中，不是正式路由表或FC入口，详见[组合边界](../requirements/2026-10-14-serverless-backend/profile-http-composition.md)。
+测试专用ASGI链路已组合元数据、身份、真实Mongo资料/头像元数据和同步日志，5份旧Java响应/3份401与日志失败恢复对照通过；签名仍替代。该应用只存在测试中，不是正式路由表或FC入口，详见[组合边界](../requirements/2026-10-14-serverless-backend/user/profile-http-composition.md)。
 
 ### S06.e3 JSON值绑定（未装配）
 
-普通decode_profile保留小数/指数原始词法、每次重复字段的类型检查与后值语义，并拒绝旧HTTP实测的尾随内容。只针对已验UTF-8；编码/极端输入和完整更新HTTP尚未验，详见[解码边界](../requirements/2026-10-14-serverless-backend/profile-json-decoder.md)。
+普通decode_profile保留小数/指数原始词法、每次重复字段的类型检查与后值语义，并拒绝旧HTTP实测的尾随内容。只针对已验UTF-8；编码/极端输入和完整更新HTTP尚未验，详见[解码边界](../requirements/2026-10-14-serverless-backend/user/profile-json-decoder.md)。
 
 ### S06.f2 更新HTTP隔离组合
 
-测试专用ASGI POST链路组合身份/JSON/业务校验/真实Mongo更新与日志，旧成功/长度/绑定/401响应及实际更新次数通过；仅已验UTF-8、进程内TestClient，不修改现有入口，详见[组合证据](../requirements/2026-10-14-serverless-backend/profile-update-http.md)。
+测试专用ASGI POST链路组合身份/JSON/业务校验/真实Mongo更新与日志，旧成功/长度/绑定/401响应及实际更新次数通过；仅已验UTF-8、进程内TestClient，不修改现有入口，详见[组合证据](../requirements/2026-10-14-serverless-backend/user/profile-update-http.md)。
 
-2026-10-15夜间交付与尚未通过的阶段，汇总于[验收与恢复清单](../requirements/2026-10-14-serverless-backend/night-review.md)。运行入口/真实云端验收按该清单与progress保留边界，不能把未装配库称为生产迁移完成。
+2026-10-15夜间交付与尚未通过的阶段，汇总于[验收与恢复清单](../requirements/2026-10-14-serverless-backend/overview/night-review.md)。运行入口/真实云端验收按该清单与progress保留边界，不能把未装配库称为生产迁移完成。
 
 ## 文件访问计费迁移门槛
 
-先以完整Spring隔离契约验证302和异步日志实际结果，见[file/access基线](../requirements/2026-10-14-serverless-backend/file-access-contract.md)。文件访问不可隐式启用第二计费所有者，可靠任务与两次写入恢复需独立验收。
+先以完整Spring隔离契约验证302和异步日志实际结果，见[file/access基线](../requirements/2026-10-14-serverless-backend/playback/file-access-contract.md)。文件访问不可隐式启用第二计费所有者，可靠任务与两次写入恢复需独立验收。
 
 ## 统一隔离播放装配（2026-10-15）
 
-BackendApplication 显式工厂可成对提供播放签名密钥与内部地址，复用用户 RequestCycle 装配观看信息和 HLS。默认入口不变；详见[路由装配验收](../requirements/2026-10-14-serverless-backend/backend-watch-routing.md)。
+BackendApplication 显式工厂可成对提供播放签名密钥与内部地址，复用用户 RequestCycle 装配观看信息和 HLS。默认入口不变；详见[路由装配验收](../requirements/2026-10-14-serverless-backend/playback/backend-watch-routing.md)。
+
+BackendApplication 显式工厂可成对提供播放签名密钥与内部地址，复用用户 RequestCycle 装配观看信息和 HLS。默认入口不变；详见[路由装配验收](../requirements/2026-10-14-serverless-backend/playback/backend-watch-routing.md)。
 
 ## S12.a 恢复前置故障证据
 
-先使用真实随机Mongo与手工装配验证FcTask认领前/派发后的持久化边界，不启Spring调度、不新增生产机制。对象重建不等于真实进程崩溃；严格零空扫和可靠唤醒仍未解决，见[故障基线](../requirements/2026-10-14-serverless-backend/task-submission-persistence.md)。
+先使用真实随机Mongo与手工装配验证FcTask认领前/派发后的持久化边界，不启Spring调度、不新增生产机制。对象重建不等于真实进程崩溃；严格零空扫和可靠唤醒仍未解决，见[故障基线](../requirements/2026-10-14-serverless-backend/tasks/task-submission-persistence.md)。
 
 ## 文件重定向能力边界（2026-10-15）
 
-纯用例验证短时HMAC后只读tsFile并请求三小时预签名，具体Mongo读取与普通端口分离。没有访问计费写入或HTTP入口装配；不能以此替代S12可靠计费，见[file-redirect](../requirements/2026-10-14-serverless-backend/file-redirect.md)。
+纯用例验证短时HMAC后只读tsFile并请求三小时预签名，具体Mongo读取与普通端口分离。没有访问计费写入或HTTP入口装配；不能以此替代S12可靠计费，见[file-redirect](../requirements/2026-10-14-serverless-backend/playback/file-redirect.md)。
