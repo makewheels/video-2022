@@ -255,3 +255,7 @@ BackendApplication 显式工厂可成对提供播放签名密钥与内部地址�
 ## 文件重定向能力边界（2026-10-15）
 
 纯用例验证短时HMAC后只读tsFile并请求三小时预签名，具体Mongo读取与普通端口分离。没有访问计费写入或HTTP入口装配；不能以此替代S12可靠计费，见[file-redirect](../requirements/2026-10-14-serverless-backend/playback/file-redirect.md)。
+
+### S09心跳/进度基线（2026-10-16）
+
+[真实HTTP契约](../requirements/2026-10-14-serverless-backend/playback/heartbeat-progress.md)固定小写playing与先保存心跳后更新进度；匿名正文viewer保留等旧行为不在迁移中擅改。尚未装配Python写入或播放会话/历史。
