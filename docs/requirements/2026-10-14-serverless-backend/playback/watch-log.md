@@ -16,3 +16,15 @@
 - Controller视频存在检查先于去重；缺videoStatus在绑定期拒绝，无计数/日志写入。
 
 这些是旧运行行为与合成IP故障基线，不是真实外部网络故障，不在生产重放；具体IP适配/缓存和Python能力尚未实现。
+
+## S09.h 普通用例与Mongo写入
+
+实施中：普通WatchVisit/WatchEvent/WatchVideo值，视频存在/去重/读取/增数/保存端口，IP查询独立端口；组合保留两次IP和先计数后写入、错误不重试。Mongo增数显式Int64(1)，旧ObjectId与String不回退；事件保存使用实际视频ID/status，null省略，IP完整JSON递归保留。补旧HTTP IP映射/ID边界，之后实际隔离Mongo对照；具体外部IP与缓存、HTTP/生产入口仍不装配。
+
+### S09.h本地验收
+
+旧Java真实HTTP/Mongo9passed/0skipped、Checkstyle通过，新增IP JSON递归null/Decimal128/Long/list、含点键保存失败顺序、大写ObjectId请求保存小写ID而不去重。
+
+完整Python564passed/0skipped/1既有warning，新增12项真实Mongo与合成IP故障对照，Ruff/500行/空白通过。首次架构门禁拒绝copy依赖（其余563项通过），移除不必要copy导入后按原门禁全量复验；没有放宽架构规则。
+
+验证先存在检查/去重、BSON Int64增数、实际视频ID/status、递归IP转换、第一次/第二次IP故障与事件保存后合成确认异常不重放；null watch子文档真实Mongo失败在IP前发生。后两类及IP null组合是源码/新实现验证，不宣称旧HTTP逐项覆盖。具体IP云服务/缓存、观看日志HTTP和真实网络/FC未实现或未验，不安装生产入口。

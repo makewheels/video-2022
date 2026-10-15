@@ -271,3 +271,5 @@ S09.e：[观看历史](../requirements/2026-10-14-serverless-backend/playback/wa
 S09.f：显式HistoryProgressApplication按旧query/身份规则返回进度/历史及清理响应，复用RequestCycle与同步Mongo日志。旧Java4份全文夹具覆盖ISO UTC日期和null字段，ASGI隔离测试通过；未接入既有Backend/ASGI/FC入口。
 
 S09.g：[观看日志基线](../requirements/2026-10-14-serverless-backend/playback/watch-log.md)固定先存在检查、按请求status去重/计数、按实际status保存，以及两次IP调用的部分失败顺序。旧增数使用BSON Long；迁移不得改成隐式业务重试或原子事务。Python能力待下一阶段。
+
+S09.h：WatchLogs普通用例按旧顺序组合WatchLogStore/IpLocations，计数和事件写入不重试/不事务回滚；Mongo显式Int64增数并递归转换IP Decimal/null，事件使用实际视频ID/status。外部IP/缓存和HTTP仍独立，不导入业务层或装配生产入口。
