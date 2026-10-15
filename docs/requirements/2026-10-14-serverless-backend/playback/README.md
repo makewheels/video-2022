@@ -12,5 +12,5 @@
 | [playback-authorization](playback-authorization.md) | S08.a 播放授权与旧文件签名 |
 | [playlist-http](playlist-http.md) | 清单 HTTP 接入 |
 | [watch-info](watch-info.md) | S08.b 播放信息HTTP能力 |
-
 | [heartbeat-progress](heartbeat-progress.md) | 旧心跳与续播进度HTTP契约 |
+| [playback-sessions](playback-sessions.md) | 播放会话/时长/退出契约与普通能力 |
