@@ -390,4 +390,4 @@ Java旧HTTP/BSON14passed/0skipped，Maven/Checkstyle通过；完整Python516pass
 
 ## 2026-10-16 S09.i（09/14）
 
-旧IP实际Mongo6项+既有IpService4项共10passed/0skipped、Checkstyle通过；完整Python581passed/0skipped/1既有warning，17项新增实际Mongo/本机HTTP，Ruff/500行/空白通过。TTL监视器在本次独享Java mongod关闭，不以索引metadata冒充物理过期删除；外部IP全替代，无真实收费/生产缓存写入。详见[IP与缓存](playback/watch-log.md)。
+旧IP实际Mongo6项+既有IpService4项共10passed/0skipped、Checkstyle通过；完整Python581passed/0skipped/1既有warning，17项新增实际Mongo/本机HTTP，Ruff/500行/空白通过。首轮独享Java mongod关闭TTL监视器，最终默认开启并显式隔离presence测试索引也10项通过；索引metadata不代表物理过期删除；外部IP全替代，无真实收费/生产缓存写入。详见[IP与缓存](playback/watch-log.md)。

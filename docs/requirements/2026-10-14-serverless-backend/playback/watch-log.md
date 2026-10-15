@@ -37,7 +37,7 @@
 
 ### S09.i本地验收
 
-- 真实旧IpService+隔离Mongo `IpCacheMappingContractTest`6项与既有IpServiceTest4项，共10passed/0skipped，Checkstyle成功。外部HttpUtil全静态替代，无收费调用；为稳定验证“记录存在即复用”，独享mongod禁用TTL清扫线程，实际回读实体生成的unique ip和createdAt TTL21600秒，不声称实测物理过期删除。
+- 真实旧IpService+隔离Mongo `IpCacheMappingContractTest`6项与既有IpServiceTest4项，共10passed/0skipped，Checkstyle成功。外部HttpUtil全静态替代，无收费调用；缓存presence测试先解析映射再移除测试索引，TTL定义另用专门测试建索引并实际回读unique ip/createdAt TTL21600秒。首轮独享mongod关闭TTL清扫，最终按默认开启设置也10项通过；未实测物理过期删除。
 - 完整Python581passed/0skipped/1既有warning，本阶段新增17项，Ruff/500行/空白通过。真实Mongo验证IPv6键/已有记录不刷新、扁平result覆盖ip、对象null省略/数组null与Decimal精度、唯一竞争不覆盖/不重试、写后合成确认异常后下一独立请求读缓存；真实WatchLogs两次lookup只用一次合成供应商请求。
 - 新HTTPS transport固定三秒超时、不自动跟随重定向；真实回环服务器验证只发一次且不携带Authorization跳转。无全局代理/网络配置修改。旧服务只取body，适配也不先按HTTP状态替换旧正文解析。上述传输边界尚未由真实供应商/FC网络验证。
 - 仅支持已验标准JSON（保留Decimal），旧非标准JSON/极端数字/其他编码和缓存损坏类型仍门槛；未装配业务入口或连接生产，不创建生产索引/缓存。

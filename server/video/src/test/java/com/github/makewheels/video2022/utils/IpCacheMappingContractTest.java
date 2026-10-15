@@ -29,6 +29,10 @@ class IpCacheMappingContractTest extends BaseIntegrationTest {
     @BeforeEach
     void setUp() {
         cleanDatabase();
+        // Resolve annotation indexes first, then remove them for deterministic cache-presence tests.
+        // The dedicated metadata test explicitly recreates and reads the real definitions.
+        mongoTemplate.getConverter().getMappingContext().getPersistentEntity(IpCache.class);
+        mongoTemplate.dropCollection(IpCache.class);
         actual = new IpService();
         ReflectionTestUtils.setField(actual, "mongoTemplate", mongoTemplate);
         ReflectionTestUtils.setField(actual, "appCode", "fixture-not-a-real-appcode");
