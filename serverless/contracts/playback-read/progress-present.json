@@ -1,0 +1,18 @@
+{
+  "body": {
+    "code": 0,
+    "data": {
+      "clientId": "fixture-client",
+      "viewerId": null,
+      "createTime": "1970-01-01T00:00:00.000Z",
+      "progressInMillis": 42,
+      "updateTime": "1970-01-01T00:00:01.000Z",
+      "videoId": "fixture-video",
+      "id": "fixture-progress",
+      "sessionId": null
+    },
+    "message": "success"
+  },
+  "contentType": "application/json",
+  "status": 200
+}

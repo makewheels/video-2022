@@ -267,3 +267,5 @@ S09.c增加不可变完整Heartbeat和同步存储端口；普通Heartbeats用�
 S09.d：[播放会话](../requirements/2026-10-14-serverless-backend/playback/playback-sessions.md)采用普通不可变snapshot/command与同步存储端口，保持旧start/心跳/退出读改写、Java int32回绕及Long/Integer/Date映射；未知BSON转换明确拒绝，不推定完整兼容。尚未装配HTTP/生产入口，未改既有Java运行规则。
 
 S09.e：[观看历史](../requirements/2026-10-14-serverless-backend/playback/watch-history.md)采用普通HistoryStore/HistoryCoverUrls，按旧日志分页保留重复/失效视频，单次deleteMany不重试；签名逐行两小时。旧匿名null viewer语义仅隔离验收，不擅自改变登录规则。未安装到应用入口，watchLog创建和计数另验。
+
+S09.f：显式HistoryProgressApplication按旧query/身份规则返回进度/历史及清理响应，复用RequestCycle与同步Mongo日志。旧Java4份全文夹具覆盖ISO UTC日期和null字段，ASGI隔离测试通过；未接入既有Backend/ASGI/FC入口。

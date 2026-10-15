@@ -141,4 +141,44 @@ class WatchHistoryHttpContractTest extends BaseIntegrationTest {
         verifyNoInteractions(ossVideoService);
     }
 
+    private void fixture(String name, JSONObject body) throws Exception {
+        String output = System.getProperty("contract.output.dir");
+        if (output == null) return;
+        java.nio.file.Path directory = java.nio.file.Path.of(output);
+        java.nio.file.Files.createDirectories(directory);
+        JSONObject envelope = new JSONObject();
+        envelope.put("status", 200);
+        envelope.put("contentType", "application/json");
+        envelope.put("body", body);
+        java.nio.file.Files.writeString(directory.resolve(name + ".json"),
+                JSON.toJSONString(envelope, com.alibaba.fastjson.serializer.SerializerFeature.WriteMapNullValue));
+    }
+
+    @Test
+    void stableFullProgressAndHistoryResponses() throws Exception {
+        mongoTemplate.getCollection("progress").insertOne(new Document("_id", "fixture-progress")
+                .append("videoId", "fixture-video").append("clientId", "fixture-client")
+                .append("progressInMillis", 42L).append("createTime", new Date(0)).append("updateTime", new Date(1000)));
+        var progress = call(get("/progress/getProgress").param("videoId", "fixture-video")
+                .param("clientId", "fixture-client"));
+        assertEquals(JSON.parseObject("{\"code\":0,\"message\":\"success\",\"data\":{"
+                + "\"id\":\"fixture-progress\",\"videoId\":\"fixture-video\",\"viewerId\":null,"
+                + "\"clientId\":\"fixture-client\",\"sessionId\":null,\"progressInMillis\":42,"
+                + "\"createTime\":\"1970-01-01T00:00:00.000Z\",\"updateTime\":\"1970-01-01T00:00:01.000Z\"}}"), progress);
+        fixture("progress-present", progress);
+        var missing = call(get("/progress/getProgress").param("videoId", "absent").param("clientId", "fixture-client"));
+        assertEquals(JSON.parseObject("{\"code\":0,\"message\":\"success\",\"data\":null}"), missing);
+        fixture("progress-missing", missing);
+        log("fixture-log", null, "fixture-video", 1000);
+        mongoTemplate.getCollection("video").insertOne(new Document("_id", "fixture-video").append("title", "fixture-title"));
+        var history = call(get("/watchHistory/getMyHistory"));
+        assertEquals(JSON.parseObject("{\"code\":0,\"message\":\"success\",\"data\":{"
+                + "\"list\":[{\"videoId\":\"fixture-video\",\"title\":\"fixture-title\",\"coverUrl\":null,"
+                + "\"watchTime\":\"1970-01-01T00:00:01.000Z\"}],\"total\":1,\"page\":0,\"pageSize\":20}}"), history);
+        fixture("history-present", history);
+        var clear = call(delete("/watchHistory/clear"));
+        assertEquals(missing, clear);
+        fixture("history-clear", clear);
+    }
+
 }

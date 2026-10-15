@@ -1,0 +1,21 @@
+{
+  "body": {
+    "code": 0,
+    "data": {
+      "total": 1,
+      "pageSize": 20,
+      "page": 0,
+      "list": [
+        {
+          "coverUrl": null,
+          "watchTime": "1970-01-01T00:00:01.000Z",
+          "videoId": "fixture-video",
+          "title": "fixture-title"
+        }
+      ]
+    },
+    "message": "success"
+  },
+  "contentType": "application/json",
+  "status": 200
+}
