@@ -3,6 +3,7 @@
 from datetime import UTC, datetime
 
 from video_serverless.http import Response
+from video_serverless.ports.avatars import AvatarResult
 from video_serverless.ports.login import LoginResult
 from video_serverless.ports.profile_updates import ProfileUpdateResult
 from video_serverless.ports.users import ChannelSnapshot, UserSnapshot
@@ -83,3 +84,15 @@ def client_id_response(client_id: str) -> Response:
 
 def session_id_response(session_id: str) -> Response:
     return _payload({"sessionId": session_id})
+
+
+def avatar_response(result: AvatarResult) -> Response:
+    if result.credentials is not None:
+        credentials = result.credentials
+        return _payload({"bucket": credentials.bucket, "key": credentials.key, "endpoint": credentials.endpoint,
+                         "accessKeyId": credentials.access_key_id, "secretKey": credentials.secret_key,
+                         "sessionToken": credentials.session_token, "expiration": credentials.expiration,
+                         "fileId": result.file_id})
+    if result.file_id is not None:
+        return _payload({"fileId": result.file_id, "key": result.key})
+    return _payload(None)

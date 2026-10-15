@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+from video_serverless.business.avatars import Avatars
 from video_serverless.business.login import Login
 from video_serverless.business.profile_updates import ProfileUpdates
 from video_serverless.business.profiles import Profiles
@@ -14,6 +15,7 @@ from video_serverless.ports.request_identity import RequestMetadata, ResolvedIde
 from video_serverless.profile_json import decode_profile
 from video_serverless.request_cycle import CycleResult, RequestCycle
 from video_serverless.user_responses import (
+    avatar_response,
     channel_response,
     client_id_response,
     login_response,
@@ -28,8 +30,11 @@ _METHODS = {
     "/user/getUserByToken": "GET", "/user/getUserById": "GET",
     "/user/getMyProfile": "GET", "/user/getChannel": "GET", "/user/updateProfile": "POST",
     "/client/requestClientId": "GET", "/session/requestSessionId": "GET",
+    "/user/createAvatarFile": "GET", "/user/getAvatarUploadCredentials": "GET",
+    "/user/avatarUploadFinish": "GET",
 }
 _PROTECTED = {"/user/getMyProfile", "/user/updateProfile"}
+_AVATAR_PATHS = {"/user/createAvatarFile", "/user/getAvatarUploadCredentials", "/user/avatarUploadFinish"}
 
 
 class UserBindingError(ValueError):
@@ -59,9 +64,10 @@ class UserApplication:
     updates: ProfileUpdates
     watching: WatchingIds
     cycle: RequestCycle
+    avatars: Avatars | None = None
 
     def dispatch(self, request: RequestMetadata, body: bytes = b"") -> CycleResult:
-        if request.path not in _METHODS:
+        if request.path not in _METHODS or (request.path in _AVATAR_PATHS and self.avatars is None):
             return CycleResult(Response.json({"message": "User route not found"}, 404), "not_started")
 
         def handle(metadata: RequestMetadata, identity: ResolvedIdentity) -> Response:
@@ -93,6 +99,17 @@ class UserApplication:
             if path == "/client/requestClientId":
                 value = self.watching.client(metadata.remote_addr, metadata.first_header("User-Agent"))
                 return client_id_response(value)
+            if path in _AVATAR_PATHS:
+                if path == "/user/createAvatarFile":
+                    result = self.avatars.create(identity.user_id)
+                elif path == "/user/getAvatarUploadCredentials":
+                    result = self.avatars.credentials(identity.user_id, _parameter(metadata, "fileId"))
+                else:
+                    result = self.avatars.finish(identity.user_id, _parameter(metadata, "fileId"))
+                if result.error_code is not None:
+                    messages = {31: "文件不存在", 33: "文件和用户不匹配", 34: "生成对象存储上传凭证失败"}
+                    raise UserRequestError(result.error_code, messages[result.error_code])
+                return avatar_response(result)
             return session_id_response(self.watching.session(metadata.remote_addr, metadata.first_header("User-Agent")))
 
         return self.cycle.run(request, handle, protected=request.path in _PROTECTED)
