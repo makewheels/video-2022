@@ -375,3 +375,7 @@ Java旧HTTP/BSON14passed/0skipped，Maven/Checkstyle通过；完整Python516pass
 ## 2026-10-16 S09.f
 
 旧历史/进度MVC/Mongo6passed/0skipped、Checkstyle通过，4份全文夹具；完整Python552passed/0skipped/1既有warning，Ruff/500行/空白通过。首次夹具导出丢null的4项失败已纠正并全量复验。11项新增ASGI/Mongo链路见[历史HTTP](playback/watch-history.md)。未安装既有入口，不是TCP/FC/完整S09验收。
+
+## 2026-10-16 S09.g
+
+旧观看日志真实MVC/Mongo6passed/0skipped、Checkstyle/500行/空白通过；首次Integer读取错误已由实测Long修正。仅固定合成IP响应/指定异常，Python未改不重跑全量（最近552项）。详见[观看日志](playback/watch-log.md)。master38798471887一次失败后受证据支持的单次失败任务重试attempt2成功，首次失败保留。

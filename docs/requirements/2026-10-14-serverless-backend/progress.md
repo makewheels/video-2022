@@ -1,5 +1,13 @@
 # 接续记录
 
+## 2026-10-16 S09.g 观看日志/计数契约
+
+- #205 heada6e4b71a必要CI38798954535通过后合并af055481。
+- #204 master CI38798471887 attempt1因Spring Boot插件解析失败未进E2E；官方POM/JAR当前HTTP200后仅重试失败任务一次，attempt2/API/浏览器E2E均success；部署38798471808 success。
+- 新真实旧HTTP/Mongo6passed/Checkstyle固定请求/实际status差异、匿名/身份去重、BSON Long及两次IP调用失败部分写入。首次Integer读取假设已修正并复验。未改运行代码/Python，无生产重放；最近Python552passed。
+- 后续普通watchLog/计数和IP端口，再补心跳/会话JSON/HTTP；S09/FC仍未完成。
+
+
 ## 2026-10-16 S09.f 进度/历史HTTP
 
 - #204 head07356c6f必要CI38798005770全通过后合并7156a77a；#203 master CI38797545768/部署38797545777均success。
