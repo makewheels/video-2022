@@ -383,3 +383,7 @@ Java旧HTTP/BSON14passed/0skipped，Maven/Checkstyle通过；完整Python516pass
 ## 2026-10-16 S09.h
 
 旧观看日志HTTP/Mongo9passed/0skipped、Checkstyle通过，完整Python564passed/0skipped/1既有warning，Ruff/500行/空白通过。首次copy依赖触发架构门禁，移除后保持原门禁并全量复验。12项新增真实Mongo+合成IP包括两阶段失败、Int64、递归Decimal128/含点键、ObjectId规范化；详见[观看日志](playback/watch-log.md)。具体云IP/缓存/HTTP/FC仍缺，未写生产。
+
+## 2026-10-16 任务编号与总表维护
+
+对照GitHub确认#200–#207均已合并，标题补[S09.a]–[S09.h]；S09按14项固定看板，25个大阶段计数3/2/6/14保持一致。仅文档，diff --check及本地相对文件链接检查；未重复业务测试，最近完整Python564项。真实FC/全端完成度不以PR数量计算。
