@@ -1,5 +1,13 @@
 # 接续记录
 
+## 2026-10-16 S09.i（09/14）IP查询与缓存
+
+- #208 head9db7711f必要CI38802200501全部通过后合并9b992715；#207 master CI38801971901 success，部署38801971944最终须查。阶段编号/唯一总表已进入master。
+- 普通IpCache record/端口、MongoIpCache、CachedIpLocations和AliyunIpApi分离，保留六小时TTL存在语义/IPv6键、结果扁平/序列化null和Decimal，具体transport单次/三秒/不自动跳转。
+- Java旧IP真实Mongo6+既有4共10passed/Checkstyle，完整Python581passed/0skipped/1既有warning（新增17），Ruff/500行/空白通过；实际回环HTTP重定向与真实缓存/观看日志组合已验。
+- TTL物理清扫关闭以固定presence边界，仅回读索引；真实付费API/生产缓存/FC未调用或未验，非标准JSON等仍门槛。不装配生产入口。下一项S09.j日志HTTP，必要CI以实际PR为准。
+
+
 ## 2026-10-16 可见任务编号与总表
 
 - 用户指出PR缺少任务编号，难以判断总量；#200–#207标题已补[S09.a]–[S09.h]，后续统一阶段编号，PR数量不作为完成率。

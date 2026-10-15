@@ -387,3 +387,7 @@ Java旧HTTP/BSON14passed/0skipped，Maven/Checkstyle通过；完整Python516pass
 ## 2026-10-16 任务编号与总表维护
 
 对照GitHub确认#200–#207均已合并，标题补[S09.a]–[S09.h]；S09按14项固定看板，25个大阶段计数3/2/6/14保持一致。仅文档，diff --check及本地相对文件链接检查；未重复业务测试，最近完整Python564项。真实FC/全端完成度不以PR数量计算。
+
+## 2026-10-16 S09.i（09/14）
+
+旧IP实际Mongo6项+既有IpService4项共10passed/0skipped、Checkstyle通过；完整Python581passed/0skipped/1既有warning，17项新增实际Mongo/本机HTTP，Ruff/500行/空白通过。TTL监视器在本次独享Java mongod关闭，不以索引metadata冒充物理过期删除；外部IP全替代，无真实收费/生产缓存写入。详见[IP与缓存](playback/watch-log.md)。

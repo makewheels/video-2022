@@ -28,3 +28,16 @@
 完整Python564passed/0skipped/1既有warning，新增12项真实Mongo与合成IP故障对照，Ruff/500行/空白通过。首次架构门禁拒绝copy依赖（其余563项通过），移除不必要copy导入后按原门禁全量复验；没有放宽架构规则。
 
 验证先存在检查/去重、BSON Int64增数、实际视频ID/status、递归IP转换、第一次/第二次IP故障与事件保存后合成确认异常不重放；null watch子文档真实Mongo失败在IP前发生。后两类及IP null组合是源码/新实现验证，不宣称旧HTTP逐项覆盖。具体IP云服务/缓存、观看日志HTTP和真实网络/FC未实现或未验，不安装生产入口。
+
+## S09.i（09/14）IP查询与缓存
+
+实施中：复用旧ip_cache集合、ip唯一键和createdAt六小时TTL定义；运行请求不新建索引、不按时间主动判过期，缓存记录仍存在即复用。IPv6冒号替换为下划线。缓存端口/普通record、Mongo适配、外部API适配与组合分开，业务仍只依赖IpLocations。
+
+以真实旧IpService+隔离Mongo及静态HTTP替代验证cache命中/扁平result/覆盖顺序、null/Decimal与序列化、失败写入顺序；所有外部响应为合成，不调用收费API。缓存miss单次请求/保存，无应用重试。历史非标准JSON/极端数字、真实供应商/网络另验，不安装生产入口。
+
+### S09.i本地验收
+
+- 真实旧IpService+隔离Mongo `IpCacheMappingContractTest`6项与既有IpServiceTest4项，共10passed/0skipped，Checkstyle成功。外部HttpUtil全静态替代，无收费调用；为稳定验证“记录存在即复用”，独享mongod禁用TTL清扫线程，实际回读实体生成的unique ip和createdAt TTL21600秒，不声称实测物理过期删除。
+- 完整Python581passed/0skipped/1既有warning，本阶段新增17项，Ruff/500行/空白通过。真实Mongo验证IPv6键/已有记录不刷新、扁平result覆盖ip、对象null省略/数组null与Decimal精度、唯一竞争不覆盖/不重试、写后合成确认异常后下一独立请求读缓存；真实WatchLogs两次lookup只用一次合成供应商请求。
+- 新HTTPS transport固定三秒超时、不自动跟随重定向；真实回环服务器验证只发一次且不携带Authorization跳转。无全局代理/网络配置修改。旧服务只取body，适配也不先按HTTP状态替换旧正文解析。上述传输边界尚未由真实供应商/FC网络验证。
+- 仅支持已验标准JSON（保留Decimal），旧非标准JSON/极端数字/其他编码和缓存损坏类型仍门槛；未装配业务入口或连接生产，不创建生产索引/缓存。
