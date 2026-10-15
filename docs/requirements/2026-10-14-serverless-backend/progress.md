@@ -1,5 +1,14 @@
 # 接续记录
 
+## 2026-10-15 日间：S06.g2 登录提交
+
+S06.g1 PR#178精确head6a9c99da必要CI全部通过（PR两个E2E按条件skipped），已合并
+4481ece9。继续分支feat-serverless-login-submit，实现[验证码提交及用户/钱包写入](login-submit.md)。
+真实临时Mongo回归308passed/2deselected（Windows符号链接权限）/1warning、Ruff通过；
+新增9项覆盖错误、生产/非生产、换token、钱包保留和部分失败状态。无生产HTTP装配。
+后续先做ID/token生成器与HTTP组合验证；事务/并发恢复尚未完成，不能称完整登录。
+本阶段依赖S06.g1，回退与未验边界见独立阶段文档。
+
 ## 2026-10-15 日间重新启动：S06.g1
 
 用户明确要求分阶段继续。基于master a2f8b150，分支feat-serverless-verification-code，

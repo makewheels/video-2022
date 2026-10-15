@@ -3,6 +3,7 @@
 from datetime import UTC, datetime
 
 from video_serverless.http import Response
+from video_serverless.ports.login import LoginResult
 from video_serverless.ports.profile_updates import ProfileUpdateResult
 from video_serverless.ports.users import ChannelSnapshot, UserSnapshot
 
@@ -68,3 +69,9 @@ def channel_response(channel: ChannelSnapshot | None) -> Response:
 
 def profile_update_response(result: ProfileUpdateResult) -> Response:
     return _payload(None) if result.error is None else _payload(None, 1, result.error)
+
+
+def login_response(result: LoginResult) -> Response:
+    if result.error_code is not None:
+        return _payload(None, result.error_code, {11: "验证码错误", 12: "验证码已过期"}[result.error_code])
+    return _result(result.user)
