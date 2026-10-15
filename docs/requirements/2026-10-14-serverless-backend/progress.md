@@ -193,3 +193,13 @@ S03发布权限/S04云网络仍阻塞，不沿用已结束的夜间时间授权�
 - 分支 `test-serverless-production-login-contract`，基于 master12092139，独立补生产判定与TTL索引HTTP夹具；真实临时Mongo/真实EnvironmentService配置绑定，3passed/Checkstyle/空白通过，临时进程/目录清理。
 - S03.b #156 已合并；已取消被替代旧head e297348c 的同PR CI38591558651，避免旧run占用并阻塞新head；没有取消masterCI或部署，不沿用旧head验收。
 - S05.f #157 已合并fbb8502a；此为历史补充，以页首快照为准。TTL后台删除/生产部署/并发仍待，不使用生产账号或真实验证码。
+
+## 2026-10-15 连续推进：S08.a 播放签名
+
+#184精确head6d179d3c必要CI38672340446通过后合并5e27f648。
+#185旧head1f8b0a97必要CI38672655387通过，但master更新后合并门禁要求新检查；
+已合master为d1b8323a并推送，须等新CI。#186同理更新到c034d3a5，不沿用旧head验收。
+独立分支feat-serverless-playback-authorization基于master5e27f648，实现
+[旧文件签名与私密播放授权](playback-authorization.md)。实际直接编译当前Java服务源
+取得3组黄金HMAC，新增22项及架构8项共30passed、Ruff通过。尚无播放HTTP/媒体
+清单/计费迁移；下一步getWatchInfo及主/子m3u8，不能宣称已可播放。
