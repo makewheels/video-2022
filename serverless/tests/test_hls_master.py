@@ -79,7 +79,7 @@ def test_missing_video_empty_and_private_auth_before_transcodes():
     reads.saved_video = None
     assert service.get(PlaybackContext("missing", "c", "s"), None) == ""
     reads.saved_video = replace(MasterReads().saved_video, visibility="PRIVATE")
-    with pytest.raises(HlsDenied):
+    with pytest.raises(HlsDenied, match="该视频为私密视频"):
         service.get(PlaybackContext("video", "c", "s"), None)
     assert service.get(PlaybackContext("video", "c", "s"), "owner").startswith("#EXTM3U\n#EXT-X-STREAM-INF")
 

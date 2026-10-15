@@ -67,7 +67,7 @@ class ChildPlaylists:
             raise HlsDenied(35, "播放任务不属于当前视频或档位")
         denied = self.authorization.authorize(video, context, user_id, timestamp, nonce, signature)
         if denied is not None:
-            raise HlsDenied(denied)
+            raise HlsDenied(denied, "该视频为私密视频" if denied == 35 else None)
         files = {file.filename: file for file in self.reads.files(transcode.file_ids)}
         lines = _lines(transcode.content)
         for index, original in enumerate(lines):

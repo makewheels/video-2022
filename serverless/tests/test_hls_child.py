@@ -110,7 +110,7 @@ def test_private_requires_owner_or_playlist_grant():
     reads, _, service = setup("one.ts")
     reads.saved_video = replace(reads.saved_video, visibility="PRIVATE")
     context = PlaybackContext("video", "c", "s")
-    with pytest.raises(HlsDenied):
+    with pytest.raises(HlsDenied, match="该视频为私密视频"):
         service.get(context, "task", "720p", None)
     assert reads.file_reads == 0
     assert service.get(context, "task", "720p", "owner").startswith("https://internal")

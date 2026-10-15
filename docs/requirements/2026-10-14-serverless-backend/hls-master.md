@@ -20,5 +20,10 @@ CODECS、FRAME-RATE、VIDEO-RANGE 按现有非空条件输出。帧率用三位 
 WatchService 实测内容协商：Accept */* 或 text/plain 返回 text/plain;charset=ISO-8859-1，
 application/vnd.apple.mpegurl 返回同 MIME 加 ISO-8859-1，application/json 返回 application/json。
 这只证明 standalone 转换器行为，尚未证明完整 Boot 配置的 charset、过滤器及日志合约。
-Linux CI 另行确认。仍未注册 HTTP 路由，未确认完整 Java HTTP 合约，
+后续在干净源码副本和临时 Mongo 实际执行 PlaylistHttpContractTest：6 passed、0 skipped，
+Checkstyle 通过。完整 Boot 默认及 text/plain 响应为 text/plain;charset=UTF-8；
+播放器 MIME 为 application/vnd.apple.mpegurl;charset=UTF-8；application/json 无 charset。
+这修正了 standalone 探针的编码结论。还核对缺参 code1、私密与跨视频 code35、
+缺失视频主清单空体、子清单换行及真实请求日志。
+Linux CI 另行确认。仍未注册 Python HTTP 路由，
 file/access 重定向、计费及可靠异步写入未完成，不作为完整播放验收或生产切流依据。

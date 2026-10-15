@@ -74,7 +74,7 @@ class MasterPlaylists:
             return ""
         denied = self.authorization.authorize(video, context, user_id, timestamp, nonce, signature)
         if denied is not None:
-            raise HlsDenied(denied)
+            raise HlsDenied(denied, "该视频为私密视频" if denied == 35 else None)
         transcodes = [] if video.transcode_ids is None else self.reads.transcodes(video.transcode_ids)
         result = "#EXTM3U\n"
         for transcode in transcodes:
