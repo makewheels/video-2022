@@ -1,5 +1,12 @@
 # 接续记录
 
+## 2026-10-16 S09.c 心跳持久化
+
+- #201 head54a322de必要CI38795305473成功后合并1aff6f7f；#200 master CI38794939615/部署38794939689均success。
+- 普通Heartbeat/Heartbeats/MongoHeartbeatStore组合先保存心跳后更新进度，无全局身份/应用重试；Decimal128/Long/Date/指定ID替换已对照。
+- 本地Java真实HTTP/BSON14passed/Checkstyle；完整Python516passed/0skipped/1既有warning；13项新增实际隔离Mongo与故障边界。未接生产入口、尚无完整心跳JSON/HTTP、会话/历史和FC验收。
+
+
 ## 2026-10-16 S09.b 进度读写
 
 - #200 head a1d1e36a必要CI38794385714全部通过后合并fec341da。PR API/浏览器E2E按既有条件skip；合并master结果另查。
