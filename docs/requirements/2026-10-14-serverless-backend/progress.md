@@ -14,7 +14,7 @@
 
 #193必要CI38724627951成功后合并c26f48d5；其Java部署38725534873已success，master CI38725534826待查最终。
 #194隐式重放修复合入最新master后的head798845db须新CI通过；#195文件访问旧契约head1b2717f0须查CI。
-新增[纯文件重定向](file-redirect.md)，只读Mongo key/短时HMAC/3小时签名端口。
+新增[纯文件重定向](playback/file-redirect.md)，只读Mongo key/短时HMAC/3小时签名端口。
 完整Python486passed/0skipped/1既有warning、Ruff通过，真实回环随机Mongo；无HTTP/后台线程/计费装配。
 后续S12可靠任务故障证据与file/access实际HTTP组合分独立阶段；不擅改旧计费缺口或生产切流。
 Git直连fetch超时已诊断，用当前系统代理的单命令http.proxy恢复，不修改全局Git或网络配置。
@@ -24,7 +24,7 @@ Git直连fetch超时已诊断，用当前系统代理的单命令http.proxy恢�
 
 #193 head aa9902dc必要CI38724627951全通过后合并（SHA以远端查询为准）。
 #192合并master CI38724271123/部署38724271097均success。
-新增[file/access完整Spring契约](file-access-contract.md)，真实回环隔离Mongo9passed/0skipped、Checkstyle通过。
+新增[file/access完整Spring契约](playback/file-access-contract.md)，真实回环隔离Mongo9passed/0skipped、Checkstyle通过。
 确认旧异步线程缺请求上下文导致访问日志/费用不落库，HTTP302与JSON成功正文仍返回；只固化不修改运行规则。
 转码独立修复#194 head926ffeb3：回环复现旧POST EOF重发2次，修复后12项传输及12项任务/封面回归通过；CI须查最新。
 后续先纯文件重定向和读取端口，可靠计费单独按S12可恢复/单所有者边界设计，不使用FC后台线程。
