@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from time import time_ns
 
 from video_serverless.adapters.mongo_avatar_files import MongoAvatarFiles
+from video_serverless.adapters.mongo_avatars import MongoAvatars
 from video_serverless.adapters.mongo_exception_journal import MongoExceptionJournal
 from video_serverless.adapters.mongo_identifiers import MongoIdSequences
 from video_serverless.adapters.mongo_login import MongoLoginStore
@@ -14,6 +15,7 @@ from video_serverless.adapters.mongo_request_journal import MongoRequestJournal
 from video_serverless.adapters.mongo_users import MongoUserReads
 from video_serverless.adapters.mongo_verification_codes import MongoVerificationCodes
 from video_serverless.adapters.mongo_watching_ids import MongoWatchingIds
+from video_serverless.business.avatars import Avatars
 from video_serverless.business.identifiers import Identifiers
 from video_serverless.business.login import Login
 from video_serverless.business.profile_updates import ProfileUpdates
@@ -29,7 +31,7 @@ from video_serverless.user_application import UserApplication, UserRequestError
 
 
 def build_user_application(database_provider, avatar_urls, *, profile: str, local_clock,
-                           worker: int, datacenter: int) -> UserApplication:
+                           worker: int, datacenter: int, avatar_objects=None) -> UserApplication:
     # No dev default: the caller must supply the legacy profile and timezone explicitly.
     utc_clock = lambda: datetime.now(UTC)  # noqa: E731
     clock_ms = lambda: time_ns() // 1_000_000  # noqa: E731
@@ -56,4 +58,6 @@ def build_user_application(database_provider, avatar_urls, *, profile: str, loca
         ProfileUpdates(MongoProfileWrites(database_provider), utc_clock),
         WatchingIds(MongoWatchingIds(database_provider), utc_clock),
         RequestCycle(IdentityResolver(reads), MongoRequestJournal(database_provider), clock_ms, error_response),
+        None if avatar_objects is None else Avatars(MongoAvatars(database_provider), avatar_objects,
+                                                   lambda: identifiers.long_id("f_"), utc_clock),
     )

@@ -1,5 +1,15 @@
 # 接续记录
 
+## 2026-10-15 连续推进：S06.k
+
+#181新head d1675608必要CI38670457268通过后合并b52e0257；#182精确head879bf22b
+必要CI38670616632通过后合并4e3f4beb，PR E2E均按条件skipped，不代替master E2E。
+分支feat-serverless-avatar-lifecycle补[头像生命周期及OSS/STS适配](avatar-lifecycle.md)，
+十二条UserController/client/session路径现已具备独立应用实现；旧生产入口仍未切换。
+本地完整348passed/2deselected（Windows符号链接权限）/1warning、Ruff通过。
+已运行锁定Java OSS3.16.3/core4.6.2合成黄金探针；没有真实STS/对象访问或生产写入。
+后续可推进S07公开视频列表，同时补用户外壳CORS/编码/FC和真实网络验收；不能标S06完成。
+
 ## 2026-10-15 连续推进：S06.j
 
 #180必要CI38669584312通过后精确head8e856a84合并7ef5bdad。#181初head bf72100b
