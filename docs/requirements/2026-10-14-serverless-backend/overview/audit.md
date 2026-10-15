@@ -1,6 +1,6 @@
 # 业务、后台任务与定时任务的 FC 适配审计
 
-状态：源码静态审计，未运行 Python 原型或云端迁移测试。基线及接口清单见 [README](README.md) / [routes](routes.md)。
+状态：源码静态审计，未运行 Python 原型或云端迁移测试。基线及接口清单见 [README](../README.md) / [routes](routes.md)。
 
 ## 1. 如何理解结论
 

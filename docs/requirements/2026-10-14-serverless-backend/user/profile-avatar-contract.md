@@ -41,4 +41,4 @@ InterceptorConfiguration只登记updateProfile/getMyProfile，未登记三个头
 - iOS SettingsScreen提交空字符串为nil，非空不trim；ChannelScreen调用getChannel。未做运行设备验证。
 - CLI user update-profile只把已提供的选项放JSON，缺失字段在旧后端会清空；channel命令调用getChannel。此次不改其现有交互。
 
-验收见[verification.md](verification.md)。后续补跨端/缺参异常/实际凭证与头像上传、请求日志/上下文和Python用例；S06不能据此标完成。回退删除测试/文档，无运行代码、资源或用户数据变化。
+验收见[verification.md](../verification.md)。后续补跨端/缺参异常/实际凭证与头像上传、请求日志/上下文和Python用例；S06不能据此标完成。回退删除测试/文档，无运行代码、资源或用户数据变化。

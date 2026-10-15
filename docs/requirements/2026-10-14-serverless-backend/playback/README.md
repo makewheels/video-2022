@@ -1,0 +1,12 @@
+# 播放与文件访问
+
+[返回迁移总览](../README.md) · [当前进度](../overview/status.md)
+
+| 文档 | 内容 |
+|---|---|
+| [backend-watch-routing](backend-watch-routing.md) | 统一隔离后端播放路由装配 |
+| [hls-child](hls-child.md) | HLS 子清单迁移 |
+| [hls-master](hls-master.md) | HLS 主清单迁移 |
+| [playback-authorization](playback-authorization.md) | S08.a 播放授权与旧文件签名 |
+| [playlist-http](playlist-http.md) | 清单 HTTP 接入 |
+| [watch-info](watch-info.md) | S08.b 播放信息HTTP能力 |
