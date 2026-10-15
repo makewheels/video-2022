@@ -194,3 +194,11 @@ MPS 汇总 Properties.Fps 会截断 59.94006 为 59。兜底验证与 HLS 元数
 真实 MPS 转码保留 AAC 单声道/采样率，却丢失 TS 语言标签。HLS 主列表使用 RFC 8216 §4.3.4.1 的 muxed AUDIO 声明（不设置 URI），从已验证一对一的原始单音轨保留 LANGUAGE/CHANNELS；variant 关联该 AUDIO group。本地真实 MPS 产物加此声明后 ffprobe 主列表恢复 language=eng，未修改编码字节。仅对有一次兜底且源明确单音轨的结果声明；音轨数、AAC codec 和声道数先按 MPS 实际流检查，未知语言不猜，语言属性拒绝不合法字符，链接视频读取实际源视频的轨道。依据：[RFC 8216](https://www.rfc-editor.org/rfc/rfc8216#section-4.3.4.1)。
 
 CALLBACK_SECRET 的取密、部署输入和 Compose 容器环境必须全部映射；前两项已补，实际 Docker 回读仍缺少此值，最终补齐 Compose 映射并以容器回读验证，不以 Actions 成功推断密钥可用。
+
+## 提交传输验收边界（2026-10-15）
+
+真实回环HTTP对现有CloudFunctionClient验证传输字段和受理分类，独立于mock任务流测试。503/断连不得当成明确未执行后立即重复付费提交；本次仅固化现有分类，不改变恢复策略或代替真实FC限流证明。
+
+### 断连隐式重放修复
+
+回环端读完正文即断连的实测发现Hutool默认缓冲POST被JDK自动重放两次。CloudFunctionClient改为逐连接固定长度流式输出并关闭自动重定向，保持UTF-8 JSON、Async、调用头及30秒连接/读超时；不改进程全局系统属性、不新增立即重试。失败仍受理不确定。依据：[JDK21 HttpURLConnection](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/HttpURLConnection.html#setFixedLengthStreamingMode(int))；流式模式的认证/跳转不自动重试，断连一次发送由回环测试直接断言。
