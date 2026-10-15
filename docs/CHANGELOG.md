@@ -1,5 +1,10 @@
 # 变更日志
 
+## feat: 迁移观看日志与计数普通能力（2026-10-16）
+
+- 保留Int64增数、两次IP、实际ID/status和部分失败不重放；递归保留IP JSON类型。
+- 旧HTTP9项、完整Python564项及原架构门禁通过；具体IP/缓存与HTTP/FC仍未完成。
+
 ## test: 固定观看日志与计数HTTP故障基线（2026-10-16）
 
 - 真实MVC/Mongo6项覆盖身份/空session去重、status差异、BSON Long与两次IP失败的部分写入。

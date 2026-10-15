@@ -151,4 +151,50 @@ class WatchLogHttpContractTest extends BaseIntegrationTest {
         assertEquals(1, mongoTemplate.getCollection("watchLog").countDocuments());
         verifyNoInteractions(ipService);
     }
+    @Test
+    void ipJsonPreservesNullNestedDecimalAndLongBsonTypes() throws Exception {
+        doReturn(JSON.parseObject("{\"province\":\"fixture\",\"nullable\":null,\"decimal\":1.2500,"
+                + "\"long\":2147483648,\"nested\":{\"value\":2},\"list\":[null,1.50]}"))
+                .when(ipService).getIpInfo(anyString());
+        assertEquals(0, call(request("READY", "client", "session")).getIntValue("code"));
+        Document info = mongoTemplate.getCollection("watchLog").find().first().get("ipInfo", Document.class);
+        assertTrue(info.containsKey("nullable"));
+        assertNull(info.get("nullable"));
+        assertEquals(new java.math.BigDecimal("1.2500"),
+                info.get("decimal", org.bson.types.Decimal128.class).bigDecimalValue());
+        assertInstanceOf(Long.class, info.get("long"));
+        assertEquals(2, info.get("nested", Document.class).getInteger("value"));
+        assertNull(info.getList("list", Object.class).get(0));
+        assertInstanceOf(org.bson.types.Decimal128.class, info.getList("list", Object.class).get(1));
+    }
+
+    @Test
+    void dottedIpMapFailsAfterIncrementBeforeLogSave() throws Exception {
+        doReturn(JSON.parseObject("{\"nested\":{\"fixture.dot\":\"value\"}}"))
+                .when(ipService).getIpInfo(anyString());
+        assertEquals(1, call(request("READY", "client", "session")).getIntValue("code"));
+        assertEquals(1, count());
+        assertEquals(0, mongoTemplate.getCollection("watchLog").countDocuments());
+        verify(ipService).getIpInfo("127.0.0.2");
+    }
+
+    @Test
+    void uppercaseHexRequestStoresCanonicalVideoIdSoOriginalCaseDoesNotDedup() throws Exception {
+        String id = "64B0000000000000000000AB";
+        mongoTemplate.getCollection("video").insertOne(new Document("_id", new org.bson.types.ObjectId(id))
+                .append("status", "READY").append("watch", new Document("watchCount", 0)));
+        for (int i = 0; i < 2; i++) {
+            var builder = request("READY", "client", "session");
+            builder.with(req -> { req.setParameter("videoId", id); return req; });
+            assertEquals(0, call(builder).getIntValue("code"));
+        }
+        assertEquals(2, mongoTemplate.getCollection("watchLog").countDocuments());
+        for (Document event : mongoTemplate.getCollection("watchLog").find()) {
+            assertEquals(id.toLowerCase(), event.getString("videoId"));
+        }
+        Document video = mongoTemplate.getCollection("video").find(
+                new Document("_id", new org.bson.types.ObjectId(id))).first();
+        assertEquals(2L, video.get("watch", Document.class).getLong("watchCount"));
+    }
+
 }

@@ -1,5 +1,13 @@
 # 接续记录
 
+## 2026-10-16 S09.h 观看日志/计数普通能力
+
+- #206 head324a5643必要CI38799736062全部成功后合并47949592；#205 master CI38799371528/部署38799371563均success。
+- WatchLogs/普通端口/MongoWatchLogStore保留先存在检查/去重、Int64计数、两次IP/部分失败不重放，包含实际ID/status/嵌套IP Decimal128。
+- 旧Java真实HTTP9passed/Checkstyle，完整Python564passed/0skipped/1既有warning；Ruff/500行/空白通过。首轮copy架构门禁失败后移除依赖并复验，未放宽门禁。
+- 具体IP/缓存、观看日志HTTP、完整心跳/会话JSON/HTTP、统一隔离装配和真实FC仍待完成。当前#206 master CI38800934198/部署38800934192待查最终。
+
+
 ## 2026-10-16 S09.g 观看日志/计数契约
 
 - #205 heada6e4b71a必要CI38798954535通过后合并af055481。

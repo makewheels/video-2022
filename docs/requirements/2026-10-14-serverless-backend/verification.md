@@ -379,3 +379,7 @@ Java旧HTTP/BSON14passed/0skipped，Maven/Checkstyle通过；完整Python516pass
 ## 2026-10-16 S09.g
 
 旧观看日志真实MVC/Mongo6passed/0skipped、Checkstyle/500行/空白通过；首次Integer读取错误已由实测Long修正。仅固定合成IP响应/指定异常，Python未改不重跑全量（最近552项）。详见[观看日志](playback/watch-log.md)。master38798471887一次失败后受证据支持的单次失败任务重试attempt2成功，首次失败保留。
+
+## 2026-10-16 S09.h
+
+旧观看日志HTTP/Mongo9passed/0skipped、Checkstyle通过，完整Python564passed/0skipped/1既有warning，Ruff/500行/空白通过。首次copy依赖触发架构门禁，移除后保持原门禁并全量复验。12项新增真实Mongo+合成IP包括两阶段失败、Int64、递归Decimal128/含点键、ObjectId规范化；详见[观看日志](playback/watch-log.md)。具体云IP/缓存/HTTP/FC仍缺，未写生产。
