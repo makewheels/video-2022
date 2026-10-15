@@ -8,6 +8,15 @@ client/session已提交PR#180，精确head8e856a84；本地15passed，必要CI�
 Ruff通过。token共享分配用原id_counters的内部键及原字段；尚未装配生产node/时区，
 真实Mongo版本/拓扑/写关注和Java共存时的单写者交接仍待验，不宣称完整登录上线。
 
+## 2026-10-15 连续推进：S06.h
+
+用户要求连续分阶段推进，不逐阶段等待确认。#179必要CI38667775210全部通过，
+PR E2E按条件skipped，精确head079031fe已合并1183ae20。基于该master实现
+[client/session持久化分配](client-session.md)，新增7项及架构8项共15passed、Ruff通过。
+无生产入口/配置变化。下一阶段是旧Long ID和多实例Snowflake token生成；已用
+项目锁定Hutool5.8.25运行临时Java探针取得固定格式样本，默认节点实际由机器派生，
+不误按其他版本文档宣称默认固定1:1。后续需避免FC各实例进程内序列冲突。
+
 ## 2026-10-15 日间：S06.g2 登录提交
 
 S06.g1 PR#178精确head6a9c99da必要CI全部通过（PR两个E2E按条件skipped），已合并

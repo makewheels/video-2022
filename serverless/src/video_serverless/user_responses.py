@@ -75,3 +75,11 @@ def login_response(result: LoginResult) -> Response:
     if result.error_code is not None:
         return _payload(None, result.error_code, {11: "验证码错误", 12: "验证码已过期"}[result.error_code])
     return _result(result.user)
+
+
+def client_id_response(client_id: str) -> Response:
+    return _payload({"clientId": client_id})
+
+
+def session_id_response(session_id: str) -> Response:
+    return _payload({"sessionId": session_id})
