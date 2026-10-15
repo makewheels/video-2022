@@ -1,5 +1,10 @@
 # 变更日志
 
+## test: 固定观看日志与计数HTTP故障基线（2026-10-16）
+
+- 真实MVC/Mongo6项覆盖身份/空session去重、status差异、BSON Long与两次IP失败的部分写入。
+- Checkstyle与门禁通过，不修改运行代码或生产数据。
+
 ## feat: 增加进度与观看历史显式HTTP能力（2026-10-16）
 
 - 复用身份/同步日志，4份旧Java完整响应固定日期与null，新增11项ASGI/Mongo验证。

@@ -269,3 +269,5 @@ S09.d：[播放会话](../requirements/2026-10-14-serverless-backend/playback/pl
 S09.e：[观看历史](../requirements/2026-10-14-serverless-backend/playback/watch-history.md)采用普通HistoryStore/HistoryCoverUrls，按旧日志分页保留重复/失效视频，单次deleteMany不重试；签名逐行两小时。旧匿名null viewer语义仅隔离验收，不擅自改变登录规则。未安装到应用入口，watchLog创建和计数另验。
 
 S09.f：显式HistoryProgressApplication按旧query/身份规则返回进度/历史及清理响应，复用RequestCycle与同步Mongo日志。旧Java4份全文夹具覆盖ISO UTC日期和null字段，ASGI隔离测试通过；未接入既有Backend/ASGI/FC入口。
+
+S09.g：[观看日志基线](../requirements/2026-10-14-serverless-backend/playback/watch-log.md)固定先存在检查、按请求status去重/计数、按实际status保存，以及两次IP调用的部分失败顺序。旧增数使用BSON Long；迁移不得改成隐式业务重试或原子事务。Python能力待下一阶段。

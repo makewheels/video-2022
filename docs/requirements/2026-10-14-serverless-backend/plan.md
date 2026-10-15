@@ -94,3 +94,5 @@ S09.d：播放会话普通用例/端口/Mongo适配本地通过（旧HTTP6项/�
 S09.e：观看历史普通读取/清理与Mongo适配本地通过（旧HTTP5项/完整Python541项）；下一步完整JSON/HTTP组合和watchLog创建/计数，S09仍待真实FC/全端验收。
 
 S09.f：显式进度/历史HTTP与身份/同步日志组合通过，完整Python552项；下一步心跳/会话JSON与HTTP、watchLog创建/计数，保持真实FC/全端门槛。
+
+S09.g：旧watchLog创建/计数HTTP6项通过；下一步以Int64增数和两次IP/部分写入基线迁移普通用例与适配，不加入业务自动重试。
