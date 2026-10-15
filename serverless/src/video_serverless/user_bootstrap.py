@@ -43,7 +43,7 @@ def build_user_application(database_provider, avatar_urls, *, profile: str, loca
 
     def error_response(error):
         domain = isinstance(error, UserRequestError)
-        errors.save(ExceptionEntry(utc_clock(), None if domain else str(error),
+        errors.save(ExceptionEntry(utc_clock(), None if domain and error.detail is None else str(error),
                                    "".join(traceback.format_exception(error)),
                                    error.code if domain else None, error.message if domain else None))
         if domain:
