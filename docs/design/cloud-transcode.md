@@ -202,3 +202,9 @@ CALLBACK_SECRET 的取密、部署输入和 Compose 容器环境必须全部映�
 ### 断连隐式重放修复
 
 回环端读完正文即断连的实测发现Hutool默认缓冲POST被JDK自动重放两次。CloudFunctionClient改为逐连接固定长度流式输出并关闭自动重定向，保持UTF-8 JSON、Async、调用头及30秒连接/读超时；不改进程全局系统属性、不新增立即重试。失败仍受理不确定。依据：[JDK21 HttpURLConnection](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/HttpURLConnection.html#setFixedLengthStreamingMode(int))；流式模式的认证/跳转不自动重试，断连一次发送由回环测试直接断言。
+
+## CI原型镜像与发布镜像
+
+ci.yml的Worker原型镜像只验证编译/NVENC编码器与导入，不是deploy-functions.yml发布的CPU/GPU函数镜像，也不在无GPU runner做硬件编码。原型只在相关目录、CI/判断脚本变化或手工触发时重建；比较失败保守构建。Buildx复用GitHub层缓存，load本地后仍执行相同冒烟。部署镜像继续按既有Actions发布和缓存策略。依据：[Docker缓存文档](https://docs.docker.com/build/ci/github-actions/cache/)。
+
+缓存只由master push写入；PR与手工运行只读取缓存，避免PR专属cache重复上传大型CUDA层。首次主干冷缓存写入可能较慢；不把首次缓存建立当作稳定耗时或承诺每次构建只需固定秒数。

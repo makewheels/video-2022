@@ -72,6 +72,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Test GPU image change detection
+        run: python3 -B -m unittest discover -s scripts/tests -v
+      - name: Detect GPU prototype image changes
+        id: gpu-image
+        run: python3 -B scripts/ci_gpu_image.py
       - uses: astral-sh/setup-uv@v8.2.0
         with:
           python-version: '3.12'
@@ -94,10 +101,24 @@ jobs:
         env:
           PYTHONDONTWRITEBYTECODE: '1'
         run: uv run --isolated --managed-python --python 3.12 --no-project --with pytest --with oss2==2.18.4 --with av==16.0.1 pytest functions/tests -p no:cacheprovider
-      - name: Build GPU candidate image and verify encoder is compiled
+      - name: Set up Docker Buildx for changed prototype
+        if: steps.gpu-image.outputs.required == 'true'
+        uses: docker/setup-buildx-action@v4
+      - name: Build changed GPU candidate image with layer cache
+        if: steps.gpu-image.outputs.required == 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: transcode-worker
+          load: true
+          push: false
+          tags: video-transcode-worker:prototype
+          cache-from: type=gha,scope=worker-prototype
+          # PR merge-ref caches cannot warm master; avoid uploading large CUDA layers per PR.
+          cache-to: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && 'type=gha,scope=worker-prototype,mode=max' || '' }}
+      - name: Verify changed prototype encoder and imports
+        if: steps.gpu-image.outputs.required == 'true'
         run: |
           set -euo pipefail
-          docker build -t video-transcode-worker:prototype transcode-worker
           docker run --rm --entrypoint ffmpeg video-transcode-worker:prototype -hide_banner -encoders 2>&1 | grep h264_nvenc
           docker run --rm --entrypoint python video-transcode-worker:prototype -c "from video_transcode_worker.server import handler; from video_transcode_worker.media import command"
           # Encoder enumeration is a build check; no GPU hardware is available on this runner.
