@@ -1,5 +1,15 @@
 # 接续记录
 
+## 2026-10-15 晚间接续：S08.g 纯文件重定向
+
+#193必要CI38724627951成功后合并c26f48d5；其Java部署38725534873已success，master CI38725534826待查最终。
+#194隐式重放修复合入最新master后的head798845db须新CI通过；#195文件访问旧契约head1b2717f0须查CI。
+新增[纯文件重定向](file-redirect.md)，只读Mongo key/短时HMAC/3小时签名端口。
+完整Python486passed/0skipped/1既有warning、Ruff通过，真实回环随机Mongo；无HTTP/后台线程/计费装配。
+后续S12可靠任务故障证据与file/access实际HTTP组合分独立阶段；不擅改旧计费缺口或生产切流。
+Git直连fetch超时已诊断，用当前系统代理的单命令http.proxy恢复，不修改全局Git或网络配置。
+
+
 ## 2026-10-15 晚间接续：S08.f 文件访问旧契约
 
 #193 head aa9902dc必要CI38724627951全通过后合并（SHA以远端查询为准）。
