@@ -28,8 +28,11 @@ class MongoPublicVideos:
         return self._database_provider().get_collection("video", codec_options=CodecOptions(tz_aware=True, tzinfo=UTC))
 
     def page(self, skip, limit, keyword):
+        return self._page(_filter(keyword), skip, limit)
+
+    def _page(self, query, skip, limit):
         # Spring Query.limit(int) treats <=0 as unlimited; negative skip is ignored by the template.
-        cursor = self._collection().find(_filter(keyword)).sort("createTime", -1)
+        cursor = self._collection().find(query).sort("createTime", -1)
         cursor = cursor.skip(max(skip, 0)).limit(max(limit, 0))
         with cursor:
             return tuple(self._map(document) for document in cursor)
