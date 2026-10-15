@@ -327,3 +327,7 @@ Git Java测试在真实临时Mongo/完整HTTP/JDK21/UTC生成4份固定响应，
 ## S08.f 文件访问旧HTTP契约（2026-10-15晚间）
 
 JDK21、真实Spring MVC/回环随机Mongo，FileAccessHttpContractTest9passed/0failed/0error/0skipped、Checkstyle通过；异步真实故障不注入，latch等待后清库。首次对外过期详情假设失败，按实际通用message与exceptionLog详情修正后全套复验。302 Content-Type与JSON正文固定；未修改运行计费规则或调用真实OSS。详见file-access-contract.md。
+
+## S08.e 统一后端播放装配（2026-10-15 晚间）
+
+真实回环Mongo、CPython3.12.13完整465passed/0skipped/1既有Starlette warning、Ruff通过；新增6项，私密观看信息→主→子清单只落3条日志，拒绝与既有用户路由正常，无用户/视频/client写入。配置缺失时无Mongo访问。未改Java业务，不重复Java测试。测试env/db/log/cache均系统临时目录，finally终止Mongo并清理。未验证真实OSS/网络/FC，见backend-watch-routing.md。
