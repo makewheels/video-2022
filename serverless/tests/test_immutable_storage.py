@@ -95,6 +95,31 @@ def test_versioning_read_failure_is_redacted_and_has_operation_context():
     assert not calls
 
 
+@pytest.mark.parametrize("operation", ["get", "put"])
+def test_object_failure_has_exact_operation_without_exposing_sdk_request(operation):
+    client, _ = objects()
+
+    class Denied(Exception):
+        code = "AccessDenied"
+
+    def fail(*args, **kwargs):
+        raise Denied("fixture-secret-user-credential")
+
+    if operation == "get":
+        client.bucket.get_object = fail
+        name = "GetObject"
+    else:
+        client.bucket.put_object = fail
+        name = "PutObject"
+    with pytest.raises(CloudError) as error:
+        if operation == "get":
+            client.get(PREFIX + "fixture.zip")
+        else:
+            client.immutable_put(PREFIX + "fixture.zip", b"fixture-package")
+    assert str(error.value) == "Cloud operation rejected (oss:" + name + "): AccessDenied"
+    assert "fixture-secret" not in str(error.value)
+
+
 def test_production_key_is_rejected_before_any_cloud_request():
     client, calls = objects()
     def should_not_query(*args, **kwargs):
