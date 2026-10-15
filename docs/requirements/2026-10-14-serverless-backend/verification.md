@@ -351,3 +351,7 @@ JDK21/自建回环随机端口Mongo，手工装配Repository/Submitter无Spring�
 真实回环随机Mongo/CPython3.12.13完整486passed/0skipped/1既有warning、Ruff通过，新增21项。验证时间先于HMAC/存储、签名绑定上下文、ObjectId不回退String、三小时TTL、缺失/null/空/空白/数字key与不按owner/type/deleted筛选；签名失败不重试。所有环境/db/log/cache位于系统临时目录，finally停止Mongo并清理。无实际OSS、计费、HTTP或FC装配，见file-redirect.md。
 
 最终分类检查（20:14）：202个相对文件链接存在，最新master原有51份文档均保留，46份主题归类后根目录仍仅五入口，固定SHA证据URL逐份比对未改写。校正两份设计页的过期状态，旧续验标历史快照。PR#199新head检查与合并状态以GitHub实际查询为准。
+
+## 2026-10-16 S09.a
+
+旧心跳/进度真实MVC+独享回环Mongo10passed/0skipped，Checkstyle通过；未改Java运行代码，无生产写入。详见[心跳契约](playback/heartbeat-progress.md)。仅固定迁移基线，不代表S09实现完成。

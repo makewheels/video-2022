@@ -1,5 +1,11 @@
 # 接续记录
 
+## 2026-10-16 S09.a 心跳/进度契约
+
+- 新增真实MVC/隔离Mongo10项，Maven/Checkstyle通过；仅小写playing、匿名正文viewer、跨设备原client保留、负数/null及先心跳后进度失败已固定。
+- Python写入和播放会话/历史尚未迁移；本分支必要CI/PR以GitHub实际结果为准。见[契约](playback/heartbeat-progress.md)。
+
+
 ## 2026-10-15 20:14 文档分类与本轮最终接续点
 
 用户要求单执行者慢慢推进，已停用subagent及旧夜间worker/report定时任务，不重新启用。
