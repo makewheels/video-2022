@@ -21,6 +21,25 @@ class HlsTranscode:
     resolution: str | None
     file_ids: tuple[str, ...] | None
     content: str
+    provider: str | None = None
+    current_provider: str | None = None
+    status: str | None = None
+    fallback_count: int | None = None
+    max_bitrate: int | None = None
+    average_bitrate: int | None = None
+    width: int | None = None
+    height: int | None = None
+    actual_width: int | None = None
+    actual_height: int | None = None
+    codecs: str | None = None
+    frame_rate: str | None = None
+    dynamic_range: str | None = None
+
+
+@dataclass(frozen=True)
+class HlsAudio:
+    track_count: int | None
+    tracks: tuple[tuple[str | None, int | None], ...] | None
 
 
 @dataclass(frozen=True)
@@ -39,3 +58,7 @@ class HlsReads(Protocol):
     def transcode(self, transcode_id: str) -> HlsTranscode | None: ...
 
     def files(self, file_ids: tuple[str, ...] | None) -> list[HlsFile]: ...
+
+    def transcodes(self, transcode_ids: tuple[str, ...]) -> list[HlsTranscode]: ...
+
+    def audio(self, video_id: str) -> HlsAudio | None: ...
