@@ -14,3 +14,4 @@
 | [watch-info](watch-info.md) | S08.b 播放信息HTTP能力 |
 | [heartbeat-progress](heartbeat-progress.md) | 旧心跳与续播进度HTTP契约 |
 | [playback-sessions](playback-sessions.md) | 播放会话/时长/退出契约与普通能力 |
+| [watch-history](watch-history.md) | 观看历史分页/封面/清理契约与普通能力 |
