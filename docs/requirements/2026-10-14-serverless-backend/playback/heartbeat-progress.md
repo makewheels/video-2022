@@ -43,3 +43,13 @@
 旧Java真实MVC/回环Mongo14passed/0skipped，Checkstyle通过：Decimal128保留0.1250精度、Long/Date、createTime由服务端覆盖，无_class；指定String ID整文档替换并省略null，24hex ObjectId与同文本String ID可共存；旧ANY方法允许GET JSON，而text/plain在保存前拒绝。
 
 完整Python516passed/0skipped/1既有warning（本阶段新增13项），真实Mongo组合：登录覆盖/匿名正文viewer、无全局身份残留、非playing仍存心跳、缺身份失败保留已存心跳、心跳真实写后合成异常不重试/不写进度、进度失败不重放心跳。无真实网络故障/生产重放；纯值已绑定，JSON字段转换和HTTP响应仍未装配。
+
+## S09.k（11/14）心跳JSON与HTTP组合
+
+显式`HeartbeatApplication`组合请求身份、Heartbeat JSON绑定与先心跳后进度的普通用例，沿旧请求生命周期跳过requestLog；错误仍由共享异常日志/响应处理，不新增token保护、视频存在/进度数值校验。GET/POST JSON均可进入，不把旧ANY路由擅自改为POST；text/plain拒绝在写入前。未安装现役Backend/ASGI/FC入口。
+
+`HeartbeatJsonHttpContractTest`以真实MVC/隔离Mongo导出50组固定样本到`serverless/contracts/heartbeat-json/cases.json`；后续普通CI重新运行并核对快照，不默认覆盖。样本包含根null/数组/空正文/尾随JSON、未知字段、字符串标量转换、逐次重复字段校验、Long截断/边界/字符串、Decimal精度/指数、毫秒/ISO/时区/RFC1123日期、旧lenient日期滚动和UTF-8 BOM。客户端createTime虽最终由服务端覆盖，仍先绑定校验；非法值不能被后续重复字段遮掉。
+
+Python保留数字词法与Decimal，绑定层独立于业务/端口，不引入云/数据库SDK。50组HTTP与实际BSON逐组比较；另验登录覆盖/匿名正文身份不残留、进度失败保留一次心跳、GET/POST/text/plain、指定ID替换/null省略。生产网络/并发写入未验，UTF-16/32、所有Java日期宽松语法/超出Python datetime范围日期及OPTIONS/CORS/极端输入另验；现有样本通过不代表这些边界通过。回退本阶段提交即可，未改生产配置/数据。
+
+本机实际完整Python644passed/2deselected（Windows符号链接权限）/0skipped/1既有warning；Java15passed/0skipped（既有14项+矩阵1项共50组样本）、Checkstyle成功；Ruff/架构/500行/空白通过。Java默认模式已实际复核固定样本，未仅执行导出。必要CI另按精确提交核对。

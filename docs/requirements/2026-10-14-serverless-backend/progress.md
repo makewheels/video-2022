@@ -1,5 +1,14 @@
 # 接续记录
 
+## 2026-10-16 S09.k（11/14）心跳JSON/HTTP
+
+- #210 heade9bd5b8e必要CI38857643996全部通过后合并11588a96；PR API/浏览器E2E按条件skipped。master CI38857892522成功，Java部署38857892537待查最终。
+- 分支feat-serverless-heartbeat-http基于11588a96：HeartbeatApplication和独立绑定器，50组真实旧Java HTTP/Mongo黄金样本；不装配生产入口，不新增token/视频存在/进度范围规则。保留ANY方法、先心跳后进度、跳过requestLog及异常日志，不自动重放。
+- Python实际完整644passed/2deselected（Windows符号链接权限）/0skipped/1既有warning，Java实际15passed/0skipped（旧14项+50组绑定矩阵1项）/Checkstyle成功；Ruff/架构/500行/空白通过。Java默认模式实际重新核对已提交样本，不仅执行导出。
+- 常见日期/毫秒/RFC1123/时区、旧lenient日期、UTF-8 BOM、字符串标量/Long/Decimal/重复键/失败写入已实测对照；UTF-16/32、全部宽松日期语法、Python datetime范围外与OPTIONS/CORS仍未验，不把样本数当完整上线验收。
+- 用户要求百分比，已明确沟通估算整体开发约25%、剩余约75%；这是人工工作量估算，非实测完成率/生产验收比例，不以PR数计算。
+- 下一项S09.l会话JSON/HTTP与text/plain退出，再S09.m统一隔离装配；S09.n真实FC/全端验收依赖发布权限/网络。回退本阶段提交即可，生产配置/数据未改。
+
 ## 2026-10-16 S09.j（10/14）观看日志HTTP
 
 - 本机从已删除远端的feat-serverless-playlist-http切回master并快进至3a78683e；#192早已合并，不重复处理。原本未跟踪handoff-2026-10-15-1700.md原样保留，不混入本阶段提交。
