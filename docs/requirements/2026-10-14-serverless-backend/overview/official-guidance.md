@@ -17,6 +17,8 @@
 
 ## 决策方式
 
+2026-10-16 S12.b.1重新读取异步任务、[SMQ队列](https://help.aliyun.com/zh/mns/developer-reference/queue-queue)及[FC集成](https://help.aliyun.com/zh/mns/user-guide/function-compute-fc)资料：至少一次、有限保留和事件触发不能解决Mongo跨系统原子性。结合[进程终止模型实验](../tasks/process-crash-experiment.md)，排除“尽力通知后直接删除恢复”的方案；尚未创建队列、实测平台触发/费用或确定生产参数。
+
 1. 记录场景、相关官方约束、候选方式与来源；只重读当前阶段相关内容。
 2. 优先官方支持且符合用户目标的简单方案；与无常驻等约束冲突的建议不照搬。
 3. 取得真实性能、协议、费用和故障证据，注明函数配置与样本；不足时标为未确认。
