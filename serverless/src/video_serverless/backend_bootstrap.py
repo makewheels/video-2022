@@ -9,10 +9,11 @@ from video_serverless.adapters.mongo_video_search import MongoVideoSearch
 from video_serverless.backend_application import BackendApplication
 from video_serverless.business.public_videos import PublicVideos
 from video_serverless.business.video_search import VideoSearch
+from video_serverless.file_upload_application import FILE_UPLOAD_ROUTES
 from video_serverless.public_video_application import PublicVideoApplication
 from video_serverless.routing_application import RoutingApplication
 from video_serverless.search_application import SearchApplication
-from video_serverless.upload_bootstrap import build_upload_application
+from video_serverless.upload_bootstrap import build_file_upload_application, build_upload_application
 from video_serverless.user_application import _AVATAR_PATHS, _METHODS, _PROTECTED
 from video_serverless.user_bootstrap import build_user_application
 from video_serverless.viewing_bootstrap import build_viewing_application
@@ -22,7 +23,7 @@ from video_serverless.watch_bootstrap import build_watch_application
 def build_backend_application(database_provider, urls, *, profile, local_clock, display_timezone,
                               worker, datacenter, avatar_objects=None,
                               playback_signature_secret=None, internal_base_url=None, ip_locations=None,
-                              creation_base_url=None):
+                              creation_base_url=None, upload_objects=None):
     if (playback_signature_secret is None) != (internal_base_url is None):
         raise ValueError("Playback signature secret and internal base URL must be configured together")
     if playback_signature_secret is not None and (not playback_signature_secret or not internal_base_url):
@@ -61,6 +62,12 @@ def build_backend_application(database_provider, urls, *, profile, local_clock, 
     if upload is not None:
         methods["/video/create"] = "POST"
         protected.add("/video/create")
+    file_uploads = None if upload_objects is None else build_file_upload_application(
+        database_provider, users.cycle, upload_objects,
+    )
+    if file_uploads is not None:
+        methods.update(dict.fromkeys(FILE_UPLOAD_ROUTES, "GET"))
+        protected.update(FILE_UPLOAD_ROUTES)
     routing = RoutingApplication(methods, frozenset(protected), users.cycle)
     return BackendApplication(users, PublicVideoApplication(videos, users.cycle),
-                              SearchApplication(search, users.cycle), watch, viewing, routing, upload)
+                              SearchApplication(search, users.cycle), watch, viewing, routing, upload, file_uploads)

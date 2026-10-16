@@ -1,5 +1,13 @@
 # 接续记录
 
+## 2026-10-16 S10.c.1 上传凭证与文件完成确认
+
+- #217 head3fbe2a1270317f5771df7e635096b7fb8e1adfd5，必要CI38865418903全部成功后合并411807c77d5a19e90f8d91c4eb1be12d3e248349；Linux实际1032passed/1warning，PR API/浏览器E2E按条件skipped。其master CI38865818560/Java部署38865818497均success。
+- 本批feat-upload-file-completion显式装配凭证/文件完成HTTP，共用身份/日志；沿旧存在/所属/服务读取顺序，文件远端元数据保存READY与BSON Long，不提交MD5/转码。OSS SDK适配只取get_object响应头并finally关闭流，凭证复用已有STS能力，均合成验证未调真实云。
+- 18组真实旧HTTP/Mongo固定完整响应、前后文件、请求/异常日志和远端调用数。缺失字段应用旧构造默认、显式null覆盖默认/保存时省略，分别实测；不增加deleted/fileType/状态校验。实际创建→凭证→两次完成→失败保留READY，无原片任务入口；ObjectId/空元数据/持久化失败不重试及SDK流关闭通过。
+- 本地Java9passed/0skipped及Checkstyle；Python完整1054passed/2deselected/0skipped/1既有warning。最后保留旧UserHolder缺失code15分支后，文件域25项定向全部passed/3warnings（Starlette和已有oss2语法warning）；未把定向数量称为再跑全量。Ruff/架构/500行/空白通过，Linux必要CI另核实。
+- S10.c客户端直传/真实STS/OSS及全端仍未验；原片完成依赖S12可靠受理/恢复，不能起后台线程后宣称完成。后续先补S10.b.2旧状态轮询，并继续MD5/AUTO/LOCAL故障契约和S12实验。无生产配置或数据变更，回退本批即可撤隔离能力。
+
 ## 2026-10-16 S10.a.2 / S10.b.1 普通创建与完整BSON
 
 - #216必要CI38863056517成功后合并491ae1c1；master CI38863358053/Java部署38863358026最终均成功。本批分支feat-upload-create-bson-contract基于该merge。

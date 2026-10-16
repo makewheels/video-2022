@@ -86,8 +86,10 @@ class UploadHttpContractTest extends BaseIntegrationTest {
     private Document normalized(Document document) {
         if (document == null) return null;
         for (String field : new String[]{"createTime", "updateTime"}) {
-            assertInstanceOf(Date.class, document.get(field));
-            document.put(field, "<server-date>");
+            if (document.get(field) != null) {
+                assertInstanceOf(Date.class, document.get(field));
+                document.put(field, "<server-date>");
+            }
         }
         if (document.containsKey("key")) {
             String key = document.getString("key");
@@ -160,6 +162,82 @@ class UploadHttpContractTest extends BaseIntegrationTest {
             Files.writeString(folder.resolve("cases.json"), serialized);
         } else {
             assertEquals(JSON.parseArray(Files.readString(Path.of("../../serverless/contracts/upload-create/cases.json"))),
+                    JSON.parseArray(serialized));
+        }
+    }
+
+    @Test
+    void fileCredentialsAndCompletionMatchCommittedSnapshots() throws Exception {
+        JSONArray cases = new JSONArray();
+        for (String operation : new String[]{"getUploadCredentials", "uploadFinish"}) {
+            for (String scenario : new String[]{"success", "missing-parameter", "missing-file", "other-owner",
+                    "remote-failure", "remote-null", "deleted-file", "sparse-file", "null-defaults"}) {
+                mongoTemplate.getCollection("video").deleteMany(new Document());
+                mongoTemplate.getCollection("file").deleteMany(new Document());
+                reset(ossVideoService);
+                create();
+                if (scenario.equals("other-owner")) {
+                    mongoTemplate.getCollection("file").updateOne(new Document("_id", "fixture-file"),
+                            new Document("$set", new Document("uploaderId", "other-user")));
+                }
+                if (scenario.equals("deleted-file")) {
+                    mongoTemplate.getCollection("file").updateOne(new Document("_id", "fixture-file"),
+                            new Document("$set", new Document("deleted", true)));
+                }
+                if (scenario.equals("sparse-file") || scenario.equals("null-defaults")) {
+                    Document changes = new Document();
+                    for (String name : new String[]{"deleted", "hasLink", "fileStatus", "provider", "createTime", "updateTime"}) {
+                        changes.put(name, scenario.equals("sparse-file") ? "" : null);
+                    }
+                    mongoTemplate.getCollection("file").updateOne(new Document("_id", "fixture-file"),
+                            new Document(scenario.equals("sparse-file") ? "$unset" : "$set", changes));
+                }
+                JSONObject credentials = JSON.parseObject("{\"bucket\":\"fixture-bucket\",\"key\":\"fixture-key\","
+                        + "\"endpoint\":\"https://example.invalid\",\"accessKeyId\":\"fixture-not-real\","
+                        + "\"secretKey\":\"fixture-not-real\",\"sessionToken\":\"fixture-not-real\","
+                        + "\"expiration\":\"2030-01-01T00:00:00Z\"}");
+                when(ossVideoService.generateUploadCredentials(anyString()))
+                        .thenReturn(scenario.equals("remote-null") ? null : credentials);
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentLength(123L);
+                metadata.setLastModified(new Date(1000));
+                metadata.setHeader("ETag", "fixture-etag");
+                OSSObject object = new OSSObject();
+                object.setObjectMetadata(metadata);
+                when(ossVideoService.getObject(anyString())).thenReturn(scenario.equals("remote-null") ? null : object);
+                if (scenario.equals("remote-failure")) {
+                    when(ossVideoService.generateUploadCredentials(anyString()))
+                            .thenThrow(new IllegalStateException("synthetic OSS failure"));
+                    when(ossVideoService.getObject(anyString())).thenThrow(new IllegalStateException("synthetic OSS failure"));
+                }
+                clearInvocations(ossVideoService);
+                mongoTemplate.getCollection("requestLog").deleteMany(new Document());
+                mongoTemplate.getCollection("exceptionLog").deleteMany(new Document());
+                JSONObject row = new JSONObject(true);
+                row.put("operation", operation);
+                row.put("scenario", scenario);
+                row.put("before", normalized(file()));
+                var request = get("/file/" + operation);
+                if (!scenario.equals("missing-parameter")) {
+                    request.param("fileId", scenario.equals("missing-file") ? "absent" : "fixture-file");
+                }
+                row.put("response", call(request, true));
+                row.put("after", normalized(file()));
+                row.put("requestLogs", mongoTemplate.getCollection("requestLog").countDocuments());
+                row.put("exceptionLogs", mongoTemplate.getCollection("exceptionLog").countDocuments());
+                row.put("remoteCalls", mockingDetails(ossVideoService).getInvocations().size());
+                cases.add(row);
+            }
+        }
+        verifyNoInteractions(worker);
+        String serialized = JSON.toJSONString(cases, SerializerFeature.WriteMapNullValue, SerializerFeature.PrettyFormat);
+        String output = System.getProperty("contract.files.output.dir");
+        if (output != null) {
+            Path folder = Path.of(output);
+            Files.createDirectories(folder);
+            Files.writeString(folder.resolve("cases.json"), serialized);
+        } else {
+            assertEquals(JSON.parseArray(Files.readString(Path.of("../../serverless/contracts/upload-files/cases.json"))),
                     JSON.parseArray(serialized));
         }
     }

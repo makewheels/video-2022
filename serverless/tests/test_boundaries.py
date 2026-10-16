@@ -70,6 +70,7 @@ def test_http_controller_has_no_configuration_or_infrastructure_imports():
         "playlist_application.py", "watch_log_application.py", "heartbeat_application.py", "playback_application.py",
         "viewing_application.py", "routing_application.py",
         "upload_application.py",
+        "file_upload_application.py",
     ):
         source = (ROOT / name).read_text(encoding="utf-8")
         assert not forbidden_imports(source, "video_serverless", PURE_STDLIB | {
@@ -85,6 +86,7 @@ def test_http_controller_has_no_configuration_or_infrastructure_imports():
             "video_serverless.watch_log_application",
             "video_serverless.routing_application", "urllib.parse",
             "video_serverless.upload_application", "video_serverless.upload_json",
+            "video_serverless.file_upload_application",
         })
     source = (ROOT / "request_cycle.py").read_text(encoding="utf-8")
     assert not forbidden_imports(source, "video_serverless", PURE_STDLIB | {
