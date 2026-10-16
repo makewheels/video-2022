@@ -73,11 +73,14 @@ def test_http_controller_has_no_configuration_or_infrastructure_imports():
         "file_upload_application.py",
         "video_status_application.py",
         "local_cover_application.py",
+        "local_transcode_application.py",
     ):
         source = (ROOT / name).read_text(encoding="utf-8")
         assert not forbidden_imports(source, "video_serverless", PURE_STDLIB | {
             "re", "video_serverless.business", "video_serverless.http", "video_serverless.ports",
             "video_serverless.local_cover_application",
+            "video_serverless.local_transcode_application",
+            "video_serverless.upload_json",
             "video_serverless.profile_json",
             "video_serverless.playback_json",
             "video_serverless.request_cycle", "video_serverless.user_application",

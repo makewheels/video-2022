@@ -1,5 +1,11 @@
 # 接续记录
 
+## 2026-10-16 S11.a.2 / S11.c.2 LOCAL档位创建
+
+- 接续#221，旧Java真实HTTP/Mongo29组完整样本与Python普通能力/适配/显式隔离POST；保持两档预建、精确帧率/HDR/色彩/音轨字段、旧单精度输出尺寸、已登记媒体与档位不覆盖、READY保留和STS/部分写入失败语义。finish扫描/就绪路径未安装，不能用空实现交付。
+- Python3.12.13完整1157passed/0skipped/1既有warning，Ruff/架构/500行/空白通过；Java旧HTTP1passed/0skipped、validate通过。首次提供方LOCAL与LOCAL_TRANSCODE的BSON差异已修正后完整复跑。临时构建/依赖/独享Mongo清理，无云媒体调用或生产变化。
+- #221 head0d390117必要CI38901850629通过后合并3f700a15ac5f2720464a98063b8c869143a48ded；API/浏览器E2E按既有条件skipped。该master CI/部署最终结果后续查证。S11继续目录/文件/清单、完成/就绪/故障与CLI侧车回归，仍非整体完成。
+
 ## 2026-10-16 S11.a.1 / S11.c.1 LOCAL封面
 
 - 已基于#220 merge b9355e17实施旧封面24组HTTP/完整前后BSON契约、Python普通能力/Mongo/显式隔离HTTP，共用既有身份和同步日志；create/finish默认不装配，需明确对象能力与访问前缀。

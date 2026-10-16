@@ -4,15 +4,18 @@ from datetime import UTC, datetime
 
 from video_serverless.adapters.mongo_cover_urls import MongoCoverUrls
 from video_serverless.adapters.mongo_local_covers import MongoLocalCovers
+from video_serverless.adapters.mongo_local_transcodes import MongoLocalTranscodes
 from video_serverless.adapters.mongo_public_videos import MongoPublicVideos
 from video_serverless.adapters.mongo_users import MongoUserReads
 from video_serverless.adapters.mongo_video_search import MongoVideoSearch
 from video_serverless.backend_application import BackendApplication
 from video_serverless.business.local_covers import LocalCovers
+from video_serverless.business.local_transcodes import LocalTranscodes
 from video_serverless.business.public_videos import PublicVideos
 from video_serverless.business.video_search import VideoSearch
 from video_serverless.file_upload_application import FILE_UPLOAD_ROUTES
 from video_serverless.local_cover_application import LOCAL_COVER_METHODS, LocalCoverApplication
+from video_serverless.local_transcode_application import LOCAL_TRANSCODE_METHODS, LocalTranscodeApplication
 from video_serverless.public_video_application import PublicVideoApplication
 from video_serverless.routing_application import RoutingApplication
 from video_serverless.search_application import SearchApplication
@@ -30,7 +33,10 @@ from video_serverless.watch_bootstrap import build_watch_application
 def build_backend_application(database_provider, urls, *, profile, local_clock, display_timezone,
                               worker, datacenter, avatar_objects=None,
                               playback_signature_secret=None, internal_base_url=None, ip_locations=None,
-                              creation_base_url=None, upload_objects=None, local_cover_access_base_url=None):
+                              creation_base_url=None, upload_objects=None, local_cover_access_base_url=None,
+                              local_transcode_registration=False):
+    if local_transcode_registration and upload_objects is None:
+        raise ValueError("Local transcode registration requires explicit object credentials")
     if local_cover_access_base_url is not None and (not local_cover_access_base_url or upload_objects is None):
         raise ValueError("Local cover registration requires explicit objects and access base URL")
     if (playback_signature_secret is None) != (internal_base_url is None):
@@ -87,7 +93,14 @@ def build_backend_application(database_provider, urls, *, profile, local_clock, 
         ), users.cycle)
         methods.update(LOCAL_COVER_METHODS)
         protected.update(LOCAL_COVER_METHODS)
+    local_transcodes = None
+    if local_transcode_registration:
+        local_transcodes = LocalTranscodeApplication(LocalTranscodes(
+            MongoLocalTranscodes(database_provider), upload_objects, lambda: datetime.now(UTC), display_timezone,
+        ), users.cycle)
+        methods.update(LOCAL_TRANSCODE_METHODS)
+        protected.update(LOCAL_TRANSCODE_METHODS)
     routing = RoutingApplication(methods, frozenset(protected), users.cycle)
     return BackendApplication(users, PublicVideoApplication(videos, users.cycle),
                               SearchApplication(search, users.cycle), watch, viewing, routing, upload, file_uploads,
-                              local_covers)
+                              local_covers, local_transcodes)

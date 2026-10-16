@@ -7,4 +7,5 @@
 - [S10.c.1 凭证与文件完成确认](file-completion.md)：显式对象存储能力、完整旧HTTP/Mongo对照；原片可靠受理和MD5另做。
 - [S10.b.2 状态轮询](video-status.md)：旧uploader权限、缺失/null及精确READY语义与只读HTTP对照。
 - [S11.a.1 / S11.c.1 LOCAL封面登记](local-covers.md)：旧HTTP/完整BSON、普通能力和显式隔离入口；LOCAL转码/侧车与真实FC仍待做。
+- [S11.a.2 / S11.c.2 LOCAL档位创建](local-transcodes.md)：两档预建、源媒体信息保留、旧HTTP/完整BSON；完成扫描/就绪链路另做。
 - 没有实际FC或完整客户端上传验收，不能把普通创建能力称作整体上传迁移完成。
