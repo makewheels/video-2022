@@ -1,5 +1,12 @@
 # 接续记录
 
+## 2026-10-16 S12.b.1 进程终止模型实验
+
+- 测试目录新增强制结束子进程的模型实验，按现有FcTask字段/写入顺序固定保存后无唤醒、认领后未发送、模拟受理后无响应、响应后未确认和完整意图先保存五个崩溃点；独立客户端回读，实际Mongo journaled写入。
+- 16次并发同attempt认领只有一次修改；未发送与已受理两种业务快照无法区分，明确不能立即重发收费任务。通知仅有taskId不能恢复未保存任务，完整意图恢复仍需消费者协议。
+- Python3.12.13完整1091passed/0skipped/1既有warning，Ruff通过。测试环境、数据与独享进程均系统临时目录清理。无生产新字段/索引/队列/云调用；模拟通知与提供方账本仅测试集合，未调用Java提交器，不能代替真实平台验收。
+- 2026-10-16重读官方FC异步任务、SMQ队列和FC集成资料。S12.b仍需真实可靠唤醒/deadline实验，不删除既有恢复机制；详情见[tasks/process-crash-experiment.md](tasks/process-crash-experiment.md)。
+
 ## 2026-10-16 S10.c.1 上传凭证与文件完成确认
 
 - #217 head3fbe2a1270317f5771df7e635096b7fb8e1adfd5，必要CI38865418903全部成功后合并411807c77d5a19e90f8d91c4eb1be12d3e248349；Linux实际1032passed/1warning，PR API/浏览器E2E按条件skipped。其master CI38865818560/Java部署38865818497均success。
