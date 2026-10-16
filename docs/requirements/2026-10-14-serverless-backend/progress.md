@@ -1,5 +1,13 @@
 # 接续记录
 
+## 2026-10-16 S10.a.1 上传旧HTTP/持久化契约
+
+- #215 head52611fea必要CI38862223082全部成功后合并3fc6cf56；该Linux实际871passed/1warning，未排除符号链接测试；PR API/浏览器E2E按条件skipped。master CI38862530891成功，Java部署38862530726尚在执行，待查最终。
+- 当前分支test-serverless-upload-contract基于3fc6cf56。新增真实旧MVC/独享Mongo UploadHttpContractTest，固定创建/凭证/文件完成/原片完成四入口；新upload主题文档盘点Web/Android/CLI调用及MD5/AUTO/LOCAL任务边界，当前Python上传主体仍未迁移。
+- 实际Java7passed/0skipped、Checkstyle/500行/空白通过；包含完整创建响应/文件key形状/默认状态、401先于绑定、旧负size/LOCAL大小写、凭证字段/provider与失败、文件所属权限、远端元数据与失败不写、Controller异步受理。ID/worker/OSS均合成替代，未执行真实STS/直传/MD5/去重/付费转码。首轮when重置合成OSS异常触发旧异常，改用doReturn设置下一结果后7项全部复验通过。
+- 没改Python运行源码，不为纯Java契约重复其全套；最近本机Python869passed/2符号链接项未跑、Linux871passed是前阶段实际结果。没有把旧服务级UploadFlowTest（未走Controller）称作本次HTTP验收。
+- S09.a–m共13/14已合并，n真实FC/全端依赖S03/S04仍未验；主线继续S10.a.2完整创建BSON/输入绑定和MD5/AUTO/LOCAL恢复样本，再S10.b普通创建/旧状态；S12.b可靠受理实验在受理写业务前完成。无生产数据/配置变更，回退本批测试/文档即可。
+
 ## 2026-10-16 S09.m.3（13/14内）正文编码
 
 - #214 head4ceef7ee必要CI38861507062全部成功后合并8e85319d（PR API/浏览器E2E按条件skipped）；master CI38861894969/Java部署38861894988待查最终。分支feat-serverless-body-encoding基于8e85319d。
