@@ -17,6 +17,10 @@ class WatchLogs:
         # Includes the controller's existence check before the service's dedup query.
         if not self.store.video_exists(visit.video_id):
             return 22
+        return self.record(visit, requested_status)
+
+    def record(self, visit: WatchVisit, requested_status: str) -> int:
+        """Service operation after the controller's separate existence check."""
         if self.store.duplicate(visit.video_id, visit.session_id, requested_status):
             return 0
         video = self.store.video(visit.video_id)

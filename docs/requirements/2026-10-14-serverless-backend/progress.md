@@ -1,5 +1,14 @@
 # 接续记录
 
+## 2026-10-16 S09.j（10/14）观看日志HTTP
+
+- 本机从已删除远端的feat-serverless-playlist-http切回master并快进至3a78683e；#192早已合并，不重复处理。原本未跟踪handoff-2026-10-15-1700.md原样保留，不混入本阶段提交。
+- #209已合并3a78683e，master CI38804942689和Java部署38804942749均success；S09.i完成合并，真实FC发布/网络仍阻塞，未新增收费调用或扩权。
+- 分支feat-serverless-watch-log-http新增显式WatchLogApplication，绑定/身份/普通用例/同步日志组合；Controller存在错误与服务内消失的普通错误分开，保留旧顺序，不新增权限/状态规则。未接生产入口。
+- Python实际全套589passed、2deselected（Windows无符号链接权限）、0skipped、1既有Starlette warning；新增10项真实ASGI/隔离Mongo用例均通过，新增架构规则另8passed，Ruff/500行/空白通过。最初全量因两项符号链接权限失败，随后按正确pytest根目录精确排除；没有修改用例或降低CI门禁。
+- Java旧HTTP九项新增全文响应断言，实际9passed/0skipped，Checkstyle通过；首次从仓库根目录运行被Checkstyle配置相对路径阻塞，改用server目录复验通过，不改构建配置。PR/必要CI以实际查询为准，未验不能称已通过。
+- 下一项S09.k完整心跳JSON/HTTP；S09.l会话JSON/HTTP、S09.m统一隔离装配、S09.n真实FC/各端仍待完成。回退本阶段提交即可，无生产数据/配置变更。
+
 ## 2026-10-16 S09.i（09/14）IP查询与缓存
 
 - #208 head9db7711f必要CI38802200501全部通过后合并9b992715；#207 master CI38801971901 success，部署38801971944 success。阶段编号/唯一总表已进入master。
