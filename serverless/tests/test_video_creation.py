@@ -59,7 +59,7 @@ def test_typed_creation_matches_complete_java_bson(isolated_database, case):
                           str(dto["rawFilename"]).lower() if isinstance(dto.get("rawFilename"), bool)
                           else dto.get("rawFilename"), None if size is None else int(Decimal(str(size))),
                           dto.get("transcodeMode"))
-    creator = VideoCreation(MongoCreationWrites(lambda: database), FixedIds(), lambda: NOW, LOCAL,
+    creator = VideoCreation(MongoCreationWrites(lambda: database), FixedIds(), lambda: NOW, LOCAL().tzinfo,
                             "http://localhost:5022")
     if case["response"]["code"] == 21:
         with pytest.raises(CreationArgumentError):
@@ -90,7 +90,7 @@ def test_partial_write_failure_preserves_legacy_order_without_retries(failure, e
         def save_video(self, document):
             self.save("video", document)
 
-    creator = VideoCreation(Writes(), FixedIds(), lambda: NOW, LOCAL, "http://localhost:5022")
+    creator = VideoCreation(Writes(), FixedIds(), lambda: NOW, LOCAL().tzinfo, "http://localhost:5022")
     with pytest.raises(RuntimeError, match="synthetic persistence failure"):
         creator.create("fixture-uploader", CreateVideo("USER_UPLOAD", "a.MP4", 42))
     assert len(calls) == failure
@@ -104,7 +104,7 @@ def test_youtube_is_separate_and_does_not_leave_partial_ordinary_writes():
         def save_file(self, document):
             pytest.fail("YouTube must not enter ordinary creation")
 
-    creator = VideoCreation(NeverWrite(), FixedIds(), lambda: NOW, LOCAL, "http://localhost:5022")
+    creator = VideoCreation(NeverWrite(), FixedIds(), lambda: NOW, LOCAL().tzinfo, "http://localhost:5022")
     with pytest.raises(NotImplementedError):
         creator.create("fixture-uploader", CreateVideo("YOUTUBE"))
 
@@ -120,7 +120,7 @@ def test_creation_http_binding_response_and_complete_mongo_match_java(isolated_d
                                          display_timezone=UTC, worker=1, datacenter=1,
                                          creation_base_url="http://localhost:5022")
     application = replace(backend.upload, creation=VideoCreation(MongoCreationWrites(lambda: database),
-                          FixedIds(), lambda: NOW, LOCAL, "http://localhost:5022"))
+                          FixedIds(), lambda: NOW, LOCAL().tzinfo, "http://localhost:5022"))
     with TestClient(create_user_asgi(application)) as client:
         response = client.post("/video/create", content=case["input"].encode(),
                                headers={"token": user["token"], "Content-Type": "application/json"})

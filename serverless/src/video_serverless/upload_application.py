@@ -8,14 +8,18 @@ from video_serverless.ports.request_identity import RequestMetadata
 from video_serverless.request_cycle import CycleResult, RequestCycle
 from video_serverless.upload_json import decode_creation
 from video_serverless.user_application import UserBindingError, UserRequestError
+from video_serverless.video_status_application import VIDEO_STATUS_ROUTE, VideoStatusApplication
 
 
 @dataclass(frozen=True)
 class UploadApplication:
     creation: VideoCreation
     cycle: RequestCycle
+    statuses: VideoStatusApplication | None = None
 
     def dispatch(self, request: RequestMetadata, body: bytes = b"") -> CycleResult:
+        if self.statuses is not None and request.path == VIDEO_STATUS_ROUTE:
+            return self.statuses.dispatch(request, body)
         if request.path != "/video/create":
             return CycleResult(Response.json({"message": "Upload route not found"}, 404), "not_started")
 

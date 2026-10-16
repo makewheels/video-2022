@@ -29,7 +29,7 @@ class BackendApplication:
     def dispatch(self, request: RequestMetadata, body: bytes = b"") -> CycleResult:
         if self.routing is not None and request.method == "OPTIONS" and request.path in self.routing.methods:
             return self.routing.options(request)
-        if self.upload is not None and request.path == "/video/create":
+        if self.upload is not None and request.path in {"/video/create", "/video/getVideoStatus"}:
             return self.upload.dispatch(request, body)
         if self.file_uploads is not None and request.path in FILE_UPLOAD_ROUTES:
             return self.file_uploads.dispatch(request, body)
