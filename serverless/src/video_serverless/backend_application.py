@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+from video_serverless.file_upload_application import FILE_UPLOAD_ROUTES, FileUploadApplication
 from video_serverless.playlist_application import PLAYLIST_ROUTES
 from video_serverless.ports.request_identity import RequestMetadata
 from video_serverless.public_video_application import PublicVideoApplication
@@ -23,12 +24,15 @@ class BackendApplication:
     viewing: ViewingApplication | None = None
     routing: RoutingApplication | None = None
     upload: UploadApplication | None = None
+    file_uploads: FileUploadApplication | None = None
 
     def dispatch(self, request: RequestMetadata, body: bytes = b"") -> CycleResult:
         if self.routing is not None and request.method == "OPTIONS" and request.path in self.routing.methods:
             return self.routing.options(request)
         if self.upload is not None and request.path == "/video/create":
             return self.upload.dispatch(request, body)
+        if self.file_uploads is not None and request.path in FILE_UPLOAD_ROUTES:
+            return self.file_uploads.dispatch(request, body)
         if self.viewing is not None and request.path in VIEWING_ROUTES:
             return self.viewing.dispatch(request, body)
         if self.watch is not None and request.path in PLAYLIST_ROUTES | {"/watchController/getWatchInfo"}:
