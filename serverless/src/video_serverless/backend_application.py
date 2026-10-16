@@ -8,6 +8,7 @@ from video_serverless.public_video_application import PublicVideoApplication
 from video_serverless.request_cycle import CycleResult
 from video_serverless.search_application import SearchApplication
 from video_serverless.user_application import UserApplication
+from video_serverless.viewing_application import VIEWING_ROUTES, ViewingApplication
 from video_serverless.watch_application import WatchApplication
 
 
@@ -17,8 +18,11 @@ class BackendApplication:
     public_videos: PublicVideoApplication
     search: SearchApplication
     watch: WatchApplication | None = None
+    viewing: ViewingApplication | None = None
 
     def dispatch(self, request: RequestMetadata, body: bytes = b"") -> CycleResult:
+        if self.viewing is not None and request.path in VIEWING_ROUTES:
+            return self.viewing.dispatch(request, body)
         if self.watch is not None and request.path in PLAYLIST_ROUTES | {"/watchController/getWatchInfo"}:
             return self.watch.dispatch(request, body)
         if request.path == "/video/getPublicVideoList":

@@ -5,6 +5,7 @@
 | 文档 | 内容 |
 |---|---|
 | [backend-watch-routing](backend-watch-routing.md) | 统一隔离后端播放路由装配 |
+| [backend-viewing-routing](backend-viewing-routing.md) | S09.m.1 统一隔离心跳/会话/历史/观看日志装配 |
 | [file-access-contract](file-access-contract.md) | 文件重定向与异步计费旧契约 |
 | [file-redirect](file-redirect.md) | 文件重定向纯用例与Mongo读取 |
 | [hls-child](hls-child.md) | HLS 子清单迁移 |
