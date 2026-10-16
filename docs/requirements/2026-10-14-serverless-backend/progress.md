@@ -1,5 +1,12 @@
 # 接续记录
 
+## 2026-10-16 S14.b–d 评论完整写路径
+
+- 普通创建/回复、级联删除/计数和点赞toggle、现有Mongo/真实ObjectId及显式隔离HTTP已实现，共用既有身份/日志，写能力默认关闭。保留UTF-16长度/trim、Spring泛型JSONObject的Java容器toString、原直接错误/异常日志区分、权限短路/缺失目标和多步写残留。
+- 旧MVC/独享Mongo43组完整HTTP/BSON与日志，ID由Mongo实际生成后归一比较；Python同ASGI/Mongo对照，并实测真实ID全流程、唯一索引冲突、插入/计数/级联失败与HEAD/OPTIONS/不支持方法。共用有限Double文本工具，LOCAL既有绑定同步回归。
+- Python3.12.13完整1338passed/0skipped/1既有warning，Ruff/架构/500行/空白通过；Java HTTP2项/既有服务26项及validate通过，临时构建/环境/独享Mongo清理。S14六条HTTP主路径具备隔离能力，真实FC/全端和扩展历史类型/并发仍未验。
+- #226 headebe50904的必要CI38907386220首轮E2E产物构建因OSS SDK依赖下载Connection reset失败，定向重跑失败job后必要门禁通过，合并6963e45186dfe5c2d7b9c787088248b1cc1fe950。未绕门禁、未为网络错误修改业务，API/浏览器E2E按条件skipped。
+
 ## 2026-10-16 S11.c 补漏：缺失ID的存在性查询
 
 - 评论写入契约调查发现旧Repository的exists(null)是Mongo查询，不是findById(null)的参数校验。修正共享LOCAL适配器的video_exists/user_exists，省略videoId沿旧code22，不提前变成通用错误；实体读取/保存仍保留原非null ID校验。

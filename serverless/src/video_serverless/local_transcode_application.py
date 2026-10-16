@@ -1,12 +1,12 @@
 """Explicit LOCAL creation HTTP; completion stays absent until object scanning is migrated."""
 
 from dataclasses import dataclass
-from decimal import Decimal
 
 from video_serverless.business.local_covers import LocalCoverError
 from video_serverless.business.local_transcodes import LocalTranscodes
 from video_serverless.heartbeat_json import _decimal
 from video_serverless.http import Response
+from video_serverless.java_numbers import double_text
 from video_serverless.local_cover_application import _ERRORS
 from video_serverless.playback_json import _spring_object
 from video_serverless.ports.request_identity import RequestMetadata
@@ -22,15 +22,7 @@ _SCHEMA = _fields("videoId resolution videoCodec audioCodec frameRateFraction fr
 
 def _double_text(value):
     number = _decimal(value)
-    if number is None:
-        return None
-    value = float(number)
-    if value == 0 or 0.001 <= abs(value) < 10000000:
-        result = format(Decimal(str(value)), "f")
-        return result if "." in result else result + ".0"
-    mantissa, exponent = format(Decimal(str(value)), "e").split("e")
-    mantissa = mantissa.rstrip("0").rstrip(".") if "." in mantissa else mantissa
-    return (mantissa if "." in mantissa else mantissa + ".0") + "E" + str(int(exponent))
+    return None if number is None else double_text(float(number))
 
 
 def decode_local_transcode(body, content_type):

@@ -1,4 +1,4 @@
-# 用户与资料头像
+# 用户、资料与评论
 
 [返回迁移总览](../README.md) · [当前进度](../overview/status.md)
 
@@ -24,3 +24,5 @@
 | [user-mongo-reads](user-mongo-reads.md) | S06.b2 用户 Mongo 只读适配器（未装配） |
 | [user-reads](user-reads.md) | S06.a 旧用户读取用例与受控响应对照 |
 | [verification-code-request](verification-code-request.md) | S06.g1 验证码申请 |
+| [comment-reads](comment-reads.md) | S14.a.1 公开评论分页/回复/计数、旧HTTP与真实Mongo对照 |
+| [comment-writes](comment-writes.md) | S14.b–d 评论/回复、级联删除、点赞切换与部分失败 |
