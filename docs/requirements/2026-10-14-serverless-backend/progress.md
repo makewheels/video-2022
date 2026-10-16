@@ -1,5 +1,13 @@
 # 接续记录
 
+## 2026-10-16 S09.m.3（13/14内）正文编码
+
+- #214 head4ceef7ee必要CI38861507062全部成功后合并8e85319d（PR API/浏览器E2E按条件skipped）；master CI38861894969/Java部署38861894988待查最终。分支feat-serverless-body-encoding基于8e85319d。
+- 92组真实旧MVC/Mongo字节样本覆盖资料/心跳/会话start/exit。共用body_text保留JSON流Unicode自动检测/非Unicode Reader与String converter显式charset/默认UTF8/坏字节替换的差异；没有统一成新校验规则。原数值词法、重复字段和业务不变。
+- 完整Python实际869passed/2deselected（Windows符号链接权限）/0skipped/1既有warning，focused118passed；Java3passed/0skipped（92编码+50心跳+108会话样本共250组）/Checkstyle成功，Ruff/架构/500行/空白通过。Java默认模式实际复核固定样本，原Python资料/心跳/会话回归全过。
+- m.1–m.3主要隔离装配/入口/编码矩阵已实现，必要CI仍按精确提交核对。真实FC envelope/网络/各端、全部畸形字节/异常BSON等仍未验，不能称S09/生产迁移全部完成。现役bootstrap/FC入口、生产配置和数据不变，回退本批提交即可。
+- 下一独立批S10.a上传全链路契约：已只读确认/video/create、/file/getUploadCredentials、/file/uploadFinish、/video/rawFileUploadFinish四个入口，后两类完成/MD5/转码调度需S12可靠受理证据。先固定旧登录/权限/状态和部分写入，不在生产重放或隐式提交付费任务；不把云权限阻塞当停止开发理由。
+
 ## 2026-10-16 S09.m.2（13/14内）OPTIONS/CORS/HEAD
 
 - #213 head84789f47必要CI38860678902全部成功后合并ffbfe72c（PR API/浏览器E2E按条件skipped），统一隔离装配已进入master。master CI38861085178/Java部署38861085205待查最终。

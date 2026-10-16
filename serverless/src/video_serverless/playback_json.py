@@ -3,6 +3,7 @@
 import json
 from decimal import Decimal
 
+from video_serverless.body_text import json_text
 from video_serverless.fastjson_input import decode_exit_object
 from video_serverless.heartbeat_json import _long
 from video_serverless.ports.playback_sessions import PlaybackUpdate, StartPlayback
@@ -17,8 +18,8 @@ class PlaybackBindingError(ValueError):
     pass
 
 
-def _spring_object(body):
-    text = body.decode("utf-8-sig").lstrip(" \t\r\n")
+def _spring_object(body, content_type):
+    text = json_text(body, content_type).lstrip(" \t\r\n")
     decoder = json.JSONDecoder(parse_int=_Number, parse_float=_Number,
                                parse_constant=_invalid_constant, object_pairs_hook=_Object)
     value, end = decoder.raw_decode(text)
@@ -60,9 +61,9 @@ def _fast_string(value):
     return _string(value)
 
 
-def decode_playback(body: bytes, route: str):
+def decode_playback(body: bytes, route: str, content_type: str | None = None):
     try:
-        pairs = decode_exit_object(body) if route == "exit" else _spring_object(body)
+        pairs = decode_exit_object(body, content_type) if route == "exit" else _spring_object(body, content_type)
         fields = {}
         names = {key.replace("_", "").replace("-", "").lower(): key
                  for key in (*_STRINGS, *_LONGS, "exitType")}

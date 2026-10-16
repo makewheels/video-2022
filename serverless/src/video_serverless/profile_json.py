@@ -1,7 +1,9 @@
-"""Uninstalled legacy profile DTO decoding for UTF-8 JSON; no web framework dependency."""
+"""Legacy profile DTO decoding with verified stream encodings; no web framework dependency."""
 
 import json
 from dataclasses import dataclass
+
+from video_serverless.body_text import json_text
 
 
 class ProfileBindingError(ValueError):
@@ -34,9 +36,9 @@ def _string(value):
     raise ProfileBindingError("Profile JSON binding failed")
 
 
-def decode_profile(body: bytes) -> ProfileInput:
+def decode_profile(body: bytes, content_type: str | None = None) -> ProfileInput:
     try:
-        text = body.decode("utf-8").lstrip(" \t\r\n")
+        text = json_text(body, content_type).lstrip(" \t\r\n")
         decoder = json.JSONDecoder(parse_int=_Number, parse_float=_Number,
                                    parse_constant=_invalid_constant, object_pairs_hook=_Object)
         value, end = decoder.raw_decode(text)
