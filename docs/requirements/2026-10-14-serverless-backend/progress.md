@@ -1,5 +1,11 @@
 # 接续记录
 
+## 2026-10-16 S11.d.1 全档就绪状态
+
+- 真实旧Java/独享Mongo45组完整前后状态文档，普通能力/Mongo窄写按所有提供方、currentProvider覆盖、空/缺失/混合引用与READY快照保护对照；只写status，保留updateTime/未知字段，不upsert或重放。
+- Python3.12.13完整1234passed/0skipped/1既有warning，Ruff/架构/500行/空白通过；Java旧状态契约1passed/0skipped及validate通过。临时文件和独享Mongo清理，没有实际云/完成HTTP/Webhook，未新增并发CAS/事务保证。
+- S11后续仍需目录/文件/侧车、完成登记和副作用恢复；该普通状态能力不直接安装生产回调。#222 master CI38903236270/Java部署38903236485实际success；#223 head5a4a89fb必要CI38903808701通过后合并7e6a1407735866859a8b95c3aead970dfaafd1ee；API/浏览器E2E按条件skipped，新master最终状态另查。
+
 ## 2026-10-16 S11.b.1 只读产物校验
 
 - 真实旧Java OutputValidator手工装配mock FileService，生成26组错误/对象调用顺序语料；Python普通声明类型/业务与显式OSS适配逐项对照。复用已有HLS解析，覆盖TS/fMP4/init、manifest缺项/重复/越界/大小、缺失/空/读取失败及finally关闭流；媒体对象只看元数据，不读取正文。
