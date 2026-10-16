@@ -1,5 +1,14 @@
 # 接续记录
 
+## 2026-10-16 S09.l（12/14）会话HTTP与后续计划细化
+
+- 用户明确要求细化计划后直接继续，不停在汇报/等待；新增[剩余执行清单](overview/remaining-work.md)，逐域列S03–S24剩余批次/验收/依赖，S09.l/m先行，再上传契约与可靠任务，不因云权限阻塞独立开发。没有新增业务字段/规则或生产权限授权。
+- #211已合并9fdb2990，必要CI38858361309成功，Linux646passed；其master CI38858661081/Java部署38858661066均success。保留原两份未跟踪本机handoff，不混入实现提交。
+- 分支feat-serverless-playback-http基于9fdb2990。PlaybackApplication/分开的Spring与Fastjson绑定、方法/媒体映射前后的身份/日志顺序，108组真实旧MVC/隔离Mongo快照；不安装现役Backend/FC入口。FastjsonString转换/宽松语法与Spring严格绑定分开，不新增所有权、退出类型枚举或重试。
+- Python完整实际754passed/2deselected（Windows符号链接权限）/0skipped/1既有warning；新增108组快照+2组合测试，含架构focused118passed。Java实际7passed/0skipped（既有6项+108组矩阵1项）/Checkstyle通过，默认模式复核固定快照成功；Ruff/500行/空白通过。
+- 实际独立headless Chromium→回环ASGI→独享Mongo：JSON/text/plain两种Blob sendBeacon均PASS，2会话/4请求日志/0异常，时长/进度/退出类型/清晰度正确。首轮仅对预设charset的断言失败，实测Blob原媒体类型不自动带charset，纠正探测断言后完整复验成功；没有改浏览器/客户端协议。
+- Web/CLI调用形态已读源码，完整VideoPlayer关闭标签、移动端/FC仍未验；所有Fastjson扩展、任意对象String键序、UTF16/32等仍保留门槛。回退本阶段提交即可。下一批S09.m.1统一隔离Backend装配，随后m.2入口/跨域/并发矩阵；S09.n依赖真实FC权限/网络，不假称S09全部完成。
+
 ## 2026-10-16 S09.k（11/14）心跳JSON/HTTP
 
 - #210 heade9bd5b8e必要CI38857643996全部通过后合并11588a96；PR API/浏览器E2E按条件skipped。master CI38857892522成功，Java部署38857892537待查最终。
