@@ -1,5 +1,12 @@
 # 接续记录
 
+## 2026-10-16 S11.b.1 只读产物校验
+
+- 真实旧Java OutputValidator手工装配mock FileService，生成26组错误/对象调用顺序语料；Python普通声明类型/业务与显式OSS适配逐项对照。复用已有HLS解析，覆盖TS/fMP4/init、manifest缺项/重复/越界/大小、缺失/空/读取失败及finally关闭流；媒体对象只看元数据，不读取正文。
+- Python3.12.13完整1186passed/0skipped/1既有warning，Ruff/架构/500行/空白通过；Java契约1项/M3u8工具6项通过，validate通过。旧Java该语料没有HTTP/Mongo/真实云；Python完整套件Mongo独享回环。临时文件/进程清理，无生产入口/任务/索引变化。完成写入/就绪仍未装配。
+- #222 headbe41daa1必要CI38902804274通过后合并2a529593d06ef0366683551629d9a9862f3be37b；API/浏览器E2E按条件skipped。#221 master CI38902487507与Java部署38902487407实际success；#222 master最后状态另查。
+- 根据用户要求只读对照SpeakUp aa12443，新增[经验核对](overview/reuse-for-speakup.md)：区分请求内await并行与不等待的后台任务、永久通知循环、SSE与普通正文外壳，以及托管数据库/静态资源。仅记录已验证方法与待验事项，优先继续video-2022，不提前宣布无需服务器。
+
 ## 2026-10-16 S11.a.2 / S11.c.2 LOCAL档位创建
 
 - 接续#221，旧Java真实HTTP/Mongo29组完整样本与Python普通能力/适配/显式隔离POST；保持两档预建、精确帧率/HDR/色彩/音轨字段、旧单精度输出尺寸、已登记媒体与档位不覆盖、READY保留和STS/部分写入失败语义。finish扫描/就绪路径未安装，不能用空实现交付。
