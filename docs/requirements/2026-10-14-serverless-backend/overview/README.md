@@ -11,3 +11,4 @@
 | [routes](routes.md) | Controller 声明接口盘点 |
 | [status](status.md) | 25阶段总表、当前子任务/PR编号与下一项 |
 | [remaining-work](remaining-work.md) | 剩余迁移的执行批次、验收证据与依赖 |
+| [reuse-for-speakup](reuse-for-speakup.md) | 用户要求的经验复用核对：分层/契约/异步任务/流式/托管数据与实际验证缺口 |
