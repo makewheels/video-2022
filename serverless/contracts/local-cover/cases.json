@@ -157,6 +157,47 @@
 	},
 	{
 		"operation":"create",
+		"scenario":"missing-video-id",
+		"input":"{}",
+		"before":{
+			"video":{
+				"_id":"fixture-video",
+				"uploaderId":"fixture-uploader",
+				"ownerId":"other-owner",
+				"videoType":"USER_UPLOAD",
+				"transcodeMode":"LOCAL",
+				"status":"READY",
+				"createTime":"<server-date>"
+			},
+			"file":null,
+			"cover":null
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":22,
+			"data":null,
+			"message":"视频不存在"
+		},
+		"after":{
+			"video":{
+				"_id":"fixture-video",
+				"uploaderId":"fixture-uploader",
+				"ownerId":"other-owner",
+				"videoType":"USER_UPLOAD",
+				"transcodeMode":"LOCAL",
+				"status":"READY",
+				"createTime":"<server-date>"
+			},
+			"file":null,
+			"cover":null
+		},
+		"requestLogs":1,
+		"exceptionLogs":1,
+		"remoteCalls":0
+	},
+	{
+		"operation":"create",
 		"scenario":"empty-extension",
 		"input":"{\"videoId\":\"fixture-video\",\"extension\":\"\"}",
 		"before":{

@@ -14,7 +14,7 @@
 
 ## 实际验收
 
-`LocalTranscodeHttpContractTest`以真实旧MVC/独享Mongo生成29组完整HTTP、video/file/transcode前后BSON、日志与合成STS计数。包含横竖屏、显示尺寸、奇数/零/负尺寸、单精度边界、两档、已有档位、已有时长、READY、精确帧率/HDR/色彩/音轨、缺失原片、权限、绑定及STS失败。
+`LocalTranscodeHttpContractTest`以真实旧MVC/独享Mongo生成30组完整HTTP、video/file/transcode前后BSON、日志与合成STS计数。包含横竖屏、显示尺寸、奇数/零/负尺寸、单精度边界、两档、已有档位、已有时长、READY、精确帧率/HDR/色彩/音轨、缺失原片、权限、绑定及STS失败。
 
 Python同一组样本经真实ASGI/独享Mongo逐项比较；额外验证BSON Long时长、显式开关/共用生命周期、三个保存失败位置、多档重复调用不覆盖媒体和已完成档位。未安装的finish路径返回404，不假装迁移完成。
 

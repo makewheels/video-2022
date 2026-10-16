@@ -13,7 +13,7 @@
 
 ## 验收与范围
 
-旧`LocalCoverHttpContractTest`在真实MVC/独享Mongo生成24组HTTP/完整前后BSON/请求与异常日志/凭证调用计数；含创建/完成、AUTO、缺失文件、非LOCAL提供方、空扩展名/大写、错误输入、鉴权和STS失败。rich-video样本覆盖帧率、BSON Long时长、动态JSON null与未知映射字段省略。另固定不支持方法在身份拦截前通用错误、不记请求日志，OPTIONS仍受保护。
+旧`LocalCoverHttpContractTest`在真实MVC/独享Mongo生成25组HTTP/完整前后BSON/请求与异常日志/凭证调用计数；含创建/完成、AUTO、缺失文件、非LOCAL提供方、空扩展名/大写、错误输入、鉴权和STS失败。rich-video样本覆盖帧率、BSON Long时长、动态JSON null与未知映射字段省略。另固定不支持方法在身份拦截前通用错误、不记请求日志，OPTIONS仍受保护。
 
 Python经真实ASGI/独享Mongo逐项对照，另验证共享生命周期、显式开关、三处创建写失败、完成部分写失败、重复完成时间刷新和真实ID重复创建。不将合成STS称为实际云凭证或完整客户端验收。
 
@@ -22,3 +22,5 @@ Python经真实ASGI/独享Mongo逐项对照，另验证共享生命周期、显�
 本机最终验收：Python3.12.13完整1123passed/0skipped/1既有Starlette弃用warning，Ruff/架构/500行/空白通过；JDK21/独享回环Mongo旧Java HTTP2项及既有封面服务1项全部通过，Maven validate通过。系统临时目录保存依赖、构建、合成样本生成和Mongo数据，结束后关闭独享进程并清理。真实STS、FC和旧CLI尚未验。
 
 回退本批即可撤销显式封面能力；未修改Java业务实现、生产配置、数据库或云资源，不需要恢复旧备份。
+
+接续补漏：存在性查询允许null键并按旧Mongo查询返回存在/不存在，与findById/save的非null ID校验分开。省略videoId的旧HTTP封面/档位两个新增样本均code22；保留实体读取null ID的原错误。补真实Mongo null键查询测试后，Python完整1288passed/0skipped，Java两类HTTP共3项及validate通过；无生产变化。

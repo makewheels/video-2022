@@ -80,6 +80,7 @@ class LocalTranscodeHttpContractTest extends BaseIntegrationTest {
             case "1080p" -> body.put("resolution", "1080p");
             case "invalid-resolution" -> body.put("resolution", "480p");
             case "null-resolution" -> body.put("resolution", null);
+            case "missing-video-id" -> body.remove("videoId");
             case "missing-duration" -> body.remove("durationMs");
             case "zero-duration" -> body.put("durationMs", 0);
             case "null-width" -> body.put("width", null);
@@ -114,7 +115,7 @@ class LocalTranscodeHttpContractTest extends BaseIntegrationTest {
             for (String scenario : List.of("success", "1080p", "small", "portrait", "display-size", "float-rounding",
                     "zero-size", "negative-size", "zero-duration", "rich-media", "numeric-frame-rate", "existing-media",
                     "existing-lane", "ready-video", "missing-file", "credentials-null", "credentials-failure",
-                    "auto-mode", "invalid-resolution", "null-resolution", "missing-duration", "null-width",
+                    "auto-mode", "missing-video-id", "invalid-resolution", "null-resolution", "missing-duration", "null-width",
                     "missing-video", "other-uploader", "null-uploader", "empty-body", "null-body", "array-body", "no-token")) {
                 String input = seed(scenario);
                 JSONObject row = new JSONObject(true);

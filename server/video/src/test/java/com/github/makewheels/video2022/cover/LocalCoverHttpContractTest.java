@@ -127,7 +127,7 @@ class LocalCoverHttpContractTest extends BaseIntegrationTest {
                 List<String> scenarios = finish
                         ? List.of("success", "rich-video", "other-provider", "missing-file", "missing-cover", "missing-video",
                                   "other-uploader", "null-uploader", "missing-parameter", "no-token")
-                        : List.of("success", "auto-mode", "empty-extension", "blank-extension", "custom-extension",
+                        : List.of("success", "auto-mode", "missing-video-id", "empty-extension", "blank-extension", "custom-extension",
                                   "credentials-null", "credentials-failure", "missing-video", "other-uploader",
                                   "null-uploader", "empty-body", "null-body", "array-body", "no-token");
                 for (String scenario : scenarios) {
@@ -137,6 +137,7 @@ class LocalCoverHttpContractTest extends BaseIntegrationTest {
                         case "empty-body" -> "";
                         case "null-body" -> "null";
                         case "array-body" -> "[]";
+                        case "missing-video-id" -> "{}";
                         case "empty-extension" -> "{\"videoId\":\"fixture-video\",\"extension\":\"\"}";
                         case "blank-extension" -> "{\"videoId\":\"fixture-video\",\"extension\":\"  \"}";
                         case "custom-extension" -> "{\"videoId\":\"fixture-video\",\"extension\":\"PNG\"}";

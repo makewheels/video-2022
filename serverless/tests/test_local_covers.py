@@ -191,6 +191,18 @@ def test_repeated_create_uses_real_identifiers_and_retains_both_registrations(da
     assert len(objects.calls) == 2
 
 
+def test_null_existence_keys_follow_query_semantics_without_changing_entity_id_validation(database):
+    store = MongoLocalCovers(lambda: database, lambda: NOW)
+    assert store.video_exists(None) is False
+    assert store.user_exists(None) is False
+    database.video.insert_one({"_id": None})
+    database.user.insert_one({"_id": None})
+    assert store.video_exists(None) is True
+    assert store.user_exists(None) is True
+    with pytest.raises(ValueError):
+        store.video(None)
+
+
 @pytest.mark.parametrize("failure", [2, 3])
 def test_finish_partial_failure_keeps_ready_cover_and_original_video(database, failure):
     case = next(row for row in CASES if row["operation"] == "finish" and row["scenario"] == "success")
