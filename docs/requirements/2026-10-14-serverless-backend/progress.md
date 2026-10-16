@@ -1,5 +1,13 @@
 # 接续记录
 
+## 2026-10-16 S10.a.2 / S10.b.1 普通创建与完整BSON
+
+- #216必要CI38863056517成功后合并491ae1c1；master CI38863358053/Java部署38863358026最终均成功。本批分支feat-upload-create-bson-contract基于该merge。
+- 已实现纯普通创建/端口/Mongo适配/HTTP及显式隔离装配，共享已有身份和日志周期；补旧shortId跨实例原子分配、本地日期/36进制布局。生产入口未切换，没有真实OSS/STS/任务提交。
+- 86组真实旧MVC/隔离Mongo固定完整响应和video/file BSON；Python同一样本经真实ASGI/独享Mongo逐字段对照。覆盖内部DTO绑定/重复字段/数值边界、默认文档、原size/LOCAL语义；三处持久化失败保持原顺序和残留、不隐式重试。真实共享ID创建、并发短ID/跨日/扩宽通过。
+- 本地Java18passed/0skipped（Upload8/ID10），Checkstyle通过；Python完整1030passed/2deselected/0skipped/1既有Starlette warning。两项Windows符号链接权限用例未跑，LinuxCI另核实。Ruff/架构/500行/空白通过。初版核心935passed后扩展HTTP/内部绑定矩阵，最终以上述1030为准。
+- 只交付S10.a.2创建契约部分与S10.b.1普通创建；MD5/AUTO/LOCAL恢复契约、凭证/完成确认/可靠受理继续做，YouTube普通入口尚不支持。真实FC、全部Content-Type及完整客户端上传未验。回退本批提交即可，无生产配置/数据变化。
+
 ## 2026-10-16 S10.a.1 上传旧HTTP/持久化契约
 
 - #215 head52611fea必要CI38862223082全部成功后合并3fc6cf56；该Linux实际871passed/1warning，未排除符号链接测试；PR API/浏览器E2E按条件skipped。master CI38862530891成功，Java部署38862530726尚在执行，待查最终。

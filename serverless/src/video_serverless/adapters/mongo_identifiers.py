@@ -31,3 +31,10 @@ class MongoIdSequences:
         )
         timestamp, sequence = divmod(int(document["counter"]), 4096)
         return TokenSlot(timestamp + _EPOCH, sequence)
+
+    def next_short_sequence(self, local_day):
+        document = self._database_provider().id_counters.find_one_and_update(
+            {"_id": "shortId:" + local_day}, {"$inc": {"counter": Int64(1)}},
+            upsert=True, return_document=ReturnDocument.AFTER,
+        )
+        return int(document["counter"])
