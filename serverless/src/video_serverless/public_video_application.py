@@ -44,7 +44,7 @@ class PublicVideoApplication:
             return CycleResult(Response.json({"message": "Video route not found"}, 404), "not_started")
 
         def handle(metadata, identity):
-            if metadata.method != "GET":
+            if metadata.method not in {"GET", "HEAD"}:
                 raise ValueError("Request method is not supported")
             page = self.videos.page(_integer(metadata, "skip"), _integer(metadata, "limit"),
                                     metadata.first_parameter("keyword"))

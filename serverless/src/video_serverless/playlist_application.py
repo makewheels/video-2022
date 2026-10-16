@@ -48,7 +48,7 @@ class PlaylistApplication:
             return CycleResult(Response.json({"message": "Playlist route not found"}, 404), "not_started")
 
         def handle(metadata, identity):
-            if metadata.method != "GET":
+            if metadata.method not in {"GET", "HEAD"}:
                 raise UserBindingError("Playlist request binding failed")
             context = PlaybackContext(*(metadata.first_parameter(name)
                                         for name in ("videoId", "clientId", "sessionId")))

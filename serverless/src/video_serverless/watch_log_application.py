@@ -23,7 +23,7 @@ class WatchLogApplication:
 
         def handle(metadata, identity):
             status = metadata.first_parameter("videoStatus")
-            if metadata.method != "GET" or status is None:
+            if metadata.method not in {"GET", "HEAD"} or status is None:
                 raise UserBindingError("Watch log request binding failed")
             # RequestUtil context reads query parameters; headers are not fallbacks.
             visit = WatchVisit(metadata.first_parameter("videoId"), metadata.first_parameter("clientId"),

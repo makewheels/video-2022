@@ -24,7 +24,7 @@ class WatchApplication:
 
         def handle(metadata, identity):
             watch_id = metadata.first_parameter("watchId")
-            if metadata.method != "GET" or watch_id is None:
+            if metadata.method not in {"GET", "HEAD"} or watch_id is None:
                 raise UserBindingError("Watch request binding failed")
             if not self.watches.reads.exists(watch_id):
                 raise UserRequestError(22, "视频不存在", "视频watchId不存在, watchId = " + watch_id)

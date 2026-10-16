@@ -20,7 +20,7 @@ class SearchApplication:
             return CycleResult(Response.json({"message": "Search route not found"}, 404), "not_started")
 
         def handle(metadata, identity):
-            if metadata.method != "GET":
+            if metadata.method not in {"GET", "HEAD"}:
                 raise ValueError("Request method is not supported")
             if metadata.path == "/category/list":
                 return video_result(list(CATEGORIES))

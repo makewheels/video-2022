@@ -26,7 +26,7 @@ class HistoryProgressApplication:
 
         def handle(metadata, identity):
             method = "DELETE" if metadata.path == "/watchHistory/clear" else "GET"
-            if metadata.method != method:
+            if metadata.method != method and not (metadata.method == "HEAD" and method == "GET"):
                 raise ValueError("Request method is not supported")
             if metadata.path == "/progress/getProgress":
                 record = self.progress.find(metadata.first_parameter("videoId"), identity.user_id,

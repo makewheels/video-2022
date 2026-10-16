@@ -37,7 +37,7 @@
 | 10/14 | S09.j | 观看日志HTTP/身份/同步日志组合 | 已合并 [#210](https://github.com/makewheels/video-2022/pull/210)，必要CI38857643996通过；本地Python589passed/2符号链接项未跑、Java9passed/Checkstyle |
 | 11/14 | S09.k | 旧心跳完整JSON绑定与HTTP组合 | 已合并 [#211](https://github.com/makewheels/video-2022/pull/211)，必要CI38858361309成功、Linux646passed；50组绑定样本对照，扩展边界另验 |
 | 12/14 | S09.l | 会话JSON/HTTP与text/plain退出兼容 | 已合并 [#212](https://github.com/makewheels/video-2022/pull/212)，必要CI全通过；108组旧HTTP/BSON与真实Chromium Beacon通过 |
-| 13/14 | S09.m | 统一隔离后端装配/入口与全矩阵回归 | m.1本地757passed/2符号链接项未跑；m.2旧CORS/OPTIONS/扩展入口矩阵继续，不称整体完成 |
+| 13/14 | S09.m | 统一隔离后端装配/入口与全矩阵回归 | m.1已合并[#213](https://github.com/makewheels/video-2022/pull/213)；m.2本地777passed/2符号链接项未跑、Java2passed/Checkstyle；继续m.3编码矩阵 |
 | 14/14 | S09.n | 真实FC网络与各端播放/历史验收 | 待验，依赖S03/S04；不能由本机测试替代 |
 
 ## S00–S24总表

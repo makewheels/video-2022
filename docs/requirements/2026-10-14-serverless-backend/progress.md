@@ -1,5 +1,12 @@
 # 接续记录
 
+## 2026-10-16 S09.m.2（13/14内）OPTIONS/CORS/HEAD
+
+- #213 head84789f47必要CI38860678902全部成功后合并ffbfe72c（PR API/浏览器E2E按条件skipped），统一隔离装配已进入master。master CI38861085178/Java部署38861085205待查最终。
+- RoutingApplication使用已装配路由表处理旧OPTIONS，保留生命周期/保护路径401、Allow及CORS差异；不使用全局宽松CORS。各GET控制器接受HEAD并保留HEAD日志metadata，原bootstrap/FC入口不切换。
+- Java真实MVC/独享Mongo2passed/0skipped（16组预检矩阵+HEAD/GET及client GET跨域断言）/Checkstyle成功；Python完整777passed/2deselected（Windows符号链接权限）/0skipped/1既有warning，focused31passed，Ruff/500行/空白通过。首轮测试集合访问误用Database.client属性已修正后复验，不改运行代码放宽断言。
+- m.2覆盖实际OPTIONS/HEAD和路由级客户端CORS，不等于FC/代理/真实浏览器预检全验收；新增子批m.3独立处理原计划中的正文编码，S09.m保持部分状态，不改固定14项总数。下一步字节级旧Java编码矩阵，再修共用绑定；之后继续S10.a上传契约和S12.b可靠任务实验。
+
 ## 2026-10-16 S09.m.1（13/14内）统一隔离装配
 
 - #212 head28c69cad必要CI38860197370全部成功后合并1f459a1f（PR API/浏览器E2E按条件skipped）；已合并剩余计划细化及会话HTTP。新的master CI/Java部署待查最终，不沿用旧head结果。

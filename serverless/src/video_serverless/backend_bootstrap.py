@@ -10,7 +10,9 @@ from video_serverless.backend_application import BackendApplication
 from video_serverless.business.public_videos import PublicVideos
 from video_serverless.business.video_search import VideoSearch
 from video_serverless.public_video_application import PublicVideoApplication
+from video_serverless.routing_application import RoutingApplication
 from video_serverless.search_application import SearchApplication
+from video_serverless.user_application import _AVATAR_PATHS, _METHODS, _PROTECTED
 from video_serverless.user_bootstrap import build_user_application
 from video_serverless.viewing_bootstrap import build_viewing_application
 from video_serverless.watch_bootstrap import build_watch_application
@@ -37,5 +39,18 @@ def build_backend_application(database_provider, urls, *, profile, local_clock, 
         internal_base_url=internal_base_url,
     )
     viewing = build_viewing_application(database_provider, urls, users.cycle, ip_locations=ip_locations)
+    methods = {**_METHODS, "/video/getPublicVideoList": "GET", "/search": "GET", "/category/list": "GET",
+               "/progress/getProgress": "GET", "/watchHistory/getMyHistory": "GET", "/watchHistory/clear": "DELETE",
+               "/heartbeat/add": None, "/playback/start": "POST", "/playback/heartbeat": "POST",
+               "/playback/exit": "POST"}
+    if users.avatars is None:
+        for path in _AVATAR_PATHS:
+            methods.pop(path)
+    if viewing.watch_logs is not None:
+        methods["/watchController/addWatchLog"] = "GET"
+    if watch is not None:
+        methods.update(dict.fromkeys(("/watchController/getWatchInfo", "/watchController/getMultivariantPlaylist.m3u8",
+                                      "/watchController/getM3u8Content.m3u8"), "GET"))
+    routing = RoutingApplication(methods, frozenset(_PROTECTED), users.cycle)
     return BackendApplication(users, PublicVideoApplication(videos, users.cycle),
-                              SearchApplication(search, users.cycle), watch, viewing)
+                              SearchApplication(search, users.cycle), watch, viewing, routing)
