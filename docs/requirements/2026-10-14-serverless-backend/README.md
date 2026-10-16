@@ -28,6 +28,7 @@
 | [user/](user/README.md) | 登录、client/session、ID、资料、头像及相应契约 |
 | [video/](video/README.md) | 视频列表、搜索和分类 |
 | [playback/](playback/README.md) | 观看信息、HLS、播放授权和文件访问 |
+| [upload/](upload/README.md) | 原片创建/凭证/完成通知、MD5/AUTO及上传迁移契约 |
 | [tasks/](tasks/README.md) | 可靠任务、持久化与恢复证据 |
 
 [跨阶段设计](../../design/serverless-backend.md)在docs/design维护，不在需求目录复制一份。
