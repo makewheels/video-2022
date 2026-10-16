@@ -9,4 +9,5 @@
 - [S11.a.1 / S11.c.1 LOCAL封面登记](local-covers.md)：旧HTTP/完整BSON、普通能力和显式隔离入口；LOCAL转码/侧车与真实FC仍待做。
 - [S11.a.2 / S11.c.2 LOCAL档位创建](local-transcodes.md)：两档预建、源媒体信息保留、旧HTTP/完整BSON；完成扫描/就绪链路另做。
 - [S11.b.1 只读产物校验](output-validation.md)：TS/fMP4/init、manifest/对象对照与SDK流关闭；尚未装配完成写入。
+- [S11.d.1 全档就绪状态](video-readiness.md)：所有提供方/状态、缺失引用与READY保护、Mongo状态窄写；尚未装配完成副作用。
 - 没有实际FC或完整客户端上传验收，不能把普通创建能力称作整体上传迁移完成。
