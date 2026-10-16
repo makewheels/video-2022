@@ -72,7 +72,8 @@ class UserApplication:
             return CycleResult(Response.json({"message": "User route not found"}, 404), "not_started")
 
         def handle(metadata: RequestMetadata, identity: ResolvedIdentity) -> Response:
-            if metadata.method != _METHODS[metadata.path]:
+            method = _METHODS[metadata.path]
+            if metadata.method != method and not (metadata.method == "HEAD" and method == "GET"):
                 raise UserBindingError("Request method is not supported")
             path = metadata.path
             if path == "/user/requestVerificationCode":

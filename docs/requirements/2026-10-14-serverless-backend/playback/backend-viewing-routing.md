@@ -13,3 +13,13 @@
 - 同一根应用直接并行dispatch12个混合匿名/登录请求：会话ID不同、用户身份与client准确、12条日志且零异常。不把线程内dispatch测试称为真实FC网络并发。
 
 本批为m.1装配，不宣称m全部完成。m.2的真实旧CORS/OPTIONS/HEAD、扩展编码与网络矩阵继续固定/验证；真实FC及各端验收仍为n，依赖S03/S04。回退本批提交恢复原隔离工厂路由集合，未影响生产入口/数据。
+
+## S09.m.2 旧OPTIONS/CORS/HEAD
+
+真实旧MVC/隔离Mongo固定16组OPTIONS/预检：GET客户端ID、POST播放会话、ANY旧心跳及受保护资料。普通OPTIONS的Allow/Accept-Patch与带Origin预检不同；未许可预检旧行为是空200/无许可头，并不是通用403。唯一客户端ID GET保留`@CrossOrigin`的`*`、GET、请求header回显和1800秒缓存，无credentials；其他业务不加全局CORS。受保护OPTIONS仍401、零requestLog，响应仍带FrameworkServlet默认Allow。
+
+新RoutingApplication只在已装配路由处理OPTIONS，复用同一cycle，不创建client/session或调用业务。未配置的头像/播放/IP路由不凭OPTIONS暴露；有效GET/HEAD客户端ID响应按旧规则补CORS，保留同源无跨域头。各GET能力允许HEAD但保留原HEAD metadata，ASGI传输不输出正文并保留GET正文长度。
+
+本机实际完整Python777passed/2deselected（Windows符号链接权限）/0skipped/1既有warning；新增预检/跨域/HEAD与旧装配/架构focused31passed；Java2passed/0skipped（16组矩阵和HEAD/GET对照，含实际client GET跨域）、Checkstyle成功，Ruff/500行/空白通过。首轮Python探测用Database.client误指MongoClient属性，已改显式集合访问后复验，没有放宽业务断言。
+
+以上为真实MVC/ASGI和Mongo，非真实FC/浏览器代理验收；恶意/畸形Origin、任意多值头、TRACE及所有编码边界尚未逐项验证。m.3继续正文编码兼容，保持S09.m部分状态；不把m.2等同所有入口验收完成。
