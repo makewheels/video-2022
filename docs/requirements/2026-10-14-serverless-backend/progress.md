@@ -1,5 +1,12 @@
 # 接续记录
 
+## 2026-10-16 S14.a.1 独立评论读取域
+
+- 在LOCAL完成/可靠副作用依赖继续保留的同时推进独立评论域：普通分页/回复/计数、Mongo和默认关闭的显式隔离HTTP，共享身份/日志周期，不安装写操作。
+- 旧MVC/独享Mongo48组完整HTTP/日志/业务只读对照，保留PRIVATE匿名与坏token可读、null/空父键、原排序/分页/整数溢出、null字段和毫秒UTC日期；先count后find，不增加用户查询或权限规则。
+- Python3.12.13完整1285passed/0skipped/1既有warning，Ruff/架构/500行/空白通过；Java旧HTTP1passed/0skipped、validate通过；临时环境/构建/独享Mongo清理，无实际云/生产变更。S14写入/删除/点赞/全端继续实施。
+- #224必要CI38904446950成功后合并93ceeaa5819b74850894b909324bf1124fea2f6d，API/浏览器E2E按条件skipped；其master CI38905037876成功，Java部署最终另查。#223 master CI38904277908/部署38904277714实际success。
+
 ## 2026-10-16 S11.d.1 全档就绪状态
 
 - 真实旧Java/独享Mongo45组完整前后状态文档，普通能力/Mongo窄写按所有提供方、currentProvider覆盖、空/缺失/混合引用与READY快照保护对照；只写status，保留updateTime/未知字段，不upsert或重放。
