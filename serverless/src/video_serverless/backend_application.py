@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from video_serverless.file_upload_application import FILE_UPLOAD_ROUTES, FileUploadApplication
+from video_serverless.local_cover_application import LOCAL_COVER_METHODS, LocalCoverApplication
 from video_serverless.playlist_application import PLAYLIST_ROUTES
 from video_serverless.ports.request_identity import RequestMetadata
 from video_serverless.public_video_application import PublicVideoApplication
@@ -25,10 +26,13 @@ class BackendApplication:
     routing: RoutingApplication | None = None
     upload: UploadApplication | None = None
     file_uploads: FileUploadApplication | None = None
+    local_covers: LocalCoverApplication | None = None
 
     def dispatch(self, request: RequestMetadata, body: bytes = b"") -> CycleResult:
         if self.routing is not None and request.method == "OPTIONS" and request.path in self.routing.methods:
             return self.routing.options(request)
+        if self.local_covers is not None and request.path in LOCAL_COVER_METHODS:
+            return self.local_covers.dispatch(request, body)
         if self.upload is not None and request.path in {"/video/create", "/video/getVideoStatus"}:
             return self.upload.dispatch(request, body)
         if self.file_uploads is not None and request.path in FILE_UPLOAD_ROUTES:

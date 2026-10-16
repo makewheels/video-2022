@@ -1,5 +1,12 @@
 # 接续记录
 
+## 2026-10-16 S11.a.1 / S11.c.1 LOCAL封面
+
+- 已基于#220 merge b9355e17实施旧封面24组HTTP/完整前后BSON契约、Python普通能力/Mongo/显式隔离HTTP，共用既有身份和同步日志；create/finish默认不装配，需明确对象能力与访问前缀。
+- 保持AUTO视频可创建、非LOCAL提供方可完成、缺失文件仍挂接、重复创建不去重、重复完成刷新时间，以及STS/多次保存失败时的部分写入；不新增对象存在检查或READY回调。rich-video固定动态JSON null保留、媒体帧率/时长与映射字段省略。
+- 本机Python3.12.13完整1123passed/0skipped/1既有warning，Ruff/架构/500行/空白通过；Java HTTP2项/既有封面1项及validate通过。临时目录/独享Mongo均清理，无生产/收费云调用。真实FC、CLI、转码档位与目录/侧车等S11剩余项继续推进，不能把封面子项当整个LOCAL完成。
+- #220 headbdb8b770必要CI38899532743成功后合并b9355e17，API/浏览器E2E按条件skipped；其master CI38899968124与Java部署38899968233实际success。
+
 ## 2026-10-16 S10.b.2 状态轮询合并
 
 - 公司分支71d862e6接续，修正旧MVC不支持方法在身份拦截前通用错误、仅异常日志的语义；head57698ba1经必要CI38899073226成功后，PR#219合并80f96969ef4c5abee688cb8cdd80039ac93da042。API/浏览器E2E按既有条件skipped，不记为通过。
