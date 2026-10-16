@@ -20,10 +20,12 @@ class VideoStatusApplication:
     def dispatch(self, request: RequestMetadata, body: bytes = b"") -> CycleResult:
         if request.path != VIDEO_STATUS_ROUTE:
             return CycleResult(Response.json({"message": "Video status route not found"}, 404), "not_started")
+        # Spring rejects unsupported methods before constructing the interceptor chain.
+        if request.method not in {"GET", "HEAD"}:
+            return CycleResult(self.cycle.error_response(UserBindingError("Request method is not supported")),
+                               "not_started")
 
         def handle(metadata, identity):
-            if metadata.method not in {"GET", "HEAD"}:
-                raise UserBindingError("Request method is not supported")
             try:
                 result = self.statuses.get(identity.user_id, _parameter(metadata, "videoId"))
             except VideoStatusError as error:

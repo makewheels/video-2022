@@ -48,9 +48,16 @@ class VideoStatusHttpContractTest extends BaseIntegrationTest {
                     .header("token", "fixture-status-token")).andReturn().getResponse();
             assertEquals(200, post.getStatus());
             assertEquals(1, JSON.parseObject(post.getContentAsString()).getIntValue("code"));
-            assertEquals(3, mongoTemplate.getCollection("requestLog").countDocuments());
+            assertEquals(2, mongoTemplate.getCollection("requestLog").countDocuments());
+            assertEquals(0, mongoTemplate.getCollection("requestLog").countDocuments(new Document("request.method", "POST")));
             assertEquals(1, mongoTemplate.getCollection("requestLog").countDocuments(new Document("request.method", "HEAD")));
             assertEquals(1, mongoTemplate.getCollection("exceptionLog").countDocuments());
+            var anonymousPost = mvc.perform(post("/video/getVideoStatus").param("videoId", "fixture-video"))
+                    .andReturn().getResponse();
+            assertEquals(200, anonymousPost.getStatus());
+            assertEquals(1, JSON.parseObject(anonymousPost.getContentAsString()).getIntValue("code"));
+            assertEquals(2, mongoTemplate.getCollection("requestLog").countDocuments());
+            assertEquals(2, mongoTemplate.getCollection("exceptionLog").countDocuments());
         } finally {
             cleanDatabase();
         }

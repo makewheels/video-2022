@@ -71,10 +71,12 @@ def test_status_opt_in_authentication_options_head_and_original_method_log(datab
         head = client.head("/video/getVideoStatus?videoId=fixture-video", headers=headers)
         assert head.status_code == 200 and head.content == b"" and head.headers["Content-Type"] == "application/json"
         assert client.post("/video/getVideoStatus?videoId=fixture-video", headers=headers).json()["code"] == 1
+        anonymous = client.post("/video/getVideoStatus?videoId=fixture-video")
+        assert anonymous.status_code == 200 and anonymous.json()["code"] == 1
     logs = list(database.requestLog.find())
-    assert len(logs) == 3
-    assert [log["request"]["method"] for log in logs] == ["OPTIONS", "HEAD", "POST"]
-    assert database.exceptionLog.count_documents({}) == 1
+    assert len(logs) == 2
+    assert [log["request"]["method"] for log in logs] == ["OPTIONS", "HEAD"]
+    assert database.exceptionLog.count_documents({}) == 2
     assert database.video.find_one()["status"] == "READY"
 
 
