@@ -3,6 +3,7 @@
 from datetime import UTC, datetime
 
 from video_serverless.adapters.mongo_comment_reads import MongoCommentReads
+from video_serverless.adapters.mongo_comment_writes import MongoCommentWrites
 from video_serverless.adapters.mongo_cover_urls import MongoCoverUrls
 from video_serverless.adapters.mongo_local_covers import MongoLocalCovers
 from video_serverless.adapters.mongo_local_transcodes import MongoLocalTranscodes
@@ -11,11 +12,13 @@ from video_serverless.adapters.mongo_users import MongoUserReads
 from video_serverless.adapters.mongo_video_search import MongoVideoSearch
 from video_serverless.backend_application import BackendApplication
 from video_serverless.business.comment_reads import Comments
+from video_serverless.business.comment_writes import CommentWrites
 from video_serverless.business.local_covers import LocalCovers
 from video_serverless.business.local_transcodes import LocalTranscodes
 from video_serverless.business.public_videos import PublicVideos
 from video_serverless.business.video_search import VideoSearch
 from video_serverless.comment_application import COMMENT_READ_METHODS, CommentReadApplication
+from video_serverless.comment_write_application import COMMENT_WRITE_METHODS, CommentWriteApplication
 from video_serverless.file_upload_application import FILE_UPLOAD_ROUTES
 from video_serverless.local_cover_application import LOCAL_COVER_METHODS, LocalCoverApplication
 from video_serverless.local_transcode_application import LOCAL_TRANSCODE_METHODS, LocalTranscodeApplication
@@ -37,7 +40,7 @@ def build_backend_application(database_provider, urls, *, profile, local_clock, 
                               worker, datacenter, avatar_objects=None,
                               playback_signature_secret=None, internal_base_url=None, ip_locations=None,
                               creation_base_url=None, upload_objects=None, local_cover_access_base_url=None,
-                              local_transcode_registration=False, public_comment_reads=False):
+                              local_transcode_registration=False, public_comment_reads=False, comment_writes=False):
     if local_transcode_registration and upload_objects is None:
         raise ValueError("Local transcode registration requires explicit object credentials")
     if local_cover_access_base_url is not None and (not local_cover_access_base_url or upload_objects is None):
@@ -107,7 +110,13 @@ def build_backend_application(database_provider, urls, *, profile, local_clock, 
     if public_comment_reads:
         comments = CommentReadApplication(Comments(MongoCommentReads(database_provider)), users.cycle)
         methods.update(COMMENT_READ_METHODS)
+    writes = None
+    if comment_writes:
+        writes = CommentWriteApplication(CommentWrites(MongoCommentWrites(database_provider),
+                                                       lambda: datetime.now(UTC)), users.cycle)
+        methods.update(COMMENT_WRITE_METHODS)
+        protected.update(COMMENT_WRITE_METHODS)
     routing = RoutingApplication(methods, frozenset(protected), users.cycle)
     return BackendApplication(users, PublicVideoApplication(videos, users.cycle),
                               SearchApplication(search, users.cycle), watch, viewing, routing, upload, file_uploads,
-                              local_covers, local_transcodes, comments)
+                              local_covers, local_transcodes, comments, writes)

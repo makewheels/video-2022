@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from video_serverless.comment_application import COMMENT_READ_METHODS, CommentReadApplication
+from video_serverless.comment_write_application import COMMENT_WRITE_METHODS, CommentWriteApplication
 from video_serverless.file_upload_application import FILE_UPLOAD_ROUTES, FileUploadApplication
 from video_serverless.local_cover_application import LOCAL_COVER_METHODS, LocalCoverApplication
 from video_serverless.local_transcode_application import LOCAL_TRANSCODE_METHODS, LocalTranscodeApplication
@@ -31,12 +32,15 @@ class BackendApplication:
     local_covers: LocalCoverApplication | None = None
     local_transcodes: LocalTranscodeApplication | None = None
     comments: CommentReadApplication | None = None
+    comment_writes: CommentWriteApplication | None = None
 
     def dispatch(self, request: RequestMetadata, body: bytes = b"") -> CycleResult:
         if self.routing is not None and request.method == "OPTIONS" and request.path in self.routing.methods:
             return self.routing.options(request)
         if self.comments is not None and request.path in COMMENT_READ_METHODS:
             return self.comments.dispatch(request, body)
+        if self.comment_writes is not None and request.path in COMMENT_WRITE_METHODS:
+            return self.comment_writes.dispatch(request, body)
         if self.local_covers is not None and request.path in LOCAL_COVER_METHODS:
             return self.local_covers.dispatch(request, body)
         if self.local_transcodes is not None and request.path in LOCAL_TRANSCODE_METHODS:

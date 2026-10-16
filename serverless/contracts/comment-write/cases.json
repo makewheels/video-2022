@@ -1,0 +1,3845 @@
+[
+	{
+		"operation":"add",
+		"scenario":"success",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"fixture new comment",
+				"parentId":null,
+				"replyToUserNickname":null,
+				"replyCount":0,
+				"replyToUserId":null,
+				"createTime":"<server-date>",
+				"replyToUserPhone":null,
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"fixture new comment",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"reply",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \",\"parentId\":\"fixture-parent\"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"fixture new comment",
+				"parentId":"fixture-parent",
+				"replyToUserNickname":"fixture parent",
+				"replyCount":0,
+				"replyToUserId":"fixture-author",
+				"createTime":"<server-date>",
+				"replyToUserPhone":"00000000000",
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":2,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"fixture new comment",
+					"parentId":"fixture-parent",
+					"replyToUserId":"fixture-author",
+					"replyToUserPhone":"00000000000",
+					"replyToUserNickname":"fixture parent",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"reply-child",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \",\"parentId\":\"fixture-child\"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"fixture new comment",
+				"parentId":"fixture-parent",
+				"replyToUserNickname":"fixture child",
+				"replyCount":0,
+				"replyToUserId":"fixture-child-author",
+				"createTime":"<server-date>",
+				"replyToUserPhone":"00000000000",
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":2,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"fixture new comment",
+					"parentId":"fixture-parent",
+					"replyToUserId":"fixture-child-author",
+					"replyToUserPhone":"00000000000",
+					"replyToUserNickname":"fixture child",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"cross-video",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \",\"parentId\":\"fixture-parent\"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"other-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"fixture new comment",
+				"parentId":"fixture-parent",
+				"replyToUserNickname":"fixture parent",
+				"replyCount":0,
+				"replyToUserId":"fixture-author",
+				"createTime":"<server-date>",
+				"replyToUserPhone":"00000000000",
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"other-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":2,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"fixture new comment",
+					"parentId":"fixture-parent",
+					"replyToUserId":"fixture-author",
+					"replyToUserPhone":"00000000000",
+					"replyToUserNickname":"fixture parent",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"missing-parent",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \",\"parentId\":\"fixture-missing\"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"父评论不存在"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"empty-parent",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \",\"parentId\":\"\"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"fixture new comment",
+				"parentId":null,
+				"replyToUserNickname":null,
+				"replyCount":0,
+				"replyToUserId":null,
+				"createTime":"<server-date>",
+				"replyToUserPhone":null,
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"fixture new comment",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"blank-content",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\" \\t\\r\\n \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"评论内容不能为空"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"null-content",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":null}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"评论内容不能为空"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"empty-content",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"\"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"评论内容不能为空"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"long-content",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"评论内容不能超过2000字"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"max-content",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+				"parentId":null,
+				"replyToUserNickname":null,
+				"replyCount":0,
+				"replyToUserId":null,
+				"createTime":"<server-date>",
+				"replyToUserPhone":null,
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"emoji-limit",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+				"parentId":null,
+				"replyToUserNickname":null,
+				"replyCount":0,
+				"replyToUserId":null,
+				"createTime":"<server-date>",
+				"replyToUserPhone":null,
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"emoji-over",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"评论内容不能超过2000字"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"numeric-content",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":123}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"123",
+				"parentId":null,
+				"replyToUserNickname":null,
+				"replyCount":0,
+				"replyToUserId":null,
+				"createTime":"<server-date>",
+				"replyToUserPhone":null,
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"123",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"boolean-content",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":true}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"true",
+				"parentId":null,
+				"replyToUserNickname":null,
+				"replyCount":0,
+				"replyToUserId":null,
+				"createTime":"<server-date>",
+				"replyToUserPhone":null,
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"true",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"array-content",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":[1,true,\"fixture\"]}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"[1, true, fixture]",
+				"parentId":null,
+				"replyToUserNickname":null,
+				"replyCount":0,
+				"replyToUserId":null,
+				"createTime":"<server-date>",
+				"replyToUserPhone":null,
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"[1, true, fixture]",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"object-content",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":{\"text\":null,\"n\":1}}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"{text=null, n=1}",
+				"parentId":null,
+				"replyToUserNickname":null,
+				"replyCount":0,
+				"replyToUserId":null,
+				"createTime":"<server-date>",
+				"replyToUserPhone":null,
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"{text=null, n=1}",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"duplicate-content",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":{},\"content\":\"fixture\"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"fixture",
+				"parentId":null,
+				"replyToUserNickname":null,
+				"replyCount":0,
+				"replyToUserId":null,
+				"createTime":"<server-date>",
+				"replyToUserPhone":null,
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"fixture",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"exponent-content",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":1e3}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":{
+				"userPhone":"00000000000",
+				"userAvatarUrl":"https://example.invalid/avatar",
+				"userNickname":"fixture viewer",
+				"likeCount":0,
+				"updateTime":"<server-date>",
+				"videoId":"fixture-video",
+				"userId":"fixture-viewer",
+				"content":"1000.0",
+				"parentId":null,
+				"replyToUserNickname":null,
+				"replyCount":0,
+				"replyToUserId":null,
+				"createTime":"<server-date>",
+				"replyToUserPhone":null,
+				"id":"<generated-comment>"
+			},
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":3
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				},
+				{
+					"_id":"<generated-comment>",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture viewer",
+					"userAvatarUrl":"https://example.invalid/avatar",
+					"content":"1000.0",
+					"likeCount":0,
+					"replyCount":0,
+					"createTime":"<server-date>",
+					"updateTime":"<server-date>"
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"missing-video",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":22,
+			"data":null,
+			"message":"视频不存在"
+		},
+		"after":{
+			"video":[],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":1
+	},
+	{
+		"operation":"add",
+		"scenario":"empty-body",
+		"input":"",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"未知错误"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":1
+	},
+	{
+		"operation":"add",
+		"scenario":"null-body",
+		"input":"null",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"未知错误"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":1
+	},
+	{
+		"operation":"add",
+		"scenario":"array-body",
+		"input":"[]",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"未知错误"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":1
+	},
+	{
+		"operation":"add",
+		"scenario":"no-token",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":401,
+		"contentType":"application/json;charset=UTF-8",
+		"response":{
+			"code":401,
+			"message":"请先登录"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":0,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"add",
+		"scenario":"bad-token",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":401,
+		"contentType":"application/json;charset=UTF-8",
+		"response":{
+			"code":401,
+			"message":"请先登录"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":0,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"delete",
+		"scenario":"success",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":null,
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":0
+				}
+			],
+			"comment":[],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"delete",
+		"scenario":"child",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-child",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":null,
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":1
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":0,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"delete",
+		"scenario":"cascade-likes",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[
+				{
+					"_id":"fixture-like-child",
+					"commentId":"fixture-child",
+					"userId":"fixture-viewer",
+					"createTime":3001
+				},
+				{
+					"_id":"fixture-like-parent",
+					"commentId":"fixture-parent",
+					"userId":"fixture-viewer",
+					"createTime":3000
+				}
+			]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":null,
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":0
+				}
+			],
+			"comment":[],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"delete",
+		"scenario":"forbidden",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-owner",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"无权删除此评论"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-owner",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"delete",
+		"scenario":"author",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-owner",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":null,
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-owner",
+					"commentCount":0
+				}
+			],
+			"comment":[],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"delete",
+		"scenario":"missing-video",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"未知错误"
+		},
+		"after":{
+			"video":[],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":1
+	},
+	{
+		"operation":"delete",
+		"scenario":"author-missing-video",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-viewer",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":null,
+			"message":"success"
+		},
+		"after":{
+			"video":[],
+			"comment":[],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"delete",
+		"scenario":"null-author",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":null,
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"未知错误"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":null,
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":1
+	},
+	{
+		"operation":"delete",
+		"scenario":"null-uploader",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":null,
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"未知错误"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":null,
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":1
+	},
+	{
+		"operation":"delete",
+		"scenario":"missing-comment",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"评论不存在"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"delete",
+		"scenario":"missing-parameter",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"未知错误"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":1
+	},
+	{
+		"operation":"delete",
+		"scenario":"no-token",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":401,
+		"contentType":"application/json;charset=UTF-8",
+		"response":{
+			"code":401,
+			"message":"请先登录"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":0,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"like",
+		"scenario":"success",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":null,
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":4,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[
+				{
+					"_id":"<generated-comment_like>",
+					"commentId":"fixture-parent",
+					"userId":"fixture-viewer",
+					"createTime":"<server-date>"
+				}
+			]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"like",
+		"scenario":"toggle-off",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[
+				{
+					"_id":"fixture-like-child",
+					"commentId":"fixture-child",
+					"userId":"fixture-viewer",
+					"createTime":3001
+				},
+				{
+					"_id":"fixture-like-parent",
+					"commentId":"fixture-parent",
+					"userId":"fixture-viewer",
+					"createTime":3000
+				}
+			]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":null,
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":2,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[
+				{
+					"_id":"fixture-like-child",
+					"commentId":"fixture-child",
+					"userId":"fixture-viewer",
+					"createTime":3001
+				}
+			]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"like",
+		"scenario":"missing-comment",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":null,
+			"message":"success"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[],
+			"comment_like":[
+				{
+					"_id":"<generated-comment_like>",
+					"commentId":"fixture-parent",
+					"userId":"fixture-viewer",
+					"createTime":"<server-date>"
+				}
+			]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"like",
+		"scenario":"missing-video",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":0,
+			"data":null,
+			"message":"success"
+		},
+		"after":{
+			"video":[],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":4,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[
+				{
+					"_id":"<generated-comment_like>",
+					"commentId":"fixture-parent",
+					"userId":"fixture-viewer",
+					"createTime":"<server-date>"
+				}
+			]
+		},
+		"requestLogs":1,
+		"exceptionLogs":0
+	},
+	{
+		"operation":"like",
+		"scenario":"missing-parameter",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":1,
+			"data":null,
+			"message":"未知错误"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":1
+	},
+	{
+		"operation":"like",
+		"scenario":"no-token",
+		"input":"{\"videoId\":\"fixture-video\",\"content\":\"  fixture new comment  \"}",
+		"commentId":"fixture-parent",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"status":401,
+		"contentType":"application/json;charset=UTF-8",
+		"response":{
+			"code":401,
+			"message":"请先登录"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-viewer",
+					"commentCount":2
+				}
+			],
+			"comment":[
+				{
+					"_id":"fixture-child",
+					"videoId":"fixture-video",
+					"parentId":"fixture-parent",
+					"userId":"fixture-child-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture child",
+					"content":"fixture child",
+					"createTime":2000,
+					"updateTime":2001
+				},
+				{
+					"_id":"fixture-parent",
+					"videoId":"fixture-video",
+					"userId":"fixture-author",
+					"userPhone":"00000000000",
+					"userNickname":"fixture parent",
+					"content":"fixture parent",
+					"likeCount":3,
+					"replyCount":1,
+					"createTime":1000,
+					"updateTime":1001
+				}
+			],
+			"comment_like":[]
+		},
+		"requestLogs":0,
+		"exceptionLogs":0
+	}
+]
