@@ -41,3 +41,13 @@
 - 完整Python581passed/0skipped/1既有warning，本阶段新增17项，Ruff/500行/空白通过。真实Mongo验证IPv6键/已有记录不刷新、扁平result覆盖ip、对象null省略/数组null与Decimal精度、唯一竞争不覆盖/不重试、写后合成确认异常后下一独立请求读缓存；真实WatchLogs两次lookup只用一次合成供应商请求。
 - 新HTTPS transport固定三秒超时、不自动跟随重定向；真实回环服务器验证只发一次且不携带Authorization跳转。无全局代理/网络配置修改。旧服务只取body，适配也不先按HTTP状态替换旧正文解析。上述传输边界尚未由真实供应商/FC网络验证。
 - 仅支持已验标准JSON（保留Decimal），旧非标准JSON/极端数字/其他编码和缓存损坏类型仍门槛；未装配业务入口或连接生产，不创建生产索引/缓存。
+
+## S09.j（10/14）观看日志HTTP组合
+
+显式`WatchLogApplication`连接普通WatchLogs、请求身份和同步日志；复用ASGI工厂作隔离验证，不装配现役Backend/FC入口。GET绑定要求videoStatus存在（不新增枚举校验）；videoId/clientId/sessionId取首个查询参数，User-Agent取首个header，IP取实际peer而非XFF。PutToken解析身份，匿名/无效token继续沿旧路径执行，不新增CheckToken。
+
+Controller不存在视频抛领域错误并写异常日志；存在检查与服务的去重/视频读取分开，保留查询顺序和服务内视频消失时的普通22返回。`WatchLogs.add`保留已有组合行为，`record`供已完成Controller检查的HTTP层调用，不重复存在查询。第一/二次IP失败保留旧部分写入，应用不重试；同步requestLog失败不重放业务。
+
+新增10项真实ASGI/隔离Mongo测试，IP为合成端口：完整HTTP200/Content-Type/三字段响应、匿名私密/首参数/peer、header不回退、身份不残留、绑定/不存在错误与异常日志、两次IP故障、请求状态与实际状态不一致、日志失败及未知路由。旧Java九项HTTP测试追加完整响应格式断言。真实供应商、FC、生产计数/全端仍未验。回退本阶段提交即可，未改变生产入口或数据。
+
+本机实际Python589passed/2deselected（Windows符号链接权限）/0skipped/1既有warning，Java9passed/0skipped及Checkstyle成功，Ruff/架构8项/500行/空白通过。首次Maven从仓库根目录执行导致Checkstyle配置定位失败，改为server目录后通过，未改构建配置。CI仍须核对当前提交。

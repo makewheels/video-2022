@@ -56,7 +56,13 @@ class WatchLogHttpContractTest extends BaseIntegrationTest {
     private JSONObject call(MockHttpServletRequestBuilder request) throws Exception {
         var response = mvc.perform(request).andReturn().getResponse();
         assertEquals(200, response.getStatus());
-        return JSON.parseObject(response.getContentAsString());
+        assertEquals("application/json", response.getContentType());
+        JSONObject body = JSON.parseObject(response.getContentAsString());
+        assertEquals(java.util.Set.of("code", "message", "data"), body.keySet());
+        assertNull(body.get("data"));
+        int code = body.getIntValue("code");
+        assertEquals(code == 0 ? "success" : code == 22 ? "视频不存在" : "未知错误", body.getString("message"));
+        return body;
     }
 
     private long count() {
