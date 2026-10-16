@@ -78,3 +78,25 @@ def test_reservation_failure_does_not_fall_back_to_process_local_tokens():
     generator = Identifiers(Unavailable(), lambda: datetime(2023, 1, 1), lambda: NOW, lambda: "007", 1, 1)
     with pytest.raises(RuntimeError, match="fixture storage failure"):
         generator.token()
+
+
+def test_short_id_base36_expanded_sequence_and_local_date_counter(database):
+    generator = ids(database)
+    first = generator.short_id()
+    # 2023-01-01 is day 365 from the Java epoch, concatenated with serial 01 and random 007.
+    assert int(first, 36) == 36501007
+    assert first == first.upper()
+    assert database.id_counters.find_one({"_id": "shortId:2023-01-01"})["counter"] == 1
+    database.id_counters.update_one({"_id": "shortId:2023-01-01"}, {"$set": {"counter": Int64(99)}})
+    assert int(generator.short_id(), 36) == 365100007
+
+
+def test_parallel_short_ids_use_shared_reservation_and_next_day_resets_counter(database):
+    database.id_counters.delete_many({})
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        values = list(pool.map(lambda _: ids(database).short_id(), range(40)))
+    assert len(set(values)) == 40
+    assert {int(value, 36) for value in values} == {int(f"365{serial:02d}007") for serial in range(1, 41)}
+    next_day = Identifiers(MongoIdSequences(lambda: database, 1, 1), lambda: datetime(2023, 1, 2),
+                           lambda: NOW, lambda: "007", 1, 1)
+    assert int(next_day.short_id(), 36) == 36601007

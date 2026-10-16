@@ -40,6 +40,22 @@ class Identifiers:
     def user_id(self) -> str:
         return self.long_id("u_")
 
+    def short_id(self) -> str:
+        local = self.local_clock().replace(tzinfo=None)
+        elapsed = local - datetime(2022, 1, 1)
+        seconds = elapsed.days * 86400 + elapsed.seconds
+        days = seconds // 86400 if seconds >= 0 else -((-seconds) // 86400)
+        sequence = self.sequences.next_short_sequence(local.strftime("%Y-%m-%d"))
+        value = int(str(days) + f"{sequence:02d}" + self.random_three_digits())
+        sign = "-" if value < 0 else ""
+        value = abs(value)
+        digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        result = ""
+        while value:
+            value, remainder = divmod(value, 36)
+            result = digits[remainder] + result
+        return sign + (result or "0")
+
     def token(self) -> str:
         now = self.utc_clock_ms()
         # Validate configured node/time before consuming a shared slot.

@@ -19,6 +19,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Date;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -76,6 +81,87 @@ class UploadHttpContractTest extends BaseIntegrationTest {
 
     private Document video() {
         return mongoTemplate.getCollection("video").find().first();
+    }
+
+    private Document normalized(Document document) {
+        if (document == null) return null;
+        for (String field : new String[]{"createTime", "updateTime"}) {
+            assertInstanceOf(Date.class, document.get(field));
+            document.put(field, "<server-date>");
+        }
+        if (document.containsKey("key")) {
+            String key = document.getString("key");
+            assertTrue(key.matches("videos/fixture-uploader/[0-9]{6}/fixture-video/raw/fixture-file/.*"));
+            document.put("key", key.replaceFirst("/[0-9]{6}/", "/<local-month>/"));
+        }
+        return document;
+    }
+
+    @Test
+    void creationBindingAndCompleteBsonMatchCommittedSnapshots() throws Exception {
+        JSONArray cases = new JSONArray();
+        List<String> bodies = List.of("", "null", "[]", "{}", "{} {}",
+                "{\"videoType\":null}", "{\"videoType\":\"\"}", "{\"videoType\":\" \"}",
+                "{\"videoType\":123}", "{\"videoType\":true}", "{\"videoType\":[]}",
+                "{\"videoType\":[],\"videoType\":\"other\"}",
+                "{\"videoType\":\"USER_UPLOAD\",\"rawFilename\":\"x\"}",
+                "{\"videoType\":\"USER_UPLOAD\",\"rawFilename\":\"x\",\"size\":0}",
+                "{\"videoType\":\"USER_UPLOAD\",\"rawFilename\":\"\",\"size\":1}",
+                "{\"videoType\":\"other\",\"size\":true}",
+                "{\"videoType\":\"other\",\"size\":9223372036854775808}",
+                "{\"videoType\":\"other\",\"user\":false}",
+                "{\"videoType\":\"other\",\"video\":[],\"rawFile\":{}}",
+                "{\"videoType\":\"other\",\"user\":{},\"video\":{},\"rawFile\":{}}",
+                "{\"videoType\":\"other\",\"ttl\":{},\"unknown\":1}",
+                "{\"videoType\":\"other\",\"ttl\":\"30d\",\"unknown\":{\"a\":[1]}}",
+                "{\"videoType\":\"other\",\"transcodeMode\":\"LOCAL\"}",
+                "{\"videoType\":\"other\",\"transcodeMode\":false}",
+                "{\"videoType\":\"other\",\"size\":\"9223372036854775807\"}",
+                "{\"videoType\":\"other\",\"user\":{\"id\":\"spoof\",\"subscriberCount\":true}}",
+                "{\"videoType\":\"other\",\"user\":{\"createTime\":\"invalid\"}}",
+                "{\"videoType\":\"other\",\"user\":{\"id\":\"spoof\",\"subscriberCount\":1.9}}",
+                "{\"videoType\":\"other\",\"video\":{\"likeCount\":2147483648}}",
+                "{\"videoType\":\"other\",\"video\":{\"tags\":\"one\"}}",
+                "{\"videoType\":\"other\",\"video\":{\"tags\":[1,true,null]}}",
+                "{\"videoType\":\"other\",\"video\":{\"youTube\":false}}",
+                "{\"videoType\":\"other\",\"video\":{\"mediaInfo\":{\"response\":[]}}}",
+                "{\"videoType\":\"other\",\"video\":{\"watch\":{\"showWatchCount\":\"yes\"}}}",
+                "{\"videoType\":\"other\",\"rawFile\":{\"deleted\":2,\"size\":\"42\"}}",
+                "{\"videoType\":\"other\",\"rawFile\":{\"objectInfo\":false}}",
+                "{\"videoType\":\"USER_UPLOAD\",\"rawFilename\":false,\"size\":1}",
+                "{\"videoType\":\"USER_UPLOAD\",\"rawFilename\":[],\"rawFilename\":\"a.MP4\",\"size\":1}");
+        java.util.ArrayList<String> inputs = new java.util.ArrayList<>(bodies);
+        for (String filename : new String[]{"Fixture.MP4", "no-extension", ".hidden", "name.",
+                "folder.with.dot/name", "folder\\\\name.MKV", " ", "视频.MP4"}) {
+            for (String size : new String[]{"1", "-1", "1.9", "\" 42 \"", "\"\"", "\"null\""}) {
+                JSONObject dto = new JSONObject();
+                dto.put("videoType", "USER_UPLOAD");
+                dto.put("rawFilename", filename);
+                dto.put("transcodeMode", "LOCAL");
+                inputs.add(dto.toJSONString().replace("}", ",\"size\":" + size + "}"));
+            }
+        }
+        for (String body : inputs) {
+            mongoTemplate.getCollection("video").deleteMany(new Document());
+            mongoTemplate.getCollection("file").deleteMany(new Document());
+            JSONObject row = new JSONObject(true);
+            row.put("input", body);
+            row.put("response", create(body));
+            row.put("video", normalized(video()));
+            row.put("file", normalized(file()));
+            cases.add(row);
+        }
+        verifyNoInteractions(ossVideoService, worker);
+        String serialized = JSON.toJSONString(cases, SerializerFeature.WriteMapNullValue, SerializerFeature.PrettyFormat);
+        String output = System.getProperty("contract.output.dir");
+        if (output != null) {
+            Path folder = Path.of(output);
+            Files.createDirectories(folder);
+            Files.writeString(folder.resolve("cases.json"), serialized);
+        } else {
+            assertEquals(JSON.parseArray(Files.readString(Path.of("../../serverless/contracts/upload-create/cases.json"))),
+                    JSON.parseArray(serialized));
+        }
     }
 
     @Test
