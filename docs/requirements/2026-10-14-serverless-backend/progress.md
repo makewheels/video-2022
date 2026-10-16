@@ -1,5 +1,13 @@
 # 接续记录
 
+## 2026-10-16 S09.m.1（13/14内）统一隔离装配
+
+- #212 head28c69cad必要CI38860197370全部成功后合并1f459a1f（PR API/浏览器E2E按条件skipped）；已合并剩余计划细化及会话HTTP。新的master CI/Java部署待查最终，不沿用旧head结果。
+- 分支feat-serverless-viewing-composition基于1f459a1f。ViewingApplication纯路由选择，build_viewing_application共享既有cycle和provider，把心跳/会话/历史/进度/可选观看日志接入显式Backend工厂，原现役入口不变。不提供ip_locations时观看日志404，不隐式调用付费服务。
+- 完整Python实际757passed/2deselected（Windows符号链接权限）/0skipped/1既有warning；新装配+原播放路由+架构17passed，Ruff/500行/空白通过。私密HLS/观看日志/两路心跳/进度历史/退出清理串通，恰好10条请求日志，旧心跳不记日志；实际Mongo缓存两次lookup一次合成供应商调用。12个直接根dispatch并行混合身份不残留，12会话/12日志/零异常。
+- 本批无Java运行代码或契约修改，不为Python装配重复Java全套；未把已有Java覆盖冒充本次通过。新CORS/OPTIONS旧Java调查尚在独立未提交文件，留给m.2，不混入本批。
+- 下一批S09.m.2入口/CORS/OPTIONS/HEAD与扩展编码矩阵；m.1通过不等于m完成。真实FC/各端n仍依赖S03/S04；不停止独立上传/任务/其他业务的后续开发。回退本批提交即可。
+
 ## 2026-10-16 S09.l（12/14）会话HTTP与后续计划细化
 
 - 用户明确要求细化计划后直接继续，不停在汇报/等待；新增[剩余执行清单](overview/remaining-work.md)，逐域列S03–S24剩余批次/验收/依赖，S09.l/m先行，再上传契约与可靠任务，不因云权限阻塞独立开发。没有新增业务字段/规则或生产权限授权。

@@ -12,12 +12,13 @@ from video_serverless.business.video_search import VideoSearch
 from video_serverless.public_video_application import PublicVideoApplication
 from video_serverless.search_application import SearchApplication
 from video_serverless.user_bootstrap import build_user_application
+from video_serverless.viewing_bootstrap import build_viewing_application
 from video_serverless.watch_bootstrap import build_watch_application
 
 
 def build_backend_application(database_provider, urls, *, profile, local_clock, display_timezone,
                               worker, datacenter, avatar_objects=None,
-                              playback_signature_secret=None, internal_base_url=None):
+                              playback_signature_secret=None, internal_base_url=None, ip_locations=None):
     if (playback_signature_secret is None) != (internal_base_url is None):
         raise ValueError("Playback signature secret and internal base URL must be configured together")
     if playback_signature_secret is not None and (not playback_signature_secret or not internal_base_url):
@@ -35,5 +36,6 @@ def build_backend_application(database_provider, urls, *, profile, local_clock, 
         database_provider, urls, users.cycle, signature_secret=playback_signature_secret,
         internal_base_url=internal_base_url,
     )
+    viewing = build_viewing_application(database_provider, urls, users.cycle, ip_locations=ip_locations)
     return BackendApplication(users, PublicVideoApplication(videos, users.cycle),
-                              SearchApplication(search, users.cycle), watch)
+                              SearchApplication(search, users.cycle), watch, viewing)
