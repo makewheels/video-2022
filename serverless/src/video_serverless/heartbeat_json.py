@@ -1,4 +1,4 @@
-"""Legacy UTF-8 heartbeat binding, preserving numeric tokens and duplicate-field order."""
+"""Legacy heartbeat binding, preserving stream encoding, numeric tokens and duplicate order."""
 
 import json
 import re
@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from email.utils import parsedate_to_datetime
 
+from video_serverless.body_text import json_text
 from video_serverless.ports.heartbeat import Heartbeat
 from video_serverless.profile_json import _invalid_constant, _Number, _Object, _string
 
@@ -84,9 +85,9 @@ def _date(value):
     return result.replace(tzinfo=UTC) if result.tzinfo is None else result.astimezone(UTC)
 
 
-def decode_heartbeat(body: bytes) -> Heartbeat:
+def decode_heartbeat(body: bytes, content_type: str | None = None) -> Heartbeat:
     try:
-        text = body.decode("utf-8-sig").lstrip(" \t\r\n")
+        text = json_text(body, content_type).lstrip(" \t\r\n")
         decoder = json.JSONDecoder(parse_int=_Number, parse_float=_Number,
                                    parse_constant=_invalid_constant, object_pairs_hook=_Object)
         value, end = decoder.raw_decode(text)

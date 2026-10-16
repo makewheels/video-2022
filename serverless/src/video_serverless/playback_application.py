@@ -31,7 +31,7 @@ class PlaybackApplication:
             json_media = media == "application/json" or (media.startswith("application/") and media.endswith("+json"))
             if not (json_media or (route == "exit" and media == "text/plain")):
                 raise PlaybackBindingError("Playback method/media binding failed")
-            command = decode_playback(body, route)
+            command = decode_playback(body, route, metadata.first_header("Content-Type"))
             if route == "start":
                 return video_result({"playbackSessionId": self.sessions.start(command, identity.user_id)})
             if route == "heartbeat":

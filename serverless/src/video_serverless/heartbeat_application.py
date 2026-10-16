@@ -26,7 +26,7 @@ class HeartbeatApplication:
             if media != "application/json" and not (media.startswith("application/") and media.endswith("+json")):
                 raise HeartbeatBindingError("Heartbeat content type binding failed")
             # Legacy @RequestMapping has no GET/POST restriction. No new token/ownership check.
-            self.heartbeats.add(decode_heartbeat(body), identity.user)
+            self.heartbeats.add(decode_heartbeat(body, metadata.first_header("Content-Type")), identity.user)
             return video_result(None)
 
         return self.cycle.run(request, handle)

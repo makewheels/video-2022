@@ -2,6 +2,7 @@
 
 import re
 
+from video_serverless.body_text import string_text
 from video_serverless.profile_json import _Number, _Object
 
 _NUMBER = re.compile(r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?")
@@ -113,8 +114,8 @@ class _Parser:
                 raise ExitJsonError("Exit JSON binding failed")
 
 
-def decode_exit_object(body: bytes):
-    parser = _Parser(body.decode("utf-8-sig"))
+def decode_exit_object(body: bytes, content_type: str | None = None):
+    parser = _Parser(string_text(body, content_type))
     value = parser.value()
     if not isinstance(value, _Object) or parser.peek():
         raise ExitJsonError("Exit JSON binding failed")

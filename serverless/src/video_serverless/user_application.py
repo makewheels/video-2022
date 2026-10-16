@@ -96,7 +96,7 @@ class UserApplication:
                 mime = (metadata.first_header("Content-Type") or "").split(";", 1)[0].strip().lower()
                 if mime != "application/json" and not (mime.startswith("application/") and mime.endswith("+json")):
                     raise UserBindingError("Profile JSON content type is required")
-                value = decode_profile(body)
+                value = decode_profile(body, metadata.first_header("Content-Type"))
                 return profile_update_response(self.updates.update(identity.user_id, value.nickname, value.bio))
             if path == "/client/requestClientId":
                 value = self.watching.client(metadata.remote_addr, metadata.first_header("User-Agent"))
