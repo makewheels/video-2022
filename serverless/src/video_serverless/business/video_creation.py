@@ -1,6 +1,7 @@
 """Legacy ordinary video creation; no cloud submissions or implicit transaction."""
 
 from dataclasses import dataclass
+from datetime import tzinfo
 
 from video_serverless.ports.video_creation import (
     CreatedVideo,
@@ -20,7 +21,7 @@ class VideoCreation:
     writes: CreationWrites
     ids: CreationIds
     clock: CreationClock
-    local_clock: CreationClock
+    local_timezone: tzinfo
     internal_base_url: str
 
     def create(self, user_id: str, request: CreateVideo) -> CreatedVideo:
@@ -34,15 +35,10 @@ class VideoCreation:
         # YouTube has a separate external-work submission flow, not ordinary creation.
         if request.video_type == "YOUTUBE":
             raise NotImplementedError("YouTube creation requires its own task orchestration")
-        video_id = self.ids.long_id("v_")
         now = self.clock()
-        local = self.local_clock()
-        # Derive the key month from the video's creation instant in the supplied legacy zone.
-        # For a naive local clock retain its wall-clock offset from the supplied UTC instant.
-        if local.tzinfo is not None:
-            local_month = now.astimezone(local.tzinfo).strftime("%Y%m")
-        else:
-            local_month = local.strftime("%Y%m")
+        updated = self.clock()
+        video_id = self.ids.long_id("v_")
+        local_month = now.astimezone(self.local_timezone).strftime("%Y%m")
         video = {
             "_id": video_id, "uploaderId": user_id, "ownerId": user_id,
             "tags": [], "visibility": "PUBLIC", "videoType": request.video_type,
@@ -50,14 +46,15 @@ class VideoCreation:
             "transcodeMode": "LOCAL" if request.transcode_mode == "LOCAL" else "AUTO",
             "youTube": {}, "mediaInfo": {},
             "storageStatus": {"permanent": True, "rawFileDeleted": False, "transcodeFilesDeleted": False},
-            "link": {"hasLink": False}, "createTime": now, "updateTime": now,
+            "link": {"hasLink": False}, "createTime": now, "updateTime": updated,
         }
-        file_id = self.ids.long_id("f_")
         file_now = self.clock()
+        file_updated = self.clock()
+        file_id = self.ids.long_id("f_")
         file = {
             "_id": file_id, "uploaderId": user_id, "videoType": request.video_type,
             "fileStatus": "CREATED", "hasLink": False, "fileType": "RAW_VIDEO",
-            "provider": "ALIYUN_OSS", "createTime": file_now, "updateTime": file_now, "deleted": False,
+            "provider": "ALIYUN_OSS", "createTime": file_now, "updateTime": file_updated, "deleted": False,
         }
         extension = None
         if request.video_type == "USER_UPLOAD":

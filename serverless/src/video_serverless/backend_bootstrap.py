@@ -56,12 +56,13 @@ def build_backend_application(database_provider, urls, *, profile, local_clock, 
                                       "/watchController/getM3u8Content.m3u8"), "GET"))
     upload = None if creation_base_url is None else build_upload_application(
         database_provider, users.cycle, local_clock=local_clock, worker=worker, datacenter=datacenter,
-        internal_base_url=creation_base_url,
+        internal_base_url=creation_base_url, local_timezone=display_timezone,
     )
     protected = set(_PROTECTED)
     if upload is not None:
         methods["/video/create"] = "POST"
-        protected.add("/video/create")
+        methods["/video/getVideoStatus"] = "GET"
+        protected.update({"/video/create", "/video/getVideoStatus"})
     file_uploads = None if upload_objects is None else build_file_upload_application(
         database_provider, users.cycle, upload_objects,
     )
