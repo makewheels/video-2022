@@ -1,5 +1,11 @@
 # 接续记录
 
+## 2026-10-16 S11.c 补漏：缺失ID的存在性查询
+
+- 评论写入契约调查发现旧Repository的exists(null)是Mongo查询，不是findById(null)的参数校验。修正共享LOCAL适配器的video_exists/user_exists，省略videoId沿旧code22，不提前变成通用错误；实体读取/保存仍保留原非null ID校验。
+- 旧Java封面/档位HTTP新增2组实测样本，现25/30组；另测真实Mongo null键的不存在/存在，确认不把None字符串化或吞掉实际查询。Python3.12完整1288passed/0skipped/1既有warning，Ruff通过；Java HTTP共3项/validate通过，临时构建/环境/独享Mongo清理。独立修复，无生产变化；评论写入仍独立实施。
+- #225必要CI38905915252通过后合并64f6c860c01bdbd9bf47f0714a505b4d8fad649c，API/浏览器E2E按条件skipped；master CI38906520040/Java部署38906519868实际success。
+
 ## 2026-10-16 S14.a.1 独立评论读取域
 
 - 在LOCAL完成/可靠副作用依赖继续保留的同时推进独立评论域：普通分页/回复/计数、Mongo和默认关闭的显式隔离HTTP，共享身份/日志周期，不安装写操作。

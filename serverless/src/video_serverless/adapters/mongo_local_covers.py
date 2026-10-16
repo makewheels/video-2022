@@ -45,10 +45,12 @@ class MongoLocalCovers:
         return self._database_provider().get_collection(name, codec_options=CodecOptions(tz_aware=True, tzinfo=UTC))
 
     def video_exists(self, video_id):
-        return self._collection("video").find_one({"_id": _id(video_id)}, {"_id": 1}) is not None
+        key = None if video_id is None else _id(video_id)
+        return self._collection("video").find_one({"_id": key}, {"_id": 1}) is not None
 
     def user_exists(self, user_id):
-        return self._collection("user").find_one({"_id": _id(user_id)}, {"_id": 1}) is not None
+        key = None if user_id is None else _id(user_id)
+        return self._collection("user").find_one({"_id": key}, {"_id": 1}) is not None
 
     def video(self, video_id):
         raw = self._collection("video").find_one({"_id": _id(video_id)})

@@ -2150,6 +2150,62 @@
 		"remoteCalls":0
 	},
 	{
+		"scenario":"missing-video-id",
+		"input":"{\"width\":1920,\"bitrate\":738,\"audioCodec\":\"aac\",\"resolution\":\"720p\",\"durationMs\":60000,\"height\":1080,\"videoCodec\":\"h264\"}",
+		"before":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-uploader",
+					"ownerId":"other-owner",
+					"videoType":"USER_UPLOAD",
+					"transcodeMode":"LOCAL",
+					"rawFileId":"fixture-raw",
+					"status":"CREATED",
+					"createTime":"<server-date>"
+				}
+			],
+			"file":[
+				{
+					"_id":"fixture-raw",
+					"key":"fixture/source.mp4"
+				}
+			],
+			"transcode":[]
+		},
+		"status":200,
+		"contentType":"application/json",
+		"response":{
+			"code":22,
+			"data":null,
+			"message":"视频不存在"
+		},
+		"after":{
+			"video":[
+				{
+					"_id":"fixture-video",
+					"uploaderId":"fixture-uploader",
+					"ownerId":"other-owner",
+					"videoType":"USER_UPLOAD",
+					"transcodeMode":"LOCAL",
+					"rawFileId":"fixture-raw",
+					"status":"CREATED",
+					"createTime":"<server-date>"
+				}
+			],
+			"file":[
+				{
+					"_id":"fixture-raw",
+					"key":"fixture/source.mp4"
+				}
+			],
+			"transcode":[]
+		},
+		"requestLogs":1,
+		"exceptionLogs":1,
+		"remoteCalls":0
+	},
+	{
 		"scenario":"invalid-resolution",
 		"input":"{\"width\":1920,\"videoId\":\"fixture-video\",\"bitrate\":738,\"audioCodec\":\"aac\",\"resolution\":\"480p\",\"durationMs\":60000,\"height\":1080,\"videoCodec\":\"h264\"}",
 		"before":{
