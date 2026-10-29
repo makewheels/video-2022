@@ -1,5 +1,13 @@
 # 接续记录
 
+## 2026-10-29 S15.b.1 订阅读取隔离迁移
+
+- 应用户17:00前再交付一个小批次的要求，从已合并#229的master `162c6d37`新建`feat-subscription-read-http`。只迁移getStatus/getMySubscriptions，共用身份/日志周期；`subscription_reads=False`默认不安装，写订阅/通知及生产入口不变。
+- 真实Java2项/0skipped，26组HTTP和完整BSON黄金样本生成后再次固定文件重放。实测负skip按0、零/负limit不限条数、正limit封顶50、类型敏感匹配和重复参数；没有用PyMongo默认负limit替代旧行为。
+- Python新增29项，与赞踩、统一播放/观看装配和架构共108passed/0skipped/1既有warning；Ruff/Checkstyle/500行/空白门禁通过。逐请求确认完整用户/订阅BSON不变，读取失败记录异常而非返回未订阅；真实FC/全端仍未验。
+- 独立PR交付，不把上一批merge授权延伸到本批；当前head、CI及条件跳过项记录于本批PR。无迁库/切流/云资源变更，回退本批代码即可，不覆盖业务数据库。
+- #229已按用户要求正常合并为`162c6d37359ed7dd2c3a76da6124b39c8cffeb9e`，master CI40843192645实际success；部署最终结果未在此确认。
+
 ## 2026-10-29 S15.a 视频赞踩隔离迁移
 
 - 按用户要求找到本机仓库并快进拉取master至`cbc02da7`，起始工作区干净；基线CI38928696025/部署38928696127实际success，没有在途重复PR。
