@@ -2,6 +2,18 @@
 
 日期：2026-10-14。状态：用户已确认开始，P1 隔离原型开发和本地验证；尚未部署 FC 原型、修改生产配置或切换业务流量。
 
+## S15.a 视频赞踩本机验收（2026-10-29）
+
+基线`cbc02da7`，Windows CPython3.12.12/JDK21.0.10，独立临时Mongo8.3.7、loopback端口57029；未连接生产数据库或真实云服务。
+
+- `VideoLikeHttpContractTest,VideoLikeServiceTest`：12passed/0skipped，真实Spring MVC生成56组完整响应/前后BSON；再次不带生成参数重放，与固定JSON全文对照通过。Checkstyle为0违规。
+- `test_video_reactions.py`新增62项；连同`test_boundaries.py`、`test_backend_watch_routing.py`、`test_backend_viewing_routing.py`、`test_comment_reads.py`、`test_comment_writes.py`，实际180passed/0skipped；既有Starlette/httpx弃用提醒1条。不是本机完整Python套件。
+- 实际覆盖六种toggle、独立用户、公开/带身份状态、旧权限/错误顺序、重复参数、HEAD/OPTIONS、ID与字段替换、null/非法计数以及真实重复键/计数失败后的部分写入。新能力只在`video_reactions=True`装配，真正默认工厂404且无数据库访问已验。
+- Ruff、500行门禁、`git diff --check`通过。首次环境缺少项目包，恢复锁定依赖；下载证书失败后按本机约定使用代理和系统证书成功，不关闭TLS验证。
+- 实现提交`d2aea26b`的[CI40841352861](https://github.com/makewheels/video-2022/actions/runs/40841352861)实际success：Linux完整Python1400passed/0skipped/1warning；Linux来源/可重现包、后端/前端/CLI/AI Agent/Android/iOS及质量门禁通过，API/浏览器E2E按既有条件skipped。收尾文档当前head门禁另行记录在[PR#229](https://github.com/makewheels/video-2022/pull/229)；真实FC/网络/冷热、Web与移动端实机、生产切流均未跑。
+
+契约及回退边界见[user/video-reactions.md](user/video-reactions.md)。回退代码提交，不恢复旧数据库备份覆盖业务数据。
+
 ## P1 本地原型进展
 
 - 新增 `serverless/`，共用同一应用的内置 Python Handler 和 FastAPI Web 入口。仅健康检查及受鉴权保护的空请求/Mongo 单条只读诊断，不包含生产业务接口替代实现。

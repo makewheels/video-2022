@@ -1,5 +1,11 @@
 # 变更日志
 
+## feat: [S15.a] 迁移视频点赞点踩与公开状态（[PR #229](https://github.com/makewheels/video-2022/pull/229)，2026-10-29）
+
+- 新增普通Python赞踩能力、现有Mongo适配及显式隔离HTTP装配；保留旧身份/参数、toggle、整文档保存和独立计数失败顺序，默认/生产入口不变。
+- 56组真实旧HTTP/BSON黄金样本；本次实际Java12项、本机Python相关域180项、Ruff/Checkstyle/500行/空白门禁通过。实现提交CI完整Python1400项、Linux来源/可重现包和必需检查通过，API/浏览器E2E按条件skipped。
+- 真实FC和各端实机未跑，未自行合并或切流；收尾文档后的完整门禁以PR当前head为准。
+
 ## feat: [S09.i] 09/14 IP查询与Mongo缓存适配（2026-10-16）
 
 - 保留IPv6键、缓存存在复用、result扁平及Decimal/null序列化，查询/存储/供应商分离。

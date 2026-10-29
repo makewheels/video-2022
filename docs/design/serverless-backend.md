@@ -275,3 +275,7 @@ S09.g：[观看日志基线](../requirements/2026-10-14-serverless-backend/playb
 S09.h：WatchLogs普通用例按旧顺序组合WatchLogStore/IpLocations，计数和事件写入不重试/不事务回滚；Mongo显式Int64增数并递归转换IP Decimal/null，事件使用实际视频ID/status。外部IP/缓存和HTTP仍独立，不导入业务层或装配生产入口。
 
 S09.i：IP缓存record/存储端口、Mongo适配、外部API与缓存组合分别实现；沿用ip_cache字段/唯一键/六小时TTL存在语义，普通WatchLogs只依赖IpLocations。JSON扁平/Decimal/null由适配处理，业务不导入HTTP/数据库类型；新传输三秒/单次/不自动跳转仅回环已验，真实供应商/FC、非标准JSON另验，未接生产入口。
+
+## S15.a 视频赞踩隔离迁移（2026-10-29）
+
+[视频赞踩契约](../requirements/2026-10-14-serverless-backend/user/video-reactions.md)先固定旧 Spring HTTP 与完整 BSON，再由普通 VideoReactions 用例、存储端口和 Mongo 适配实现。保留记录先写、旧计数先减/新计数后增的独立操作及其部分失败，不新增事务、幂等业务重试或权限规则。HTTP 层只负责旧参数绑定和错误映射；显式装配复用同一 RequestCycle，默认入口不增加生产写入能力。
