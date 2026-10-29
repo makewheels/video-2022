@@ -76,6 +76,7 @@ def test_http_controller_has_no_configuration_or_infrastructure_imports():
         "local_transcode_application.py",
         "comment_application.py",
         "comment_write_application.py",
+        "video_reaction_application.py",
     ):
         source = (ROOT / name).read_text(encoding="utf-8")
         assert not forbidden_imports(source, "video_serverless", PURE_STDLIB | {
@@ -102,6 +103,7 @@ def test_http_controller_has_no_configuration_or_infrastructure_imports():
             "video_serverless.upload_application", "video_serverless.upload_json",
             "video_serverless.file_upload_application",
             "video_serverless.video_status_application",
+            "video_serverless.video_reaction_application",
         })
     source = (ROOT / "request_cycle.py").read_text(encoding="utf-8")
     assert not forbidden_imports(source, "video_serverless", PURE_STDLIB | {

@@ -1,4 +1,4 @@
-# 用户、资料与评论
+# 用户、资料与互动
 
 [返回迁移总览](../README.md) · [当前进度](../overview/status.md)
 
@@ -26,3 +26,4 @@
 | [verification-code-request](verification-code-request.md) | S06.g1 验证码申请 |
 | [comment-reads](comment-reads.md) | S14.a.1 公开评论分页/回复/计数、旧HTTP与真实Mongo对照 |
 | [comment-writes](comment-writes.md) | S14.b–d 评论/回复、级联删除、点赞切换与部分失败 |
+| [video-reactions](video-reactions.md) | S15.a 视频点赞/点踩、状态读取与旧 HTTP/Mongo 对照 |

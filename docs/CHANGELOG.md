@@ -1,5 +1,10 @@
 # 变更日志
 
+## feat: [S15.a] 迁移视频点赞点踩与公开状态（2026-10-29）
+
+- 新增普通Python赞踩能力、现有Mongo适配及显式隔离HTTP装配；保留旧身份/参数、toggle、整文档保存和独立计数失败顺序，默认/生产入口不变。
+- 56组真实旧HTTP/BSON黄金样本；本次实际Java12项、Python相关域180项、Ruff/Checkstyle/500行/空白门禁通过，0skipped。真实FC和各端实机未跑，完整必需CI以PR当前head为准。
+
 ## feat: [S09.i] 09/14 IP查询与Mongo缓存适配（2026-10-16）
 
 - 保留IPv6键、缓存存在复用、result扁平及Decimal/null序列化，查询/存储/供应商分离。

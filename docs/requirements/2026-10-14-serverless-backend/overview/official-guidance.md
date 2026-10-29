@@ -69,3 +69,7 @@ ZIP 可信摘要保护包内 requirements，sidecar 与包内记录对照。依�
 ## S06.e1 资料更新（2026-10-15）
 
 [Python3.12 codecs](https://docs.python.org/3.12/library/codecs.html#error-handlers)支持UTF-16LE及surrogatepass，项目用于保留Java长度计数，不据此宣称全部孤立代理码点传输已兼容。[PyMongo更新](https://www.mongodb.com/docs/languages/python/pymongo-driver/current/crud/update/)提供单文档$set/upsert控制；旧两字段替换、ObjectId/零匹配行为以真实Java为准。无生产写入、无应用重试或路由装配。
+
+## S15.a 视频赞踩（2026-10-29）
+
+重读[MongoDB 原子性](https://www.mongodb.com/docs/manual/core/write-operations-atomicity/)和[PyMongo 文档替换](https://www.mongodb.com/docs/languages/python/pymongo-driver/current/crud/replace/)：单文档更新原子不代表多文档/多次写入原子，replace 删除实体外字段，upsert 需显式指定。项目按真实旧 Java 顺序使用独立记录写入和 `$inc`，不改成事务或合并切换计数；null/失败/ID 语义由合成 HTTP/BSON 黄金样本确定，不从官方通用说明推定。没有真实 FC 或线上数据库验收。

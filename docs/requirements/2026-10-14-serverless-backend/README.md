@@ -25,7 +25,7 @@
 | [overview/](overview/README.md) | 业务/路由审计、官方依据、响应对照与历史夜间验收 |
 | [deployment/](deployment/README.md) | 隔离OSS权限、发布工具和错误定位 |
 | [http/](http/README.md) | 元数据、身份、请求生命周期和同步日志 |
-| [user/](user/README.md) | 登录、client/session、ID、资料、头像及相应契约 |
+| [user/](user/README.md) | 登录、client/session、ID、资料、头像、评论与赞踩契约 |
 | [video/](video/README.md) | 视频列表、搜索和分类 |
 | [playback/](playback/README.md) | 观看信息、HLS、播放授权和文件访问 |
 | [upload/](upload/README.md) | 原片创建/凭证/完成通知、MD5/AUTO及上传迁移契约 |
