@@ -5,7 +5,8 @@
 - 按用户要求找到本机仓库并快进拉取master至`cbc02da7`，起始工作区干净；基线CI38928696025/部署38928696127实际success，没有在途重复PR。
 - 在`feat-video-reactions-http`分支实现视频like/dislike/getStatus普通用例、端口、现有Mongo适配及显式隔离装配。保留公开状态、登录先于绑定、重复参数逗号合并、ObjectId与字符串ID区别、整文档save和独立计数写入的原顺序/部分失败；默认/生产入口不变。
 - 实际旧Java12项/0skipped，含56组完整HTTP/BSON黄金样本，生成后再次固定文件重放通过；Python新增62项，与评论/统一播放观看装配/架构共180passed/0skipped/1既有warning。Ruff、Checkstyle、500行和空白门禁通过；只使用系统临时目录内独立loopback Mongo。
-- PR/必需CI见该分支当前head，不以本机聚焦测试代替完整Linux构建或全仓检查。未自行合并、调用收费服务、写生产数据、配置云资源或切流。真实FC网络/冷热性能和各端仍未跑；S15.b–e尚未迁移。
+- 实现提交`d2aea26b8f11b1cbf2c80f271c63ff7991b8d5bf`已推送[PR#229](https://github.com/makewheels/video-2022/pull/229)，[CI40841352861](https://github.com/makewheels/video-2022/actions/runs/40841352861)实际success；Linux完整Python1400passed/0skipped/1warning，来源/可重现包及其余必需检查通过，API/浏览器E2E按条件skipped。收尾文档当前head门禁继续查PR，未自行合并。
+- 未调用收费服务、写生产数据、配置云资源或切流。真实FC网络/冷热性能和各端仍未跑；S15.b–e尚未迁移。
 - 本阶段停点为可回退的独立PR，不继续扩大到订阅、通知、MD5或可靠任务。回退本阶段提交即可，不恢复数据库旧备份覆盖业务数据；后续按remaining-work.md依赖推进。
 
 ## 2026-10-16 收尾检查：S14评论读写已推送并合并

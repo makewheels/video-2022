@@ -1,6 +1,6 @@
 # S15.a 视频点赞与点踩
 
-状态：隔离实现与本机验收完成（2026-10-29），PR/必需 CI 见本阶段交付；未合并或切生产。属于既有 Java → Python/FC 迁移，不新增产品行为；基线为 `cbc02da7`。
+状态：隔离实现、本机验收及实现提交必需 CI 完成（2026-10-29），[PR #229](https://github.com/makewheels/video-2022/pull/229) 待合并，未切生产。属于既有 Java → Python/FC 迁移，不新增产品行为；基线为 `cbc02da7`。
 
 ## 目标与边界
 
@@ -27,4 +27,4 @@
 - 真正的默认工厂未启用新开关时三个路由及 OPTIONS 均为 404，且不访问数据库；显式 `video_reactions=True` 才装配，共享用户 RequestCycle。
 - 真实 Mongo 重复键竞争、增数故障、先写后失败和独立用户切换均实际执行。未连接生产 Mongo、调用付费服务或改生产配置。
 
-完整 Linux 来源构建和全仓回归由本阶段 PR 的必需 CI 验证，以 PR 当前 head 为准，不把本机 180 项说成完整 Python 套件。真实 FC/Mongo 网络、云端冷热性能和 Web/移动端实机仍未跑；本机通过不表示 S15 整体完成或可退役 Java。回退本阶段提交即可，禁止恢复旧数据库备份覆盖新业务数据。
+实现提交 `d2aea26b` 的 [CI 40841352861](https://github.com/makewheels/video-2022/actions/runs/40841352861) 实际 success：Linux 完整 Python **1400 passed / 0 skipped / 1 warning**，Linux 来源/可重现包与其他必需检查通过；API/浏览器 E2E 按既有条件 skipped。收尾文档提交的当前 head CI 继续以 PR 为准。真实 FC/Mongo 网络、云端冷热性能和 Web/移动端实机仍未跑；上述通过不表示 S15 整体完成或可退役 Java。回退本阶段 PR 提交即可，禁止恢复旧数据库备份覆盖新业务数据。
