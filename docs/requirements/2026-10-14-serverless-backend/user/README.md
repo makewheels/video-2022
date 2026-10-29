@@ -27,3 +27,4 @@
 | [comment-reads](comment-reads.md) | S14.a.1 公开评论分页/回复/计数、旧HTTP与真实Mongo对照 |
 | [comment-writes](comment-writes.md) | S14.b–d 评论/回复、级联删除、点赞切换与部分失败 |
 | [video-reactions](video-reactions.md) | S15.a 视频点赞/点踩、状态读取与旧 HTTP/Mongo 对照 |
+| [subscription-reads](subscription-reads.md) | S15.b.1 登录用户订阅状态与分页列表读取，不包含订阅写入 |

@@ -279,3 +279,7 @@ S09.i：IP缓存record/存储端口、Mongo适配、外部API与缓存组合分�
 ## S15.a 视频赞踩隔离迁移（2026-10-29）
 
 [视频赞踩契约](../requirements/2026-10-14-serverless-backend/user/video-reactions.md)先固定旧 Spring HTTP 与完整 BSON，再由普通 VideoReactions 用例、存储端口和 Mongo 适配实现。保留记录先写、旧计数先减/新计数后增的独立操作及其部分失败，不新增事务、幂等业务重试或权限规则。HTTP 层只负责旧参数绑定和错误映射；显式装配复用同一 RequestCycle，默认入口不增加生产写入能力。
+
+## S15.b.1 订阅读取（2026-10-29）
+
+[订阅读取契约](../requirements/2026-10-14-serverless-backend/user/subscription-reads.md)复用普通存储端口与统一 RequestCycle。显式工厂开关只安装两个受登录保护的旧读取路由，保持精确引用匹配和原排序/分页；不把订阅写入、通知或额外频道存在检查带入本批。

@@ -13,6 +13,7 @@ from video_serverless.public_video_application import PublicVideoApplication
 from video_serverless.request_cycle import CycleResult
 from video_serverless.routing_application import RoutingApplication
 from video_serverless.search_application import SearchApplication
+from video_serverless.subscription_application import SUBSCRIPTION_READ_METHODS, SubscriptionReadApplication
 from video_serverless.upload_application import UploadApplication
 from video_serverless.user_application import UserApplication
 from video_serverless.video_reaction_application import VIDEO_REACTION_METHODS, VideoReactionApplication
@@ -35,10 +36,13 @@ class BackendApplication:
     comments: CommentReadApplication | None = None
     comment_writes: CommentWriteApplication | None = None
     video_reactions: VideoReactionApplication | None = None
+    subscriptions: SubscriptionReadApplication | None = None
 
     def dispatch(self, request: RequestMetadata, body: bytes = b"") -> CycleResult:
         if self.routing is not None and request.method == "OPTIONS" and request.path in self.routing.methods:
             return self.routing.options(request)
+        if self.subscriptions is not None and request.path in SUBSCRIPTION_READ_METHODS:
+            return self.subscriptions.dispatch(request, body)
         if self.video_reactions is not None and request.path in VIDEO_REACTION_METHODS:
             return self.video_reactions.dispatch(request, body)
         if self.comments is not None and request.path in COMMENT_READ_METHODS:
