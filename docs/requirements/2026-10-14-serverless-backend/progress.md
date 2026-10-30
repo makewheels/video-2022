@@ -1,5 +1,14 @@
 # 接续记录
 
+## 2026-10-30 M033已合并，M010矩阵及兼容修复
+
+- M033 [PR #234](https://github.com/makewheels/video-2022/pull/234)最终head `db7bfe4432db64315e6254ec0f3f4f2e8a47b933`的[CI41020464721](https://github.com/makewheels/video-2022/actions/runs/41020464721)实际12成功/2条件E2E跳过、Java787/0/0/0，Serverless API/来源/可重现构建和两种包冒烟成功。PR证据写入并回读后，15:38:53普通合并为`4ac865867a7d74847d7bc5686ae7744f57f9b783`，本地主干已快进、工作区干净。
+- 15:41同基线新建`fix-m010-catalog-contract-20261030`，先写[设计](video/search-category.md)，再补真实旧MVC/完整BSON。最终实际144组（公开列表94/搜索49/分类1，123原成功/21原错误）；可见性、字面正则、Unicode/NUL、重复参数、排序分页/溢出、类型/缺失/null和只读不变性均保留。
+- 生成器保留显式null及原BSON对象字段顺序；固定重放不带生成属性。Double按相同IEEE754位型比较两种canonical拼写，不混Integer/Long或负零；日期只在格式/窗口核验后归一。16:09最终生成1passed，16:12固定144组连既有公开列表/搜索一次Java15passed；新增清理保护及终版结果另记验证和本PR。
+- Python四文件只修源证据：重复String参数逗号拼接、Spring BSON字符串/CSV集合/Long日期、明确null和非法空嵌套。驱动Document转字符串不同于Fastjson，保留relaxed JSON/UTF16转义；极小Double两位规则以46组真实JDK结果对照全通过，未改共享user mapper/数值格式器、依赖或业务模型。
+- **本次实际**最终三个Python文件一次165passed/0skipped/1既有warning。另新进程在内存加载基线四个原文件，完整144组实际31failed/113passed，无error/skip；工作区没被还原，证明永久用例能击中修复。新Java清理入口包含AfterEach拒绝非test库，负例不接真实生产库。
+- 只用独享13905及随机命名Python测试库，禁止外部媒体签名；未验M011真实封面/云网络、各端、真实FC或生产流量。固定90项现7交付、剩余83；15:41/16:09/16:12是墙钟节点，不当作主动工时或用来外推其余83项工期。
+
 ## 2026-10-30 M016已合并，M033旧云任务契约
 
 - M016 [PR #233](https://github.com/makewheels/video-2022/pull/233)最终head `62cce22312c55fa85f663ea64b7ac6c8d430a92c`的CI41015890893实际12成功/2条件E2E跳过，Java784/0/0/0，Serverless API/来源/可重现构建及两种包冒烟成功；证据写入PR并回读后，14:56:08正常合并为`684f4e5fa194895aa010255e5af4ca4fd64f32dd`。不把设计说成运行时或云平台已验。

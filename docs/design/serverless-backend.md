@@ -58,6 +58,8 @@ flowchart LR
 
 [M033旧协议契约](../requirements/2026-10-14-serverless-backend/tasks/cloud-task-protocol.md)先固定真实CPU/GPU提交、MVC回调和完整任务BSON，再迁后续运行时。真实外部发送只指向回环服务器，媒体登记/规划和云SDK是显式mock边界；legacy循环只记录调度，不把合成语料当真实付费任务或M034–M038完成。
 
+[M010剩余矩阵](../requirements/2026-10-14-serverless-backend/video/search-category.md)以144组真实旧MVC/完整BSON补列表、搜索和分类兼容。重复String绑定、Spring BSON字符串/CSV集合/Long日期及明确null仅在现有HTTP/本域私有适配层修复；不把驱动Document字符串误当Fastjson、不以Python真值吞掉坏形状，也不新增业务校验或重复实现普通能力。
+
 ## 5. 分组、兼容和回退
 
 - 一组轻量 HTTP API 和必要回调入口；任务、账单/OSS 批处理按资源和权限隔离，香港下载独立地域。

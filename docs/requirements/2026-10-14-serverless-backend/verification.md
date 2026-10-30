@@ -2,6 +2,32 @@
 
 日期：2026-10-14。状态：用户已确认开始，P1 隔离原型开发和本地验证；尚未部署 FC 原型、修改生产配置或切换业务流量。
 
+## M010 列表/搜索/分类剩余矩阵（2026-10-30下午）
+
+基线为已合并#234的`4ac86586`，先写[设计](video/search-category.md)再实现。新Java两个JUnit方法：一个真实旧MVC矩阵、一个拒绝非test库清理的负例；实际生成[144组](../../../serverless/contracts/catalog-matrix/catalog.json)（公开列表94/搜索49/分类1），123个原成功、21个原错误。生成只写系统临时目录，再原样拷入仓库并核对SHA256；正式重放不带生成属性。
+
+- **本次实际Java**：撤生成属性后，CatalogMatrixContractTest2项、PublicVideoHttpContractTest5项及SearchServiceTest9项一次**16passed/0failures/0errors/0skipped**，Checkstyle零违规，16:16:49结束。清理guard位于覆盖入口，BeforeEach/AfterEach均先断言test库名；负例以mock证明拒绝发生在枚举集合前，不连接真实生产库。
+- **本次实际Python**：新增144个参数化例加公开列表13/搜索8，三个文件一次**165passed/0skipped**，一个既有Starlette warning；Serverless Ruff全目录通过。没有重跑本机全量，其最终head完整CI以本PR为准。
+- **修复有效性**：新进程从Git读取`4ac86586`四个原Python文件，只在内存替换同名模块，用同一永久144组重放，实际**31failed/113passed/0error/0skip**；工作区未被还原。另用真实JDK21产生46组Double文本（正负最小subnormal、正负零、有限极值、科学记数、NaN/Infinity），本域私有格式器全部一致，无运行时Java依赖/共享数值格式器改动。
+- **比较完整性**：完整video/user/cover前后BSON逐项对照，未知字段和明确null保留；ordered读取保存原Document字段顺序，避免将其字符串化后的内容改序。不同驱动的Double canonical文本只换算同一IEEE754位型比较，Integer/Long标记和负零不混同。日期显示先核验原本地时区格式，构造器日期须处于实际请求起止才归一，不抹平业务字段。
+- **只修原差异**：重复String参数逗号拼接、String的bool/Double/集合/驱动relaxed Document JSON、CSV tags/Java trim、Long日期；明确null watch保留null，坏空嵌套按原错误返回而非伪装默认对象。旧分页溢出/空值、非正limit、字面查询及状态/HTTP错误形状不加新规则。
+- **未验范围/回退**：无真实FC/云网络/有效封面URL、各端或生产流量验收，M009/M011不算完成。仅私有13905/随机Python测试库，媒体签名禁止；无业务字段/集合/索引/状态、依赖、资源或生产配置变化。回退四个Python文件及测试/语料/文档，无业务库回写/在途任务改变。
+
+本次实际选择器如下：Java从仓库`server`根运行，必须保留四项隔离覆盖；Python从`serverless`根，用锁定依赖的私有Python3.12环境，Mongo必须是自行启动的独享回环服务。
+
+```powershell
+mvn -o -B -ntp -pl video -am test `
+  "-Dtest=CatalogMatrixContractTest,PublicVideoHttpContractTest,SearchServiceTest" `
+  "-Dsurefire.failIfNoSpecifiedTests=false" `
+  "-Dspring.mongodb.uri=mongodb://127.0.0.1:13905/video_m010_d00439ce_test" `
+  "-Dspring.mongodb.host=127.0.0.1" "-Dspring.mongodb.port=13905" `
+  "-Dspring.mongodb.database=video_m010_d00439ce_test"
+$env:MONGODB_URI = "mongodb://127.0.0.1:13905"
+python -B -m pytest -q tests\test_catalog_matrix.py tests\test_public_video_application.py tests\test_search_application.py
+```
+
+源码语料生成使用临时目录属性`contract.catalog.output.dir`，不能手改旧预期；固定重放必须撤该属性。上述16、165、46及原代码31失败是不同维度，不累加成新增JUnit数量或生产完成率。
+
 ## M033 旧云任务协议黄金契约（2026-10-30下午）
 
 基线为已合并#233的`684f4e5f`，Windows JDK21.0.10/Mongo8.3.7；Mongo独享`127.0.0.1:13905/video_m033_d00439ce_test`，实际核验仅回环监听/正确进程和连接响应，Java明确覆盖全部`spring.mongodb.uri/host/port/database`，不接已有27017。新测试清理前核对test库名，回环HTTP随机端口finally关闭。
