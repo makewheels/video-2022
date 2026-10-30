@@ -7,8 +7,10 @@ from video_serverless.adapters.mongo_comment_writes import MongoCommentWrites
 from video_serverless.adapters.mongo_cover_urls import MongoCoverUrls
 from video_serverless.adapters.mongo_local_covers import MongoLocalCovers
 from video_serverless.adapters.mongo_local_transcodes import MongoLocalTranscodes
+from video_serverless.adapters.mongo_notifications import MongoNotifications
 from video_serverless.adapters.mongo_public_videos import MongoPublicVideos
 from video_serverless.adapters.mongo_subscription_reads import MongoSubscriptionReads
+from video_serverless.adapters.mongo_subscription_writes import MongoSubscriptionWrites
 from video_serverless.adapters.mongo_users import MongoUserReads
 from video_serverless.adapters.mongo_video_reactions import MongoVideoReactions
 from video_serverless.adapters.mongo_video_search import MongoVideoSearch
@@ -17,8 +19,10 @@ from video_serverless.business.comment_reads import Comments
 from video_serverless.business.comment_writes import CommentWrites
 from video_serverless.business.local_covers import LocalCovers
 from video_serverless.business.local_transcodes import LocalTranscodes
+from video_serverless.business.notifications import Notifications
 from video_serverless.business.public_videos import PublicVideos
 from video_serverless.business.subscription_reads import Subscriptions
+from video_serverless.business.subscription_writes import SubscriptionWrites
 from video_serverless.business.video_reactions import VideoReactions
 from video_serverless.business.video_search import VideoSearch
 from video_serverless.comment_application import COMMENT_READ_METHODS, CommentReadApplication
@@ -26,10 +30,12 @@ from video_serverless.comment_write_application import COMMENT_WRITE_METHODS, Co
 from video_serverless.file_upload_application import FILE_UPLOAD_ROUTES
 from video_serverless.local_cover_application import LOCAL_COVER_METHODS, LocalCoverApplication
 from video_serverless.local_transcode_application import LOCAL_TRANSCODE_METHODS, LocalTranscodeApplication
+from video_serverless.notification_application import NotificationApplication
 from video_serverless.public_video_application import PublicVideoApplication
 from video_serverless.routing_application import RoutingApplication
 from video_serverless.search_application import SearchApplication
 from video_serverless.subscription_application import SUBSCRIPTION_READ_METHODS, SubscriptionReadApplication
+from video_serverless.subscription_write_application import SUBSCRIPTION_WRITE_METHODS, SubscriptionWriteApplication
 from video_serverless.upload_bootstrap import (
     build_file_upload_application,
     build_upload_application,
@@ -51,7 +57,8 @@ def build_backend_application(database_provider, urls, *, profile, local_clock, 
                               playback_signature_secret=None, internal_base_url=None, ip_locations=None,
                               creation_base_url=None, upload_objects=None, local_cover_access_base_url=None,
                               local_transcode_registration=False, public_comment_reads=False, comment_writes=False,
-                              video_reactions=False, subscription_reads=False):
+                              video_reactions=False, subscription_reads=False, subscription_writes=False,
+                              notification_reads=False, notification_writes=False):
     if local_transcode_registration and upload_objects is None:
         raise ValueError("Local transcode registration requires explicit object credentials")
     if local_cover_access_base_url is not None and (not local_cover_access_base_url or upload_objects is None):
@@ -139,7 +146,19 @@ def build_backend_application(database_provider, urls, *, profile, local_clock, 
             Subscriptions(MongoSubscriptionReads(database_provider)), users.cycle)
         methods.update(SUBSCRIPTION_READ_METHODS)
         protected.update(SUBSCRIPTION_READ_METHODS)
+    subscription_mutations = None
+    if subscription_writes:
+        subscription_mutations = SubscriptionWriteApplication(
+            SubscriptionWrites(MongoSubscriptionWrites(database_provider), lambda: datetime.now(UTC)), users.cycle)
+        methods.update(SUBSCRIPTION_WRITE_METHODS)
+        protected.update(SUBSCRIPTION_WRITE_METHODS)
+    notifications = None
+    if notification_reads or notification_writes:
+        notifications = NotificationApplication(Notifications(MongoNotifications(database_provider)), users.cycle,
+                                                notification_reads, notification_writes)
+        methods.update(notifications.methods)
     routing = RoutingApplication(methods, frozenset(protected), users.cycle)
     return BackendApplication(users, PublicVideoApplication(videos, users.cycle),
                               SearchApplication(search, users.cycle), watch, viewing, routing, upload, file_uploads,
-                              local_covers, local_transcodes, comments, writes, reactions, subscriptions)
+                              local_covers, local_transcodes, comments, writes, reactions, subscriptions,
+                              subscription_mutations, notifications)

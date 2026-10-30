@@ -1,5 +1,16 @@
 # 接续记录
 
+## 2026-10-30 固定任务台账及今日三项
+
+- 用户要求把剩余工作一次细化，不再不断追加字母层级，并授权今天先实现几项。既有remaining-work.md改为固定M001–M090：交付物、验收、实际依赖和状态；历史S阶段/PR证据不改号。
+- 现场确认master `1b4eeb20`、#229/#230均已合并；master CI40846984693/既有Java部署40846984740实际success，#230 Python1429passed/1warning；API/浏览器E2E为skipped。未据此宣称真实FC上线。
+- 今日范围M030订阅增删、M031通知列表/未读数、M032单条/全部已读。源码核对订阅同步写入和四个通知HTTP不依赖S12；sendNotification没有生产调用者，不凭旧清单新增通知生成/队列业务。
+- 起始工作区干净，分支`feat-migration-interactions-20261030`。三项普通能力/端口/Mongo和显式HTTP均已实现，共用原身份/同步日志，三个开关默认关闭；生产入口不改。
+- 真实旧MVC发现通知四路由未安装CheckToken，不能照旧清单猜成登录必需；按可选身份及null用户查询保留。User计数是Long，未新增int上限。通知缺失read为false、显式null反序列化失败，未读/批量已读只匹配BSON false，均按样本保留。
+- Java `InteractionHttpContractTest,SubscriptionReadHttpContractTest,NotificationServiceTest`实际16passed/0skipped；新84组完整HTTP/BSON（订阅32/通知读24/通知写28）生成后再次从固定文件重放，Checkstyle通过。没有真实云调用。
+- Python新增100项；与订阅读取/赞踩/评论/统一后端/架构共309项分批实际验证：首轮307passed/2failed，均为两项测试误选含null的夹具，修正后2项定向passed；0skipped、1条既有Starlette/httpx warning。不是本机完整套件。Ruff/500行通过。
+- 单项主动工时未独立采集，不按这批共享调查/契约工作反推每项工期。当前为工作分支隔离交付、未合并，完整CI/提交以本批PR当前head为准；真实FC/各端未跑，不迁库/切流/创建云资源。下一批优先M016/M017与M027，不扩大本轮三个任务。
+
 ## 2026-10-29 S15.b.1 订阅读取隔离迁移
 
 - 应用户17:00前再交付一个小批次的要求，从已合并#229的master `162c6d37`新建`feat-subscription-read-http`。只迁移getStatus/getMySubscriptions，共用身份/日志周期；`subscription_reads=False`默认不安装，写订阅/通知及生产入口不变。
