@@ -2,6 +2,28 @@
 
 日期：2026-10-14。状态：用户已确认开始，P1 隔离原型开发和本地验证；尚未部署 FC 原型、修改生产配置或切换业务流量。
 
+## M033 旧云任务协议黄金契约（2026-10-30下午）
+
+基线为已合并#233的`684f4e5f`，Windows JDK21.0.10/Mongo8.3.7；Mongo独享`127.0.0.1:13905/video_m033_d00439ce_test`，实际核验仅回环监听/正确进程和连接响应，Java明确覆盖全部`spring.mongodb.uri/host/port/database`，不接已有27017。新测试清理前核对test库名，回环HTTP随机端口finally关闭。
+
+- **本次实际**新增3个JUnit方法，分别真实生成并固定60/69/34组，共163组唯一旧提交/当前MVC回调/legacy及MPS契约；完整前后业务BSON含Integer/Long/Double/Date/ObjectId标记、缺失/null、整保存/窄写和部分写入，记录外部及登记时数据库快照。requestLog/exceptionLog记数量，不用随机堆栈污染业务模型。
+- 初次生成3passed；固定多键输入的顺序后只重生成回调1passed，不改业务。撤掉`contract.cloud-task.output.dir`，新三类连同FcTaskFlowIntegrationTest11项、FcSubmissionPersistenceTest2项、MpsFallbackRecoveryTest6项和CoverTaskSubmissionTest1项，七类**一次23passed/0failures/0errors/0skipped**，Checkstyle零违规，15:19结束。生成/固定重放是不同JVM，不将重叠用例相加。本机没有Python改动/全量重跑；最终head完整CI另记本PR。
+- 真实循环HTTP证明每组最多一次POST：断响应保留SUBMITTED、302不跟随、429原attempt、快速成功不被旧requestId更新覆盖，UTF8固定长度/header匹配。当前回调身份/路径/租约/晚到/终态/manifest getter及原错误形状、登记异常PROCESSING和对象关闭均实际对照；legacy重复仍调用两次，不擅自变幂等。MPS已有job只查、名额一次、未知受理按原失败、5分钟查询租约和超时异常出口都有完整证据。
+- **显式限制**：规划/具体媒体登记/READY为mock边界，旧CF网络/Hutool及MPS SDK为mock，旧MPS异步循环仅记录调度；不是M034–M038实现、真实云端计费/冷热/设备/网络或OS进程崩溃验收。无生产重放、新依赖、业务字段/集合/索引/状态、云配置或资源修改。只撤测试/合成语料/文档即可回退。
+
+实际重放命令从仓库`server`根运行，必须保留四项隔离覆盖，不带生成属性：
+
+```powershell
+mvn -o -B -ntp -pl video -am test `
+  "-Dtest=CloudTaskSubmissionContractTest,CloudTaskCallbackContractTest,LegacyCloudTaskContractTest,FcTaskFlowIntegrationTest,FcSubmissionPersistenceTest,MpsFallbackRecoveryTest,CoverTaskSubmissionTest" `
+  "-Dsurefire.failIfNoSpecifiedTests=false" `
+  "-Dspring.mongodb.uri=mongodb://127.0.0.1:13905/video_m033_d00439ce_test" `
+  "-Dspring.mongodb.host=127.0.0.1" "-Dspring.mongodb.port=13905" `
+  "-Dspring.mongodb.database=video_m033_d00439ce_test"
+```
+
+完整范围、163组文件和归一规则见[协议契约](tasks/cloud-task-protocol.md)。已有历史测试概要不冒充本次实跑，3个新增方法也不冒充163个JUnit方法或完整Python回调。
+
 ## M016 可审阅协议设计（2026-10-30下午）
 
 只交付[源码协议设计](tasks/task-acceptance-recovery.md)及必要状态/索引文档；无运行时代码、业务模型、配置或云资源改动。核对真实Submitter/Repository/Callback/Recovery、三个任务启动器、原片入口/全局错误映射和MPS单独恢复，不把状态注释误当实际受理确认。
