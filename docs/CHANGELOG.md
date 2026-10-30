@@ -1,5 +1,12 @@
 # 变更日志
 
+## fix: [M010] 补列表搜索契约及旧BSON/参数兼容（2026-10-30）
+
+- 真实旧MVC固定144组公开列表/搜索/分类HTTP及完整BSON，覆盖字面正则、Unicode/NUL、可见性/分类、排序分页/溢出、类型/缺失/null；保留显式null、字段顺序和Double位型，不手写预期或抹平坏数据。
+- 修重复String参数逗号拼接、Spring字符串/Document/CSV tags与Long日期转换，明确null watch及非法空嵌套不再被真值判断当默认对象；极小Double/UTF16按实测兼容。只改本域私有适配/现有HTTP装配和可空tags类型，不改共享user mapper、公共数值格式器或业务规则。
+- 实际Python相关165passed/0skipped、真实JDK46组全一致；同一144组对基线原Python代码实际31失败，现版全通过。Java契约/清理保护、门禁及最终head CI见[验证记录](requirements/2026-10-14-serverless-backend/verification.md)；已有各域概要不冒充本次全跑。
+- #234已正常合并；固定90项现7交付、剩余83，不用样本/任务数重算25%粗估。无生产切流、真实云网络/签名验收、新字段/索引/依赖或收费资源，回退本PR代码/语料/文档不回写业务库。
+
 ## test: [M033] 固定旧云任务提交与回调契约（2026-10-30）
 
 - 真实旧Java新增3个JUnit方法，固定提交60/当前MVC回调69/legacy与MPS34组，共163组完整类型BSON和调用时快照；CPU/GPU仅真实回环HTTP，媒体登记/规划/外部SDK明确mock，不生产重放、不提前标M034–M038完成。

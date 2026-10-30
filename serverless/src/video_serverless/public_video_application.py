@@ -10,6 +10,12 @@ from video_serverless.request_cycle import CycleResult, RequestCycle
 from video_serverless.video_responses import video_result, video_rows
 
 
+def _string(request, name):
+    # Spring joins repeated String @RequestParam values; numeric parameters still use the first value.
+    values = [value for key, value in request.parameters if key == name]
+    return ",".join(values) if values else None
+
+
 def _integer(request, name, default=None):
     value = request.first_parameter(name)
     if default is not None and (value is None or value == ""):
@@ -47,7 +53,7 @@ class PublicVideoApplication:
             if metadata.method not in {"GET", "HEAD"}:
                 raise ValueError("Request method is not supported")
             page = self.videos.page(_integer(metadata, "skip"), _integer(metadata, "limit"),
-                                    metadata.first_parameter("keyword"))
+                                    _string(metadata, "keyword"))
             return video_result({"list": video_rows(page.videos), "total": page.total})
 
         return self.cycle.run(request, handle)

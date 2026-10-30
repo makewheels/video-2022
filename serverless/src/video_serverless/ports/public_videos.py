@@ -13,7 +13,7 @@ class PublicVideo:
     description: str | None
     status: str | None
     visibility: str | None
-    tags: tuple[str, ...] | None
+    tags: tuple[str | None, ...] | None
     category: str | None
     create_time: datetime | None
     cover_id: str | None

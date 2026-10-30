@@ -2,7 +2,7 @@
 
 [固定台账](../overview/remaining-work.md) · [受理/恢复设计](task-acceptance-recovery.md) · [已有提交故障](task-submission-persistence.md)
 
-状态：本PR交付**163组真实旧协议/完整任务BSON黄金契约**，本机固定全文重放及相关Java23项通过，最终head CI与合并记录以本PR为准。2026-10-30 14:56从已合并M016的master `684f4e5f`建立`feat-m033-cloud-task-contract-20261030`。本批只固定旧Java协议，不提前实现M034–M038、不改变生产任务所有者或发起生产重放。
+状态：**已合并[PR #234](https://github.com/makewheels/video-2022/pull/234)**，2026-10-30 15:38:53正常合并为`4ac865867a7d74847d7bc5686ae7744f57f9b783`。最终head `db7bfe4432db64315e6254ec0f3f4f2e8a47b933`的[CI41020464721](https://github.com/makewheels/video-2022/actions/runs/41020464721)实际12成功/2条件E2E跳过、Java787passed/0skipped；交付163组真实旧协议/完整任务BSON契约，本机相关Java23项通过。本批只固定旧Java协议，不提前实现M034–M038、不改变生产任务所有者或发起生产重放。
 
 ## 契约层次与边界
 
