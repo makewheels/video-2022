@@ -3,7 +3,7 @@
 from bson import Int64
 
 from video_serverless.adapters.mongo_local_covers import MongoLocalCovers, _id
-from video_serverless.adapters.mongo_users import _text
+from video_serverless.adapters.mongo_users import _long, _text
 
 _FIELDS = frozenset("_id userId videoId jobId provider createTime finishTime status resolution width height "
                     "averageBitrate maxBitrate sourceKey m3u8Key result m3u8Content tsFileIds taskId currentProvider "
@@ -11,6 +11,14 @@ _FIELDS = frozenset("_id userId videoId jobId provider createTime finishTime sta
                     "actualDynamicRange actualCodecs".split())
 _TEXT = frozenset("_id userId videoId jobId provider status resolution sourceKey m3u8Key m3u8Content taskId "
                   "currentProvider errorMessage actualFrameRate actualDynamicRange actualCodecs".split())
+_INTEGERS = frozenset("width height averageBitrate maxBitrate fallbackCount actualWidth actualHeight".split())
+
+
+def _integer(value):
+    result = _long(value)
+    if result is not None and not -(2**31) <= result < 2**31:
+        raise ValueError("Legacy media integer exceeds signed integer range")
+    return result
 
 
 class MongoLocalTranscodes(MongoLocalCovers):
@@ -23,6 +31,9 @@ class MongoLocalTranscodes(MongoLocalCovers):
         for name in _TEXT:
             if name in document:
                 document[name] = _text(document[name])
+        for name in _INTEGERS:
+            if name in document:
+                document[name] = _integer(document[name])
         return document
 
     def save_transcode(self, document):

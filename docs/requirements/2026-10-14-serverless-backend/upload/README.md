@@ -10,4 +10,5 @@
 - [S11.a.2 / S11.c.2 LOCAL档位创建](local-transcodes.md)：两档预建、源媒体信息保留、旧HTTP/完整BSON；完成扫描/就绪链路另做。
 - [S11.b.1 只读产物校验](output-validation.md)：TS/fMP4/init、manifest/对象对照与SDK流关闭；尚未装配完成写入。
 - [S11.d.1 全档就绪状态](video-readiness.md)：所有提供方/状态、缺失引用与READY保护、Mongo状态窄写；尚未装配完成副作用。
+- [M027 LOCAL产物扫描登记](local-output-registration.md)：隔离交付待合并；69组真实旧方法/BSON与本机验收，内部侧车/清单/整前缀/分片登记，不安装半条完成HTTP，完整回调留M028。
 - 没有实际FC或完整客户端上传验收，不能把普通创建能力称作整体上传迁移完成。
