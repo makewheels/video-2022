@@ -56,6 +56,8 @@ flowchart LR
 
 现有SUBMITTED在付费HTTP之前写入，不等于已获受理确认；崩溃后缺requestId不能立即重发。PROCESSING登记租约、429/业务退避和单独MPS查询租约也都要覆盖，不只保护首次提交。原HTTP返回、全部档位先保存、未知付费受理和有限重试语义见M016；死信/保留期限和技术收件箱需求明确列为未证实/待确认，设计不冒充云平台验收。
 
+[M033旧协议契约](../requirements/2026-10-14-serverless-backend/tasks/cloud-task-protocol.md)先固定真实CPU/GPU提交、MVC回调和完整任务BSON，再迁后续运行时。真实外部发送只指向回环服务器，媒体登记/规划和云SDK是显式mock边界；legacy循环只记录调度，不把合成语料当真实付费任务或M034–M038完成。
+
 ## 5. 分组、兼容和回退
 
 - 一组轻量 HTTP API 和必要回调入口；任务、账单/OSS 批处理按资源和权限隔离，香港下载独立地域。
