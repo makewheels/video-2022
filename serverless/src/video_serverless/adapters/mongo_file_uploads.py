@@ -27,7 +27,12 @@ class MongoUploadFiles:
         return None if value is None else str(value)
 
     def find(self, file_id):
-        document = self._database_provider().file.find_one({"_id": _id(file_id)})
+        return self._mapped(self._database_provider().file.find_one({"_id": _id(file_id)}))
+
+    def find_by_key(self, key):
+        return self._mapped(self._database_provider().file.find_one({"key": key}))
+
+    def _mapped(self, document):
         if document is None:
             return None
         now = self._clock()

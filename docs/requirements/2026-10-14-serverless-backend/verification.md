@@ -2,6 +2,20 @@
 
 日期：2026-10-14。状态：用户已确认开始，P1 隔离原型开发和本地验证；尚未部署 FC 原型、修改生产配置或切换业务流量。
 
+## M027 LOCAL内部扫描登记验收（2026-10-30）
+
+#231已按用户授权合并为`dec7a776`后继续，Windows CPython3.12.12/JDK21.0.10/Mongo8.3.7。依赖确实缺少pytest后，按uv.lock恢复到系统临时目录；独享Mongo只绑定`127.0.0.1:13904`，显式覆盖Java全部`spring.mongodb.uri/host/port/database`，Python随机测试库，不接生产或已有27017。
+
+- Java从`server`根运行`mvn -o -B -ntp -pl video -am test "-Dtest=LocalOutputRegistrationContractTest,LocalTranscodeHttpContractTest,LocalTranscodeServiceTest,OutputValidationContractTest" "-Dsurefire.failIfNoSpecifiedTests=false"`及上述独享库属性：实际**8passed/0skipped**，Checkstyle通过。新增1个契约测试内含**69组**真实`onLocalTranscodeFinish`前缀：AfterSave同步异常边界确认登记已存但不进入finish/READY/Webhook；生成后撤掉参数重放固定JSON，完整前后BSON、对象调用和ID前缀一致。重复map键异常只去随机对象地址后缀，不改业务错误。
+- Python新增**85项**。首轮新能力/LOCAL/校验/架构191passed，加File/HLS/就绪123passed，两组文件不重叠。终审getter修正并增强固定语料后，上述十个文件**一次合跑314passed/0skipped/3warnings**，不称本机全量。依赖提醒为既有Starlette/httpx弃用与固定OSS SDK两处非法转义；未改依赖掩盖warning。
+- 终审用真实固定Fastjson1.2.83证实`JSONObject.getString`的嵌套对象不是输入序/字典序：首个乱序探针断言失败，后续又发现UTF16代理对差异。仅在侧车getter适配内补Java HashMap桶序、扩容/树桶链及字符串代理对，不改共用DTO绑定或运行时调用Java。249组实际Java/Python对照通过；既有69例中的字符串转换样本增强为普通乱序键、32个同哈希键及代理对后重新生成，无生成参数的最终Java相关**8passed/0skipped**。独立进程只停用对象顺序修正，固定完整BSON契约实际**1failed（预期变异失败）**，证明不是只测常量或自身实现。
+- 覆盖侧车Fastjson方言/整数及字符串getter、元数据清空/错位、旧无侧车、TS/fMP4 init、全前缀及重复basename、两次清单快照、CRLF/原始EXTINF怪异规则、BSON Integer/Long与小数截断、long回绕/HALF_UP/int溢出、缺时长、全历史引用顺序、重复登记和完整失败部分写入。真实Mongo validator证明文件拒绝无新增、批插入第二片拒绝保留第一片、最终Transcode拒绝保留File/分片。
+- 另验1000条分页/续令牌、第二页失败非成功局部列表、媒体不缓冲/读取关闭、未知编程异常不装作缺侧车、工厂惰性和既有完成HTTP仍404。新能力止于内部登记；M028完整回调及M019可靠副作用未交付，没有新增字段/集合/索引/状态/重试。
+- 初次SDK测试14passed/3failed，原因是测试构造`OssError`漏details参数，另Ruff发现一处超长行；修正夹具/换行后纳入上述完整定向批次通过，没有改业务绕过失败。原有源代码未改Java运行时，新测试始终mock所有外部服务。
+- 全serverless Ruff、架构、仓库500行门禁、`git diff --check`通过；固定90项编号唯一、4交付/1阻塞/85待做与汇总一致、依赖存在且无环，12份修改文档的137个本地链接存在、代码围栏配对。当前head完整CI在PR收尾核实。真实OSS/FC/网络/冷热/设备、生产部署切流均未跑；本机通过不作为这些验收的替身。
+
+细节与回退见[LOCAL产物扫描登记](upload/local-output-registration.md)。本批新增PR不随“合并#231”自动合并；回退代码即可，不覆盖业务数据库。
+
 ## M030–M032 订阅与通知隔离验收（2026-10-30）
 
 基线`1b4eeb20`，Windows CPython3.12.12/JDK21.0.10；临时目录独享Mongo8.3.7，仅绑定`127.0.0.1:13903`，Java专用隔离库与Python随机测试库不接生产。环境/缓存/查询脚本位于系统临时目录，无云调用、迁库或生产配置变更。
