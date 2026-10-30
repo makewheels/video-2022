@@ -2,6 +2,19 @@
 
 日期：2026-10-14。状态：用户已确认开始，P1 隔离原型开发和本地验证；尚未部署 FC 原型、修改生产配置或切换业务流量。
 
+## M030–M032 订阅与通知隔离验收（2026-10-30）
+
+基线`1b4eeb20`，Windows CPython3.12.12/JDK21.0.10；临时目录独享Mongo8.3.7，仅绑定`127.0.0.1:13903`，Java专用隔离库与Python随机测试库不接生产。环境/缓存/查询脚本位于系统临时目录，无云调用、迁库或生产配置变更。
+
+- Java：从`server`根运行`mvn -o -B -ntp -pl video -Pspringboot "-Dtest=InteractionHttpContractTest,SubscriptionReadHttpContractTest,NotificationServiceTest" test`，同时显式覆盖`spring.mongodb.uri/host/port/database`为独享测试库。实际**16passed/0skipped**，Checkstyle通过。新HTTP类4项最终生成86组完整HTTP/前后BSON：订阅32、通知读26、通知写28；生成参数撤掉后重新全文重放通过。首次从home以`-f`运行因multiModuleProjectDirectory错误止于Checkstyle，改正确工作目录，未绕门禁。
+- Python：新增**102项**。新订阅/通知与既有订阅读取、赞踩、评论读写、统一播放/观看和架构共309项首轮307passed/2failed；两项夹具误选修正后定向2passed。终审核对固定Spring `StringToBooleanConverter`字节码，新增Java控制字符与NBSP两组真实MVC黄金样本，修复前实际2failed，证实不能用Python Unicode strip代替Java trim。抽取现有HLS纯trim原样共用后，`test_notifications.py test_hls_master.py test_hls_child.py test_boundaries.py`最终**121passed/0skipped/1既有Starlette/httpx warning**。批次有重叠不相加，不称本机全量。
+- 实测纠正而非改旧业务：通知四路由原来没有CheckToken，缺失/坏token仍按null身份查询/窄写；显式null primitive read映射走旧错误而非false；频道Long计数不限制为int。成功、异常/部分写入、所有者、类型敏感ID、非正分页、HEAD/OPTIONS、坏JSON和不解析markAll正文均有旧样本。
+- 另验真实唯一索引竞争、计数失败只执行一次且保留前序写入、已读回环/重复标记、find先于count、未知字段保持及三个能力默认关闭时404且无数据库访问。架构门禁纳入新HTTP外壳，不引入框架/SDK到业务层。
+- Ruff及500行门禁通过；固定任务台账90个编号唯一、依赖存在且无环，状态与汇总及本地链接一致。测试依赖缺失后按锁文件恢复；首次下载证书失败，经代理和系统证书成功，未关闭TLS校验。
+- 完整CI结果以本批PR当前head为准，工作分支未合并；API/浏览器E2E、真实FC/网络/冷热和Web/移动端实机没有用本机测试冒充。回退本PR全部代码改动（含兼容修正），不恢复旧数据库覆盖业务数据。
+
+业务细节及开关见[user/subscription-notifications.md](user/subscription-notifications.md)。剩余真实验收归M040，任务分母固定90项，完成这三项不等于整个项目完成3/90。
+
 ## S15.a 视频赞踩本机验收（2026-10-29）
 
 基线`cbc02da7`，Windows CPython3.12.12/JDK21.0.10，独立临时Mongo8.3.7、loopback端口57029；未连接生产数据库或真实云服务。

@@ -10,5 +10,5 @@
 | [response-comparison](response-comparison.md) | S05.b 离线响应对照工具 |
 | [routes](routes.md) | Controller 声明接口盘点 |
 | [status](status.md) | 25阶段总表、当前子任务/PR编号与下一项 |
-| [remaining-work](remaining-work.md) | 剩余迁移的执行批次、验收证据与依赖 |
+| [remaining-work](remaining-work.md) | 固定M001–M090剩余任务、交付物、验收、依赖和状态；不再扩字母子号 |
 | [reuse-for-speakup](reuse-for-speakup.md) | 用户要求的经验复用核对：分层/契约/异步任务/流式/托管数据与实际验证缺口 |

@@ -7,6 +7,7 @@ from video_serverless.comment_write_application import COMMENT_WRITE_METHODS, Co
 from video_serverless.file_upload_application import FILE_UPLOAD_ROUTES, FileUploadApplication
 from video_serverless.local_cover_application import LOCAL_COVER_METHODS, LocalCoverApplication
 from video_serverless.local_transcode_application import LOCAL_TRANSCODE_METHODS, LocalTranscodeApplication
+from video_serverless.notification_application import NotificationApplication
 from video_serverless.playlist_application import PLAYLIST_ROUTES
 from video_serverless.ports.request_identity import RequestMetadata
 from video_serverless.public_video_application import PublicVideoApplication
@@ -14,6 +15,7 @@ from video_serverless.request_cycle import CycleResult
 from video_serverless.routing_application import RoutingApplication
 from video_serverless.search_application import SearchApplication
 from video_serverless.subscription_application import SUBSCRIPTION_READ_METHODS, SubscriptionReadApplication
+from video_serverless.subscription_write_application import SUBSCRIPTION_WRITE_METHODS, SubscriptionWriteApplication
 from video_serverless.upload_application import UploadApplication
 from video_serverless.user_application import UserApplication
 from video_serverless.video_reaction_application import VIDEO_REACTION_METHODS, VideoReactionApplication
@@ -37,12 +39,18 @@ class BackendApplication:
     comment_writes: CommentWriteApplication | None = None
     video_reactions: VideoReactionApplication | None = None
     subscriptions: SubscriptionReadApplication | None = None
+    subscription_writes: SubscriptionWriteApplication | None = None
+    notifications: NotificationApplication | None = None
 
     def dispatch(self, request: RequestMetadata, body: bytes = b"") -> CycleResult:
         if self.routing is not None and request.method == "OPTIONS" and request.path in self.routing.methods:
             return self.routing.options(request)
         if self.subscriptions is not None and request.path in SUBSCRIPTION_READ_METHODS:
             return self.subscriptions.dispatch(request, body)
+        if self.subscription_writes is not None and request.path in SUBSCRIPTION_WRITE_METHODS:
+            return self.subscription_writes.dispatch(request, body)
+        if self.notifications is not None and request.path in self.notifications.methods:
+            return self.notifications.dispatch(request, body)
         if self.video_reactions is not None and request.path in VIDEO_REACTION_METHODS:
             return self.video_reactions.dispatch(request, body)
         if self.comments is not None and request.path in COMMENT_READ_METHODS:
