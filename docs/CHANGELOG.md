@@ -1,6 +1,6 @@
 # 变更日志
 
-## feat: [M027] 迁移LOCAL内部产物扫描登记（2026-10-30）
+## feat: [M027] 迁移LOCAL内部产物扫描登记（[PR #232](https://github.com/makewheels/video-2022/pull/232)，2026-10-30）
 
 - #231已按用户授权合并；继续迁移真实LOCAL完成方法的侧车/校验/签名清单/全前缀/分片/Transcode登记前缀，显式内部工厂，不安装半条完成HTTP或提前READY。
 - 69组真实旧内部方法/完整BSON及调用/ID顺序，固定样本重放和相关Java8passed；新增Python85项，不重叠相关回归314passed/0skipped，Ruff/架构/500行通过。完整CI见本批PR当前head；真实OSS/FC/设备未验。

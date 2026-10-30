@@ -2,7 +2,7 @@
 
 [固定台账](../overview/remaining-work.md) · [档位创建](local-transcodes.md) · [产物校验](output-validation.md) · [全档就绪](video-readiness.md)
 
-状态：隔离实现及本机验收已交付，未合并。2026-10-30用户授权合并#231后继续；基线master `dec7a776`，功能分支`feat-m027-local-output-20261030`。本轮只交M027，不扩大到M028完成回调、Webhook可靠派发或视频READY副作用；新PR及终版CI见接续记录/PR正文。
+状态：隔离实现及本机验收已交付，[PR #232](https://github.com/makewheels/video-2022/pull/232)未合并。2026-10-30用户授权合并#231后继续；基线master `dec7a776`，功能分支`feat-m027-local-output-20261030`。本轮只交M027，不扩大到M028完成回调、Webhook可靠派发或视频READY副作用；终版head完整CI的实际核验记录以PR正文为准。
 
 ## 真实边界与设计
 
