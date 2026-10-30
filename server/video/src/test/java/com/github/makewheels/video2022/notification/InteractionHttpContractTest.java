@@ -118,8 +118,15 @@ class InteractionHttpContractTest extends BaseIntegrationTest {
         } else if (scenario.equals("null-target")) {
             mongoTemplate.getCollection("notification").insertOne(new Document("_id", null)
                     .append("toUserId", "fixture-viewer").append("read", false));
-        } else if (List.of("read-string", "read-number", "read-empty").contains(scenario)) {
-            Object value = scenario.equals("read-number") ? 1 : scenario.equals("read-empty") ? "" : "false";
+        } else if (List.of("read-string", "read-number", "read-empty", "read-java-trim", "read-unicode-space")
+                .contains(scenario)) {
+            Object value = switch (scenario) {
+                case "read-number" -> 1;
+                case "read-empty" -> "";
+                case "read-java-trim" -> "\u0000 \tFaLsE\r\n\u001f";
+                case "read-unicode-space" -> "\u00a0false\u00a0";
+                default -> "false";
+            };
             mongoTemplate.getCollection("notification").updateOne(new Document("_id", "fixture-unread"),
                     new Document("$set", new Document("read", value)));
         } else if (List.of("missing-read", "mixed-flags").contains(scenario)) {
@@ -265,7 +272,8 @@ class InteractionHttpContractTest extends BaseIntegrationTest {
                 List<String> scenarios = operation.equals("getMyNotifications")
                         ? List.of("default", "page", "cap", "zero", "zero-empty", "negative-size", "negative-page",
                         "overflow-page", "blank", "invalid", "duplicate-pagination",
-                        "read-string", "read-number", "read-empty", "missing-read", "null-read",
+                        "read-string", "read-number", "read-empty", "read-java-trim", "read-unicode-space",
+                        "missing-read", "null-read",
                         "no-token", "bad-token", "query-token")
                         : List.of("default", "empty", "no-token", "bad-token", "query-token");
                 for (String scenario : scenarios) {

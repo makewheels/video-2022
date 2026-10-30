@@ -6,6 +6,7 @@ from bson.codec_options import CodecOptions
 
 from video_serverless.adapters.mongo_users import _date, _text
 from video_serverless.adapters.mongo_video_status import _id
+from video_serverless.business.java_strings import trim
 
 _TEXT = ("fromUserId", "toUserId", "type", "content", "relatedVideoId", "relatedCommentId")
 
@@ -16,7 +17,7 @@ def _read_flag(value):
     if isinstance(value, bool):
         return value
     if isinstance(value, str):
-        normalized = value.strip().lower()
+        normalized = trim(value).lower()
         if normalized in {"true", "on", "yes", "1"}:
             return True
         if normalized in {"false", "off", "no", "0"}:

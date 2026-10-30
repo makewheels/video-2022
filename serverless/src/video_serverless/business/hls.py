@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+from video_serverless.business.java_strings import trim as _trim
 from video_serverless.business.playback_authorization import PlaybackAuthorization, PlaybackContext
 from video_serverless.ports.hls import HlsReads
 from video_serverless.ports.playback_signatures import AccessClaim
@@ -12,10 +13,6 @@ class HlsDenied(Exception):
         self.code = code
         self.detail = detail
         super().__init__(detail)
-
-
-def _trim(value):
-    return value.strip("".join(chr(number) for number in range(33)))
 
 
 def _lines(content):
